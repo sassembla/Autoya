@@ -10,8 +10,12 @@ namespace AutoyaFramework.Persistence {
 			
 		}
 
-		public void Clear (string domain, string fileName) {
+		public void Clear (string domain, string fileName, Action succeeded, Action<string> failed) {
 			
 		}
 	}
+
+	/*
+		iOS-Keychain Persistence is under consideration.
+	*/
 }

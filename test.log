@@ -1,0 +1,72 @@
+log:tests started.
+log:tests started.
+log:tests started.
+log:tests started.
+log:tests started.
+log:tests started.
+log:tests end.
+log:tests started.
+log:tests end.
+log:tests started.
+log:tests end.
+log:tests started.
+log:tests end.
+log:tests started.
+log:tests end.
+log:tests started.
+timeout:
+test:EditorTest failed.
+test:EditorTest2 failed.
+
+log:tests end. passed:0 failed:2
+log:tests started.
+log:test:EditorTest FAILED by exception:System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.NullReferenceException: Object reference not set to an instance of an object
+  at AutoyaFramework.Autoya.HttpGet (System.String url, System.Action`2 succeeded, System.Action`3 failed) [0x00014] in /Users/tartetatin/Desktop/Autoya/Assets/Autoya/Backyard/HTTPImplementation.cs:24 
+  at SampleTestClass.EditorTest () [0x00011] in /Users/tartetatin/Desktop/Autoya/Assets/AutoyaTests/Editor/TestRunner.cs:209 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000d0] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MonoMethod.cs:222 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000eb] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MonoMethod.cs:232 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MethodBase.cs:115 
+  at UTestRunner.RunTests () [0x000d4] in /Users/tartetatin/Desktop/Autoya/Assets/AutoyaTests/Editor/TestRunner.cs:109 
+test:EditorTest2 failed.
+
+log:tests end. passed:0 failed:1
+log:tests started.
+log:test:EditorTest FAILED by exception:System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.NullReferenceException: Object reference not set to an instance of an object
+  at AutoyaFramework.Autoya.HttpGet (System.String url, System.Action`2 succeeded, System.Action`3 failed) [0x00014] in /Users/tartetatin/Desktop/Autoya/Assets/Autoya/Backyard/HTTPImplementation.cs:24 
+  at SampleTestClass.EditorTest () [0x00017] in /Users/tartetatin/Desktop/Autoya/Assets/AutoyaTests/Editor/TestRunner.cs:213 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000d0] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MonoMethod.cs:222 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000eb] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MonoMethod.cs:232 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MethodBase.cs:115 
+  at UTestRunner.RunTests () [0x000d4] in /Users/tartetatin/Desktop/Autoya/Assets/AutoyaTests/Editor/TestRunner.cs:109 
+test:EditorTest2 failed.
+
+log:tests end. passed:0 failed:1
+log:tests started.
+log:test:EditorTest FAILED by exception:System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.NullReferenceException: Object reference not set to an instance of an object
+  at AutoyaFramework.Autoya.HttpGet (System.String url, System.Action`2 succeeded, System.Action`3 failed) [0x00014] in /Users/tartetatin/Desktop/Autoya/Assets/Autoya/Backyard/HTTPImplementation.cs:24 
+  at SampleTestClass.EditorTest () [0x00017] in /Users/tartetatin/Desktop/Autoya/Assets/AutoyaTests/Editor/TestRunner.cs:212 
+  at (wrapper managed-to-native) System.Reflection.MonoMethod:InternalInvoke (object,object[],System.Exception&)
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000d0] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MonoMethod.cs:222 
+  --- End of inner exception stack trace ---
+  at System.Reflection.MonoMethod.Invoke (System.Object obj, BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x000eb] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MonoMethod.cs:232 
+  at System.Reflection.MethodBase.Invoke (System.Object obj, System.Object[] parameters) [0x00000] in /Users/builduser/buildslave/mono/build/mcs/class/corlib/System.Reflection/MethodBase.cs:115 
+  at UTestRunner.RunTests () [0x000d4] in /Users/tartetatin/Desktop/Autoya/Assets/AutoyaTests/Editor/TestRunner.cs:109 
+test:EditorTest2 failed.
+
+log:tests end. passed:0 failed:1
+log:tests started.
+timeout:EditorTest,,,この部分なんとかならんかな、、CoreCLRで実行中のメソッドの名前撮りたいんだよな。
+test:EditorTest failed.
+test:EditorTest2 failed.
+
+log:tests end. passed:0 failed:2
+log:tests started.
+timeout:EditorTest,,,この部分なんとかならんかな、、CoreCLRで実行中のメソッドの名前撮りたいんだよな。あっそうか、Runnerがメソッド保持してるから、、なんとかなる、、ような、、、
+test:EditorTest failed.
+test:EditorTest2 failed.
+
+log:tests end. passed:0 failed:2
