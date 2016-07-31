@@ -1,13 +1,12 @@
 using UnityEngine;
-using System.Collections;
 using Connection.HTTP;
-using System;
 
 /**
 	main behaviour implementation class of Autoya.
 */
-namespace AutoyaFramework {
-	public partial class Autoya {
+namespace AutoyaFramework
+{
+    public partial class Autoya {
 
 		public static int BuildNumber () {
 			return -1;

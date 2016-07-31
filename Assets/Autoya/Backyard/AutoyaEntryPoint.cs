@@ -2,7 +2,9 @@
 using System.Collections;
 
 /**
-	
+	Autoya framework entry point.
+	This method will be called from Unity when Application started running.
+	ignite before all "Awake" handler.
 */
 namespace AutoyaFramework {
 	public partial class Autoya {
