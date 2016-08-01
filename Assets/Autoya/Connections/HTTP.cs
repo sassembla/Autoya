@@ -1,6 +1,8 @@
-
-
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Connection.HTTP {
 	/**
@@ -31,12 +33,60 @@ namespace Connection.HTTP {
 			this.baseHeader = newBaseHeader;
 		}
 
-		public string Get (HTTPHeader additionalHeader, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
-			return "additionalHeader + dummyConnectionId";
+		public IEnumerator Get (string connectionId, HTTPHeader additionalHeader, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
+			// var conId = Guid.NewGuid().ToString();
+			// var myWr = UnityWebRequest.Get("http://www.myserver.com/foo.txt");
+			// foreach (var ) myWr.SetRequestHeader(k, v);
+			// myWr.Send();
+			// return conId;
+			// return string.Empty;
+			yield break;
 		}
 
-		public string Get (string url, Action<string, string> succeeded, Action<string, int, string> failed) {
-			return "dummyConnectionId";
+		public IEnumerator Get (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
+			using (var request = UnityWebRequest.Get(url)) {
+				
+				// foreach (var kv in baseHeader.) myWr.SetRequestHeader(k, v);
+				yield return request.Send();
+
+				while (!request.isDone) {
+					Debug.LogError("んで、このcoroutineが終わるころには、っていう。");
+					yield return null;
+				}
+
+				var responseCode = (int)request.responseCode;
+
+				/*
+					大まかな通信エラーをこの辺で捌く
+				*/
+				if (request.isError) {
+					failed(connectionId, responseCode, request.error);
+					yield break;
+				}
+
+
+				/*
+					あと残るのは、通信には成功したけどエラー、っていうケースで、うーーん、、400とかどうなっちゃうんだろう。
+					unauthあたりがどう出るか。
+				*/
+
+				var responseHeaders = request.GetResponseHeaders();
+				foreach (var a in responseHeaders) {
+					Debug.LogError("a:" + a);
+				}
+
+
+				/*
+					この時点で通信は終わってるんで、
+
+					・エラーハンドルができるための情報をどう渡すか(平易な型情報) -> responseヘッダ？ 
+						何かのデータ？ データもらえない場合は？みたいなのが
+						見たいな。データサンプル作ってから考えるかな。
+
+						どっちにしてもstringとか渡す前提だな、AssetBundleをCacheするのとかはなんか専用で考えたほうが良いのかな。
+					・
+				*/
+			}
 		}
 
 		public string Post (HTTPHeader additionalHeader, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
