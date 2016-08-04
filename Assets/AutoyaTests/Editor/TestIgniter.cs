@@ -10,7 +10,7 @@ using UnityEngine;
 		UnityEditor.EditorApplication.update -= Update;
 
 		Debug.LogError("TestIgniter");
-
+		
 		/*
 			フレームワークが準備完了かどうかを試したいんだよな〜っていう感じで、
 
@@ -48,6 +48,7 @@ using UnityEngine;
 
 			・ビルド番号
 				保持したいねえ。どっかにテキスト吐くか。StandardSettingsとかかな。得意なスタイルだ。
+				画面内表示とかもやりたいところ。
 		
 			・その他の情報
 				urlとかは管理しなくてよくね？ うん、やめよう。
@@ -58,8 +59,6 @@ using UnityEngine;
 			これらのハンドラをちゃんとデザインしよう。
 			
 		*/
-		// なので、ここでTestThreadを動かすとかする＋必要なものをMainThreadで動かせば、良い感じに動くと思うんだよな〜
-		// どっちにしてもテスト内部でUniRxに依存する。
 		var thread = new Thread(
 			() => {
 				var testRunner = new MiyamasuTestRunner();

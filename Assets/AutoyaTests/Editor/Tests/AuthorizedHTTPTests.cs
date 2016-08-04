@@ -1,70 +1,57 @@
 using AutoyaFramework;
 using Miyamasu;
-using UnityEngine;
 
-using Connection;
 
 /**
-	tests for HTTP.
+	tests for Autoya Authorized HTTP.
 	Autoya strongly handle these server-related errors which comes from game-server.
 */
-public class HTTPTests : MiyamasuTestRunner {
+public class AuthorizedHTTPTests : MiyamasuTestRunner {
+	private void WaitAuthorized () {
+		var authorized = false;
 
-	[MTest] public bool HTTPGet () {
-		Autoya.EntryPoint();
-
-		var result = string.Empty;
-		
-		var connectionId = Autoya.HttpGet(
-			"http://httpbin.org/get", 
-			(string conId, string resultData) => {
-				result = resultData;
-			},
-			(string conId, int code, string reason) => {
-				result = reason;
+		Autoya.SetOnAuthSucceeded(
+			() => {
+				authorized = true;
 			}
 		);
-		
-		var wait = WaitUntil(
-			() => !string.IsNullOrEmpty(result), 
-			1
-		);
-		
-		if (!wait) return false; 
-		
-		return true;
+
+		var wait = WaitUntil(() => authorized, 1);
 	}
 
-
-
-	[MTest] public bool HTTPSGet () {
+	[MTest] public bool AutoyaHTTPGet () {
 		Autoya.EntryPoint();
 
+		WaitAuthorized();
+
 		var result = string.Empty;
-		var connectionId = Autoya.HttpGet(
+		var connectionId = Autoya.AuthedHttpGet(
 			"https://httpbin.org/get", 
 			(string conId, string resultData) => {
-				result = resultData;
+				result = "done!:" + resultData;
 			},
 			(string conId, int code, string reason) => {
-				result = reason;
+				// do nothing.
 			}
 		);
 
 		var wait = WaitUntil(
 			() => !string.IsNullOrEmpty(result), 
-			1
+			5
 		);
 		if (!wait) return false; 
 		
 		return true;
 	}
 
-	[MTest] public bool HTTPGetFailWith404 () {
+	[MTest] public bool AutoyaHTTPGetFailWith404 () {
 		Autoya.EntryPoint();
+		
+		WaitAuthorized();
+
 		var resultCode = 0;
 		
-		var connectionId = Autoya.HttpGet(
+		var connectionId = Autoya.AuthedHttpGet(
 			"https://httpbin.org/status/404", 
 			(string conId, string resultData) => {
 				// do nothing.
@@ -76,7 +63,7 @@ public class HTTPTests : MiyamasuTestRunner {
 
 		var wait = WaitUntil(
 			() => (resultCode != 0), 
-			1
+			5
 		);
 		if (!wait) return false; 
 		
@@ -86,8 +73,10 @@ public class HTTPTests : MiyamasuTestRunner {
 		return true;
 	}
 
-	[MTest] public bool HTTPGetFailWithUnauth () {
+	[MTest] public bool AutoyaHTTPGetFailWithUnauth () {
 		Autoya.EntryPoint();
+
+		WaitAuthorized();
 		
 		var unauthReason = string.Empty;
 
@@ -101,7 +90,7 @@ public class HTTPTests : MiyamasuTestRunner {
 			}
 		);
 		
-		var connectionId = Autoya.HttpGet(
+		var connectionId = Autoya.AuthedHttpGet(
 			"https://httpbin.org/status/401", 
 			(string conId, string resultData) => {
 				// do nothing.
@@ -113,7 +102,7 @@ public class HTTPTests : MiyamasuTestRunner {
 
 		var wait = WaitUntil(
 			() => !string.IsNullOrEmpty(unauthReason), 
-			1
+			5
 		);
 		if (!wait) return false; 
 		

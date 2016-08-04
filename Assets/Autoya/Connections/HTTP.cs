@@ -4,53 +4,17 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine.Networking;
 
-namespace Connection.HTTP {
-    /**
-		HTTP header structure.
-	*/
-    public struct HTTPHeader {
-		public string app_version;
-		public string asset_version;
-
-		public HTTPHeader (string app_version, string asset_version) {
-			this.app_version = app_version;
-			this.asset_version = asset_version;
-		}
-	}
-
-	/**
-		んー、起動時になんか必須のハンドラを渡すとかするか。エラー時にエラー内容を判別するのはAutoya側にしてしまえば、通信に専念できる。
-		あとAssetBundleの通信もできる、、んだよな確か。
-	*/
+/**
+	implementation of HTTP connection.
+*/
+namespace Connections.HTTP {
+    
 	public class HTTPConnection {
-		private HTTPHeader baseHeader;
-
-		public HTTPConnection (HTTPHeader baseHeader) {
-			this.baseHeader = baseHeader;	
-		}
-
-		public void ResetHTTPHeader (HTTPHeader newBaseHeader) {
-			this.baseHeader = newBaseHeader;
-		}
-
-		public IEnumerator Get (string connectionId, HTTPHeader additionalHeader, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
-			// var conId = Guid.NewGuid().ToString();
-			// var myWr = UnityWebRequest.Get("http://www.myserver.com/foo.txt");
-			// foreach (var ) myWr.SetRequestHeader(k, v);
-			// myWr.Send();
-			// return conId;
-			// return string.Empty;
-			yield break;
-		}
-
-		public IEnumerator Get (string connectionId, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+		
+		public IEnumerator Get (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
 			using (var request = UnityWebRequest.Get(url)) {
-				// foreach (var kv in baseHeader.) request.SetRequestHeader(k, v);
+				foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
 				
-				// googleはgetでデータ送ると405返してくるぞ、ラッキー
-				// request.method = "GET";
-
-				// 価のセットは以下で行ける。
 				var uploader = new UploadHandlerRaw(new byte[100]);
 				// request.uploadHandler = uploader;
 
@@ -86,26 +50,18 @@ namespace Connection.HTTP {
 						WebRequestとWWWの違いが本当に無い気がする、、、
 				*/
 
-				/*
-					ダミーサーバ、次の要件が必要。
-					・404とかを返す
-					・Authエラー、402とかを返す
-					・データを返す
-				*/
-
 				var data = request.downloadHandler.data;
 				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
 				yield break;
 			}
 		}
-
-		public string Post (HTTPHeader additionalHeader, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
+		
+		public string Post (string connectionId, Dictionary<string, string> headers, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
 			return "additionalHeader + dummyConnectionId";
 		}
 
-		public string Post (string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
-			// application/jsonとか入れないとな
-			return "dummyConnectionId";
+		public IEnumerator DownloadAssetBundle (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+			throw new Exception("not yet implemented.");
 		}
 	}
 
