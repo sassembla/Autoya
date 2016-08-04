@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 /**
 	Autoya framework entry point.
@@ -7,7 +6,7 @@ using System.Collections;
 	ignite before all "Awake" handler.
 */
 namespace AutoyaFramework {
-	public partial class Autoya {
+    public partial class Autoya {
 		private static Autoya autoya;
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] public static void EntryPoint () {
 			autoya = new Autoya();

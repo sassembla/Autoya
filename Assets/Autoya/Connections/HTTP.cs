@@ -2,15 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using UniRx;
-using UnityEngine;
 using UnityEngine.Networking;
 
 namespace Connection.HTTP {
-	/**
+    /**
 		HTTP header structure.
 	*/
-	public struct HTTPHeader {
+    public struct HTTPHeader {
 		public string app_version;
 		public string asset_version;
 
@@ -45,15 +43,11 @@ namespace Connection.HTTP {
 			yield break;
 		}
 
-		public IEnumerator Get (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
-			/*
-				requestに対してパラメータをセットしてくんで、この部分だけを回すMainEngineみたいなのがあればな〜っていう。
-			*/
+		public IEnumerator Get (string connectionId, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
 			using (var request = UnityWebRequest.Get(url)) {
 				// foreach (var kv in baseHeader.) request.SetRequestHeader(k, v);
 				
 				// googleはgetでデータ送ると405返してくるぞ、ラッキー
-
 				// request.method = "GET";
 
 				// 価のセットは以下で行ける。
@@ -65,28 +59,19 @@ namespace Connection.HTTP {
 				
 				yield return request.Send();
 				
-				while (!request.isDone) {
-					Debug.LogError("んで、このcoroutineが終わるころには、っていう。　まわらん、、？");
-					yield return null;
-				}
+				while (!request.isDone) yield return null;
 				
 				var responseCode = (int)request.responseCode;
-				Debug.LogError("responseCode:" + responseCode);
+				var responseHeaders = request.GetResponseHeaders();
 
 				/*
 					大まかな通信接続状態のエラーをこの辺で捌く、、のが成立する前提
 				*/
 				if (request.isError) {
-					failed(connectionId, responseCode, request.error);
+					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
 				}
 
-
-				var responseHeaders = request.GetResponseHeaders();
-				foreach (var a in responseHeaders) {
-					// Debug.LogError("a:" + a);
-				}
-				
 				/*
 					この時点で通信は終わってるんで、
 
@@ -109,10 +94,7 @@ namespace Connection.HTTP {
 				*/
 
 				var data = request.downloadHandler.data;
-				// var data2 = buffer.data;
-
-				Debug.LogError("data:" + data.Length);
-				succeeded(connectionId, Encoding.UTF8.GetString(data));
+				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
 				yield break;
 			}
 		}

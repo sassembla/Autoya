@@ -70,7 +70,9 @@ namespace Miyamasu {
 		}
 		
 		
-		public bool WaitUntil (string methodName, Func<bool> WaitFor, int timeoutSec) {
+		public bool WaitUntil (Func<bool> WaitFor, int timeoutSec) {
+			var methodName = string.Empty;
+
 			var resetEvent = new ManualResetEvent(false);
 			var succeeded = true;
 			var waitingThread = new Thread(
@@ -105,11 +107,13 @@ namespace Miyamasu {
 			return succeeded;
 		}
 		
-		public void Assert (string methodName, bool condition, string message) {
+		public void Assert (bool condition, string message) {
+			var methodName = string.Empty;
 			if (!condition) TestLogger.Log("test:" + methodName + " FAILED:" + message); 
 		}
 		
-		public void Assert (string methodName, object expected, object actual, string message) {
+		public void Assert (object expected, object actual, string message) {
+			var methodName = string.Empty;
 			if (expected.ToString() != actual.ToString()) TestLogger.Log("test:" + methodName + " FAILED:" + message + " expected:" + expected + " actual:" + actual); 
 		}
 
