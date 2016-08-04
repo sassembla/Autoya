@@ -2,6 +2,7 @@ using UnityEngine;
 using Connection.HTTP;
 using System;
 using UniRx;
+using UnityEngine.Networking;
 
 namespace AutoyaFramework {
     public partial class Autoya {
@@ -24,19 +25,22 @@ namespace AutoyaFramework {
 		public static string HttpGet (string url, Action<string, string> succeeded, Action<string, int, string> failed) {
 			var connectionId = Guid.NewGuid().ToString();
 			
-			var enumerator = autoya._autoyaHttp.Get(
-				connectionId,
-				url,
-				(conId, resultData) => {
-					succeeded(conId, resultData);
-				},
-				(conId, code, reason) => {
-					autoya.ErrorFlowHandler(conId, code, reason, failed);
-				}
-			);
+			var cancellerationToken = Observable.FromCoroutine(
+				() => autoya._autoyaHttp.Get(
+					connectionId,
+					url,
+					(conId, resultData) => {
+						succeeded(conId, resultData);
+					},
+					(conId, code, reason) => {
+						autoya.ErrorFlowHandler(conId, code, reason, failed);
+					}
+				)
+			).Subscribe();
 
-			Observable.FromCoroutine(() => enumerator).Subscribe(count => Debug.Log("count:" + count));;
-
+			// cancellerationToken.Dispose();// これでキャンセルできるのはいいんだけど、理想のキャンセルってなんだろ。関数抱えて云々よりはid抱えて云々のほうが軽い？関数返しちゃたほうがいい？
+			// 自動リトライとかの設定も欲しいところ。
+			
             return connectionId;
         }
 		
@@ -70,7 +74,7 @@ namespace AutoyaFramework {
 		private void ErrorFlowHandler (string connectionId, int httpErrorCode, string reason, Action<string, int, string> failed) {
 			Debug.LogError("通信エラーが出た時に、その内容がAutoya関連かどうかを判断して、Autoya側の状態を変更する。オンラインオフライン、ほか ");
 			Debug.LogError("connectionId:" + connectionId + " httpErrorCode:" + httpErrorCode + " reason:" + reason);
-			
+
 			/*
 				多彩なハンドリングによる着火があり得るんだけど、全部ここでまとめることで対処できそう。
 			*/

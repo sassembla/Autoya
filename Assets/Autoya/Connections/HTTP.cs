@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -44,20 +46,35 @@ namespace Connection.HTTP {
 		}
 
 		public IEnumerator Get (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
+			/*
+				requestに対してパラメータをセットしてくんで、この部分だけを回すMainEngineみたいなのがあればな〜っていう。
+			*/
 			using (var request = UnityWebRequest.Get(url)) {
+				// foreach (var kv in baseHeader.) request.SetRequestHeader(k, v);
 				
-				// foreach (var kv in baseHeader.) myWr.SetRequestHeader(k, v);
-				yield return request.Send();
+				// googleはgetでデータ送ると405返してくるぞ、ラッキー
 
+				// request.method = "GET";
+
+				// 価のセットは以下で行ける。
+				var uploader = new UploadHandlerRaw(new byte[100]);
+				// request.uploadHandler = uploader;
+
+				// var buffer = new DownloadHandlerBuffer();
+				// request.downloadHandler = buffer;
+				
+				yield return request.Send();
+				
 				while (!request.isDone) {
-					Debug.LogError("んで、このcoroutineが終わるころには、っていう。");
+					Debug.LogError("んで、このcoroutineが終わるころには、っていう。　まわらん、、？");
 					yield return null;
 				}
-
+				
 				var responseCode = (int)request.responseCode;
+				Debug.LogError("responseCode:" + responseCode);
 
 				/*
-					大まかな通信エラーをこの辺で捌く
+					大まかな通信接続状態のエラーをこの辺で捌く、、のが成立する前提
 				*/
 				if (request.isError) {
 					failed(connectionId, responseCode, request.error);
@@ -65,17 +82,11 @@ namespace Connection.HTTP {
 				}
 
 
-				/*
-					あと残るのは、通信には成功したけどエラー、っていうケースで、うーーん、、400とかどうなっちゃうんだろう。
-					unauthあたりがどう出るか。
-				*/
-
 				var responseHeaders = request.GetResponseHeaders();
 				foreach (var a in responseHeaders) {
-					Debug.LogError("a:" + a);
+					// Debug.LogError("a:" + a);
 				}
-
-
+				
 				/*
 					この時点で通信は終わってるんで、
 
@@ -84,8 +95,25 @@ namespace Connection.HTTP {
 						見たいな。データサンプル作ってから考えるかな。
 
 						どっちにしてもstringとか渡す前提だな、AssetBundleをCacheするのとかはなんか専用で考えたほうが良いのかな。
-					・
+					
+					・このへんの切り分けをどうするかな〜いっぺん考えてみよう。
+						道具の粒度がわかった。
+						WebRequestとWWWの違いが本当に無い気がする、、、
 				*/
+
+				/*
+					ダミーサーバ、次の要件が必要。
+					・404とかを返す
+					・Authエラー、402とかを返す
+					・データを返す
+				*/
+
+				var data = request.downloadHandler.data;
+				// var data2 = buffer.data;
+
+				Debug.LogError("data:" + data.Length);
+				succeeded(connectionId, Encoding.UTF8.GetString(data));
+				yield break;
 			}
 		}
 
@@ -94,6 +122,7 @@ namespace Connection.HTTP {
 		}
 
 		public string Post (string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
+			// application/jsonとか入れないとな
 			return "dummyConnectionId";
 		}
 	}

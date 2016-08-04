@@ -1,8 +1,16 @@
+using System.Threading;
 using Miyamasu;
 using UnityEditor;
+using UnityEngine;
 
 [InitializeOnLoad] public class TestIgniter {
-	static TestIgniter () {
+
+	public static void Update () {
+		// この関数が最初に実行された瞬間にテスト開始、ってやると、それはMainThreadで動く感じになる。
+		UnityEditor.EditorApplication.update -= Update;
+
+		Debug.LogError("TestIgniter");
+
 		/*
 			フレームワークが準備完了かどうかを試したいんだよな〜っていう感じで、
 
@@ -50,8 +58,18 @@ using UnityEditor;
 			これらのハンドラをちゃんとデザインしよう。
 			
 		*/
+		// なので、ここでTestThreadを動かすとかする＋必要なものをMainThreadで動かせば、良い感じに動くと思うんだよな〜
+		// どっちにしてもテスト内部でUniRxに依存する。
+		var thread = new Thread(
+			() => {
+				var testRunner = new MiyamasuTestRunner();
+				testRunner.RunTests();
+			}
+		);
+		thread.Start();
+	}
 
-		var testRunner = new MiyamasuTestRunner();
-		testRunner.RunTests();
+	static TestIgniter () {
+        UnityEditor.EditorApplication.update += Update;
 	}
 }
