@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Diagnostics;
 
 /**
 	MiyamasuTestRunner
@@ -71,7 +72,7 @@ namespace Miyamasu {
 		
 		
 		public bool WaitUntil (Func<bool> WaitFor, int timeoutSec) {
-			var methodName = string.Empty;
+			var methodName = new StackFrame(1).GetMethod().Name;
 
 			var resetEvent = new ManualResetEvent(false);
 			var succeeded = true;
@@ -108,13 +109,21 @@ namespace Miyamasu {
 		}
 		
 		public void Assert (bool condition, string message) {
-			var methodName = string.Empty;
-			if (!condition) TestLogger.Log("test:" + methodName + " FAILED:" + message); 
+			var methodName = new StackFrame(1).GetMethod().Name;
+			if (!condition) {
+				var situation = "test:" + methodName + " ASSERT FAILED:" + message;
+				TestLogger.Log(situation);
+				throw new Exception(situation);
+			}
 		}
 		
 		public void Assert (object expected, object actual, string message) {
-			var methodName = string.Empty;
-			if (expected.ToString() != actual.ToString()) TestLogger.Log("test:" + methodName + " FAILED:" + message + " expected:" + expected + " actual:" + actual); 
+			var methodName = new StackFrame(1).GetMethod().Name;
+			if (expected.ToString() != actual.ToString()) {
+				var situation = "test:" + methodName + " ASSERT FAILED:" + message + " expected:" + expected + " actual:" + actual;
+				TestLogger.Log(situation);
+				throw new Exception(situation);
+			} 
 		}
 
 		public static class TestLogger {

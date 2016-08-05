@@ -5,126 +5,191 @@ using Connections.HTTP;
 using System.Collections.Generic;
 
 namespace AutoyaFramework {
-	/**
-		HTTP header structure for Autoya authorization mechanism.
-	*/
-    public struct AuthorizedHTTPHeader {
-		public string app_version;
-		public string asset_version;
-
-		public AuthorizedHTTPHeader (string app_version, string asset_version) {
-			this.app_version = app_version;
-			this.asset_version = asset_version;
-		}
-	}
-	
     public partial class Autoya {
+		/*
+			http.
+				1.generate header with auth-token for each http action.
+				2.renew 
+		*/
 		
 		private HTTPConnection _autoyaHttp;
 
-		private AuthorizedHTTPHeader baseHeader;
 
-		private void RenewAuthorizedHTTPHeader (AuthorizedHTTPHeader newBaseHeader) {
-			this.baseHeader = newBaseHeader;
-		}
-
-		private Dictionary<string, string> AuthorizedHeaders (Dictionary<string, string> additionalHeader=null) {
+		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (string data="", Dictionary<string, string> additionalHeader=null) {
 			var headerDict = new Dictionary<string, string>();
-			headerDict.Add(AutoyaSettings.key_app_version, baseHeader.app_version);
-			headerDict.Add(AutoyaSettings.key_asset_version, baseHeader.asset_version);
+			/*
+				set authorized header part.
+			*/
+			// headerDict.Add(AutoyaConsts.key_app_version, baseHeader.app_version);
+			// headerDict.Add(AutoyaConsts.key_asset_version, baseHeader.asset_version);
 
+			/*
+				・今回送るデータ
+				・token
+				・app_version
+				・asset_version
+
+				とかがあれば、OAuthの暗号化とかできるよなあ。この部分をoverrideしてね、っていうのが良いのかな。
+				まあ要件を先に出し切らないとな。個別実装のほうが良い部分だと思うんで、個別実装で潰せるように作る、っていうのが良い感じかな。だったら
+				Dictionaryを返す関数をユーザーが自由に定義できる(といいつつ状態はAutoyaに任せられる)といいよな〜〜
+			*/
+
+			/*
+				ここで、なんかパラメータを調整できると良いのかなあ。形式を選ばせるの面倒臭いから、なんか独立して存在できると良いよなあ。
+				HTTPの中だけど、ServerCommunication、っていうかAuthenticationの部類なんだよな。
+				もっと綺麗に切断できる気がするな？？
+
+				ヘッダーを保持するのが責務なんで、その責務は放置できそう。
+				なので、ヘッダーを保持する vs ヘッダーでAuthする、 っていうのがぶつかってる。
+
+				どっちが勝つと良いんだろう。ヘッダーをAuthで、ってほうかな。
+			*/
+
+
+			/*
+				set additional header part.
+			*/
 			if (additionalHeader != null) foreach (var kv in additionalHeader) headerDict.Add(kv.Key, kv.Value);
 
 			return headerDict;
 		}
 		
+		/**
+			core feature of Autoya's status handling.
 
-        public static string AuthedHttpGet (string url, Action<string, string> succeeded, Action<string, int, string> failed, Dictionary<string, string> additionalHeader=null) {
+			analyze connection errors and handle Autoya's status like login/logout.
+
+			many 
+				online/offline,
+				maintenaince/open,
+				login/logout,
+		*/
+		private void ErrorFlowHandling (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
+			/*
+				UnityWebRequest handled internal error.
+			*/
+			if (httpCode == 0) {
+				var troubleMessage = data;
+				failed(connectionId, httpCode, troubleMessage);
+				Debug.LogError("いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage);
+				return;
+			}
+
+			/*
+				fall-through handling area of Autoya's events.
+
+				this block NEVER fire succeeded/failed handler and return code.
+				these events are cascadable.
+			*/
+			{
+				/*
+					detect maintenance response code or response header value.
+				*/
+
+
+				/*
+					detect unauthorized response code or response header value.
+				*/
+				if (httpCode == 401) {
+					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
+					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
+					if (shouldRelogin) AttemptLogin();
+				}
+			}
+
+			/*
+				pit falls for not 2XX.
+			*/
+			{
+				if (httpCode < 200) {
+					failed(connectionId, httpCode, data);
+					return;
+				}
+
+				if (299 < httpCode) {
+					failed(connectionId, httpCode, data);
+					return; 
+				}
+			}
+
+			/*
+				finally, connection is done as succeeded.
+			*/
+			succeeded(connectionId, data);
+		}
+
+
+		/*
+			public HTTP APIs.
+		*/
+
+        public static string Http_Get (
+			string url, 
+			Action<string, string> succeeded, 
+			Action<string, int, string> failed, 
+			Dictionary<string, string> additionalHeader=null, 
+			double timeoutSec=AutoyaConsts.HTTP_TIMEOUT_SEC
+		) {
 			var connectionId = Guid.NewGuid().ToString();
 			
-			var headers = autoya.AuthorizedHeaders(additionalHeader);
+			var headers = autoya.GetAuthorizedAndAdditionalHeaders(string.Empty, additionalHeader);
 			
-			var cancellerationToken = Observable.FromCoroutine(
+			Observable.FromCoroutine(
 				() => autoya._autoyaHttp.Get(
 					connectionId,
 					headers,
 					url,
 					(conId, code, responseHeaders, resultData) => {
-						autoya.ErrorFlowHandler(conId, code, resultData, succeeded, failed);
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, succeeded, failed);
 					},
 					(conId, code, reason, responseHeaders) => {
-						autoya.ErrorFlowHandler(conId, code, reason, succeeded, failed);
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, reason, succeeded, failed);
 					}
 				)
-			).Subscribe();
+			).Timeout(TimeSpan.FromSeconds(timeoutSec)).Subscribe(
+				_ => {},
+				ex => {
+					failed(connectionId, 0, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
+				}
+			);
 
-			// cancellerationToken.Dispose();// これでキャンセルできるのはいいんだけど、理想のキャンセルってなんだろ。関数抱えて云々よりはid抱えて云々のほうが軽い？関数返しちゃたほうがいい？
-			// 自動リトライとかの設定も欲しいところ。
-			
             return connectionId;
         }
-		
-		// public static string HttpPost (HTTPHeader additionalHeader, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
-		// 	var combinedHeader = additionalHeader;
-        //     return autoya._autoyaHttp.Post(
-		// 		combinedHeader, 
-		// 		url, 
-		// 		data, 
-		// 		(conId, resultData) => {
-		// 			succeeded(conId, resultData);
-		// 		},
-		// 		(conId, code, reason) => {
-		// 			autoya.ErrorFlowHandler(conId, code, reason, succeeded, failed);
-		// 		}
-		// 	);
-        // }
-		// public static string HttpPost (string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
-        //     return autoya._autoyaHttp.Post( 
-		// 		url, 
-		// 		data, 
-		// 		(conId, resultData) => {
-		// 			succeeded(conId, resultData);
-		// 		},
-		// 		(conId, code, reason) => {
-		// 			autoya.ErrorFlowHandler(conId, code, reason, succeeded, failed);
-		// 		}
-		// 	);
-        // }
 
-		private void ErrorFlowHandler (string connectionId, int httpCode, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
-			Debug.LogError("通信エラーが出た時に、その内容がAutoya関連かどうかを判断して、Autoya側の状態を変更する。オンラインオフライン、ほか ");
-			Debug.LogError("ちょっとまとめすぎたかもしれない。しょっぱなからエラーで出るケース(接続してないとかそのへん)もあれば、接続は出来るんだけど200以外が帰ってきたねっていうケースも作れる。");
-
-			Debug.LogError("connectionId:" + connectionId + " httpCode:" + httpCode + " data:" + data);
-
-			/*
-				detect unauthorized code.
-			*/
-			if (httpCode == 401) {
-				var unauthReason = "unauthorized:" + data;
-				var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
-
-				Debug.LogError("なんかヘッダにいろいろ理由を書いて、それを取得することができる気がする。っていうかbody使えるんじゃないか。 shouldRelogin:" + shouldRelogin);
-
-				failed(connectionId, httpCode, data);
-				return;
-			}
-
-			if (httpCode < 200) {
-				failed(connectionId, httpCode, data);
-				return;
-			}
-
-			if (299 < httpCode) {
-				failed(connectionId, httpCode, data);
-				return; 
-			}
+		public static string Http_Post (
+			string url, 
+			string data,
+			Action<string, string> succeeded, 
+			Action<string, int, string> failed, 
+			Dictionary<string, string> additionalHeader=null, 
+			double timeoutSec=AutoyaConsts.HTTP_TIMEOUT_SEC
+		) {
+			var connectionId = Guid.NewGuid().ToString();
 			
-			/*
-				多彩なハンドリングによる着火があり得るんだけど、全部ここでまとめることで対処できそう。
-			*/
-			succeeded(connectionId, data);
-		}
+			var headers = autoya.GetAuthorizedAndAdditionalHeaders(data, additionalHeader);
+			
+			Observable.FromCoroutine(
+				() => autoya._autoyaHttp.Post(
+					connectionId,
+					headers,
+					url,
+					data,
+					(conId, code, responseHeaders, resultData) => {
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, succeeded, failed);
+					},
+					(conId, code, reason, responseHeaders) => {
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, reason, succeeded, failed);
+					}
+				)
+			).Timeout(TimeSpan.FromSeconds(timeoutSec)).Subscribe(
+				_ => {},
+				ex => {
+					failed(connectionId, 0, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
+				}
+			);
+
+            return connectionId;
+        }
 
     }
 }

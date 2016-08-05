@@ -23,8 +23,6 @@ namespace Connections.HTTP {
 				
 				yield return request.Send();
 				
-				while (!request.isDone) yield return null;
-				
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
 
@@ -56,11 +54,30 @@ namespace Connections.HTTP {
 			}
 		}
 		
-		public string Post (string connectionId, Dictionary<string, string> headers, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
-			return "additionalHeader + dummyConnectionId";
+		public IEnumerator Post (string connectionId, Dictionary<string, string> headers, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+			using (var request = UnityWebRequest.Post(url, data)) {
+				foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+
+				yield return request.Send();
+				
+				var responseCode = (int)request.responseCode;
+				var responseHeaders = request.GetResponseHeaders();
+
+				if (request.isError) {
+					failed(connectionId, responseCode, request.error, responseHeaders);
+					yield break;
+				}
+
+				var resultData = request.downloadHandler.data;
+				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(resultData));
+				yield break;
+			}
 		}
 
 		public IEnumerator DownloadAssetBundle (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+			/*
+				このメソッド名がいいのかどうかっていう感じだな〜〜
+			*/
 			throw new Exception("not yet implemented.");
 		}
 	}
