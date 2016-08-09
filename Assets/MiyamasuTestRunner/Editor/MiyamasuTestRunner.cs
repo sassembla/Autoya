@@ -5,8 +5,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using U=UnityEngine;
 using UniRx;
+using AutoyaFramework;
 
 /**
 	MiyamasuTestRunner
@@ -22,28 +22,37 @@ namespace Miyamasu {
 		private struct TypeAndMedhods {
 			public Type type;
 			public MethodInfo[] asyncMethodInfos;
-			public MethodInfo[] syncMethodInfos;
 
 			public TypeAndMedhods (Type t) {
 				this.type = t;
 				this.asyncMethodInfos = t.GetMethods()
 					.Where(methods => 0 < methods.GetCustomAttributes(typeof(MTestAttribute), false).Length)
 					.ToArray();
-				this.syncMethodInfos = t.GetMethods()
-					.Where(methods => 0 < methods.GetCustomAttributes(typeof(MTestOnMainThreadAttribute), false).Length)
-					.ToArray();
 			}
 		}
 
-		private UnityEditor.EditorApplication.CallbackFunction syncTest;
+		private string dataPath;
+		private bool Setup () {
+			Autoya.TestEntryPoint(dataPath);
 
-		public void RunTests () {
-			/*
-				このへんで、GUIと関連付けてテストのon/offとかできると楽そうね。自分GUI使わないからやんないけど。
-			*/
+			var authorized = false;
+			Autoya.Auth_SetOnAuthSucceeded(
+				() => {
+					authorized = true;
+				}
+			);
+
+			return WaitUntil(() => authorized, 10); 
+		}
+		
+		private void Teardown () {
+			Autoya.Auth_CancelLogIn();
+		}
+
+		public void RunTestsOnMainThread () {
 			var syncAndAsyncTypeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
-				.Where(tAndMInfo => 0 < tAndMInfo.asyncMethodInfos.Length || 0 < tAndMInfo.syncMethodInfos.Length)
+				.Where(tAndMInfo => 0 < tAndMInfo.asyncMethodInfos.Length)
 				.ToArray();
 
 			
@@ -52,78 +61,46 @@ namespace Miyamasu {
 				return;
 			}
 
-			var syncTypeAndMethodInfos = syncAndAsyncTypeAndMethodInfos.Where(tAndMInfo => 0 < tAndMInfo.syncMethodInfos.Length).ToList();
 			var asyncTypeAndMethodInfos = syncAndAsyncTypeAndMethodInfos.Where(tAndMInfo => 0 < tAndMInfo.asyncMethodInfos.Length).ToList();
 
 			var passed = 0;
 			var failed = 0;
 
-			TestLogger.Log("test is escaped.", true);
-			return;
-
 			TestLogger.Log("tests started.", true);
 			
+			// このメソッドとかがMainThreadでしか使えないんで困ってるっていう感じ。
+			dataPath = UnityEngine.Application.persistentDataPath;
 
+			// generate waiting thread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.
 			Thread thread = null;
 			thread = new Thread(
 				() => {
-					/*
-						synk tests runs with UnityEditor's update() handler.
-					*/
-					var syncLock = true;
-
-					syncTest = () => {
-						// just run once.
-						UnityEditor.EditorApplication.update -= syncTest;
-
-						foreach (var typeAndMethodInfo in syncTypeAndMethodInfos) {
-							var instance = Activator.CreateInstance(typeAndMethodInfo.type);
-							foreach (var methodInfo in typeAndMethodInfo.syncMethodInfos) {
-								var methodName = methodInfo.Name;
-								
-								try {
-									var succeeded = (bool)methodInfo.Invoke(instance, null);
-									if (succeeded) {
-										passed++;
-									} else {
-										failed++;
-										TestLogger.Log("test:" + methodName + " failed.");
-									}
-								} catch (Exception e) {
-									failed++;
-									TestLogger.Log("test:" + methodName + " FAILED by exception:" + e, true);
-								}
+					foreach (var typeAndMethodInfo in asyncTypeAndMethodInfos) {
+						
+						var instance = Activator.CreateInstance(typeAndMethodInfo.type);
+						foreach (var methodInfo in typeAndMethodInfo.asyncMethodInfos) {
+							var methodName = methodInfo.Name;
+							if (!Setup()) {
+								TestLogger.Log("test:" + methodName + " failed by setup timeout.", true);
+								failed++;
+								continue;
 							}
-						}
-						syncLock = false;
-					};
-					
-					UnityEditor.EditorApplication.update += syncTest;
-
-					WaitUntil(() => !syncLock, -1);
-					// EditorUpdateで動き続けちゃうことによって、問題がある気がする。通信が無限ループしちゃう。それを阻止するためには、
-					// ・中身の実行自体が問題になっちゃうんで、どうするか。どっかで固まるにしても、停止は欲しいよねっていう。
-					// ・インスタンス単位でのUniRxの生成と停止、っていうのができる気がするんだけどな。
-					
-					// foreach (var typeAndMethodInfo in asyncTypeAndMethodInfos) {
-					// 	var instance = Activator.CreateInstance(typeAndMethodInfo.type);
-					// 	foreach (var methodInfo in typeAndMethodInfo.asyncMethodInfos) {
-					// 		var methodName = methodInfo.Name;
 							
-					// 		try {
-					// 			var succeeded = (bool)methodInfo.Invoke(instance, null);
-					// 			if (succeeded) {
-					// 				passed++;
-					// 			} else {
-					// 				failed++;
-					// 				TestLogger.Log("test:" + methodName + " failed.");
-					// 			}
-					// 		} catch (Exception e) {
-					// 			failed++;
-					// 			TestLogger.Log("test:" + methodName + " FAILED by exception:" + e, true);
-					// 		}
-					// 	}
-					// }
+							try {
+								var succeeded = (bool)methodInfo.Invoke(instance, null);
+								if (succeeded) {
+									passed++;
+								} else {
+									failed++;
+									TestLogger.Log("test:" + methodName + " failed.", true);
+								}
+							} catch (Exception e) {
+								failed++;
+								TestLogger.Log("test:" + methodName + " FAILED by exception:" + e, true);
+							}
+							Teardown();
+						}
+					}
 
 					TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
 					thread.Abort();
@@ -231,8 +208,5 @@ namespace Miyamasu {
 	*/
 	[AttributeUsage(AttributeTargets.Method)] public class MTestAttribute : Attribute {
 		public MTestAttribute() {}
-	}
-	[AttributeUsage(AttributeTargets.Method)] public class MTestOnMainThreadAttribute : Attribute {
-		public MTestOnMainThreadAttribute() {}
 	}
 }

@@ -5,11 +5,9 @@ using UnityEngine;
 
 [InitializeOnLoad] public class TestIgniter {
 
-	public static void Update () {
-		// この関数が最初に実行された瞬間にテスト開始、ってやると、それはMainThreadで動く感じになる。
-		UnityEditor.EditorApplication.update -= Update;
-
-		Debug.LogError("TestIgniter");
+	public static void RunTestOnMainThreadOnce () {
+		// running test in MainThread only once.
+		UnityEditor.EditorApplication.update -= RunTestOnMainThreadOnce;
 		
 		/*
 			フレームワークが準備完了かどうかを試したいんだよな〜っていう感じで、
@@ -59,11 +57,11 @@ using UnityEngine;
 			これらのハンドラをちゃんとデザインしよう。
 			
 		*/
-		var testRunner = new MiyamasuTestRunner();
-		testRunner.RunTests();
+		
 	}
 
 	static TestIgniter () {
-        UnityEditor.EditorApplication.update += Update;
+		var testRunner = new MiyamasuTestRunner();
+		testRunner.RunTestsOnMainThread();
 	}
 }

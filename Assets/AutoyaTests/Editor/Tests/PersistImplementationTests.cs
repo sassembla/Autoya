@@ -13,13 +13,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	private const string AutoyaFilePersistTestsFileName = "persist.txt";
 
 	private void RefreshData () {
-		var basePath = Application.persistentDataPath;
-		
-		Autoya.TestEntryPoint(basePath);
-
-		// cancelが効くようになるか、それとも、、っていう感じ
-		// Autoya.Auth_CancelLogIn();
-		
+		var basePath = AutoyaFilePersistTestsFileDomain;
 		var domainPath = Path.Combine(basePath, AutoyaFilePersistTestsFileDomain);
 		if (Directory.Exists(domainPath)) {
 			var filePath = Path.Combine(domainPath, AutoyaFilePersistTestsFileName);
@@ -27,7 +21,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 		}
 	}
 	
-	[MTestOnMainThread] public bool Update () {
+	[MTest] public bool Update () {
 		RefreshData();
 
 		var data = "new data " + Guid.NewGuid().ToString();
@@ -39,7 +33,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	}
 
 
-	[MTestOnMainThread] public bool Load () {
+	[MTest] public bool Load () {
 		RefreshData();
 
 		var data = "new data " + Guid.NewGuid().ToString();
@@ -53,7 +47,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 		return true;
 	}
 
-	// [MTestOnMainThread] public bool LoadNotExistFile () {
+	// [MTest] public bool LoadNotExistFile () {
 	// 	RefreshData();
 
 	// 	var emptyData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
@@ -62,7 +56,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 
-	// [MTestOnMainThread] public bool Delete () {
+	// [MTest] public bool Delete () {
 	// 	RefreshData();
 
 	// 	var data = "new data " + Guid.NewGuid().ToString();
@@ -76,7 +70,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 
-	// [MTestOnMainThread] public bool DeleteByDomain () {
+	// [MTest] public bool DeleteByDomain () {
 	// 	RefreshData();
 
 	// 	var data = "new data " + Guid.NewGuid().ToString();
@@ -90,7 +84,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 	
-	// [MTestOnMainThread] public bool EmptyDelete () {
+	// [MTest] public bool EmptyDelete () {
 	// 	RefreshData();
 
 	// 	var deleteResult = Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);

@@ -7,9 +7,11 @@ using System.Collections.Generic;
 namespace AutoyaFramework {
     public partial class Autoya {
 		/*
+			still under consideration.
+
 			http.
 				1.generate header with auth-token for each http action.
-				2.renew 
+				2.renew header? 
 		*/
 		
 		private HTTPConnection _autoyaHttp;
@@ -103,7 +105,7 @@ namespace AutoyaFramework {
 				*/
 				if (IsAuthFailed(httpCode, responseHeaders)) {
 					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
-					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
+					var shouldRelogin = OnLoginFailed(connectionId, unauthReason);
 					if (shouldRelogin) {
 						Debug.LogError("サーバが401をダイレクトに返してきたうえに、reloginを望まれている。 connectionId:" + connectionId + " まだ未実装。");
 						// AttemptLoginByTokenCandidate(_token);
@@ -176,7 +178,9 @@ namespace AutoyaFramework {
 						autoya.ErrorFlowHandling(conId, responseHeaders, code, reason, succeeded, failed);
 					}
 				)
-			).Timeout(TimeSpan.FromSeconds(timeoutSec)).Subscribe(
+			).Timeout(
+				TimeSpan.FromSeconds(timeoutSec)
+			).Subscribe(
 				_ => {},
 				ex => {
 					failed(connectionId, 0, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
@@ -211,7 +215,9 @@ namespace AutoyaFramework {
 						autoya.ErrorFlowHandling(conId, responseHeaders, code, reason, succeeded, failed);
 					}
 				)
-			).Timeout(TimeSpan.FromSeconds(timeoutSec)).Subscribe(
+			).Timeout(
+				TimeSpan.FromSeconds(timeoutSec)
+			).Subscribe(
 				_ => {},
 				ex => {
 					failed(connectionId, 0, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);

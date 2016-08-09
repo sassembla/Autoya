@@ -5,8 +5,7 @@ using UnityEngine;
 	data storage which can be hacked easily.
 	do not use severe data. (should use with some kind of encryption.)
 */
-namespace AutoyaFramework.Persistence
-{
+namespace AutoyaFramework.Persistence {
     public class FilePersistence {
 		private readonly string basePath;
 
