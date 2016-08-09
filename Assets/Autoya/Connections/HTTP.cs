@@ -13,7 +13,7 @@ namespace Connections.HTTP {
 		
 		public IEnumerator Get (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
 			using (var request = UnityWebRequest.Get(url)) {
-				foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
 				
 				var uploader = new UploadHandlerRaw(new byte[100]);
 				// request.uploadHandler = uploader;
@@ -56,7 +56,7 @@ namespace Connections.HTTP {
 		
 		public IEnumerator Post (string connectionId, Dictionary<string, string> headers, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
 			using (var request = UnityWebRequest.Post(url, data)) {
-				foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
 
 				yield return request.Send();
 				

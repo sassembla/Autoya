@@ -15,7 +15,7 @@ namespace AutoyaFramework {
 		private HTTPConnection _autoyaHttp;
 
 
-		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (string data="", Dictionary<string, string> additionalHeader=null) {
+		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (Dictionary<string, string> additionalHeader=null, Func<Dictionary<string, string>, Dictionary<string, string>> customizer=null) {
 			var headerDict = new Dictionary<string, string>();
 			/*
 				set authorized header part.
@@ -51,6 +51,14 @@ namespace AutoyaFramework {
 			*/
 			if (additionalHeader != null) foreach (var kv in additionalHeader) headerDict.Add(kv.Key, kv.Value);
 
+
+			/*
+				customizer function can run here.
+			*/
+			if (customizer != null) {
+				return customizer(headerDict);
+			}
+
 			return headerDict;
 		}
 		
@@ -69,12 +77,13 @@ namespace AutoyaFramework {
 				UnityWebRequest handled internal error.
 			*/
 			if (httpCode == 0) {
+				Debug.LogError("httpCode = 0, misc errors. data:" + data);
 				var troubleMessage = data;
 				failed(connectionId, httpCode, troubleMessage);
 				Debug.LogError("いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage);
 				return;
 			}
-
+			
 			/*
 				fall-through handling area of Autoya's events.
 
@@ -85,17 +94,24 @@ namespace AutoyaFramework {
 				/*
 					detect maintenance response code or response header value.
 				*/
-
+				if (IsInMaintenance(httpCode, responseHeaders)) {
+					// OnMaintenance();
+				}
 
 				/*
 					detect unauthorized response code or response header value.
 				*/
-				if (httpCode == 401) {
+				if (IsAuthFailed(httpCode, responseHeaders)) {
 					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
 					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
-					if (shouldRelogin) AttemptLogin();
+					if (shouldRelogin) {
+						Debug.LogError("サーバが401をダイレクトに返してきたうえに、reloginを望まれている。 connectionId:" + connectionId + " まだ未実装。");
+						// AttemptLoginByTokenCandidate(_token);
+					}
 				}
 			}
+
+			// Debug.LogError("connectionId:" + connectionId + " httpCode:" + httpCode + " data:" + data);
 
 			/*
 				pit falls for not 2XX.
@@ -118,6 +134,20 @@ namespace AutoyaFramework {
 			succeeded(connectionId, data);
 		}
 
+		private bool IsInMaintenance (int httpCode, Dictionary<string, string> responseHeaders) {
+			var headerContainsMaintenanceCode = false;
+
+			Debug.LogWarning("メンテ条件、そのうち実装する。さすがにクライアント内にエラーを残しとくのはまずい。");
+			if (headerContainsMaintenanceCode && 200 <= httpCode && httpCode < 300) {
+				throw new ArgumentException("maintenance code's http code should out of 2XX, current code is httpCode:" + httpCode);
+			}
+			return false;
+		}
+		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeaders) {
+			if (httpCode == 401) return true;
+			return false;
+		}
+
 
 		/*
 			public HTTP APIs.
@@ -132,7 +162,7 @@ namespace AutoyaFramework {
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 			
-			var headers = autoya.GetAuthorizedAndAdditionalHeaders(string.Empty, additionalHeader);
+			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
 			
 			Observable.FromCoroutine(
 				() => autoya._autoyaHttp.Get(
@@ -166,7 +196,7 @@ namespace AutoyaFramework {
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 			
-			var headers = autoya.GetAuthorizedAndAdditionalHeaders(data, additionalHeader);
+			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
 			
 			Observable.FromCoroutine(
 				() => autoya._autoyaHttp.Post(

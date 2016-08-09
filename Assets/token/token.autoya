@@ -1,0 +1,14 @@
+{
+  "args": {}, 
+  "headers": {
+    "Accept": "*/*", 
+    "Accept-Encoding": "deflate, gzip", 
+    "Host": "httpbin.org", 
+    "Token": "{", 
+    "User-Agent": "UnityPlayer/5.4.0f3 (UnityWebRequest/1.0, libcurl/7.46.0-DEV)", 
+    "X-Unity-Version": "5.4.0f3"
+  }, 
+  "origin": "182.251.25.106", 
+  "url": "https://httpbin.org/get"
+}
+

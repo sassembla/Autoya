@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AutoyaFramework;
 using Miyamasu;
 
@@ -9,10 +10,10 @@ using Miyamasu;
 	these test codes are depends on online env + "https://httpbin.org".
 */
 public class AutoyaHTTPTests : MiyamasuTestRunner {
-	private void WaitFakeAuthorized () {
+	
+	private void WaitAuthorized () {
+		
 		var authorized = false;
-
-		Autoya.Auth_Test_AuthSuccess();
 
 		Autoya.Auth_SetOnAuthSucceeded(
 			() => {
@@ -20,13 +21,13 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(() => authorized, 1);
+		var wait = WaitUntil(() => authorized, 2);
 	}
 
 	[MTest] public bool AutoyaHTTPGet () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
-		WaitFakeAuthorized();
+		WaitAuthorized();
 
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Get(
@@ -48,10 +49,38 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPGetFailWith404 () {
-		Autoya.EntryPoint();
+	[MTest] public bool AutoyaHTTPGetWithAdditionalHeader () {
+		Autoya.TestEntryPoint(string.Empty);
+
+		WaitAuthorized();
+
+		var result = string.Empty;
+		var connectionId = Autoya.Http_Get(
+			"https://httpbin.org/headers", 
+			(string conId, string resultData) => {
+				result = resultData;
+			},
+			(string conId, int code, string reason) => {
+				// do nothing.
+			},
+			new Dictionary<string, string>{
+				{"hello", "world"}
+			}
+		);
+
+		var wait = WaitUntil(
+			() => (result.Contains("hello") && result.Contains("world")), 
+			5
+		);
+		if (!wait) return false; 
 		
-		WaitFakeAuthorized();
+		return true;
+	}
+
+	[MTest] public bool AutoyaHTTPGetFailWith404 () {
+		Autoya.TestEntryPoint(string.Empty);
+		
+		WaitAuthorized();
 
 		var resultCode = 0;
 		
@@ -78,9 +107,9 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public bool AutoyaHTTPGetFailWithUnauth () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
-		WaitFakeAuthorized();
+		WaitAuthorized();
 		
 		var unauthReason = string.Empty;
 
@@ -119,9 +148,9 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public bool AutoyaHTTPGetFailWithTimeout () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
-		WaitFakeAuthorized();
+		WaitAuthorized();
 
 		var timeoutError = string.Empty;
 		/*
@@ -149,15 +178,16 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public bool AutoyaHTTPPost () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
-		WaitFakeAuthorized();
+		WaitAuthorized();
 
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Post(
 			"https://httpbin.org/post", 
 			"data",
 			(string conId, string resultData) => {
+				TestLogger.Log("resultData:" + resultData);
 				result = "done!:" + resultData;
 			},
 			(string conId, int code, string reason) => {
@@ -174,10 +204,39 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPPostFailWith404 () {
-		Autoya.EntryPoint();
+	[MTest] public bool AutoyaHTTPPostWithAdditionalHeader () {
+		Autoya.TestEntryPoint(string.Empty);
+
+		WaitAuthorized();
+
+		var result = string.Empty;
+		var connectionId = Autoya.Http_Post(
+			"https://httpbin.org/headers", 
+			"data",
+			(string conId, string resultData) => {
+				result = resultData;
+			},
+			(string conId, int code, string reason) => {
+				// do nothing.
+			},
+			new Dictionary<string, string>{
+				{"hello", "world"}
+			}
+		);
+
+		var wait = WaitUntil(
+			() => (result.Contains("hello") && result.Contains("world")), 
+			5
+		);
+		if (!wait) return false; 
 		
-		WaitFakeAuthorized();
+		return true;
+	}
+
+	[MTest] public bool AutoyaHTTPPostFailWith404 () {
+		Autoya.TestEntryPoint(string.Empty);
+		
+		WaitAuthorized();
 
 		var resultCode = 0;
 		
@@ -205,9 +264,9 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public bool AutoyaHTTPPostFailWithUnauth () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
-		WaitFakeAuthorized();
+		WaitAuthorized();
 		
 		var unauthReason = string.Empty;
 
@@ -247,9 +306,9 @@ public class AutoyaHTTPTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public bool AutoyaHTTPPostFailWithTimeout () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
-		WaitFakeAuthorized();
+		WaitAuthorized();
 
 		var timeoutError = string.Empty;
 		/*

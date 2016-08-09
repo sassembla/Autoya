@@ -6,7 +6,7 @@ using Miyamasu;
 */
 public class AutoyaAuthTests : MiyamasuTestRunner {
 	[MTest] public bool WaitingAuthorize () {
-		Autoya.EntryPoint();
+		Autoya.TestEntryPoint(string.Empty);
 
 		var authorized = false;
 		Autoya.Auth_SetOnAuthSucceeded(
@@ -14,6 +14,7 @@ public class AutoyaAuthTests : MiyamasuTestRunner {
 				authorized = true;
 			}
 		);
+
 		var wait = WaitUntil(() => authorized, 5);
 		if (!wait) return false;
 
@@ -63,57 +64,57 @@ public class AutoyaAuthTests : MiyamasuTestRunner {
 		return true;
 	}
 
-	[MTest] public bool HandleAccidentialLoginThenFailedAgain () {
-		WaitingAuthorize();
+	// [MTest] public bool HandleAccidentialLoginThenFailedAgain () {
+	// 	WaitingAuthorize();
 
-		var fakeReason = string.Empty;
-		Autoya.Auth_SetOnAuthFailed(
-			(conId, reason) => {
-				fakeReason = reason;
-				return true;
-			}
-		);
+	// 	var fakeReason = string.Empty;
+	// 	Autoya.Auth_SetOnAuthFailed(
+	// 		(conId, reason) => {
+	// 			fakeReason = reason;
+	// 			return true;
+	// 		}
+	// 	);
 		
-		// emit fake-accidential logout
-		Autoya.Auth_Test_AccidentialLogout();
+	// 	// emit fake-accidential logout
+	// 	Autoya.Auth_Test_AccidentialLogout();
 
-		if (!WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5)) return false;
+	// 	if (!WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5)) return false;
 
-		/*
-			re-login feature is attempt. this time, it should be fail. keep waiting.
-		*/
+	// 	/*
+	// 		re-login feature is attempt. this time, it should be fail. keep waiting.
+	// 	*/
 
-		// intentionally goto fail again.
-		Autoya.Auth_Test_AccidentialLogout();
+	// 	// intentionally goto fail again.
+	// 	Autoya.Auth_Test_AccidentialLogout();
 
-		var unauthorized = false;
-		Autoya.Auth_SetOnAuthFailed(
-			(conId, reason) => {
-				unauthorized = true;
-				return false;
-			}
-		);
+	// 	var unauthorized = false;
+	// 	Autoya.Auth_SetOnAuthFailed(
+	// 		(conId, reason) => {
+	// 			unauthorized = true;
+	// 			return false;
+	// 		}
+	// 	);
 
-		if (!WaitUntil(() => unauthorized, 5)) return false;
+	// 	if (!WaitUntil(() => unauthorized, 5)) return false;
 
-		return true;
-	}
+	// 	return true;
+	// }
 
-	[MTest] public bool IntentionalLogout () {
-		return false;
-	}
+	// [MTest] public bool IntentionalLogout () {
+	// 	return false;
+	// }
 
-	[MTest] public bool IntentionalLogoutThenAutoRelogin () {
-		return false;
-	}
+	// [MTest] public bool IntentionalLogoutThenAutoRelogin () {
+	// 	return false;
+	// }
 
-	[MTest] public bool AccidentialLogoutThenManualReloginSucceeded () {
-		return false;
-	}
+	// [MTest] public bool AccidentialLogoutThenManualReloginSucceeded () {
+	// 	return false;
+	// }
 
-	[MTest] public bool AccidentialLogoutThenManualReloginFailed () {
-		return false;
-	}
+	// [MTest] public bool AccidentialLogoutThenManualReloginFailed () {
+	// 	return false;
+	// }
 
 
 

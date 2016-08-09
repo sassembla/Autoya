@@ -59,13 +59,8 @@ using UnityEngine;
 			これらのハンドラをちゃんとデザインしよう。
 			
 		*/
-		var thread = new Thread(
-			() => {
-				var testRunner = new MiyamasuTestRunner();
-				testRunner.RunTests();
-			}
-		);
-		thread.Start();
+		var testRunner = new MiyamasuTestRunner();
+		testRunner.RunTests();
 	}
 
 	static TestIgniter () {
