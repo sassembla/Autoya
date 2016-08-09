@@ -14,7 +14,7 @@ public class BasicUsage : MonoBehaviour {
 			Debug.LogError("login is over.");
 		};
 
-		Autoya.Auth_SetOnAuthSucceeded(Login);
+		Autoya.Auth_SetOnLoginSucceeded(Login);
 	}
 	// Use this for initialization
 	IEnumerator Start () {

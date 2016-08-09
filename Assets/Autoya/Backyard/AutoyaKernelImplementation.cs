@@ -23,14 +23,11 @@ namespace AutoyaFramework {
 			
 			public string _buildNumber;
 		}
-
-		CompositeDisposable _frameworkDisposables = new CompositeDisposable();
-		
 		
 		private AutoyaConditions _conditions;
 
 		private Autoya (string basePath="") {
-			Debug.Log("autoya initialize start.");
+			Debug.LogWarning("autoya initialize start.");
 			
 			_conditions = new AutoyaConditions();
 
@@ -53,8 +50,6 @@ namespace AutoyaFramework {
 				初期化機構を起動する
 			*/
 			this.InitializeAuth();
-			
-			Debug.Log("autoya initialize end. auth started.");
 		}
 
 
@@ -79,25 +74,36 @@ namespace AutoyaFramework {
 			/*
 				set default handlers.
 			*/
-			OnLoginSucceeded = () => {
-				Debug.Assert(!(string.IsNullOrEmpty(_token)));
-				_loginState = LoginState.LOGGED_IN;
+			OnLoginSucceeded = token => {
+				LoggedIn(token);
 			};
 
-			OnLoginFailed = (conId, reason) => {
-				_loginState = LoginState.LOGGED_OUT;
-				RevokeToken();
+			OnAuthFailed = (conId, reason) => {
+				LogOut();
 				return false;
 			};
 
 			LoadTokenThenLogin();
 		}
 
+		private int Progress () {
+			return (int)_loginState;
+		}
+
+		private void LoggedIn (string token) {
+			Debug.Assert(!(string.IsNullOrEmpty(token)));
+
+			_token = token;
+			_loginState = LoginState.LOGGED_IN;
+		}
+
+		private void LogOut () {
+			_loginState = LoginState.LOGGED_OUT;
+			RevokeToken();
+		}
+
 		private void LoadTokenThenLogin () {
-			var tokenCandidate = _autoyaFilePersistence.Load(
-				AutoyaConsts.AUTH_STORED_TOKEN_DOMAIN, 
-				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME
-			);
+			var tokenCandidate = LoadToken();
 
 			/*
 				if token is already stored and valid, goes to login.
@@ -106,10 +112,10 @@ namespace AutoyaFramework {
 			var isValid = IsTokenValid(tokenCandidate);
 			
 			if (isValid) {
-				Debug.Log("(maybe) valid token found. start login with it.");
+				Debug.LogWarning("(maybe) valid token found. start login with it.");
 				AttemptLoginByTokenCandidate(tokenCandidate);
 			} else {
-				Debug.Log("no token found. get token then login.");
+				Debug.LogWarning("no token found. get token then login.");
 				GetTokenThenLogin();
 			}
 		}
@@ -122,7 +128,16 @@ namespace AutoyaFramework {
 			);
 		}
 
+		private string LoadToken () {
+			return _autoyaFilePersistence.Load(
+				AutoyaConsts.AUTH_STORED_TOKEN_DOMAIN, 
+				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME
+			);
+		}
+
 		private void GetTokenThenLogin () {
+			_loginState = LoginState.GETTING_TOKEN;
+
 			var tokenUrl = AutoyaConsts.AUTH_URL_TOKEN;
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_GETTOKEN_PREFIX + Guid.NewGuid().ToString();
@@ -147,7 +162,7 @@ namespace AutoyaFramework {
 					Debug.LogError("token取得リクエストのタイムアウト、まだちゃんと作ってない。");
 					EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), 0, ex.ToString());
 				}
-			).AddTo(_frameworkDisposables);;
+			);
 		}
 
 		private void EvaluateTokenResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
@@ -161,14 +176,16 @@ namespace AutoyaFramework {
 				resultDataOrFailedReason, 
 				(succeededConId, succeededData) => {
 					var isValid = IsTokenValid(succeededData);
-					Debug.LogWarning("成功したぞ＝＝＝これがtokenだ〜〜 succeededData:" + succeededData + " クライアントとサーバが同じパラメータからハッシュ作れば、、とか思うがどうなんだろう。");
 					
 					if (isValid) {
-						UpdateTokenThenAttemptLogin(succeededData);
+						Debug.LogWarning("token取得に成功 succeededData:" + succeededData);
+						var tokenCandidate = succeededData;
+						UpdateTokenThenAttemptLogin(tokenCandidate);
 					}
 				},
 				(failedConId, failedCode, failedReason) => {
 					Debug.LogError("トークン自体が取得できなかった。 failedCode:" + failedCode + " failedReason:" + failedReason);
+					_loginState = LoginState.LOGGED_OUT;
 					
 					if (IsInMaintenance(responseCode, responseHeaders)) {
 						// in maintenance, do nothing here.
@@ -181,9 +198,9 @@ namespace AutoyaFramework {
 					}
 
 					// other errors. 
-					var shouldRetry = OnLoginFailed(failedConId, failedReason);
+					var shouldRetry = OnAuthFailed(failedConId, failedReason);
 					if (shouldRetry) {
-						Debug.LogError("リトライすべきなんだけどちょっとまってな1");
+						Debug.LogError("なんかtoken取得からリトライすべきなんだけどちょっとまってな1");
 						// GetTokenThenLogin();
 					} 
 				}
@@ -200,6 +217,8 @@ namespace AutoyaFramework {
 			login with token candidate.
 		*/
 		private void AttemptLoginByTokenCandidate (string tokenCandidate) {
+			_loginState = LoginState.LOGGING_IN;
+
 			// attempt login with token.
 			var loginUrl = AutoyaConsts.AUTH_URL_LOGIN;
 			var loginHeaders = new Dictionary<string, string>{
@@ -207,7 +226,7 @@ namespace AutoyaFramework {
 			};
 			var loginHttp = new HTTPConnection();
 			var loginConnectionId = AutoyaConsts.AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX + Guid.NewGuid().ToString();
-
+			
 			Observable.FromCoroutine(
 				_ => loginHttp.Get(
 					loginConnectionId,
@@ -228,12 +247,11 @@ namespace AutoyaFramework {
 					Debug.LogError("ログインリクエストのタイムアウト、まだちゃんと作ってない。loginConnectionId:" + loginConnectionId);
 					EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), 0, ex.ToString());
 				}
-			).AddTo(_frameworkDisposables);
+			);
 		}
 
 		private void EvaluateLoginResult (string loginConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
 			// ログイン時のresponseHeadersに入っている情報について、ここで判別前〜後に扱う必要がある。
-
 			ErrorFlowHandling(
 				loginConnectionId,
 				responseHeaders, 
@@ -241,9 +259,15 @@ namespace AutoyaFramework {
 				resultDataOrFailedReason, 
 				(succeededConId, succeededData) => {
 					Debug.LogWarning("EvaluateLoginResult tokenを使ったログイン通信に成功。401チェックも突破。これでログイン動作が終わることになる。");
-					OnLoginSucceeded();
+					
+					// ここで使ってたcandidate = 保存されてるやつ を、_tokenにセットして良さげ。
+					// なんかサーバからtokenのハッシュとか渡してきて、ここで照合すると良いかもっていう気が少しした。
+					var savedToken = LoadToken();
+					OnLoginSucceeded(savedToken);
 				},
 				(failedConId, failedCode, failedReason) => {
+					_loginState = LoginState.LOGGED_OUT;
+
 					// if Unauthorized, OnAuthFailed is already called.
 					if (IsAuthFailed(responseCode, responseHeaders)) return;
 					
@@ -254,21 +278,18 @@ namespace AutoyaFramework {
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。
 					
-					var shouldRetry = OnLoginFailed(failedConId, failedReason);
+					var shouldRetry = OnAuthFailed(failedConId, failedReason);
 					if (shouldRetry) {
 						Debug.LogError("ログイン失敗、リトライすべきなんだけどちょっとまってな2");
 						// LoadTokenThenLogin();
-					} else {
-						Debug.LogError("ログイン失敗、リトライすべきではない。失敗原因は failedReason:" + failedReason);
 					}
 				}
 			);
 		}
 
-		private void UpdateTokenThenAttemptLogin (string newValidToken) {
-			var isSaved = SaveToken(newValidToken);
+		private void UpdateTokenThenAttemptLogin (string gotNewToken) {
+			var isSaved = SaveToken(gotNewToken);
 			if (isSaved) {
-				_token = newValidToken;
 				LoadTokenThenLogin();
 			} else {
 				Debug.LogError("tokenのSaveに失敗、この辺、保存周りのイベントと連携させないとな〜〜〜");
@@ -280,13 +301,22 @@ namespace AutoyaFramework {
 			if (!isRevoked) Debug.LogError("revokeに失敗、この辺、保存周りのイベントと連携させないとな〜〜〜");
 		}
 
+
 		/*
 			public auth APIs
 		*/
 
-		public static void Auth_SetOnAuthSucceeded (Action onAuthSucceeded) {
-			autoya.OnLoginSucceeded = () => {
-				autoya._loginState = LoginState.LOGGED_IN;
+		public static int Auth_Progress () {
+			return autoya.Progress();
+		}
+
+		public static void Auth_AttemptLogIn () {
+			autoya.LoadTokenThenLogin();
+		}
+
+		public static void Auth_SetOnLoginSucceeded (Action onAuthSucceeded) {
+			autoya.OnLoginSucceeded = token => {
+				autoya.LoggedIn(token);
 				onAuthSucceeded();
 			};
 			
@@ -294,39 +324,51 @@ namespace AutoyaFramework {
 			if (Auth_IsLoggedIn()) onAuthSucceeded();
         }
 
-		public static void Auth_SetOnAuthFailed(Func<string, string, bool> onAuthFailed) {
-            autoya.OnLoginFailed = (conId, reason) => {
-				autoya.RevokeToken();
+		public static void Auth_SetOnAuthFailed (Func<string, string, bool> onAuthFailed) {
+            autoya.OnAuthFailed = (conId, reason) => {
+				autoya.LogOut();
 				return onAuthFailed(conId, reason);
 			};
         }
-		
-		private Action OnLoginSucceeded;
 
-		private Func<string, string, bool> OnLoginFailed;
+		public static void Auth_Logout () {
+			autoya.LogOut();
+		}
+		
+		private Action<string> OnLoginSucceeded;
+
+		/**
+			this method will be called when Autoya encountered "auth failed".!--
+			means, received 401 response by some reason will raise this method.
+
+			1.server returns 401 as the result of login request.
+			2.server returns 401 as the result of usual http connection.
+
+			and this method DOES NOT FIRE when logout intentionally.
+		*/
+		private Func<string, string, bool> OnAuthFailed;
 
 
 		
 		public enum LoginState : int {
 			LOGGED_OUT,
+			GETTING_TOKEN,
+			LOGGING_IN,
 			LOGGED_IN,
 		}
 
 		private LoginState _loginState;
 
 		public static bool Auth_IsLoggedIn () {
-			if (autoya._loginState == LoginState.LOGGED_IN) return true; 
-			return false;
+			if (string.IsNullOrEmpty(autoya._token)) return false;
+			if (autoya._loginState != LoginState.LOGGED_IN) return false; 
+			return true;
 		}
-
-		public static void Auth_CancelLogIn () {
-			if (0 < autoya._frameworkDisposables.Count) autoya._frameworkDisposables.Dispose();
-		}
-
+		
 		/*
 			test methods.
 		*/
-		public static void Auth_Test_AccidentialLogout () {
+		public static void Auth_Test_CreateAuthError () {
 			/*
 				generate fake response for generate fake accidential logout error.
 			*/

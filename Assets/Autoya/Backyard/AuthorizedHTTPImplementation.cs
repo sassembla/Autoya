@@ -19,6 +19,10 @@ namespace AutoyaFramework {
 
 		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (Dictionary<string, string> additionalHeader=null, Func<Dictionary<string, string>, Dictionary<string, string>> customizer=null) {
 			var headerDict = new Dictionary<string, string>();
+
+			// この時点で、tokenが空だったりすると、もれなくログインが必要になるようなレスポンスが返せると思う。
+
+			
 			/*
 				set authorized header part.
 			*/
@@ -105,7 +109,7 @@ namespace AutoyaFramework {
 				*/
 				if (IsAuthFailed(httpCode, responseHeaders)) {
 					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
-					var shouldRelogin = OnLoginFailed(connectionId, unauthReason);
+					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
 					if (shouldRelogin) {
 						Debug.LogError("サーバが401をダイレクトに返してきたうえに、reloginを望まれている。 connectionId:" + connectionId + " まだ未実装。");
 						// AttemptLoginByTokenCandidate(_token);

@@ -36,7 +36,7 @@ namespace Miyamasu {
 			Autoya.TestEntryPoint(dataPath);
 
 			var authorized = false;
-			Autoya.Auth_SetOnAuthSucceeded(
+			Autoya.Auth_SetOnLoginSucceeded(
 				() => {
 					authorized = true;
 				}
@@ -44,9 +44,9 @@ namespace Miyamasu {
 
 			return WaitUntil(() => authorized, 10); 
 		}
-		
+
 		private void Teardown () {
-			Autoya.Auth_CancelLogIn();
+			// do nothing.
 		}
 
 		public void RunTestsOnMainThread () {
@@ -172,28 +172,29 @@ namespace Miyamasu {
 		public static class TestLogger {
 			private static object lockObject = new object();
 
-			public static string logPath;
-			public static StringBuilder logs = new StringBuilder();
+			private static string pathOfLogFile;
+			private static StringBuilder _logs = new StringBuilder();
+			
 			public static void Log (string message, bool export=false) {
 				lock (lockObject) {
 					if (!export) {
-						logs.AppendLine(message);
+						_logs.AppendLine(message);
 						return;
 					}
 
-					logPath = "miyamasu_test.log";
+					pathOfLogFile = "miyamasu_test.log";
 					
 					// file write
 					using (var fs = new FileStream(
-						logPath,
+						pathOfLogFile,
 						FileMode.Append,
 						FileAccess.Write,
 						FileShare.ReadWrite)
 					) {
 						using (var sr = new StreamWriter(fs)) {
-							if (0 < logs.Length) {
-								sr.WriteLine(logs.ToString());
-								logs = new StringBuilder();
+							if (0 < _logs.Length) {
+								sr.WriteLine(_logs.ToString());
+								_logs = new StringBuilder();
 							}
 							sr.WriteLine("log:" + message);
 						}
