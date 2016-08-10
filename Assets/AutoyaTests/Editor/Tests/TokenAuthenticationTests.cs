@@ -38,7 +38,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 		return true;
 	}
-
+	
 	[MTest] public bool HandleAccidentialLogoutThenAutoReloginSucceeded () {
 		var fakeReason = string.Empty;
 		Autoya.Auth_SetOnAuthFailed(
