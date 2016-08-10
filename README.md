@@ -14,3 +14,6 @@ which contains essential game features.
 Unity already contains these feature's foundation, but actually we need more codes for using it in app.
 
 This framework can help that.
+
+## License
+MIT.
