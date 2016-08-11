@@ -112,8 +112,17 @@ namespace AutoyaFramework {
 			).Subscribe(
 				_ => {},
 				ex => {
-					Debug.LogError("token取得リクエストのタイムアウト、まだちゃんと作ってない。");
-					EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), 0, ex.ToString());
+					var errorType = ex.GetType();
+
+					switch (errorType.ToString()) {
+						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+							break;
+						}
+						default: {
+							throw new Exception("failed to get token by undefined reason:" + ex.Message);
+						}
+					}
 				}
 			);
 		}
@@ -134,10 +143,11 @@ namespace AutoyaFramework {
 						Debug.LogWarning("token取得に成功 succeededData:" + succeededData);
 						var tokenCandidate = succeededData;
 						UpdateTokenThenAttemptLogin(tokenCandidate);
+					} else {
+						Debug.LogError("未解決の、invalidなtokenだと見做せた場合の処理");
 					}
 				},
 				(failedConId, failedCode, failedReason) => {
-					Debug.LogError("トークン自体が取得できなかった。 failedCode:" + failedCode + " failedReason:" + failedReason);
 					_loginState = LoginState.LOGGED_OUT;
 					
 					if (IsInMaintenance(responseCode, responseHeaders)) {
@@ -151,7 +161,7 @@ namespace AutoyaFramework {
 					}
 
 					// other errors. 
-					var shouldRetry = OnAuthFailed(failedConId, failedReason);
+					var shouldRetry = OnAuthFailed(tokenConnectionId, resultDataOrFailedReason);
 					if (shouldRetry) {
 						Debug.LogError("なんかtoken取得からリトライすべきなんだけどちょっとまってな1");
 						// GetTokenThenLogin();
@@ -197,8 +207,17 @@ namespace AutoyaFramework {
 			).Subscribe(
 				_ => {},
 				ex => {
-					Debug.LogError("ログインリクエストのタイムアウト、まだちゃんと作ってない。loginConnectionId:" + loginConnectionId);
-					EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), 0, ex.ToString());
+					var errorType = ex.GetType();
+
+					switch (errorType.ToString()) {
+						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+							break;
+						}
+						default: {
+							throw new Exception("failed to get token by undefined reason:" + ex.Message);
+						}
+					}
 				}
 			);
 		}
@@ -219,11 +238,11 @@ namespace AutoyaFramework {
 					OnLoginSucceeded(savedToken);
 				},
 				(failedConId, failedCode, failedReason) => {
-					_loginState = LoginState.LOGGED_OUT;
-
 					// if Unauthorized, OnAuthFailed is already called.
 					if (IsAuthFailed(responseCode, responseHeaders)) return;
-					
+			
+					_loginState = LoginState.LOGGED_OUT;
+
 					/*
 						we should handling NOT 401(Unauthorized) result.
 					*/
@@ -231,7 +250,7 @@ namespace AutoyaFramework {
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。
 					
-					var shouldRetry = OnAuthFailed(failedConId, failedReason);
+					var shouldRetry = OnAuthFailed(loginConnectionId, resultDataOrFailedReason);
 					if (shouldRetry) {
 						Debug.LogError("ログイン失敗、リトライすべきなんだけどちょっとまってな2");
 						// LoadTokenThenLogin();
@@ -239,7 +258,7 @@ namespace AutoyaFramework {
 				}
 			);
 		}
-
+		
 		private void UpdateTokenThenAttemptLogin (string gotNewToken) {
 			var isSaved = SaveToken(gotNewToken);
 			if (isSaved) {
