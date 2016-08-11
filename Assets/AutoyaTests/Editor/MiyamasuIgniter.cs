@@ -1,5 +1,6 @@
 using Miyamasu;
 using UnityEditor;
+using UnityEngine;
 
 [InitializeOnLoad] public class MiyamasuIgniter {
 	static MiyamasuIgniter () {
