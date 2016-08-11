@@ -49,7 +49,7 @@ namespace Miyamasu {
 			// do nothing.
 		}
 
-		public void RunTestsOnMainThread () {
+		public void RunTestsOnEditorMainThread () {
 			var syncAndAsyncTypeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
 				.Where(tAndMInfo => 0 < tAndMInfo.asyncMethodInfos.Length)

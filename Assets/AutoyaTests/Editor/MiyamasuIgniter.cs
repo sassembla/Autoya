@@ -6,14 +6,17 @@ using UnityEngine;
 	static MiyamasuIgniter () {
 		#if CLOUDBUILD
 		{
-			Debug.LogError("hereComes!!");
+			// do nothing.
+			/*
+				そのうちテストシーンでの動作テストをUnityTestとかで組むのはアリな気がする。
+			*/
 		}
 		#else
-		// {
-		// 	Debug.LogWarning("miyamasu start running.");
-		// 	var testRunner = new MiyamasuTestRunner();
-		// 	testRunner.RunTestsOnMainThread();
-		// }
+		{
+			Debug.LogWarning("miyamasu start running.");
+			var testRunner = new MiyamasuTestRunner();
+			testRunner.RunTestsOnEditorMainThread();
+		}
 		#endif
 	}
 }
