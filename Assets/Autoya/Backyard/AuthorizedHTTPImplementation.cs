@@ -86,7 +86,7 @@ namespace AutoyaFramework {
 				Debug.LogError("httpCode = 0, misc errors. data:" + data);
 				var troubleMessage = data;
 				failed(connectionId, httpCode, troubleMessage);
-				Debug.LogError("いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage);
+				Debug.LogError("Unityの内部エラー、いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage + " 対処方法としては一辺倒で、");
 				return;
 			}
 			

@@ -11,7 +11,7 @@ namespace AutoyaFramework {
 				this feature is almost largest feature in Autoya.
 
 			2 way for login.
-			
+
 				1.get token for identification
 				2.login with token
 
@@ -21,7 +21,7 @@ namespace AutoyaFramework {
 				2.login with token
 		*/
 		private string _token;
-		private void InitializeAuth () {
+		private void InitializeTokenAuth () {
 			_loginState = LoginState.LOGGED_OUT;
 
 			/*

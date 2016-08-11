@@ -46,7 +46,7 @@ namespace AutoyaFramework {
 			/*
 				初期化機構を起動する
 			*/
-			this.InitializeAuth();
+			this.InitializeTokenAuth();
 		}
 
 
