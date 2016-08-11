@@ -5,8 +5,6 @@ Assembly-CSharp.csproj
 
 Library/*
 
-ProjectSettings/*
-
 Temp/*
 
 obj/*
