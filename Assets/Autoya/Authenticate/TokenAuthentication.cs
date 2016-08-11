@@ -7,12 +7,37 @@ using UniRx;
 namespace AutoyaFramework {
 	public partial class Autoya {
 		/*
-			authentication.
-				this feature is almost largest feature in Autoya.
+			authentication implementation.
+				this feature controls the flow of authentication.
 
-			2 way for login.
+			Authentination in Autoya is based on the scenerio: "stored token then use it for login".
+				on Initial Running:
+					client(vacant) -> server
+						get first token then get identitiy of client frm server.
+						then store id and token into client.
 
-				1.get token for identification
+				on LogIn:
+					client(id + token) -> server
+						at login with id + token.
+
+				on LoggedIn:
+					client(id + token) -> server
+						at various connection.
+
+				on LogOut:
+					client(id + token) becomes client(id)
+						
+				on Erase:("App Erase" or "App Data Erase")
+					client(id + token) becomes client(vacant)
+
+
+			There are 3 way flow to gettting login.
+				1.get id and token
+				2.login with token
+
+				or
+
+				1.get token
 				2.login with token
 
 				or 
@@ -56,6 +81,7 @@ namespace AutoyaFramework {
 		}
 
 		private void LoadTokenThenLogin () {
+			var identityOrEmpty = LoadIdentity();
 			var tokenCandidate = LoadToken();
 
 			/*
@@ -69,13 +95,27 @@ namespace AutoyaFramework {
 				AttemptLoginByTokenCandidate(tokenCandidate);
 			} else {
 				Debug.LogWarning("no token found. get token then login.");
-				GetTokenThenLogin();
+				GetTokenThenLogin(identityOrEmpty);
 			}
+		}
+
+		private bool SaveIdentity (string identity) {
+			return _autoyaFilePersistence.Update(
+				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
+				AutoyaConsts.AUTH_STORED_IDENTITY_FILENAME,
+				identity
+			);
+		}
+		private string LoadIdentity () {
+			return _autoyaFilePersistence.Load(
+				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
+				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME
+			); 
 		}
 
 		private bool SaveToken (string newTokenCandidate) {
 			return _autoyaFilePersistence.Update(
-				AutoyaConsts.AUTH_STORED_TOKEN_DOMAIN, 
+				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
 				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME,
 				newTokenCandidate
 			);
@@ -83,18 +123,20 @@ namespace AutoyaFramework {
 
 		private string LoadToken () {
 			return _autoyaFilePersistence.Load(
-				AutoyaConsts.AUTH_STORED_TOKEN_DOMAIN, 
+				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
 				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME
 			);
 		}
 
-		private void GetTokenThenLogin () {
+		private void GetTokenThenLogin (string identity) {
 			_loginState = LoginState.GETTING_TOKEN;
 
 			var tokenUrl = AutoyaConsts.AUTH_URL_TOKEN;
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_GETTOKEN_PREFIX + Guid.NewGuid().ToString();
 			
+			Debug.LogError("内部に保存していたidentityをアレしたものを使って、トークンを作り出す。");
+
 			Observable.FromCoroutine(
 				() => tokenHttp.Get(
 					tokenConnectionId,

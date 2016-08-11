@@ -4,7 +4,7 @@ using AutoyaFramework.Persistence;
 
 
 /**
-	main behaviour implementation class of Autoya.
+	main behaviour implementation of Autoya.
 */
 namespace AutoyaFramework {
     public partial class Autoya {
@@ -40,8 +40,8 @@ namespace AutoyaFramework {
 			// authの状態を取得する、、そのためのユーティリティは必要かなあ、、まあこのクラス内で良い気がするな。
 			// ログインが終わってるかどうかっていうのでなんか判断すれば良いのではっていう。
 			// ログインが成功した記録があれば、そのトークンを使って接続を試みる。
-			// あれ、、試みるだけなら、token読めたらログイン完了っていう扱いでいいのでは？　って思ったけど毎回蹴られるの面倒だからやっぱ通信しておこうねっていう
-			// 気持ちになった。
+			// あれ、、試みるだけなら、token読めたらログイン完了っていう扱いでいいのでは？　って思ったけど
+			// 毎回なんか初回通信を蹴られるの面倒だからやっぱ通信しておこうねっていう気持ちになった。
 			
 			/*
 				初期化機構を起動する

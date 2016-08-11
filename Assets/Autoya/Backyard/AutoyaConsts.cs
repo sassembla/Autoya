@@ -14,7 +14,8 @@ namespace AutoyaFramework {
 		public const string AUTH_URL_LOGIN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
 		public const string AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX = "login_";
 
-		public const string AUTH_STORED_TOKEN_DOMAIN = "token";
+		public const string AUTH_STORED_FRAMEWORK_DOMAIN = "framework";
+		public const string AUTH_STORED_IDENTITY_FILENAME = "id.autoya";
 		public const string AUTH_STORED_TOKEN_FILENAME = "token.autoya";
 
 		public const string AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT = "System.TimeoutException";
