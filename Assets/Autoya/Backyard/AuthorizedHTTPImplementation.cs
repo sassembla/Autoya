@@ -80,6 +80,15 @@ namespace AutoyaFramework {
 		*/
 		private void ErrorFlowHandling (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
 			/*
+				handle Autoya internal error.
+			*/
+			if (httpCode < 0) {
+				var internalErrorMessage = data;
+				failed(connectionId, httpCode, internalErrorMessage);
+				return;
+			} 
+
+			/*
 				UnityWebRequest handled internal error.
 			*/
 			if (httpCode == 0) {
