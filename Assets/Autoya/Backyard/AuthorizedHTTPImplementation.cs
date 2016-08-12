@@ -118,10 +118,7 @@ namespace AutoyaFramework {
 				if (IsAuthFailed(httpCode, responseHeaders)) {
 					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
 					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
-					if (shouldRelogin) {
-						Debug.LogError("サーバが401をダイレクトに返してきたうえに、reloginを望まれている。 connectionId:" + connectionId + " まだ未実装。");
-						// AttemptLoginByTokenCandidate(_token);
-					}
+					if (shouldRelogin) LoadTokenThenLogin();
 				}
 			}
 

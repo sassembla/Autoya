@@ -231,10 +231,10 @@ namespace AutoyaFramework {
 			return (int)_loginState;
 		}
 
-		private void LoggedIn (string token) {
-			Debug.Assert(!(string.IsNullOrEmpty(token)));
+		private void LoggedIn (string newToken) {
+			Debug.Assert(!(string.IsNullOrEmpty(newToken)), "token is null.");
 
-			_token = token;
+			_token = newToken;
 			_loginState = LoginState.LOGGED_IN;
 		}
 
@@ -303,7 +303,7 @@ namespace AutoyaFramework {
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_GETTOKEN_PREFIX + Guid.NewGuid().ToString();
 			
-			Debug.LogError("内部に保存していたidentityをアレしたものを使って、リクエストを作り出す。");
+			Debug.LogWarning("内部に保存していたidentityをアレしたものを使って、リクエストを作り出す。");
 			var tokenRequestHeaders = new Dictionary<string, string>{
 				{"identity", _identity}
 			};
