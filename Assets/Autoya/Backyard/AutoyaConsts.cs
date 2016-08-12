@@ -9,6 +9,8 @@ namespace AutoyaFramework {
 		/*
 			auth settings.
 		*/
+		public const string AUTH_URL_IDENTITY = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
+		public const string AUTH_CONNECTIONID_REQUESTIDENTITY_PREFIX = "id_";
 		public const string AUTH_URL_TOKEN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
 		public const string AUTH_CONNECTIONID_GETTOKEN_PREFIX = "token_";
 		public const string AUTH_URL_LOGIN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。

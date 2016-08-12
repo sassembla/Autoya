@@ -7,20 +7,19 @@ using System.Collections.Generic;
 namespace AutoyaFramework {
     public partial class Autoya {
 		/*
-			still under consideration.
-
 			http.
-				1.generate header with auth-token for each http action.
-				2.renew header? 
+				1.hold header with auth-token and identity for each http action.
+				2.renew header when these are replaced or deleted. 
 		*/
 		
 		private HTTPConnection _autoyaHttp;
 
+		private void SetHTTPAuthorizedPart (string identity, string token) {
+
+		}
 
 		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (Dictionary<string, string> additionalHeader=null, Func<Dictionary<string, string>, Dictionary<string, string>> customizer=null) {
 			var headerDict = new Dictionary<string, string>();
-
-			// この時点で、tokenが空だったりすると、もれなくログインが必要になるようなレスポンスが返せると思う。
 
 			
 			/*
@@ -95,7 +94,7 @@ namespace AutoyaFramework {
 				Debug.LogError("httpCode = 0, misc errors. data:" + data);
 				var troubleMessage = data;
 				failed(connectionId, httpCode, troubleMessage);
-				Debug.LogError("Unityの内部エラー、いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage + " 対処方法としては一辺倒で、");
+				Debug.LogError("connectionId:" + connectionId + " Unityの内部エラー、いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage + " 対処方法としてはだいたい一辺倒な気がする");
 				return;
 			}
 			

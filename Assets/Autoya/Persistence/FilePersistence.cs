@@ -17,6 +17,7 @@ namespace AutoyaFramework.Persistence {
 			sync series.
 		*/
 		public bool Update (string domain, string fileName, string data) {
+			Debug.Log("Update 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 
@@ -50,6 +51,7 @@ namespace AutoyaFramework.Persistence {
 		}
 
 		public string Load (string domain, string fileName) {
+			Debug.Log("Load 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				var filePath = Path.Combine(domainPath, fileName);
@@ -63,6 +65,7 @@ namespace AutoyaFramework.Persistence {
 		}
 
 		public bool Delete (string domain, string fileName) {
+			Debug.Log("Delete 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				var filePath = Path.Combine(domainPath, fileName);
@@ -75,6 +78,7 @@ namespace AutoyaFramework.Persistence {
 		}
 
 		public bool DeleteByDomain (string domain) {
+			Debug.Log("DeleteByDomain 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				Directory.Delete(domainPath, true);

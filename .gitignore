@@ -24,3 +24,5 @@ miyamasu_test.log
 test.log
 
 iOS/*
+Assets/framework/*
+Assets/framework.meta
