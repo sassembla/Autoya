@@ -42,7 +42,7 @@ namespace Miyamasu {
 				}
 			);
 
-			return WaitUntil(() => authorized, 10); 
+			return WaitUntil(() => authorized, 20); 
 		}
 
 		private void Teardown () {

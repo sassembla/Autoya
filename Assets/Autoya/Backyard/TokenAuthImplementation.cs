@@ -458,6 +458,7 @@ namespace AutoyaFramework {
 					// ここで、内部で使ってたcandidate = 保存されてるやつ を、_tokenにセットして良さげ。
 					// なんかサーバからtokenのハッシュとか渡してきて、ここで照合すると良いかもっていう気が少しした。
 					var savedToken = LoadToken();
+					Debug.Assert(!string.IsNullOrEmpty(savedToken), "loaded token is null");
 					OnLoginSucceeded(savedToken);
 				},
 				(failedConId, failedCode, failedReason) => {

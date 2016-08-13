@@ -10,6 +10,7 @@ using UnityEngine;
 			/*
 				そのうちテストシーンでの動作テストをUnityTestとかで組むのはアリな気がする。
 			*/
+			
 		}
 		#else
 		{
