@@ -101,7 +101,7 @@ namespace AutoyaFramework {
 			/*
 				fall-through handling area of Autoya's events.
 
-				this block NEVER fire succeeded/failed handler and return code.
+				this block NEVER fire succeeded/failed handler and never return from this block.
 				these events are cascadable.
 			*/
 			{

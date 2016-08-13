@@ -11,22 +11,19 @@ namespace AutoyaFramework {
 		/**
 			all conditions which Autoya has.
 		*/
-		private class AutoyaConditions {
-			public bool _isOnline;
-			public bool _isUnderMaintenance;
-			
+		private class AutoyaParameters {
 			public string _app_version;
 			public string _asset_version;
 			
 			public string _buildNumber;
 		}
 		
-		private AutoyaConditions _conditions;
+		private AutoyaParameters _parameters;
 
 		private Autoya (string basePath="") {
 			Debug.LogWarning("autoya initialize start.");
 			
-			_conditions = new AutoyaConditions();
+			_parameters = new AutoyaParameters();
 
 			_autoyaFilePersistence = new FilePersistence(basePath);
 
