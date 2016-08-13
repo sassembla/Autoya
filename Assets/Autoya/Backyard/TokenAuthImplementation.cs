@@ -213,6 +213,9 @@ namespace AutoyaFramework {
 						// in maintenance, do nothing here.
 						return;
 					}
+
+					// ここでのtimeoutとかをハンドリングしてないんだよな。
+					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
 				}
 			);
 		}
@@ -373,6 +376,8 @@ namespace AutoyaFramework {
 						return;
 					}
 
+					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
+
 					// other errors. 
 					var shouldRetry = OnAuthFailed(tokenConnectionId, resultDataOrFailedReason);
 					if (shouldRetry) {
@@ -471,13 +476,15 @@ namespace AutoyaFramework {
 						we should handling NOT 401(Unauthorized) result.
 					*/
 
+					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
+					
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。
 					
 					var shouldRetry = OnAuthFailed(loginConnectionId, resultDataOrFailedReason);
 					if (shouldRetry) {
-						Debug.LogError("ログイン失敗、リトライすべきなんだけどちょっとまってな2");
-						// LoadTokenThenLogin();
+						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとか。そのためには何ができると良いんだろう。");
+						LoadTokenThenLogin();
 					}
 				}
 			);
