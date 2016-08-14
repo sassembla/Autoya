@@ -6,7 +6,7 @@ namespace Encrypt.RIPEMD {
 	public static class RIPEMD {
 		private static UTF8Encoding utf8Enc = new UTF8Encoding();
 
-		public static string RIPEMD_160 (string baseStr, string key) {
+		public static string RIPEMD160 (string baseStr, string key) {
 			var sourceBytes = utf8Enc.GetBytes(baseStr);
 			var keyBytes = utf8Enc.GetBytes(key);
 

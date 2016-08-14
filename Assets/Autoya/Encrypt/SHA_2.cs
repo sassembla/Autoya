@@ -10,6 +10,7 @@ namespace Encrypt.SHA_2 {
 			var keyBytes = utf8Enc.GetBytes(key);
 			
 			var sha256 = new HMACSHA256(keyBytes);
+
 			var hashBytes = sha256.ComputeHash(baseStrBytes);
 			var hashStr = string.Empty;
 
@@ -25,6 +26,7 @@ namespace Encrypt.SHA_2 {
 			var keyBytes = utf8Enc.GetBytes(key);
 			
 			var sha512 = new HMACSHA512(keyBytes);
+			
 			var hashBytes = sha512.ComputeHash(baseStrBytes);
 			var hashStr = string.Empty;
 
