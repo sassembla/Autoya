@@ -2,15 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 using UnityEngine.Networking;
 
 /**
 	implementation of HTTP connection.
 */
-namespace Connections.HTTP {
-    
-	public class HTTPConnection {
+namespace AutoyaFramework.Connections.HTTP {
+
+    public class HTTPConnection {
 		
 		public IEnumerator Get (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
 			using (var request = UnityWebRequest.Get(url)) {

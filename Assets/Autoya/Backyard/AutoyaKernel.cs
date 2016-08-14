@@ -1,7 +1,6 @@
 using UnityEngine;
-using Connections.HTTP;
-using AutoyaFramework.Persistence;
-
+using AutoyaFramework.Connections.HTTP;
+using AutoyaFramework.Persistence.Files;
 
 /**
 	main behaviour implementation of Autoya.

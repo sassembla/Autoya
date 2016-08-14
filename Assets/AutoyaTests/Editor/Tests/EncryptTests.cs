@@ -1,10 +1,7 @@
-
-
-using Encrypt.AES256;
-using Encrypt.RIPEMD;
-using Encrypt.SHA_2;
+using AutoyaFramework.Encrypt.AES256;
+using AutoyaFramework.Encrypt.RIPEMD;
+using AutoyaFramework.Encrypt.SHA_2;
 using Miyamasu;
-using UnityEngine;
 
 public class EncryptTests : MiyamasuTestRunner {
 	[MTest] public bool AESEncrypt () {
@@ -50,7 +47,7 @@ public class EncryptTests : MiyamasuTestRunner {
 		Assert(hashed == "e5345801e661de0bcf572e0dcf3cea9ac3328c7a2b8daded70ce4b5e8cb54186", "not match, hashed:" + hashed);
 		return true;
 	}
-	
+
 	[MTest] public bool Sha512Hash () {
 		var sample = "yetrwfnkiofaj039tq23rkekfnaksodnfawefsq4y2up1rk";
 		var key = "oeo9ur2jowiefapwfpawkefwe0-e-0je";

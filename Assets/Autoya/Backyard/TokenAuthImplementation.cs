@@ -1,5 +1,5 @@
 using UnityEngine;
-using Connections.HTTP;
+using AutoyaFramework.Connections.HTTP;
 using System;
 using System.Collections.Generic;
 using UniRx;

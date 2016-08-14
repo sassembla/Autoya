@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Encrypt.AES256 {
+namespace AutoyaFramework.Encrypt.AES256 {
     public class AES256 {
 		private readonly UTF8Encoding utf8Enc;
 

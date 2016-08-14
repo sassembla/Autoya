@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Encrypt.SHA_2 {
+namespace AutoyaFramework.Encrypt.SHA_2 {
 	public static class SHA_2 {
 		private static UTF8Encoding utf8Enc = new UTF8Encoding();
 

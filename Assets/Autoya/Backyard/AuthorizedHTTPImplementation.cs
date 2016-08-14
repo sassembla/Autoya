@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 using UniRx;
-using Connections.HTTP;
+using AutoyaFramework.Connections.HTTP;
 using System.Collections.Generic;
 
 namespace AutoyaFramework {

@@ -2,7 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Encrypt.RIPEMD {
+namespace AutoyaFramework.Encrypt.RIPEMD {
 	public static class RIPEMD {
 		private static UTF8Encoding utf8Enc = new UTF8Encoding();
 
