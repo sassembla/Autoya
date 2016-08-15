@@ -4,14 +4,13 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Diagnostics;
-using UniRx;
-using AutoyaFramework;
+using Diag = System.Diagnostics;
+using UnityEditor;
 
 /**
 	MiyamasuTestRunner
 		this testRunner is only test runner which contains "WaitUntil" method.
-		"WaitUntil" method can wait Async code execution until specified frame passed.
+		"WaitUntil" method can wait Async code execution until specified sec passed.
 
 		This can be replacable when Unity adopts C# 4.0 by using "async" and "await" keyword.
 */
@@ -19,86 +18,80 @@ namespace Miyamasu {
 	public class MiyamasuTestRunner {
 		public MiyamasuTestRunner () {}
 
-		private struct TypeAndMedhods {
+		private class TypeAndMedhods {
 			public Type type;
+
+			public bool hasTests = false;
+			
 			public MethodInfo[] asyncMethodInfos;
+			public MethodInfo setupMethodInfo = null;
+			public MethodInfo teardownMethodInfo = null;
 
 			public TypeAndMedhods (Type t) {
-				this.type = t;
-				this.asyncMethodInfos = t.GetMethods()
+				var testMethods = t.GetMethods()
 					.Where(methods => 0 < methods.GetCustomAttributes(typeof(MTestAttribute), false).Length)
 					.ToArray();
+
+				if (!testMethods.Any()) return; 
+				this.hasTests = true;
+
+				/*
+					hold type.
+				*/
+				this.type = t;
+
+				/*
+					collect tests.
+				*/
+				this.asyncMethodInfos = testMethods;
+				
+				/*
+					collect setup and teardown.
+				*/
+				this.setupMethodInfo = t.GetMethods().Where(methods => 0 < methods.GetCustomAttributes(typeof(MSetupAttribute), false).Length).FirstOrDefault();
+				this.teardownMethodInfo = t.GetMethods().Where(methods => 0 < methods.GetCustomAttributes(typeof(MTeardownAttribute), false).Length).FirstOrDefault();
 			}
-		}
-
-		private string dataPath;
-		private bool Setup () {
-			Autoya.TestEntryPoint(dataPath);
-
-			var authorized = false;
-			Autoya.Auth_SetOnLoginSucceeded(
-				() => {
-					authorized = true;
-				}
-			);
-
-			return WaitUntil(() => authorized, 10); 
-		}
-
-		private void Teardown () {
-			// do nothing.
 		}
 
 		public void RunTestsOnEditorMainThread () {
-			var syncAndAsyncTypeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
+			var typeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
-				.Where(tAndMInfo => 0 < tAndMInfo.asyncMethodInfos.Length)
+				.Where(tAndMInfo => tAndMInfo.hasTests)
 				.ToArray();
 
 			
-			if (!syncAndAsyncTypeAndMethodInfos.Any()) {
-				TestLogger.Log("no tests found. please set \"[MTest]\" or \"[MTestOnMainThread]\" attribute to method.", true);
+			if (!typeAndMethodInfos.Any()) {
+				TestLogger.Log("no tests found. please set \"[MTest]\" attribute to method.", true);
 				return;
 			}
-
-			var asyncTypeAndMethodInfos = syncAndAsyncTypeAndMethodInfos.Where(tAndMInfo => 0 < tAndMInfo.asyncMethodInfos.Length).ToList();
 
 			var passed = 0;
 			var failed = 0;
 
 			TestLogger.Log("tests started.", true);
 			
-			// このメソッドとかがMainThreadでしか使えないんで困ってるっていう感じ。
-			dataPath = UnityEngine.Application.persistentDataPath;
-
 			// generate waiting thread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.
 			Thread thread = null;
 			thread = new Thread(
 				() => {
-					foreach (var typeAndMethodInfo in asyncTypeAndMethodInfos) {
+					foreach (var typeAndMethodInfo in typeAndMethodInfos) {
 						
 						var instance = Activator.CreateInstance(typeAndMethodInfo.type);
+
+						  
 						foreach (var methodInfo in typeAndMethodInfo.asyncMethodInfos) {
+							if (typeAndMethodInfo.setupMethodInfo != null) typeAndMethodInfo.setupMethodInfo.Invoke(instance, null);
+
 							var methodName = methodInfo.Name;
-							if (!Setup()) {
-								TestLogger.Log("test:" + methodName + " failed by setup timeout.", true);
-								failed++;
-								continue;
-							}
 							
 							try {
-								var succeeded = (bool)methodInfo.Invoke(instance, null);
-								if (succeeded) {
-									passed++;
-								} else {
-									failed++;
-									TestLogger.Log("test:" + methodName + " failed.", true);
-								}
+								methodInfo.Invoke(instance, null);
+								passed++;
 							} catch (Exception e) {
 								failed++;
 								TestLogger.Log("test:" + methodName + " FAILED by exception:" + e, true);
 							}
-							Teardown();
+							if (typeAndMethodInfo.teardownMethodInfo != null) typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
 						}
 					}
 
@@ -113,34 +106,30 @@ namespace Miyamasu {
 			}
 		}
 		
-		
-		public bool WaitUntil (Func<bool> WaitFor, int timeoutSec=1) {
-			var methodName = new StackFrame(1).GetMethod().Name;
+		/**
+			can wait Async code execution until specified sec passed.
+		*/
+		public void WaitUntil (Func<bool> isCompleted, int timeoutSec=1) {
+			var methodName = new Diag.StackFrame(1).GetMethod().Name;
 
 			var resetEvent = new ManualResetEvent(false);
-			var succeeded = true;
 			var waitingThread = new Thread(
 				() => {
 					resetEvent.Reset();
 					var startTime = DateTime.Now;
 					
-					try {
-						while (!WaitFor()) {
-							var current = DateTime.Now;
-							var distanceSeconds = (current - startTime).Seconds;
-							
-							if (0 < timeoutSec && timeoutSec < distanceSeconds) {
-								TestLogger.Log("timeout:" + methodName);
-								succeeded = false;
-								break;
-							}
-							
-							System.Threading.Thread.Sleep(10);
+					while (!isCompleted()) {
+						var current = DateTime.Now;
+						var distanceSeconds = (current - startTime).Seconds;
+						
+						if (0 < timeoutSec && timeoutSec < distanceSeconds) {
+							TestLogger.Log("timeout:" + methodName);
+							throw new Exception("timeout:" + methodName);
 						}
-					} catch (Exception e) {
-						TestLogger.Log("methodName:" + methodName + " error:" + e.Message, true);
+						
+						System.Threading.Thread.Sleep(10);
 					}
-					
+
 					resetEvent.Set();
 				}
 			);
@@ -148,11 +137,21 @@ namespace Miyamasu {
 			waitingThread.Start();
 			
 			resetEvent.WaitOne();
-			return succeeded;
+		}
+
+		public void RunOnMainThread (Action invokee) {
+			UnityEditor.EditorApplication.CallbackFunction runner = null;
+			runner = () => {
+				// run only once.
+				EditorApplication.update -= runner;
+				if (invokee != null) invokee();
+			};
+			
+			EditorApplication.update += runner;
 		}
 		
 		public void Assert (bool condition, string message) {
-			var methodName = new StackFrame(1).GetMethod().Name;
+			var methodName = new Diag.StackFrame(1).GetMethod().Name;
 			if (!condition) {
 				var situation = "test:" + methodName + " ASSERT FAILED:" + message;
 				TestLogger.Log(situation);
@@ -161,13 +160,15 @@ namespace Miyamasu {
 		}
 		
 		public void Assert (object expected, object actual, string message) {
-			var methodName = new StackFrame(1).GetMethod().Name;
+			var methodName = new Diag.StackFrame(1).GetMethod().Name;
 			if (expected.ToString() != actual.ToString()) {
 				var situation = "test:" + methodName + " ASSERT FAILED:" + message + " expected:" + expected + " actual:" + actual;
 				TestLogger.Log(situation);
 				throw new Exception(situation);
 			} 
 		}
+
+		public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";
 
 		public static class TestLogger {
 			private static object lockObject = new object();
@@ -182,7 +183,7 @@ namespace Miyamasu {
 						return;
 					}
 
-					pathOfLogFile = "miyamasu_test.log";
+					pathOfLogFile = MIYAMASU_TESTLOG_FILE_NAME;
 					
 					// file write
 					using (var fs = new FileStream(
@@ -205,9 +206,17 @@ namespace Miyamasu {
 	}
 
 	/**
-		attribute for TestRunner.
+		attributes for TestRunner.
 	*/
+	[AttributeUsage(AttributeTargets.Method)] public class MSetupAttribute : Attribute {
+		public MSetupAttribute() {}
+	}
+
 	[AttributeUsage(AttributeTargets.Method)] public class MTestAttribute : Attribute {
 		public MTestAttribute() {}
+	}
+
+	[AttributeUsage(AttributeTargets.Method)] public class MTeardownAttribute : Attribute {
+		public MTeardownAttribute() {}
 	}
 }

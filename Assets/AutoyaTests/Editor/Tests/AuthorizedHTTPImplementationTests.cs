@@ -10,7 +10,21 @@ using Miyamasu;
 	these test codes are depends on online env + "https://httpbin.org".
 */
 public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
-	[MTest] public bool AutoyaHTTPGet () {
+	[MSetup] public void Setup () {
+		var dataPath = string.Empty;
+		Autoya.TestEntryPoint(dataPath);
+
+		var authorized = false;
+		Autoya.Auth_SetOnLoginSucceeded(
+			() => {
+				authorized = true;
+			}
+		);
+		
+		WaitUntil(() => authorized, 10); 
+	}
+
+	[MTest] public void AutoyaHTTPGet () {
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/get", 
@@ -22,16 +36,13 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => !string.IsNullOrEmpty(result), 
 			5
 		);
-		if (!wait) return false; 
-		
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPGetWithAdditionalHeader () {
+	[MTest] public void AutoyaHTTPGetWithAdditionalHeader () {
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/headers", 
@@ -46,16 +57,13 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => (result.Contains("Hello") && result.Contains("World")), 
 			5
 		);
-		if (!wait) return false; 
-		
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPGetFailWith404 () {
+	[MTest] public void AutoyaHTTPGetFailWith404 () {
 		var resultCode = 0;
 		
 		var connectionId = Autoya.Http_Get(
@@ -68,19 +76,16 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => (resultCode != 0), 
 			5
 		);
-		if (!wait) return false; 
 		
 		// result should be have reason,
 		Assert(resultCode == 404, "code note match. resultCode:" + resultCode);
-
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPGetFailWithUnauth () {
+	[MTest] public void AutoyaHTTPGetFailWithUnauth () {
 		var unauthReason = string.Empty;
 
 		// set unauthorized method callback.
@@ -106,18 +111,15 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => !string.IsNullOrEmpty(unauthReason), 
 			5
 		);
-		if (!wait) return false; 
 		
 		Assert(!string.IsNullOrEmpty(unauthReason), "code note match. unauthReason:" + unauthReason);
-
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPGetFailWithTimeout () {
+	[MTest] public void AutoyaHTTPGetFailWithTimeout () {
 		var timeoutError = string.Empty;
 		/*
 			fake server should be response 0.01 sec
@@ -134,16 +136,13 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			0.01
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => !string.IsNullOrEmpty(timeoutError), 
 			5
 		);
-		if (!wait) return false;
-		// TestLogger.Log("timeoutError:" + timeoutError);
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPPost () {
+	[MTest] public void AutoyaHTTPPost () {
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Post(
 			"https://httpbin.org/post", 
@@ -156,19 +155,16 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => !string.IsNullOrEmpty(result), 
 			5
 		);
-		if (!wait) return false; 
-		
-		return true;
 	}
 
 	/*
 		target test site does not support show post request. hmmm,,,
 	*/
-	// [MTest] public bool AutoyaHTTPPostWithAdditionalHeader () {
+	// [MTest] public void AutoyaHTTPPostWithAdditionalHeader () {
 	// 	var result = string.Empty;
 	// 	var connectionId = Autoya.Http_Post(
 	// 		"https://httpbin.org/headers", 
@@ -195,7 +191,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 
-	[MTest] public bool AutoyaHTTPPostFailWith404 () {
+	[MTest] public void AutoyaHTTPPostFailWith404 () {
 		var resultCode = 0;
 		
 		var connectionId = Autoya.Http_Post(
@@ -209,19 +205,16 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => (resultCode != 0), 
 			5
 		);
-		if (!wait) return false; 
 		
 		// result should be have reason,
 		Assert(resultCode == 404, "code note match. resultCode:" + resultCode);
-
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPPostFailWithUnauth () {
+	[MTest] public void AutoyaHTTPPostFailWithUnauth () {
 		var unauthReason = string.Empty;
 
 		// set unauthorized method callback.
@@ -248,18 +241,15 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => !string.IsNullOrEmpty(unauthReason), 
 			5
 		);
-		if (!wait) return false; 
 		
 		Assert(!string.IsNullOrEmpty(unauthReason), "code note match. unauthReason:" + unauthReason);
-
-		return true;
 	}
 
-	[MTest] public bool AutoyaHTTPPostFailWithTimeout () {
+	[MTest] public void AutoyaHTTPPostFailWithTimeout () {
 		var timeoutError = string.Empty;
 		/*
 			fake server should be response 0.01 sec
@@ -277,12 +267,9 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			0.01
 		);
 
-		var wait = WaitUntil(
+		WaitUntil(
 			() => !string.IsNullOrEmpty(timeoutError), 
 			5
 		);
-		if (!wait) return false;
-		// TestLogger.Log("timeoutError:" + timeoutError);
-		return true;
 	}
 }

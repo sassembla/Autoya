@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using AutoyaFramework;
 using Miyamasu;
-using UniRx;
-using UnityEngine;
 
 /**
 	test for file persist controll.
@@ -12,7 +10,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	private const string AutoyaFilePersistTestsFileDomain = "AutoyaFilePersistTestsFileDomain";
 	private const string AutoyaFilePersistTestsFileName = "persist.txt";
 
-	private void RefreshData () {
+	[MSetup] public void RefreshData () {
 		var basePath = AutoyaFilePersistTestsFileDomain;
 		var domainPath = Path.Combine(basePath, AutoyaFilePersistTestsFileDomain);
 		if (Directory.Exists(domainPath)) {
@@ -21,21 +19,15 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 		}
 	}
 	
-	[MTest] public bool Update () {
-		RefreshData();
-
+	[MTest] public void Update () {
 		var data = "new data " + Guid.NewGuid().ToString();
 		
 		var result = Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
 		Assert(result, "not successed.");
-		
-		return true;
 	}
 
 
-	[MTest] public bool Load () {
-		RefreshData();
-
+	[MTest] public void Load () {
 		var data = "new data " + Guid.NewGuid().ToString();
 
 		var result = Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
@@ -43,11 +35,9 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 		
 		var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
 		Assert(loadedData == data, "not match.");
-
-		return true;
 	}
 
-	// [MTest] public bool LoadNotExistFile () {
+	// [MTest] public void LoadNotExistFile () {
 	// 	RefreshData();
 
 	// 	var emptyData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
@@ -56,7 +46,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 
-	// [MTest] public bool Delete () {
+	// [MTest] public void Delete () {
 	// 	RefreshData();
 
 	// 	var data = "new data " + Guid.NewGuid().ToString();
@@ -70,7 +60,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 
-	// [MTest] public bool DeleteByDomain () {
+	// [MTest] public void DeleteByDomain () {
 	// 	RefreshData();
 
 	// 	var data = "new data " + Guid.NewGuid().ToString();
@@ -84,7 +74,7 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 	
-	// [MTest] public bool EmptyDelete () {
+	// [MTest] public void EmptyDelete () {
 	// 	RefreshData();
 
 	// 	var deleteResult = Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);

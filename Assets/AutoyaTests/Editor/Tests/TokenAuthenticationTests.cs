@@ -5,13 +5,26 @@ using Miyamasu;
 	test for authorization flow control.
 */
 public class AuthImplementationTests : MiyamasuTestRunner {
-	[MTest] public bool WaitDefaultAuthorize () {
-		if (Autoya.Auth_IsLoggedIn()) return true; 
+	[MSetup] public void Setup () {
+		var dataPath = string.Empty;
+		Autoya.TestEntryPoint(dataPath);
+
+		var authorized = false;
+		Autoya.Auth_SetOnLoginSucceeded(
+			() => {
+				authorized = true;
+			}
+		);
+		
+		WaitUntil(() => authorized, 10); 
+	}
+
+	[MTest] public void WaitDefaultAuthorize () {
+		Assert(Autoya.Auth_IsLoggedIn(), "not yet logged in.");
 		TestLogger.Log("Progress:" + Autoya.Auth_Progress());
-		return false;
 	}
 	
-	[MTest] public bool HandleAccidentialAuthErrorThenManualLoginSucceeded () {
+	[MTest] public void HandleAccidentialAuthErrorThenManualLoginSucceeded () {
 		var fakeReason = string.Empty;
 		Autoya.Auth_SetOnAuthFailed(
 			(conId, reason) => {
@@ -23,7 +36,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		// emit fake-accidential logout
 		Autoya.Auth_Test_CreateAuthError();
 
-		if (!WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5)) return false;
+		WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5);
 
 		var authorized = false;
 		Autoya.Auth_SetOnLoginSucceeded(
@@ -34,12 +47,10 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 		Autoya.Auth_AttemptLogIn();
 		
-		if (!WaitUntil(() => authorized, 5)) return false;
-
-		return true;
+		WaitUntil(() => authorized, 5);
 	}
 	
-	[MTest] public bool HandleAccidentialLogoutThenAutoReloginSucceeded () {
+	[MTest] public void HandleAccidentialLogoutThenAutoReloginSucceeded () {
 		var fakeReason = string.Empty;
 		Autoya.Auth_SetOnAuthFailed(
 			(conId, reason) => {
@@ -62,13 +73,11 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			loggedIn -> fake 401 request -> logout -> autoLogin -> loggedIn succeed.
 		*/
 
-		if (!WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5)) return false;
-		if (!WaitUntil(() => authorized, 5)) return false;
-
-		return true;
+		WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5);
+		WaitUntil(() => authorized, 5);
 	}
 
-	// [MTest] public bool HandleAccidentialLoginThenFailedAgain () {
+	// [MTest] public void HandleAccidentialLoginThenFailedAgain () {
 	// 	var fakeReason = string.Empty;
 	// 	Autoya.Auth_SetOnAuthFailed(
 	// 		(conId, reason) => {
@@ -105,21 +114,17 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		
 
 	// 	if (!WaitUntil(() => unauthorized, 5)) return false;
-
-	// 	return true;
 	// }
 
-	[MTest] public bool IntentionalLogout () {
+	[MTest] public void IntentionalLogout () {
 		Autoya.Auth_Logout();
 
 		var loggedIn = Autoya.Auth_IsLoggedIn();
 		
 		Assert(!loggedIn, "not match.");
-
-		return true;
 	}
 
-	[MTest] public bool IntentionalLogoutThenLoginWillBeSucceeded () {
+	[MTest] public void IntentionalLogoutThenLoginWillBeSucceeded () {
 		Autoya.Auth_Logout();
 
 		var auth = false;
@@ -138,14 +143,6 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 		Autoya.Auth_AttemptLogIn();
 		
-		if (!WaitUntil(() => auth, 5)) {
-			var progress = Autoya.Auth_Progress();
-			TestLogger.Log("progress:" + progress, true);
-			return false;
-		}
-
-		return true;
+		WaitUntil(() => auth, 5);
 	}
-
-	
 }

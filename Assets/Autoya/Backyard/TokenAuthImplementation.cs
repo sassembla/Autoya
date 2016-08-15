@@ -11,6 +11,9 @@ namespace AutoyaFramework {
 				this feature controls the flow of authentication.
 
 
+			this topic is UNDER_CONSTRUCTING...
+
+
 			2 data required for authentication.
 				identity,
 				token
