@@ -21,7 +21,6 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 	[MTest] public void WaitDefaultAuthorize () {
 		Assert(Autoya.Auth_IsLoggedIn(), "not yet logged in.");
-		TestLogger.Log("Progress:" + Autoya.Auth_Progress());
 	}
 	
 	[MTest] public void HandleAccidentialAuthErrorThenManualLoginSucceeded () {

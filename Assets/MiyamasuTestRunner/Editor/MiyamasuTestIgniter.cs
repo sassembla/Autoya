@@ -11,7 +11,7 @@ namespace Miyamasu {
 
 			#if CLOUDBUILD
 			{
-				// do nothing.
+				// do nothing.	
 				/*
 					そのうちUnityTestからMiyamasu起動したい。起動さえできれば勝てる気がする。
 				*/
