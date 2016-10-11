@@ -32,13 +32,14 @@ in 2016/11
 ###HTTP/TCP/UDP Connection feature
 | Protocol        | Progress     |
 | ------------- |:-------------:|
-| http     | done | 
+| http/1 | done | 
+| http/2 | in 2016 | 
 | tcp      | in 2016      | 
 | udp	| in 2016      |  
 
 
 ###app-version/asset-version/server-condition changed handles
-in 2016/09
+done
 
 ###Purchase/IAP flow
 in 2016/11
