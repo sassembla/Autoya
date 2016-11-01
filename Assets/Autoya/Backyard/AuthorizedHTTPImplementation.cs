@@ -109,6 +109,7 @@ namespace AutoyaFramework {
 					detect maintenance response code or response header value.
 				*/
 				if (IsInMaintenance(httpCode, responseHeaders)) {
+					Debug.LogError("maintenance mechanism should be impl.");
 					// OnMaintenance();
 				}
 
@@ -144,14 +145,9 @@ namespace AutoyaFramework {
 			*/
 			succeeded(connectionId, data);
 		}
-
+		
 		private bool IsInMaintenance (int httpCode, Dictionary<string, string> responseHeaders) {
-			var headerContainsMaintenanceCode = false;
-
-			Debug.LogWarning("メンテ条件、そのうち実装する。さすがにクライアント内にエラーを残しとくのはまずい。");
-			if (headerContainsMaintenanceCode && 200 <= httpCode && httpCode < 300) {
-				throw new ArgumentException("maintenance code's http code should out of 2XX, current code is httpCode:" + httpCode);
-			}
+			if (httpCode == AutoyaConsts.MAINTENANCE_CODE) return true;
 			return false;
 		}
 		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeaders) {
@@ -192,7 +188,7 @@ namespace AutoyaFramework {
 			).Subscribe(
 				_ => {},
 				ex => {
-					failed(connectionId, 0, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
+					failed(connectionId, AutoyaConsts.HTTP_TIMEOUT_CODE, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
 				}
 			);
 
@@ -229,7 +225,7 @@ namespace AutoyaFramework {
 			).Subscribe(
 				_ => {},
 				ex => {
-					failed(connectionId, 0, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
+					failed(connectionId, AutoyaConsts.HTTP_TIMEOUT_CODE, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
 				}
 			);
 

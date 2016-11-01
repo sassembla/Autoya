@@ -136,7 +136,7 @@ namespace AutoyaFramework {
 			var identityCandidate = LoadIdentity();
 			if (IsIdentityValid(identityCandidate)) {
 				_identity = identityCandidate;
-				Debug.LogWarning("ReloadIdentity succeeded.");
+				// Debug.LogWarning("ReloadIdentity succeeded.");
 				LoadTokenThenLogin();
 			} else {
 				_identity = string.Empty;
@@ -348,7 +348,7 @@ namespace AutoyaFramework {
 
 		private void EvaluateTokenResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
 			// 取得したtokenを検査する必要がある。ヘッダとかで検証とかいろいろ。 検証メソッドとか外に出せばいいことあるかな。
-			Debug.LogWarning("EvaluateTokenResult!! " + " tokenConnectionId:" + tokenConnectionId + " responseCode:" + responseCode + " resultDataOrFailedReason:" + resultDataOrFailedReason);
+			// Debug.LogWarning("EvaluateTokenResult!! " + " tokenConnectionId:" + tokenConnectionId + " responseCode:" + responseCode + " resultDataOrFailedReason:" + resultDataOrFailedReason);
 
 			ErrorFlowHandling(
 				tokenConnectionId,
@@ -359,7 +359,7 @@ namespace AutoyaFramework {
 					var isValid = IsTokenValid(succeededData);
 					
 					if (isValid) {
-						Debug.LogWarning("token取得に成功 succeededData:" + succeededData);
+						// Debug.LogWarning("token取得に成功 succeededData:" + succeededData);
 						var tokenCandidate = succeededData;
 						UpdateTokenThenAttemptLogin(tokenCandidate);
 					} else {

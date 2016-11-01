@@ -51,7 +51,7 @@ namespace AutoyaFramework.Persistence.Files {
 		}
 
 		public string Load (string domain, string fileName) {
-			Debug.Log("Load 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
+			Debug.Log("Load この関数は同期IOでの保存なんだけど、非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				var filePath = Path.Combine(domainPath, fileName);
@@ -65,7 +65,7 @@ namespace AutoyaFramework.Persistence.Files {
 		}
 
 		public bool Delete (string domain, string fileName) {
-			Debug.Log("Delete 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
+			Debug.Log("Delete この関数は同期IOでの削除なんだけど、非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				var filePath = Path.Combine(domainPath, fileName);
@@ -78,7 +78,7 @@ namespace AutoyaFramework.Persistence.Files {
 		}
 
 		public bool DeleteByDomain (string domain) {
-			Debug.Log("DeleteByDomain 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
+			Debug.Log("DeleteByDomain この関数は同期IOでの削除なんだけど、非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				Directory.Delete(domainPath, true);
