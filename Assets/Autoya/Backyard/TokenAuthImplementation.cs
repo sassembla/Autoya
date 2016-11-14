@@ -3,6 +3,7 @@ using AutoyaFramework.Connections.HTTP;
 using System;
 using System.Collections.Generic;
 using UniRx;
+using System.Text;
 
 namespace AutoyaFramework {
 	public partial class Autoya {
@@ -11,91 +12,101 @@ namespace AutoyaFramework {
 				this feature controls the flow of authentication.
 
 
-			this topic is UNDER_CONSTRUCTING...
-
-
-			2 data required for authentication.
-				identity,
+			0. only 2 data required for using authentication in Autoya.
+				privateKey
 				token
 
 
-			identity:
-				data which will be stored in app and use for identification between client to server.
-				initially this parameter is empty.				
-				client request this parameter to server -> server generates identity -> client get it and store it.
-
-				deleting identity is the way of user-delete.
-
-
-			token:
-				data which will be temporaly stored in app and use for authorization between client to server.
-				initially this parameter is empty and will be expired by server.
-
-				client request this parameter to server with identity -> server generates token -> client get it and store it.
+			privateKey:bytes
+				data which is implemented in app and use for initial boot connection between client to server.
 				
-				deleting identity is the way of logout.
-				LogIn phase can request some kind of authentication flow when user want to re-login with another accounts.
+
+			token:JWT
+				data for authentication, ahthorization and refreshing token.
+				this will be stored in the app and use for authorization between client to server.
+				initially this parameter is empty and should be expired by server.
+
+				in initial boot, server returns this parameter if the access is valid.
+					privateKey -> server generates token -> client get it and store it.
+				
+
+			1. Automatic-Authentination in Autoya is based on these scenerio: 
+				"get and store token on initial boot, access with token, renew token, revoke token.".
+				this is useful for player. player can play game without input anything.
+
+				Autoya supports that basically.
 
 
-			Authentination in Autoya is based on the scenerio: "store identity, store token then use it for login".
-				on Initial Running:
-					client(vacant-identitiy, vacant-token) -> server
-						get identity from server.
-						then store identitiy into client.
+				graph1: basic [APP STATE] and (LOGIN CONDITION)
 
-					client(identitiy, vacant-token) -> server
-						get first token from server.
-						then store token into client.
+					[init-boot] → [auth]						 (automatic-authenticated)
+									↓
+								[got token] → [use token]		 (logged-in)
+									↑				↓
+							[refresh token] ← [token expiration] (logged-out)
 
-				on LogIn:
-					client(identitiy + token) -> server
-						at login with id + token.
 
-				on LoggedIn:(same with LogIn)
-					client(identitiy + token) -> server
-						at various connection.
+				on Initial Boot:
+					client(privateKey) -> server -> (token) -> client(token)
+						server automatically authenticate player, then returns token for new player.
 
-				on LogOut:
-					delete token from client.
-						client(identitiy + token) becomes client(identitiy, vacant-token)
-						LogIn phase can request some kind of authentication flow when user want to re-login with another accounts.
+				on Connection:
+					client(token) -> server -> (response) -> client(token)
+						client sends token to server for each connection(e.g. HTTP connection).
+						server authenticate and authorize client by token.
+						token will be expired.
 
+				on Token Expired:
+					client(token) -> server -> (auth error:token expired) -> client(expired-token)
+						when token is expired in server, server returns auth error to client.
+						client gets error.
+
+				on Refresh Token:
+					client(refresh-token) -> server -> (token) -> client(token)
+						token can be refresh by refresh-token which is contained in expired-token.
+						only latest refresh-token can be use.
+
+				on Revoke Token:
+					client(token) -> client()
+						client can delete their own token. client will connect to server as "inital boot".
+						this action recreates client's identity.
+	
+			
+			2. Manual-Authorize-Extension in Autoya is based on these scenerio:
+				Carryout: player wants to change their device, Autoya requires eMail and password or other provided Id token.
+				Upgrade1: upgrading player's account with eMail and password.
+				Upgrade2: upgrading player's account with 3rdParty id. (e.g. Twitter, Facebook, and other 3rd IdProvider.)[UNDER CONSTRUCTION]
+				
+				in these cases, Autoya can extends it's state and condition.
+				actually, "Carryout" is motivated by "Upgrade1" or "Upgrade2".
+
+				
+				graph2: Extended [APP STATE] and (LOGIN CONDITION)
+
+						→	→	[got token] → [use token] → [carryout]/[add mail+pass]/[add 3rdParty Identity]	(logged-in)
+						↑			↑				↓								↓
+						↑	[refresh token] ← [token expiration] 	←	←	← 	←	↓							(logged-out)
+						↑															↓
+						↑	←	←	←	← 	←	[manual login]	 	←	←	← [revoke token]					(logged-out by manual)
+				
+
+				on Carryout: player wants to change their device, Autoya requires eMail and password or other provided Id .
+					client(token, mail, pass) -> server
+						adding mail and pass to player-id on server.
+						after that, player can be log-in with mail and pass.
+
+				on Upgrade1: upgrading player's account with eMail and password.
+					client(token, mail, pass) -> server
+						adding mail and pass to player-id on server.
+						after that, player can be log-in with mail and pass.
+
+				on Upgrade2: upgrading player's account with 3rdParty id. (e.g. Twitter, Facebook, and other 3rd IdProvider.)
+					client(token, 3rd data) -> server
+						adding mail and pass to player-id on server.
+						after that, player can be log-in with mail and pass.
 						
-				on Erase:("App Erase" or "App Data Erase")
-					client(identitiy + token) becomes client(vacant-identitiy, vacant-token)
 
-				
-
-			There are 3 way flow to gettting login.
-				Initial Boot:
-					1.get id and token
-					2.login with token
-
-				or 
-
-				2nd Boot or later:
-					1.load token from app
-					2.login with token
-
-				or 
-
-				when token Expired:
-					1.get token
-					2.login with token
-			
-			
-			Authorize-Extension
-				Autoya's basic auth feature's identity parameter is generated by server on Initial Boot Time.
-				It is useful because player does not requre anything for playing game.
-
-				But if the player(App user) wanted to LogIn on their new device,
-				We should provide the way to do it(CarryOut of identity).
-				
-				Autoya can enforce LogIn feature by additional user data.
-				-> under construction.
-
-
-			複数のハードポイントを吐き出せるはず。
+			TODO:複数のハードポイントを吐き出せるはず。
 			・idのsaveValidation
 			・idのloadValidation
 
@@ -104,15 +115,12 @@ namespace AutoyaFramework {
 
 			・tokenRequestのrequestHeaderValidation
 			・tokenRequestのresponseHeaderValidation
-
-			そも
 		*/
-		private string _identity;
 		
 		private string _token;
 		private void InitializeTokenAuth () {
 			_loginState = LoginState.LOGGED_OUT;
-
+			
 			/*
 				set default handlers.
 			*/
@@ -125,113 +133,9 @@ namespace AutoyaFramework {
 				return false;
 			};
 
-			ReloadIdentity();
+			Login();
 		}
 
-		/**
-			step 1 of 3.
-			reload identity then load token then login.
-		*/
-		private void ReloadIdentity () {
-			var identityCandidate = LoadIdentity();
-			if (IsIdentityValid(identityCandidate)) {
-				_identity = identityCandidate;
-				// Debug.LogWarning("ReloadIdentity succeeded.");
-				LoadTokenThenLogin();
-			} else {
-				_identity = string.Empty;
-				var saveResult = SaveIdentity(string.Empty);
-				if (saveResult) {
-					RequestIdentity();
-				}
-			}
-		}
-
-		private bool IsIdentityValid (string identityCandidate) {
-			if (string.IsNullOrEmpty(identityCandidate)) return false; 
-			return true;
-		}
-
-		private void RequestIdentity () {
-			var identityUrl = AutoyaConsts.AUTH_URL_IDENTITY;
-			var identityHttp = new HTTPConnection();
-			var identityConnectionId = AutoyaConsts.AUTH_CONNECTIONID_REQUESTIDENTITY_PREFIX + Guid.NewGuid().ToString();
-			
-			Debug.LogWarning("内部にセットされているtokenとかを混ぜて、requestHeaderを生成する。");
-			var identityRequestHeaders = new Dictionary<string, string>();
-
-			Observable.FromCoroutine(
-				() => identityHttp.Get(
-					identityConnectionId,
-					identityRequestHeaders,
-					identityUrl,
-					(conId, code, responseHeaders, data) => {
-						EvaluateIdentityResult(conId, responseHeaders, code, data);
-					},
-					(conId, code, failedReason, responseHeaders) => {
-						EvaluateIdentityResult(conId, responseHeaders, code, failedReason);
-					}
-				)
-			).Timeout(
-				TimeSpan.FromSeconds(AutoyaConsts.HTTP_TIMEOUT_SEC)
-			).Subscribe(
-				_ => {},
-				ex => {
-					var errorType = ex.GetType();
-
-					switch (errorType.ToString()) {
-						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateIdentityResult(identityConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
-							break;
-						}
-						default: {
-							throw new Exception("failed to get token by undefined reason:" + ex.Message);
-						}
-					}
-				}
-			);
-		}
-		private void EvaluateIdentityResult (string identityConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
-			Debug.LogWarning("取得したidentityを検査する必要がある。ヘッダとかで検証とかいろいろ。 検証メソッドとか外に出せばいいことあるかな。");
-
-			ErrorFlowHandling(
-				identityConnectionId,
-				responseHeaders, 
-				responseCode,  
-				resultDataOrFailedReason, 
-				(succeededConId, succeededData) => {
-					var isValid = IsIdentityValid(succeededData);
-					
-					if (isValid) {
-						Debug.LogWarning("id取得に成功, 雑にidとして保存する。 succeededData:" + succeededData);
-
-						var identitiyCandidate = succeededData;
-						UpdateIdentityThenGetToken(identitiyCandidate);
-					} else {
-						Debug.LogError("未解決の、invalidなidentityだと見做せた場合の処理");
-					}
-				},
-				(failedConId, failedCode, failedReason) => {
-					if (IsInMaintenance(responseCode, responseHeaders)) {
-						// in maintenance, do nothing here.
-						return;
-					}
-
-					// ここでのtimeoutとかをハンドリングしてないんだよな。
-					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
-				}
-			);
-		}
-
-		private void UpdateIdentityThenGetToken (string newIdentity) {
-			var isSaved = SaveIdentity(newIdentity);
-			if (isSaved) {
-				Debug.LogWarning("UpdateIdentityThenGetToken succeeded.");
-				ReloadIdentity();
-			} else {
-				Debug.LogError("tokenのSaveに失敗、この辺、保存周りのイベントと連携させないとな〜〜〜");
-			}
-		}
 
 		private int Progress () {
 			return (int)_loginState;
@@ -246,15 +150,14 @@ namespace AutoyaFramework {
 
 		private void LogOut () {
 			_loginState = LoginState.LOGGED_OUT;
+			Debug.LogError("登録ユーザーでないと、これを行うと死ぬ(ユーザー情報がないので復帰できなくなる)ので、簡易可視化idみたいなのがあるといい気がする。carryoutが影響受けそう");
 			RevokeToken();
 		}
 
 		/**
-			step 2 of 3.
-				load token then login.
+			load token then login.
 		*/
-		private void LoadTokenThenLogin () {
-			Debug.Assert(!string.IsNullOrEmpty(_identity), "id is empty");
+		private void Login () {
 			var tokenCandidate = LoadToken();
 
 			/*
@@ -264,26 +167,12 @@ namespace AutoyaFramework {
 			var isValid = IsTokenValid(tokenCandidate);
 			
 			if (isValid) {
-				Debug.LogWarning("(maybe) valid token found. start login with it.");
+				Debug.LogWarning("(maybe) valid token found. start login with it and get refresh token.");
 				AttemptLoginByTokenCandidate(tokenCandidate);
 			} else {
-				Debug.LogWarning("no token found. get token then login.");
-				GetTokenThenLogin();
+				Debug.LogWarning("no token found or token expired. if first boot, get token then login.");
+				RefreshTokenThenLogin();
 			}
-		}
-
-		private bool SaveIdentity (string identity) {
-			return _autoyaFilePersistence.Update(
-				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
-				AutoyaConsts.AUTH_STORED_IDENTITY_FILENAME,
-				identity
-			);
-		}
-		private string LoadIdentity () {
-			return _autoyaFilePersistence.Load(
-				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
-				AutoyaConsts.AUTH_STORED_IDENTITY_FILENAME
-			); 
 		}
 
 		private bool SaveToken (string newTokenCandidate) {
@@ -301,17 +190,19 @@ namespace AutoyaFramework {
 			);
 		}
 
-		private void GetTokenThenLogin () {
-			Debug.Assert(!string.IsNullOrEmpty(_identity), "identity is null or empty.");
-			_loginState = LoginState.GETTING_TOKEN;
+		private void RefreshTokenThenLogin () {
+			_loginState = LoginState.REFRESHING_TOKEN;
 
 			var tokenUrl = AutoyaConsts.AUTH_URL_TOKEN;
+			
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_GETTOKEN_PREFIX + Guid.NewGuid().ToString();
 			
-			Debug.LogWarning("内部に保存していたidentityをアレしたものを使って、リクエストを作り出す。");
+			Debug.LogWarning("内部に保存していたrefresh tokenを使って、リクエストを作り出す。");
+			Debug.LogError("refresh tokenを使おう。いまのところまだダミーid使ってる。");
+
 			var tokenRequestHeaders = new Dictionary<string, string>{
-				{"identity", _identity}
+				{"identity", "dummy-id"}
 			};
 
 			Observable.FromCoroutine(
@@ -347,7 +238,7 @@ namespace AutoyaFramework {
 		}
 
 		private void EvaluateTokenResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
-			// 取得したtokenを検査する必要がある。ヘッダとかで検証とかいろいろ。 検証メソッドとか外に出せばいいことあるかな。
+			// 取得したtokenを検査する必要がある。JWTになるので、保存したり検証したり。
 			// Debug.LogWarning("EvaluateTokenResult!! " + " tokenConnectionId:" + tokenConnectionId + " responseCode:" + responseCode + " resultDataOrFailedReason:" + resultDataOrFailedReason);
 
 			ErrorFlowHandling(
@@ -392,28 +283,27 @@ namespace AutoyaFramework {
 		}
 
 		private bool IsTokenValid (string tokenCandidate) {
-			if (string.IsNullOrEmpty(tokenCandidate)) return false; 
+			if (string.IsNullOrEmpty(tokenCandidate)) return false;
+			Debug.LogError("expireを見ることができる、JWTとしての正しさみたいなのを見ることができる。"); 
 			return true;
 		}
 
 
 		/**
-			step 3 of 3.
+			step 2 of 2 :token refreshing.
 				login with token candidate.
 				this method constructs kind of "Autoya's popular auth-signed http request".
 		*/
 		private void AttemptLoginByTokenCandidate (string tokenCandidate) {
-			Debug.Assert(!string.IsNullOrEmpty(_identity), "identity is still empty.");
-
 			_loginState = LoginState.LOGGING_IN;
 
 			/*
 				set token candidate and identitiy to request header basement.
 			*/
-			SetHTTPAuthorizedPart(_identity, tokenCandidate);
+			SetHTTPAuthorizedPart("dummy-id", tokenCandidate);
 
 			/*
-				create authorized login request.
+				create login request.
 			*/
 			var loginUrl = AutoyaConsts.AUTH_URL_LOGIN;			
 			var loginHeaders = GetAuthorizedAndAdditionalHeaders();
@@ -486,8 +376,8 @@ namespace AutoyaFramework {
 					
 					var shouldRetry = OnAuthFailed(loginConnectionId, resultDataOrFailedReason);
 					if (shouldRetry) {
-						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとか。そのためには何ができると良いんだろう。");
-						LoadTokenThenLogin();
+						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとか。そのためには何ができると良いんだろう。とりあえず封印");
+						// Login();
 					}
 				}
 			);
@@ -496,7 +386,7 @@ namespace AutoyaFramework {
 		private void UpdateTokenThenAttemptLogin (string gotNewToken) {
 			var isSaved = SaveToken(gotNewToken);
 			if (isSaved) {
-				LoadTokenThenLogin();
+				Login();
 			} else {
 				Debug.LogError("tokenのSaveに失敗、この辺、保存周りのイベントと連携させないとな〜〜〜");
 			}
@@ -517,7 +407,7 @@ namespace AutoyaFramework {
 		}
 
 		public static void Auth_AttemptLogIn () {
-			autoya.ReloadIdentity();
+			autoya.Login();
 		}
 
 		public static void Auth_SetOnLoginSucceeded (Action onAuthSucceeded) {
@@ -561,6 +451,7 @@ namespace AutoyaFramework {
 			GETTING_TOKEN,
 			LOGGING_IN,
 			LOGGED_IN,
+			REFRESHING_TOKEN,
 		}
 
 		private LoginState _loginState;

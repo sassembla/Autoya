@@ -21,7 +21,18 @@ namespace AutoyaFramework {
 		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (Dictionary<string, string> additionalHeader=null, Func<Dictionary<string, string>, Dictionary<string, string>> customizer=null) {
 			var headerDict = new Dictionary<string, string>();
 
-			
+			/*
+				git ignoreを利用して独自暗号化とかの実装を推薦する。
+				basicなやつであれば、何も載せずにJWTで基礎的なものを送るようにしたい。
+
+				カスタマイズする場合は、特定の関数をオーバーライドしたクラスを用意し、それをignoreし、それが使われるようにしたい。
+				初回起動時通信と、それ以外とで扱いが異なる。
+
+				tokenがあったら、なかったら、expireしてるのが内部で確認できたら、という感じか。
+
+				☆サンプルでは適当なbasic認証にしておけばいいと思う。
+			*/
+
 			/*
 				set authorized header part.
 			*/
@@ -119,7 +130,7 @@ namespace AutoyaFramework {
 				if (IsAuthFailed(httpCode, responseHeaders)) {
 					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
 					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
-					if (shouldRelogin) LoadTokenThenLogin();
+					if (shouldRelogin) Login();
 				}
 			}
 			

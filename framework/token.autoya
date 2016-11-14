@@ -4,11 +4,11 @@
     "Accept": "*/*", 
     "Accept-Encoding": "deflate, gzip", 
     "Host": "httpbin.org", 
-    "Identity": "{", 
-    "User-Agent": "UnityPlayer/5.4.1p4 (UnityWebRequest/1.0, libcurl/7.46.0-DEV)", 
-    "X-Unity-Version": "5.4.1p4"
+    "Identity": "dummy-id", 
+    "User-Agent": "UnityPlayer/5.4.2p4 (UnityWebRequest/1.0, libcurl/7.46.0-DEV)", 
+    "X-Unity-Version": "5.4.2p4"
   }, 
-  "origin": "118.1.138.2", 
+  "origin": "119.243.128.47", 
   "url": "https://httpbin.org/get"
 }
 

@@ -17,7 +17,6 @@ namespace AutoyaFramework {
 		public const string AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX = "login_";
 
 		public const string AUTH_STORED_FRAMEWORK_DOMAIN = "framework";
-		public const string AUTH_STORED_IDENTITY_FILENAME = "id.autoya";
 		public const string AUTH_STORED_TOKEN_FILENAME = "token.autoya";
 
 		public const string AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT = "System.TimeoutException";
