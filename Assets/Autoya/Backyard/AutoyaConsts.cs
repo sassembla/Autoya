@@ -9,10 +9,16 @@ namespace AutoyaFramework {
 		/*
 			auth settings.
 		*/
-		public const string AUTH_URL_IDENTITY = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
-		public const string AUTH_CONNECTIONID_REQUESTIDENTITY_PREFIX = "id_";
-		public const string AUTH_URL_TOKEN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
-		public const string AUTH_CONNECTIONID_GETTOKEN_PREFIX = "token_";
+		// boot.
+		public const string AUTH_URL_BOOT = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
+		public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";
+		public readonly byte[] AUTH_KEY = new byte[]{100, 101, 102};
+		
+		// refresh.
+		public const string AUTH_URL_REFRESH_TOKEN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
+		public const string AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX = "ref_token_";
+
+		// login.
 		public const string AUTH_URL_LOGIN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
 		public const string AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX = "login_";
 

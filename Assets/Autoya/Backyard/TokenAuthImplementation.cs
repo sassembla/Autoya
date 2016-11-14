@@ -162,8 +162,7 @@ namespace AutoyaFramework {
 			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN);
 			if (tokenCandidatePaths.Length == 0) {
 				Debug.LogError("first boot. no token found.");
-				_loginState = LoginState.GETTING_TOKEN;
-				// なんかする。
+				StartBootAccess();
 				return;
 			}
 			foreach (var a in tokenCandidatePaths) Debug.LogError("a:" + a);
@@ -200,13 +199,62 @@ namespace AutoyaFramework {
 			);
 		}
 
+		private void StartBootAccess () {
+			_loginState = LoginState.GETTING_TOKEN;
+			
+			var tokenUrl = AutoyaConsts.AUTH_URL_BOOT;
+			
+			var tokenHttp = new HTTPConnection();
+			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
+			
+			Debug.LogError("boot時、encで内部のキーをアレして、使う。");
+			
+			var signer = new Signer();
+			var signature = signer.GenerateSign();
+
+			var tokenRequestHeaders = new Dictionary<string, string>{
+				{"identity", "dummy-id"}
+			};
+
+			Observable.FromCoroutine(
+				() => tokenHttp.Get(
+					tokenConnectionId,
+					tokenRequestHeaders,
+					tokenUrl,
+					(conId, code, responseHeaders, data) => {
+						EvaluateTokenResult(conId, responseHeaders, code, data);
+					},
+					(conId, code, failedReason, responseHeaders) => {
+						EvaluateTokenResult(conId, responseHeaders, code, failedReason);
+					}
+				)
+			).Timeout(
+				TimeSpan.FromSeconds(AutoyaConsts.HTTP_TIMEOUT_SEC)
+			).Subscribe(
+				_ => {},
+				ex => {
+					var errorType = ex.GetType();
+
+					switch (errorType.ToString()) {
+						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+							break;
+						}
+						default: {
+							throw new Exception("failed to get token by undefined reason:" + ex.Message);
+						}
+					}
+				}
+			);
+		}
+
 		private void RefreshTokenThenLogin () {
 			_loginState = LoginState.REFRESHING_TOKEN;
 
-			var tokenUrl = AutoyaConsts.AUTH_URL_TOKEN;
+			var tokenUrl = AutoyaConsts.AUTH_URL_REFRESH_TOKEN;
 			
 			var tokenHttp = new HTTPConnection();
-			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_GETTOKEN_PREFIX + Guid.NewGuid().ToString();
+			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 			
 			Debug.LogWarning("内部に保存していたrefresh tokenを使って、リクエストを作り出す。");
 			Debug.LogError("refresh tokenを使おう。いまのところまだダミーid使ってる。");
@@ -418,6 +466,7 @@ namespace AutoyaFramework {
 		}
 
 		public static void Auth_AttemptLogIn () {
+			Debug.LogError("stateによる排他、ユーザーからの動作の時だけ発生させたほうがいい気がスル。");
 			autoya.Login();
 		}
 

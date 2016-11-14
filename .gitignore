@@ -28,3 +28,7 @@ Assets/framework/*
 Assets/framework.meta
 
 .vscode/*
+
+Assets/Autoya/Libs/BouncyCastle.dll
+
+Assets/Signer.cs
