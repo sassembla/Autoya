@@ -21,7 +21,7 @@ int _iOSStorage_AvailableMb() {
 }
 
 /*
- * ストレージ全て容量の取得
+ * ストレージ全容量の取得
  */
 int _iOSStorage_TotalMb() {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);

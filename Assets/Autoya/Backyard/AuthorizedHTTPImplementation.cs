@@ -135,7 +135,7 @@ namespace AutoyaFramework {
 			}
 			
 			// Debug.LogError("connectionId:" + connectionId + " httpCode:" + httpCode + " data:" + data);
-
+			
 			/*
 				pit falls for not 2XX.
 			*/

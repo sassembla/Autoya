@@ -154,10 +154,20 @@ namespace AutoyaFramework {
 			RevokeToken();
 		}
 
+		
 		/**
 			load token then login.
 		*/
 		private void Login () {
+			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN);
+			if (tokenCandidatePaths.Length == 0) {
+				Debug.LogError("first boot. no token found.");
+				_loginState = LoginState.GETTING_TOKEN;
+				// なんかする。
+				return;
+			}
+			foreach (var a in tokenCandidatePaths) Debug.LogError("a:" + a);
+
 			var tokenCandidate = LoadToken();
 
 			/*
@@ -283,6 +293,7 @@ namespace AutoyaFramework {
 		}
 
 		private bool IsTokenValid (string tokenCandidate) {
+			
 			if (string.IsNullOrEmpty(tokenCandidate)) return false;
 			Debug.LogError("expireを見ることができる、JWTとしての正しさみたいなのを見ることができる。"); 
 			return true;

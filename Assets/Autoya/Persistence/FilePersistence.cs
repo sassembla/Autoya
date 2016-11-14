@@ -17,15 +17,14 @@ namespace AutoyaFramework.Persistence.Files {
 			sync series.
 		*/
 		public bool Update (string domain, string fileName, string data) {
-			Debug.Log("Update 非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 
 				var filePath = Path.Combine(domainPath, fileName);
-				using (var sw = new StreamWriter(filePath, false))	{
-					sw.WriteLine(data);
+				using (var sw = new StreamWriter(filePath, true))	{
+					sw.Write(data);
 				}
-
+				
 				return true;
 			} else {// no directory = domain exists.
 				var created = Directory.CreateDirectory(domainPath);
@@ -34,15 +33,13 @@ namespace AutoyaFramework.Persistence.Files {
 					
 					#if UNITY_IOS
 					{
-						Debug.LogError("UNITY_IOS版でのフラッグ、メインスレッド以外でセットできないのすごく困る、、");
-
-                        // UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
 					}
 					#endif
 
 					var filePath = Path.Combine(domainPath, fileName);
-					using (var sw = new StreamWriter(filePath, false))	{
-						sw.WriteLine(data);
+					using (var sw = new StreamWriter(filePath, true)) {
+						sw.Write(data);
 					}
 					return true;
 				} 
@@ -50,14 +47,32 @@ namespace AutoyaFramework.Persistence.Files {
 			return false;
 		}
 
+		public string[] FileNamesInDomain (string domain) {
+			var domainPath = Path.Combine(basePath, domain);
+			if (Directory.Exists(domainPath)) {
+				var filePaths = Directory.GetFiles(domainPath);
+				
+				if (filePaths.Length == 0) {
+					return new string[]{};
+				}
+
+				var fileNames = new string[filePaths.Length];
+				for (var i = 0; i < filePaths.Length; i++) {
+					var fileName = filePaths[i];
+					fileNames[i] = Path.GetFileName(fileName);
+				}
+				return fileNames;
+			}
+			return new string[]{};
+		}
+
 		public string Load (string domain, string fileName) {
-			Debug.Log("Load この関数は同期IOでの保存なんだけど、非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				var filePath = Path.Combine(domainPath, fileName);
 				if (File.Exists(filePath)) {
 					using (var sr = new StreamReader(filePath))	{
-						return sr.ReadLine();
+						return sr.ReadToEnd();
 					}
 				}
 			}
@@ -65,7 +80,6 @@ namespace AutoyaFramework.Persistence.Files {
 		}
 
 		public bool Delete (string domain, string fileName) {
-			Debug.Log("Delete この関数は同期IOでの削除なんだけど、非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				var filePath = Path.Combine(domainPath, fileName);
@@ -78,7 +92,6 @@ namespace AutoyaFramework.Persistence.Files {
 		}
 
 		public bool DeleteByDomain (string domain) {
-			Debug.Log("DeleteByDomain この関数は同期IOでの削除なんだけど、非同期版を使って、保存エラーをすべてをハンドラチェーンに沈めたい。フレームワークなんで。");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 				Directory.Delete(domainPath, true);

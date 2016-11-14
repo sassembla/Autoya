@@ -1,3 +1,4 @@
+using System.IO;
 using AutoyaFramework;
 using Miyamasu;
 
@@ -5,10 +6,18 @@ using Miyamasu;
 	test for authorization flow control.
 */
 public class AuthImplementationTests : MiyamasuTestRunner {
+	private void DeleteAllData (string path) {
+		if (Directory.Exists(path)) {
+			Directory.Delete(path, true);
+		}
+	}
+
 	[MSetup] public void Setup () {
+		DeleteAllData(AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN);
+
 		var dataPath = string.Empty;
 		Autoya.TestEntryPoint(dataPath);
-
+		
 		var authorized = false;
 		Autoya.Auth_SetOnLoginSucceeded(
 			() => {
