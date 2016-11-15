@@ -1,17 +1,19 @@
 using System.IO;
 using AutoyaFramework;
 using Miyamasu;
+using UnityEngine;
 
 /**
 	test for authorization flow control.
 */
 public class AuthImplementationTests : MiyamasuTestRunner {
 	private void DeleteAllData (string path) {
+		Debug.LogError("deleting folder:" + path);
 		if (Directory.Exists(path)) {
 			Directory.Delete(path, true);
 		}
 	}
-
+	
 	[MSetup] public void Setup () {
 		DeleteAllData(AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN);
 

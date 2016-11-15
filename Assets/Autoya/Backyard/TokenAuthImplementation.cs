@@ -165,7 +165,6 @@ namespace AutoyaFramework {
 				StartBootAccess();
 				return;
 			}
-			foreach (var a in tokenCandidatePaths) Debug.LogError("a:" + a);
 
 			var tokenCandidate = LoadToken();
 
