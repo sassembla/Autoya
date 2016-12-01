@@ -25,9 +25,8 @@ namespace AutoyaFramework.Connections.HTTP {
 				
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
-				UnityEngine.Debug.LogError("sended.");
 
-				
+
 				/*
 					大まかな通信接続状態のエラーをこの辺で捌く、、のが成立する前提
 				*/
