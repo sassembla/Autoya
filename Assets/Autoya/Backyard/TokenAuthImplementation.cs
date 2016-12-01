@@ -221,9 +221,11 @@ namespace AutoyaFramework {
 					tokenRequestHeaders,
 					tokenUrl,
 					(conId, code, responseHeaders, data) => {
+						Debug.LogError("A fmmmm,,,,!!! timeout.");
 						EvaluateTokenResult(conId, responseHeaders, code, data);
 					},
 					(conId, code, failedReason, responseHeaders) => {
+						Debug.LogError("B fmmmm,,,,!!! timeout.");
 						EvaluateTokenResult(conId, responseHeaders, code, failedReason);
 					}
 				)
@@ -236,6 +238,7 @@ namespace AutoyaFramework {
 
 					switch (errorType.ToString()) {
 						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							Debug.LogError("fmmmm,,,,!!! timeout.");
 							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
 							break;
 						}

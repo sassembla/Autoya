@@ -27,7 +27,7 @@ MIT.
 done
 
 ###AssetBundle load/management
-in 2016/11
+done
 
 ###HTTP/TCP/UDP Connection feature
 | Protocol        | Progress     |
@@ -42,7 +42,7 @@ in 2016/11
 done
 
 ###Purchase/IAP flow
-in 2016/11
+in 2016
 
 ###Notification(local/remote)
 in 2016
