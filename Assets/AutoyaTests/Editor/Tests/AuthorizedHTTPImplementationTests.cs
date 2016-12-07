@@ -130,7 +130,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 				// do nothing.
 			},
 			(string conId, int code, string reason) => {
-				Assert(code == AutoyaConsts.HTTP_TIMEOUT_CODE, "not match.");
+				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match.");
 				timeoutError = reason;
 			},
 			null,
@@ -262,7 +262,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 				// do nothing.
 			},
 			(string conId, int code, string reason) => {
-				Assert(code == AutoyaConsts.HTTP_TIMEOUT_CODE, "not match.");
+				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match.");
 				timeoutError = reason;
 			},
 			null,

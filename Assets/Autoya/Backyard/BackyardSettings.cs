@@ -1,5 +1,5 @@
 namespace AutoyaFramework {
-    public class AutoyaConsts {
+    public class BackyardSettings {
 		/*
 			keyword settings.
 		*/
@@ -10,16 +10,12 @@ namespace AutoyaFramework {
 			auth settings.
 		*/
 		// boot.
-		public const string AUTH_URL_BOOT = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
 		public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";
-		public readonly byte[] AUTH_KEY = new byte[]{100, 101, 102};
 		
 		// refresh.
-		public const string AUTH_URL_REFRESH_TOKEN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
 		public const string AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX = "ref_token_";
 
 		// login.
-		public const string AUTH_URL_LOGIN = "https://httpbin.org/get";// 書くとしたらここじゃねえなあ。ユーザー用の設定ファイルが欲しい。
 		public const string AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX = "login_";
 
 		public const string AUTH_STORED_FRAMEWORK_DOMAIN = "framework";

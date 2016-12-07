@@ -1,5 +1,8 @@
 using UnityEngine;
 using AutoyaFramework.Connections.HTTP;
+using AutoyaFramework.Representation;
+using AutoyaFramework.Settings.Auth;
+
 using System;
 using System.Collections.Generic;
 using UniRx;
@@ -159,7 +162,7 @@ namespace AutoyaFramework {
 			load token then login.
 		*/
 		private void Login () {
-			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN);
+			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 			if (tokenCandidatePaths.Length == 0) {
 				Debug.LogError("first boot. no token found.");
 				StartBootAccess();
@@ -185,26 +188,26 @@ namespace AutoyaFramework {
 
 		private bool SaveToken (string newTokenCandidate) {
 			return _autoyaFilePersistence.Update(
-				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
-				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME,
+				BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN, 
+				BackyardSettings.AUTH_STORED_TOKEN_FILENAME,
 				newTokenCandidate
 			);
 		}
 
 		private string LoadToken () {
 			return _autoyaFilePersistence.Load(
-				AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN, 
-				AutoyaConsts.AUTH_STORED_TOKEN_FILENAME
+				BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN, 
+				BackyardSettings.AUTH_STORED_TOKEN_FILENAME
 			);
 		}
 
 		private void StartBootAccess () {
 			_loginState = LoginState.GETTING_TOKEN;
 			
-			var tokenUrl = AutoyaConsts.AUTH_URL_BOOT;
+			var tokenUrl = AuthSettings.AUTH_URL_BOOT;
 			
 			var tokenHttp = new HTTPConnection();
-			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
+			var tokenConnectionId = BackyardSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
 			
 			Debug.LogError("boot時、encで内部のキーをアレして、使う。");
 			
@@ -228,15 +231,15 @@ namespace AutoyaFramework {
 					}
 				)
 			).Timeout(
-				TimeSpan.FromSeconds(AutoyaConsts.HTTP_TIMEOUT_SEC)
+				TimeSpan.FromSeconds(BackyardSettings.HTTP_TIMEOUT_SEC)
 			).Subscribe(
 				_ => {},
 				ex => {
 					var errorType = ex.GetType();
 
 					switch (errorType.ToString()) {
-						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
 							break;
 						}
 						default: {
@@ -250,10 +253,10 @@ namespace AutoyaFramework {
 		private void RefreshTokenThenLogin () {
 			_loginState = LoginState.REFRESHING_TOKEN;
 
-			var tokenUrl = AutoyaConsts.AUTH_URL_REFRESH_TOKEN;
+			var tokenUrl = AuthSettings.AUTH_URL_REFRESH_TOKEN;
 			
 			var tokenHttp = new HTTPConnection();
-			var tokenConnectionId = AutoyaConsts.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
+			var tokenConnectionId = BackyardSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 			
 			Debug.LogWarning("内部に保存していたrefresh tokenを使って、リクエストを作り出す。");
 			Debug.LogError("refresh tokenを使おう。いまのところまだダミーid使ってる。");
@@ -275,15 +278,15 @@ namespace AutoyaFramework {
 					}
 				)
 			).Timeout(
-				TimeSpan.FromSeconds(AutoyaConsts.HTTP_TIMEOUT_SEC)
+				TimeSpan.FromSeconds(BackyardSettings.HTTP_TIMEOUT_SEC)
 			).Subscribe(
 				_ => {},
 				ex => {
 					var errorType = ex.GetType();
 
 					switch (errorType.ToString()) {
-						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
 							break;
 						}
 						default: {
@@ -340,10 +343,8 @@ namespace AutoyaFramework {
 		}
 
 		private bool IsTokenValid (string tokenCandidate) {
-			
 			if (string.IsNullOrEmpty(tokenCandidate)) return false;
-			Debug.LogError("expireを見ることができる、JWTとしての正しさみたいなのを見ることができる。"); 
-			return true;
+			return JWT.Validate(tokenCandidate, AuthSettings.SAFE_HOST);
 		}
 
 
@@ -363,11 +364,11 @@ namespace AutoyaFramework {
 			/*
 				create login request.
 			*/
-			var loginUrl = AutoyaConsts.AUTH_URL_LOGIN;			
+			var loginUrl = AuthSettings.AUTH_URL_LOGIN;			
 			var loginHeaders = GetAuthorizedAndAdditionalHeaders();
 
 			var loginHttp = new HTTPConnection();
-			var loginConnectionId = AutoyaConsts.AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX + Guid.NewGuid().ToString();
+			var loginConnectionId = BackyardSettings.AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX + Guid.NewGuid().ToString();
 			
 			Observable.FromCoroutine(
 				_ => loginHttp.Get(
@@ -382,15 +383,15 @@ namespace AutoyaFramework {
 					}
 				)
 			).Timeout(
-				TimeSpan.FromSeconds(AutoyaConsts.HTTP_TIMEOUT_SEC)
+				TimeSpan.FromSeconds(BackyardSettings.HTTP_TIMEOUT_SEC)
 			).Subscribe(
 				_ => {},
 				ex => {
 					var errorType = ex.GetType();
 
 					switch (errorType.ToString()) {
-						case AutoyaConsts.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), AutoyaConsts.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
+							EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
 							break;
 						}
 						default: {
@@ -460,14 +461,26 @@ namespace AutoyaFramework {
 			public auth APIs
 		*/
 
+		/**
+			returns auth progress int (0 ~ 4)
+		*/
 		public static int Auth_Progress () {
 			return autoya.Progress();
 		}
 
-		public static void Auth_AttemptLogIn () {
-			Debug.LogError("stateによる排他、ユーザーからの動作の時だけ発生させたほうがいい気がスル。");
-			autoya.Login();
+		/**
+			return true if started to attempt log-in.
+
+			if this method returns false, attempt of Login is already ongoing.
+		*/
+		public static bool Auth_AttemptLogIn () {
+			if (autoya._loginState ==LoginState.LOGGED_OUT) {
+				autoya.Login();
+				return true;
+			}
+			return false;
 		}
+
 
 		public static void Auth_SetOnLoginSucceeded (Action onAuthSucceeded) {
 			autoya.OnLoginSucceeded = token => {
@@ -479,6 +492,11 @@ namespace AutoyaFramework {
 			if (Auth_IsLoggedIn()) onAuthSucceeded();
         }
 
+
+		/**
+			Note that:this method is not pair of above "Auth_SetOnLoginSucceeded" method.
+
+		*/
 		public static void Auth_SetOnAuthFailed (Func<string, string, bool> onAuthFailed) {
             autoya.OnAuthFailed = (conId, reason) => {
 				autoya.LogOut();

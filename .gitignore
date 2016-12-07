@@ -32,3 +32,7 @@ Assets/framework.meta
 Assets/Autoya/Libs/BouncyCastle.dll
 
 Assets/Signer.cs
+
+framework/token.autoya
+
+AutoyaFilePersistTestsFileDomain/persist.txt

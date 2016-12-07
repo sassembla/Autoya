@@ -15,7 +15,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
-		DeleteAllData(AutoyaConsts.AUTH_STORED_FRAMEWORK_DOMAIN);
+		DeleteAllData(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 
 		var dataPath = string.Empty;
 		Autoya.TestEntryPoint(dataPath);

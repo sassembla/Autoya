@@ -128,7 +128,7 @@ namespace AutoyaFramework {
 					detect unauthorized response code or response header value.
 				*/
 				if (IsAuthFailed(httpCode, responseHeaders)) {
-					var unauthReason = AutoyaConsts.HTTP_401_MESSAGE + data;
+					var unauthReason = BackyardSettings.HTTP_401_MESSAGE + data;
 					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
 					if (shouldRelogin) Login();
 				}
@@ -158,7 +158,7 @@ namespace AutoyaFramework {
 		}
 		
 		private bool IsInMaintenance (int httpCode, Dictionary<string, string> responseHeaders) {
-			if (httpCode == AutoyaConsts.MAINTENANCE_CODE) return true;
+			if (httpCode == BackyardSettings.MAINTENANCE_CODE) return true;
 			return false;
 		}
 		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeaders) {
@@ -176,7 +176,7 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=AutoyaConsts.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 			
@@ -199,7 +199,7 @@ namespace AutoyaFramework {
 			).Subscribe(
 				_ => {},
 				ex => {
-					failed(connectionId, AutoyaConsts.HTTP_TIMEOUT_CODE, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
+					failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + ex);
 				}
 			);
 
@@ -212,7 +212,7 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=AutoyaConsts.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 			
@@ -236,7 +236,7 @@ namespace AutoyaFramework {
 			).Subscribe(
 				_ => {},
 				ex => {
-					failed(connectionId, AutoyaConsts.HTTP_TIMEOUT_CODE, AutoyaConsts.HTTP_TIMEOUT_MESSAGE + ex);
+					failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + ex);
 				}
 			);
 
