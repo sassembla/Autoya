@@ -1,13 +1,7 @@
 namespace AutoyaFramework {
     public class BackyardSettings {
 		/*
-			keyword settings.
-		*/
-		public const string key_app_version = "app_version";
-		public const string key_asset_version = "asset_version";
-
-		/*
-			auth settings.
+			auth connectionId settings.
 		*/
 		// boot.
 		public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";

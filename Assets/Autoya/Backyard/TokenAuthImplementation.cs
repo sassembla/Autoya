@@ -144,6 +144,7 @@ namespace AutoyaFramework {
 			return (int)_loginState;
 		}
 
+
 		private void LoggedIn (string newToken) {
 			Debug.Assert(!(string.IsNullOrEmpty(newToken)), "token is null.");
 
@@ -153,7 +154,7 @@ namespace AutoyaFramework {
 
 		private void LogOut () {
 			_loginState = LoginState.LOGGED_OUT;
-			Debug.LogError("登録ユーザーでないと、これを行うと死ぬ(ユーザー情報がないので復帰できなくなる)ので、簡易可視化idみたいなのがあるといい気がする。carryoutが影響受けそう");
+			Debug.LogWarning("登録ユーザーでないと、これを行うと死ぬ(ユーザー情報がないので復帰できなくなる)ので、簡易可視化idみたいなのがあるといい気がする。carryoutが影響受けそう");
 			RevokeToken();
 		}
 
@@ -209,7 +210,7 @@ namespace AutoyaFramework {
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = BackyardSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
 			
-			Debug.LogError("boot時、encで内部のキーをアレして、使う。");
+			Debug.LogWarning("boot時、encで内部のキーをアレして、使う。");
 			
 			var signer = new Signer();
 			var signature = signer.GenerateSign();
@@ -217,6 +218,7 @@ namespace AutoyaFramework {
 			var tokenRequestHeaders = new Dictionary<string, string>{
 				{"identity", "dummy-id"}
 			};
+			
 
 			Observable.FromCoroutine(
 				() => tokenHttp.Get(
@@ -344,7 +346,7 @@ namespace AutoyaFramework {
 
 		private bool IsTokenValid (string tokenCandidate) {
 			if (string.IsNullOrEmpty(tokenCandidate)) return false;
-			return JWT.Validate(tokenCandidate, AuthSettings.SAFE_HOST);
+			return true;
 		}
 
 
@@ -427,7 +429,7 @@ namespace AutoyaFramework {
 					/*
 						we should handling NOT 401(Unauthorized) result.
 					*/
-
+					
 					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
 					
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。

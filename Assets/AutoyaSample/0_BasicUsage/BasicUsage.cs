@@ -6,12 +6,10 @@ using System;
 public class BasicUsage : MonoBehaviour {
 
 	void Awake () {
-		Debug.LogError("awakeしてる");
 		var loggedIn = Autoya.Auth_IsLoggedIn();
-		Debug.LogError("loggedIn:" + loggedIn);
 		
 		Action Login = () => {
-			Debug.LogError("login is over.");
+			Debug.Log("login is done.");
 		};
 
 		Autoya.Auth_SetOnLoginSucceeded(Login);
@@ -21,7 +19,6 @@ public class BasicUsage : MonoBehaviour {
 		while (!Autoya.Auth_IsLoggedIn()) {
 			yield return null;
 		}
-		Debug.LogError("login overed.");
 	}
 	
 	// Update is called once per frame

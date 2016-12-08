@@ -8,7 +8,6 @@ using UnityEngine;
 */
 public class AuthImplementationTests : MiyamasuTestRunner {
 	private void DeleteAllData (string path) {
-		Debug.LogError("deleting folder:" + path);
 		if (Directory.Exists(path)) {
 			Directory.Delete(path, true);
 		}
@@ -131,7 +130,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 		var loggedIn = Autoya.Auth_IsLoggedIn();
 		
-		Assert(!loggedIn, "not match.");
+		Assert(!loggedIn, "state does not match.");
 	}
 
 	[MTest] public void IntentionalLogoutThenLoginWillBeSucceeded () {

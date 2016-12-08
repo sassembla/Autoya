@@ -1,4 +1,5 @@
 using AutoyaFramework.Persistence.Files;
+using UnityEngine;
 
 namespace AutoyaFramework {
     public partial class Autoya {
@@ -13,9 +14,9 @@ namespace AutoyaFramework {
 
 		public static bool Persist_Update (string domain, string filePath, string data) {
 			if (false) {// size over
-
+				Debug.Log("Persist_Update save size overed.");
 				return false;
-			}
+			} 
 			return autoya._autoyaFilePersistence.Update(domain, filePath, data);
 		}
 

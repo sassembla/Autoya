@@ -11,12 +11,8 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	private const string AutoyaFilePersistTestsFileName = "persist.txt";
 
 	[MSetup] public void RefreshData () {
-		var basePath = AutoyaFilePersistTestsFileDomain;
-		var domainPath = Path.Combine(basePath, AutoyaFilePersistTestsFileDomain);
-		if (Directory.Exists(domainPath)) {
-			var filePath = Path.Combine(domainPath, AutoyaFilePersistTestsFileName);
-			if (File.Exists(filePath)) File.Delete(filePath);
-		}
+		var dataPath = string.Empty;
+		Autoya.TestEntryPoint(dataPath);
 	}
 	
 	[MTest] public void Update () {
@@ -28,13 +24,15 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 
 
 	[MTest] public void Load () {
+		Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+
 		var data = "new data " + Guid.NewGuid().ToString();
 
 		var result = Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
 		Assert(result, "not successed.");
 		
 		var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
-		Assert(loadedData == data, "not match.");
+		Assert(loadedData == data, "data does not match. loadedData:" + loadedData);
 	}
 
 	// [MTest] public void LoadNotExistFile () {
