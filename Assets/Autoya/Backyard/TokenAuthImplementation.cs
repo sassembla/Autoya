@@ -252,7 +252,7 @@ namespace AutoyaFramework {
 				}
 			);
 		}
-		
+
 		private void RefreshTokenThenLogin () {
 			_loginState = LoginState.REFRESHING_TOKEN;
 
@@ -403,19 +403,14 @@ namespace AutoyaFramework {
 		}
 
 		private void EvaluateLoginResult (string loginConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
-			// ログイン時のresponseHeadersに入っている情報について、ここで判別前〜後に扱う必要がある。
 			ErrorFlowHandling(
 				loginConnectionId,
 				responseHeaders, 
 				responseCode,  
 				resultDataOrFailedReason, 
 				(succeededConId, succeededData) => {
-					Debug.LogWarning("EvaluateLoginResult tokenを使ったログイン通信に成功。401チェックも突破。これでログイン動作が終わることになる。");
-					
-					// ここで、内部で使ってたcandidate = 保存されてるやつ を、_tokenにセットして良さげ。
-					// なんかサーバからtokenのハッシュとか渡してきて、ここで照合すると良いかもっていう気が少しした。
 					var savedToken = LoadToken();
-					Debug.Assert(!string.IsNullOrEmpty(savedToken), "loaded token is null");
+					Debug.Log("should validate token.");
 					OnLoginSucceeded(savedToken);
 				},
 				(failedConId, failedCode, failedReason) => {
@@ -435,7 +430,7 @@ namespace AutoyaFramework {
 					
 					var shouldRetry = OnAuthFailed(loginConnectionId, resultDataOrFailedReason);
 					if (shouldRetry) {
-						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとか。そのためには何ができると良いんだろう。とりあえず封印");
+						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとかがしたい。一定時間後に実行、というのがいいと思う。現状ではまだリトライしていない。");
 						// Login();
 					}
 				}

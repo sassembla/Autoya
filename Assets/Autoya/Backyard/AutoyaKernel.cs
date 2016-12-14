@@ -22,6 +22,7 @@ namespace AutoyaFramework {
 		private Autoya (string basePath="") {
 			// Debug.LogWarning("autoya initialize start.");
 			
+			// UniRxとMiyamasuの相性が悪いのがこのへんにある。
 			_parameters = new AutoyaParameters();
 
 			_autoyaFilePersistence = new FilePersistence(basePath);

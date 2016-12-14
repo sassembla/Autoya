@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using AutoyaFramework;
 using Miyamasu;
+using UnityEngine;
 
 /**
 	test for file persist controll.
@@ -11,8 +12,24 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	private const string AutoyaFilePersistTestsFileName = "persist.txt";
 
 	[MSetup] public void RefreshData () {
+		Debug.LogError("setup C.");
 		var dataPath = string.Empty;
-		Autoya.TestEntryPoint(dataPath);
+		RunOnMainThread(
+			() => {
+				Autoya.TestEntryPoint(dataPath);
+			}
+		);
+	}
+
+	
+	[MTeardown] public void Teardown () {
+		Debug.LogError("teardown C.");
+		RunOnMainThread(
+			() => {
+				var obj = GameObject.Find("MainThreadDispatcher");
+				if (obj != null) GameObject.DestroyImmediate(obj); 
+			}
+		);
 	}
 	
 	[MTest] public void Update () {

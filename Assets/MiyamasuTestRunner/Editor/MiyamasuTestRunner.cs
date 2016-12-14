@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
 using System.Reflection;
 using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
 using Diag = System.Diagnostics;
+using UnityEngine;
 using UnityEditor;
 
 /**
@@ -53,7 +55,9 @@ namespace Miyamasu {
 			}
 		}
 
-		public void RunTestsOnEditorMainThread () {
+		public object lockObj = new object();
+
+		public IEnumerator RunTestsOnEditorMainThread () {
 			var typeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
 				.Where(tAndMInfo => tAndMInfo.hasTests)
@@ -62,7 +66,7 @@ namespace Miyamasu {
 			
 			if (!typeAndMethodInfos.Any()) {
 				TestLogger.Log("no tests found. please set \"[MTest]\" attribute to method.", true);
-				return;
+				yield break;
 			}
 
 			var passed = 0;
@@ -71,8 +75,9 @@ namespace Miyamasu {
 			TestLogger.Log("tests started.", true);
 			
 			var totalMethodCount = typeAndMethodInfos.Count();
+			var allTestsDone = false;
 
-			// generate waiting thread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.
+			// generate waitingThread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.
 			Thread thread = null;
 			thread = new Thread(
 				() => {
@@ -95,11 +100,15 @@ namespace Miyamasu {
 								
 								for (var i = 0; i < errorStackLines.Length; i++) {
 									var line = errorStackLines[i];
-									// TestLogger.Log("line:" + line);
+									
 									if (line.StartsWith("  at Miyamasu.MiyamasuTestRunner.Assert")) {
 										location = errorStackLines[i+1].Substring("  at ".Length);
 										break;
-									}  
+									}
+									if (line.StartsWith("  at Miyamasu.MiyamasuTestRunner.WaitUntil")) {
+										location = errorStackLines[i+1].Substring("  at ".Length);
+										break;
+									}
 								}
 
 								TestLogger.Log("test FAILED @ " + location + "by:" + e.InnerException.Message, true);
@@ -110,35 +119,50 @@ namespace Miyamasu {
 						TestLogger.Log("tests of class:" + typeAndMethodInfo.type + " done. classes:" + count + " of " + totalMethodCount, true);
 					}
 
-					TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
-					thread.Abort();
+					allTestsDone = true;
 				}
 			);
+			
+
 			try {
 				thread.Start();
 			} catch (Exception e) {
 				TestLogger.Log("Miyamasu TestRunner error:" + e);
 			}
+			
+			yield return null;
+
+			while (true) {
+				if (allTestsDone) break; 
+				yield return null;
+			}
+			
+			TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
+			TestLogger.LogEnd();
+			
 		}
 		
 		/**
 			can wait Async code execution until specified sec passed.
 		*/
-		public void WaitUntil (Func<bool> isCompleted, int timeoutSec=1) {
+		public void WaitUntil (Func<bool> isCompleted, int timeoutSec=1, string message="") {
 			var methodName = new Diag.StackFrame(1).GetMethod().Name;
+			Exception error = null;
 
 			var resetEvent = new ManualResetEvent(false);
 			var waitingThread = new Thread(
 				() => {
 					resetEvent.Reset();
-					var startTime = DateTime.Now;
+					var startTime = DateTime.Now.Second;
 					
 					while (!isCompleted()) {
-						var current = DateTime.Now;
-						var distanceSeconds = (current - startTime).Seconds;
-						
+						var current = DateTime.Now.Second;
+						var distanceSeconds = (current - startTime);
+
 						if (0 < timeoutSec && timeoutSec < distanceSeconds) {
-							throw new Exception("timeout:" + methodName);
+							if (!string.IsNullOrEmpty(message)) error = new Exception("timeout. reason:" + message);
+							else error = new Exception("timeout.");
+							break;
 						}
 						
 						System.Threading.Thread.Sleep(10);
@@ -151,17 +175,36 @@ namespace Miyamasu {
 			waitingThread.Start();
 			
 			resetEvent.WaitOne();
+			if (error != null) {
+				throw error;
+			}
 		}
 
-		public void RunOnMainThread (Action invokee) {
+		/**
+			Run action on UnityEditor's MainThread.
+			let set [bool sync] = false if you want to execute action on MainThread but async.
+			default is sync.
+		*/
+		public void RunOnMainThread (Action invokee, bool @sync = true) {
 			UnityEditor.EditorApplication.CallbackFunction runner = null;
+			
+			var done = false;
+			
 			runner = () => {
 				// run only once.
 				EditorApplication.update -= runner;
 				if (invokee != null) invokee();
+				done = true;
+				// 実際にインスタンスを作ってUpdateさせるモード、大差なかった。残念。
+				// var sr = new GameObject("test");
+				// var c = sr.AddComponent<CoroutineExecutor>();
+				// c.Set(invokee);
 			};
 			
 			EditorApplication.update += runner;
+			if (@sync) {
+				WaitUntil(() => done);
+			}
 		}
 		
 
@@ -171,28 +214,17 @@ namespace Miyamasu {
 			}
 		}
 
-		// public void Assert (object expected, object actual, string message) {
-		// 	if (expected.ToString() != actual.ToString()) {
-		// 		var method = new Diag.StackTrace().GetFrames();//StackFrame(1).GetMethod();
-		// 		// var methodName = method.Name;
-		// 		// var methodInfo = method.ToString();
-
-		// 		var location = "test:" + method + "\n";
-		// 		var situation = location + "	" + " ASSERT FAILED:" + message + " expected:" + expected + " actual:" + actual;
-		// 		TestLogger.Log(situation);
-		// 		throw new Exception(situation);
-		// 	} 
-		// }
-
 		public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";
 
 		public static class TestLogger {
+			public static bool outputLog = true;
 			private static object lockObject = new object();
 
 			private static string pathOfLogFile;
 			private static StringBuilder _logs = new StringBuilder();
 			
 			public static void Log (string message, bool export=false) {
+				if (outputLog) UnityEngine.Debug.Log("log:" + message);
 				lock (lockObject) {
 					if (!export) {
 						_logs.AppendLine(message);
@@ -214,6 +246,25 @@ namespace Miyamasu {
 								_logs = new StringBuilder();
 							}
 							sr.WriteLine("log:" + message);
+						}
+					}
+				}
+			}
+
+			public static void LogEnd () {
+				lock (lockObject) {
+					// file write
+					using (var fs = new FileStream(
+						pathOfLogFile,
+						FileMode.Append,
+						FileAccess.Write,
+						FileShare.ReadWrite)
+					) {
+						using (var sr = new StreamWriter(fs)) {
+							if (0 < _logs.Length) {
+								sr.WriteLine(_logs.ToString());
+								_logs = new StringBuilder();
+							}
 						}
 					}
 				}

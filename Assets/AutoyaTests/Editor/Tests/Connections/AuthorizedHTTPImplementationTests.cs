@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using AutoyaFramework;
 using Miyamasu;
+using UnityEngine;
 
 
 /**
@@ -11,17 +13,32 @@ using Miyamasu;
 */
 public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 	[MSetup] public void Setup () {
-		var dataPath = string.Empty;
-		Autoya.TestEntryPoint(dataPath);
-
 		var authorized = false;
-		Autoya.Auth_SetOnLoginSucceeded(
-			() => {
-				authorized = true;
-			}
-		);
+
+		Debug.LogError("setup B.");
+		Action onMainThread = () => {
+			var dataPath = string.Empty;
+			Autoya.TestEntryPoint(dataPath);
+			
+			Autoya.Auth_SetOnLoginSucceeded(
+				() => {
+					authorized = true;
+				}
+			);
+		};
+		RunOnMainThread(onMainThread);
 		
 		WaitUntil(() => authorized, 10); 
+	}
+
+	[MTeardown] public void Teardown () {
+		Debug.LogError("teardown B.");
+		RunOnMainThread(
+			() => {
+				var obj = GameObject.Find("MainThreadDispatcher");
+				if (obj != null) GameObject.DestroyImmediate(obj); 
+			}
+		);
 	}
 
 	[MTest] public void AutoyaHTTPGet () {

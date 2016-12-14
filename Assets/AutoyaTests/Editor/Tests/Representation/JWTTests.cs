@@ -3,6 +3,7 @@ using AutoyaFramework.Representation.JWT;
 using Miyamasu;
 using UnityEngine;
 
+
 /**
 	test for file persist controll.
 */
