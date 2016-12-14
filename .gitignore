@@ -36,3 +36,7 @@ Assets/Signer.cs
 framework/token.autoya
 
 AutoyaFilePersistTestsFileDomain/persist.txt
+
+Assets/gmcs.rsp
+
+Assets/gmcs.rsp.meta
