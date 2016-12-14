@@ -27,11 +27,12 @@ public class JWTTests : MiyamasuTestRunner {
 
     */
 
-    [Serializable] private struct SampleTokenData {
+    [Serializable] private class SampleTokenData {
         [SerializeField] public string sub;
         [SerializeField] public string name;
         [SerializeField] public bool admin;
-
+        
+        public SampleTokenData () {}
         public SampleTokenData (string sub, string name, bool admin) {
             this.sub = sub;
             this.name = name;

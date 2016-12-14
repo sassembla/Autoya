@@ -165,7 +165,6 @@ namespace AutoyaFramework {
 		private void Login () {
 			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 			if (tokenCandidatePaths.Length == 0) {
-				Debug.LogError("first boot. no token found.");
 				StartBootAccess();
 				return;
 			}
@@ -176,7 +175,7 @@ namespace AutoyaFramework {
 				if token is already stored and valid, goes to login.
 				else, get token then login.
 			*/
-			var isValid = IsTokenValid(tokenCandidate);
+			var isValid = IsTokenExist(tokenCandidate);
 			
 			if (isValid) {
 				Debug.LogWarning("(maybe) valid token found. start login with it and get refresh token.");
@@ -207,19 +206,19 @@ namespace AutoyaFramework {
 			
 			var tokenUrl = AuthSettings.AUTH_URL_BOOT;
 			
+			/*
+				create new http connection instance for boot access.
+			*/
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = BackyardSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
 			
-			Debug.LogWarning("boot時、encで内部のキーをアレして、使う。");
+			var bootKeyword = AuthSettings.AUTH_BOOT;
+			var authStr = Editable.EncryptionEditable.OnFirstBootRequestEncryption(bootKeyword);
 			
-			var signer = new Signer();
-			var signature = signer.GenerateSign();
-
 			var tokenRequestHeaders = new Dictionary<string, string>{
-				{"identity", "dummy-id"}
+				{"Auth", authStr}
 			};
 			
-
 			Observable.FromCoroutine(
 				() => tokenHttp.Get(
 					tokenConnectionId,
@@ -245,13 +244,15 @@ namespace AutoyaFramework {
 							break;
 						}
 						default: {
-							throw new Exception("failed to get token by undefined reason:" + ex.Message);
+							Debug.LogError("failed to get token by undefined reason:" + ex.Message);
+							// throw new Exception("failed to get token by undefined reason:" + ex.Message);
+							break;
 						}
 					}
 				}
 			);
 		}
-
+		
 		private void RefreshTokenThenLogin () {
 			_loginState = LoginState.REFRESHING_TOKEN;
 
@@ -300,16 +301,13 @@ namespace AutoyaFramework {
 		}
 
 		private void EvaluateTokenResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
-			// 取得したtokenを検査する必要がある。JWTになるので、保存したり検証したり。
-			// Debug.LogWarning("EvaluateTokenResult!! " + " tokenConnectionId:" + tokenConnectionId + " responseCode:" + responseCode + " resultDataOrFailedReason:" + resultDataOrFailedReason);
-
 			ErrorFlowHandling(
 				tokenConnectionId,
 				responseHeaders, 
 				responseCode,  
 				resultDataOrFailedReason, 
 				(succeededConId, succeededData) => {
-					var isValid = IsTokenValid(succeededData);
+					var isValid = IsTokenExist(succeededData);
 					
 					if (isValid) {
 						// Debug.LogWarning("token取得に成功 succeededData:" + succeededData);
@@ -344,7 +342,7 @@ namespace AutoyaFramework {
 			);
 		}
 
-		private bool IsTokenValid (string tokenCandidate) {
+		private bool IsTokenExist (string tokenCandidate) {
 			if (string.IsNullOrEmpty(tokenCandidate)) return false;
 			return true;
 		}
@@ -429,7 +427,7 @@ namespace AutoyaFramework {
 					/*
 						we should handling NOT 401(Unauthorized) result.
 					*/
-					
+
 					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
 					
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。

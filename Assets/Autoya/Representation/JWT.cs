@@ -17,7 +17,7 @@ namespace AutoyaFramework.Representation.JWT {
             }
         }
 
-        public static T Read<T> (string data, string request) where T : struct {
+        public static T Read<T> (string data, string request) where T : new() {
             var datas = data.Split('.');
             
             if (datas.Length != 3) {
@@ -36,10 +36,10 @@ namespace AutoyaFramework.Representation.JWT {
                 return JsonUtility.FromJson<T>(Base64.Base64.ConvertToStr(payloadStr));
             }
 
-            return new T();// return empty struct if value is not matched with sign.
+            return new T();// return empty object if value is not matched with sign.
         }
         
-        public static string Create<T> (T body, string request) where T : struct {
+        public static string Create<T> (T body, string request) where T : new() {
             var headerStr = Base64.Base64.FromString(JsonUtility.ToJson(headerStruct));
             var payloadStr = Base64.Base64.FromString(JsonUtility.ToJson(body));
             var signature = Base64.Base64.FromBytes(SHA_2.Sha256Bytes(headerStr + "." + payloadStr, request));
