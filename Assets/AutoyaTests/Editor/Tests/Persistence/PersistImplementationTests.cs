@@ -12,7 +12,6 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 	private const string AutoyaFilePersistTestsFileName = "persist.txt";
 
 	[MSetup] public void RefreshData () {
-		Debug.LogError("setup C.");
 		var dataPath = string.Empty;
 		RunOnMainThread(
 			() => {
@@ -23,7 +22,6 @@ public class PersistImplementationTests : MiyamasuTestRunner {
 
 	
 	[MTeardown] public void Teardown () {
-		Debug.LogError("teardown C.");
 		RunOnMainThread(
 			() => {
 				var obj = GameObject.Find("MainThreadDispatcher");

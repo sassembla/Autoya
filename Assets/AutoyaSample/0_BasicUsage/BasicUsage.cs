@@ -4,7 +4,7 @@ using AutoyaFramework;
 using System;
 
 public class BasicUsage : MonoBehaviour {
-
+	
 	void Awake () {
 		var loggedIn = Autoya.Auth_IsLoggedIn();
 		

@@ -5,17 +5,17 @@ using Miyamasu;
 using UnityEngine;
 
 
+
 /**
 	tests for Autoya Authorized HTTP.
 	Autoya strongly handle these server-related errors which comes from game-server.
-
+	
 	these test codes are depends on online env + "https://httpbin.org".
 */
 public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 	[MSetup] public void Setup () {
+		
 		var authorized = false;
-
-		Debug.LogError("setup B.");
 		Action onMainThread = () => {
 			var dataPath = string.Empty;
 			Autoya.TestEntryPoint(dataPath);
@@ -32,7 +32,6 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 	}
 
 	[MTeardown] public void Teardown () {
-		Debug.LogError("teardown B.");
 		RunOnMainThread(
 			() => {
 				var obj = GameObject.Find("MainThreadDispatcher");

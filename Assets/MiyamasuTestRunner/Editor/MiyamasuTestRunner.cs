@@ -217,6 +217,10 @@ namespace Miyamasu {
 		public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";
 
 		public static class TestLogger {
+			static TestLogger () {
+				// ログ操作に関する処理で、ハンドラ周りをセットすると良さそう。
+			}
+
 			public static bool outputLog = true;
 			private static object lockObject = new object();
 

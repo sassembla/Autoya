@@ -16,16 +16,15 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	
 	[MSetup] public void Setup () {
 		DeleteAllData(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-
 		
 		var authorized = false;
-		Debug.LogError("setup A.");
 		Action onMainThread = () => {
 			var obj = GameObject.Find("MainThreadDispatcher");
 			if (obj != null) {
 				Debug.LogError("found and destroy A.");
 				GameObject.DestroyImmediate(obj);
 			}
+			
 			var dataPath = string.Empty;
 			Autoya.TestEntryPoint(dataPath);
 			Autoya.Auth_SetOnLoginSucceeded(
@@ -39,8 +38,8 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 		WaitUntil(() => authorized, 10); 
 	}
+
 	[MTeardown] public void Teardown () {
-		Debug.LogError("teardown A.");
 		RunOnMainThread(
 			() => {
 				var obj = GameObject.Find("MainThreadDispatcher");

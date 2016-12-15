@@ -7,6 +7,7 @@ using UnityEngine;
 /**
 	test for file persist controll.
 */
+
 public class JWTTests : MiyamasuTestRunner {
     /*
         parameters are based on https://jwt.io
@@ -25,7 +26,6 @@ public class JWTTests : MiyamasuTestRunner {
             "name": "John Doe",
             "admin": true
         }
-
     */
 
     [Serializable] private class SampleTokenData {

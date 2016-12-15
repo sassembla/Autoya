@@ -17,7 +17,7 @@ namespace AutoyaFramework {
 		private void SetHTTPAuthorizedPart (string identity, string token) {
 
 		}
-
+		
 		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (Dictionary<string, string> additionalHeader=null, Func<Dictionary<string, string>, Dictionary<string, string>> customizer=null) {
 			var headerDict = new Dictionary<string, string>();
 
@@ -181,6 +181,7 @@ namespace AutoyaFramework {
 			var connectionId = Guid.NewGuid().ToString();
 			
 			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
+			
 			
 			Observable.FromCoroutine(
 				() => autoya._autoyaHttp.Get(
