@@ -39,5 +39,9 @@ namespace AutoyaFramework {
 		public static bool Persist_DeleteByDomain (string domain) {
 			return autoya._autoyaFilePersistence.DeleteByDomain(domain);
 		}
+
+		public static string[] Persist_FileNamesInDomain (string domain) {
+			return autoya._autoyaFilePersistence.FileNamesInDomain(domain);
+		}
 	}
 }
