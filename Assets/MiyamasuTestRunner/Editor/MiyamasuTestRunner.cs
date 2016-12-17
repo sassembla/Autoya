@@ -111,7 +111,7 @@ namespace Miyamasu {
 									}
 								}
 
-								TestLogger.Log("test FAILED @ " + location + "by:" + e.InnerException.Message, true);
+								TestLogger.Log("test FAILED by:" + e.InnerException.Message + " @ " + location, true);
 							}
 							if (typeAndMethodInfo.teardownMethodInfo != null) typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
 						}

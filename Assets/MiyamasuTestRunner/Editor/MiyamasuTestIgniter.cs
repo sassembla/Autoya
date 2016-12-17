@@ -111,6 +111,10 @@ namespace Miyamasu {
 		// private static BackgroundWorker m_LoginBackgroundWorker;
 		
 		// static UnityEditor.EditorApplication.CallbackFunction loop;
+
+		// [MenuItem("/Miyamasu/Run")] public static void Do () {
+		// 	RunTests();
+		// }
 	}
 
 
