@@ -16,7 +16,7 @@ namespace AutoyaFramework.Persistence.Files {
 		/*
 			sync series.
 		*/
-		public bool Update (string domain, string fileName, string data) {
+		public bool Append (string domain, string fileName, string data) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
 
@@ -39,6 +39,37 @@ namespace AutoyaFramework.Persistence.Files {
 
 					var filePath = Path.Combine(domainPath, fileName);
 					using (var sw = new StreamWriter(filePath, true)) {
+						sw.Write(data);
+					}
+					return true;
+				} 
+			}
+			return false;
+		}
+
+		public bool Update (string domain, string fileName, string data) {
+			var domainPath = Path.Combine(basePath, domain);
+			if (Directory.Exists(domainPath)) {
+
+				var filePath = Path.Combine(domainPath, fileName);
+				using (var sw = new StreamWriter(filePath, false))	{
+					sw.Write(data);
+				}
+				
+				return true;
+			} else {// no directory = domain exists.
+				var created = Directory.CreateDirectory(domainPath);
+				
+				if (created.Exists) {
+					
+					#if UNITY_IOS
+					{
+						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+					}
+					#endif
+
+					var filePath = Path.Combine(domainPath, fileName);
+					using (var sw = new StreamWriter(filePath, false)) {
 						sw.Write(data);
 					}
 					return true;

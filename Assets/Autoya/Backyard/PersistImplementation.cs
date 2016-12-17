@@ -5,7 +5,7 @@ namespace AutoyaFramework {
     public partial class Autoya {
 		/*
 			persistence.
-				privides persistent async operation.
+				privides  sync/async persistent operation.
 
 				File persistence
 		*/
@@ -13,11 +13,19 @@ namespace AutoyaFramework {
 		private FilePersistence _autoyaFilePersistence;
 
 		public static bool Persist_Update (string domain, string filePath, string data) {
-			if (false) {// size over
-				Debug.Log("Persist_Update save size overed.");
+			if (false) {// estimate size over
+				Debug.LogError("Persist_Update save size overed.");
 				return false;
 			} 
 			return autoya._autoyaFilePersistence.Update(domain, filePath, data);
+		}
+
+		public static bool Persist_Append (string domain, string filePath, string data) {
+			if (false) {// estimate size over
+				Debug.LogError("Persist_Update save size overed.");
+				return false;
+			} 
+			return autoya._autoyaFilePersistence.Append(domain, filePath, data);
 		}
 
 		public static string Persist_Load (string domain, string filePath) {

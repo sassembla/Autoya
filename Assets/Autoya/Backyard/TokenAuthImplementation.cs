@@ -187,7 +187,7 @@ namespace AutoyaFramework {
 		}
 
 		private bool SaveToken (string newTokenCandidate) {
-			return _autoyaFilePersistence.Update(
+			return _autoyaFilePersistence.Append(
 				BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN, 
 				BackyardSettings.AUTH_STORED_TOKEN_FILENAME,
 				newTokenCandidate
