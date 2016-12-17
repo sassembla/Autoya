@@ -24,7 +24,7 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 				);
 			}
 		);
-
+		
 		WaitUntil(() => loginDone, 5, "failed to log in.");
 
 		Autoya.Persist_DeleteByDomain(AutoyaFilePersistTestsFileDomain);
@@ -121,7 +121,7 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 		};
 		RunOnMainThread(onMainThread);
 	}
-	
+
 	[MTest] public void EmptyFileNamesInDomain () {
 		Action onMainThread = () => {
 			var fileNamesInDomain = Autoya.Persist_FileNamesInDomain(AutoyaFilePersistTestsFileDomain);
@@ -133,5 +133,5 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 	/*
 		async series.
 	*/
-
+	
 }

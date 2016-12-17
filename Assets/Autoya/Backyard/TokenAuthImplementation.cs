@@ -211,7 +211,8 @@ namespace AutoyaFramework {
 			*/
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = BackyardSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
-			
+			Debug.Log("tokenConnectionId:" + tokenConnectionId);
+
 			var bootKeyword = AuthSettings.AUTH_BOOT;
 			var authStr = Editable.EncryptionEditable.OnFirstBootRequestEncryption(bootKeyword);
 			
