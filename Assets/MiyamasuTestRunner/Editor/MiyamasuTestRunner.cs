@@ -84,7 +84,8 @@ namespace Miyamasu {
 					var count = 0;
 					foreach (var typeAndMethodInfo in typeAndMethodInfos) {
 						var instance = Activator.CreateInstance(typeAndMethodInfo.type);
-
+						
+						TestLogger.Log("start tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
 						foreach (var methodInfo in typeAndMethodInfo.asyncMethodInfos) {
 							if (typeAndMethodInfo.setupMethodInfo != null) typeAndMethodInfo.setupMethodInfo.Invoke(instance, null);
 							var methodName = methodInfo.Name;
@@ -115,8 +116,10 @@ namespace Miyamasu {
 							}
 							if (typeAndMethodInfo.teardownMethodInfo != null) typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
 						}
+
+						
 						count++;
-						TestLogger.Log("tests of class:" + typeAndMethodInfo.type + " done. classes:" + count + " of " + totalMethodCount, true);
+						TestLogger.Log("done tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
 					}
 
 					allTestsDone = true;

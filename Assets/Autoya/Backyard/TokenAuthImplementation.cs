@@ -127,8 +127,8 @@ namespace AutoyaFramework {
 			/*
 				set default handlers.
 			*/
-			OnLoginSucceeded = token => {
-				LoggedIn(token);
+			OnLoginSucceeded = () => {
+				LoggedIn();
 			};
 
 			OnAuthFailed = (conId, reason) => {
@@ -144,11 +144,18 @@ namespace AutoyaFramework {
 			return (int)_loginState;
 		}
 
+		private void LoggedIn () {
+			/*
+				ログイン完了というフェーズが必要かな〜〜という感じで、これは明示的にログイン通信を行なっていることに起因している。
+				tokenがあれば別に通信しないでもいいんじゃない？という気もしてきた。
+				
+				・ログイン通信の必要はあるのか？
+				というところか。
 
-		private void LoggedIn (string newToken) {
-			Debug.Assert(!(string.IsNullOrEmpty(newToken)), "token is null.");
-
-			_token = newToken;
+				
+			*/
+			
+			_token = LoadToken();
 			_loginState = LoginState.LOGGED_IN;
 		}
 
@@ -410,9 +417,10 @@ namespace AutoyaFramework {
 				responseCode,  
 				resultDataOrFailedReason, 
 				(succeededConId, succeededData) => {
-					var savedToken = LoadToken();
-					Debug.Log("should validate token.");
-					OnLoginSucceeded(savedToken);
+					/*
+						succeeded to login with saved token.
+					*/
+					OnLoginSucceeded();
 				},
 				(failedConId, failedCode, failedReason) => {
 					// if Unauthorized, OnAuthFailed is already called.
@@ -479,8 +487,8 @@ namespace AutoyaFramework {
 
 
 		public static void Auth_SetOnLoginSucceeded (Action onAuthSucceeded) {
-			autoya.OnLoginSucceeded = token => {
-				autoya.LoggedIn(token);
+			autoya.OnLoginSucceeded = () => {
+				autoya.LoggedIn();
 				onAuthSucceeded();
 			};
 			
@@ -504,7 +512,7 @@ namespace AutoyaFramework {
 			autoya.LogOut();
 		}
 		
-		private Action<string> OnLoginSucceeded;
+		private Action OnLoginSucceeded;
 
 		/**
 			this method will be called when Autoya encountered "auth failed".

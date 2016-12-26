@@ -96,7 +96,7 @@ namespace AutoyaFramework {
 				var internalErrorMessage = data;
 				failed(connectionId, httpCode, internalErrorMessage);
 				return;
-			} 
+			}
 
 			/*
 				UnityWebRequest handled internal error.

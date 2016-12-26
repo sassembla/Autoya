@@ -428,7 +428,6 @@ namespace UniRx
 
         public static void Initialize()
         {
-            Debug.LogError("Initialize");
             if (!initialized)
             {
 #if UNITY_EDITOR
