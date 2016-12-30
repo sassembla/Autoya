@@ -290,4 +290,5 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			5
 		);
 	}
+	
 }

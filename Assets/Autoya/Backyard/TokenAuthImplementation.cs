@@ -432,7 +432,7 @@ namespace AutoyaFramework {
 						we should handling NOT 401(Unauthorized) result.
 					*/
 
-					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
+					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason + " これが出た時にテストが失敗する = 停止するのがあれ。");
 					
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。

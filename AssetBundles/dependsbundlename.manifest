@@ -1,0 +1,27 @@
+ManifestFileVersion: 0
+CRC: 2389728195
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 1a3bdb638b301fd91fc5569e016604ad
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 4e4037536d240f9eabed2a302c18815c
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab
+Dependencies:
+- /Users/choucho/Desktop/Autoya/AssetBundles/bundlename

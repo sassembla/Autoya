@@ -117,9 +117,9 @@ namespace Miyamasu {
 							if (typeAndMethodInfo.teardownMethodInfo != null) typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
 						}
 
+						TestLogger.Log("done tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
 						
 						count++;
-						TestLogger.Log("done tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
 					}
 
 					allTestsDone = true;
@@ -206,7 +206,29 @@ namespace Miyamasu {
 			
 			EditorApplication.update += runner;
 			if (@sync) {
-				WaitUntil(() => done);
+				WaitUntil(() => done, -1);
+			}
+		}
+
+		/**
+			IEnumerator version. continue running while IEnumerator is running.
+		*/
+		public void RunEnumeratorOnMainThread (IEnumerator invokee, bool @sync = true) {
+			UnityEditor.EditorApplication.CallbackFunction runner = null;
+			
+			var done = false;
+			
+			runner = () => {
+				var result = invokee.MoveNext();
+				if (!result) {
+					EditorApplication.update -= runner;
+					done = true;
+				}
+			};
+			
+			EditorApplication.update += runner;
+			if (@sync) {
+				WaitUntil(() => done, -1);
 			}
 		}
 		

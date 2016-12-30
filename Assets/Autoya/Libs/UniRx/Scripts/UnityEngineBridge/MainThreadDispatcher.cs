@@ -420,7 +420,6 @@ namespace UniRx
         {
             get
             {
-                Debug.LogError("MainThreadDispatcher");
                 Initialize();
                 return instance;
             }
@@ -479,7 +478,6 @@ namespace UniRx
         {
             if (instance == null)
             {
-                Debug.LogError("Unity起動時は問題ないが、一度でもコンパイルするとエラーになる。UniRx自体の状態が変わるっぽい。awake. instance is null. comes, このメソッドが着火するのは二度目以降の時。このへんになんかありそう。UniRxがAwakeで呼ばれない条件があるのか。");
                 instance = this;
                 mainThreadToken = new object();
                 initialized = true;
