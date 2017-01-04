@@ -81,8 +81,6 @@ namespace AutoyaFramework.Purchase {
         private Action readyPurchase;
         private Action<PurchaseError, string> failedToReady;
         
-        private class PurchaseMonoBehaviour : MonoBehaviour {}
-
         /**
             it's good to set non-null newEnumRunner for running http IEnumerator smart.
             if null, this class creates own GameObject, and then add that for running.

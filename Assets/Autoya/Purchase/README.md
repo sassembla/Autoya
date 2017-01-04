@@ -1,5 +1,5 @@
 # Purchase
-thin wrapper for Unity's IAP.
+thin wrapper for Unity's IAP. only supports remote IAP. Your web server should check purchase receipt and deploy the paid item to the player.
 
 ## Contains
 Apply Apple/Google ID dependent purchase control style.
@@ -9,7 +9,3 @@ When Player changed their machine from old one to new one, We can trace "uncompl
 
 Therefore this feature contains "purchased, but that duty is not yet deployed" information inside local storage.
 
-## Caution
-Basically, this feature **DOES NOT** contains any encrypting for purchased information which stored locally while puruchasing.
-
-Please encrypt it, or take another method for security by yourself.
