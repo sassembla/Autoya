@@ -6,7 +6,7 @@
 	ignite before all "Awake" handler.
 */
 namespace AutoyaFramework {
-    public partial class Autoya {
+    public partial class Autoya : IHTTPErrorFlow {
 		private static Autoya autoya;
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] private static void EntryPoint () {
 			autoya = new Autoya(Application.dataPath);

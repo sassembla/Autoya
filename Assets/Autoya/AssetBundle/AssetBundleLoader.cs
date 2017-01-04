@@ -18,11 +18,26 @@ namespace AutoyaFramework.AssetBundles {
         private readonly HTTPConnection http;
         private readonly AssetBundleList list;
 
-        public AssetBundleLoader (string basePath, AssetBundleList list) {
-            
+        private class HandleErrorFlowClass : IHTTPErrorFlow {
+            // define nothing. use default error handling.
+        }
+
+        private readonly HandleErrorFlowClass flowInstance;
+        
+        private void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+            flowInstance.HandleErrorFlow(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
+        }
+
+        public AssetBundleLoader (string basePath, AssetBundleList list, IHTTPErrorFlow flowInstance=null) {
             this.assetDownloadBasePath = basePath;
             this.http = new HTTPConnection();
             this.list = list;
+            
+            /*
+                if flowInstance is set, use these http error handling. else, use default http error handling.
+            */
+            if (flowInstance != null) this.flowInstance = flowInstance as HandleErrorFlowClass;
+            else this.flowInstance = new HandleErrorFlowClass();
 
             /*
                 construct assetName - AssetBundleName dictionary for fast loading.
@@ -90,7 +105,7 @@ namespace AutoyaFramework.AssetBundles {
                         string.Empty, 
                         (string dependentAssetName, GameObject obj) => {},
                         loadFailed,
-                        true // this loading is for resolve dependency. no need to create instance.
+                        true // this loading is for resolve dependency. no need to return any instances.
                     );
 
                     coroutines[dependentAssetBundleName] = loadCoroutine;
@@ -195,67 +210,35 @@ namespace AutoyaFramework.AssetBundles {
             loadingAssetBundleNames.Remove(bundleName);
         }
 
-        private IEnumerator LoadAssetBundlesOnMemory (AssetBundleList list, string[] dependentAssetBundleNames, Action<string, AssetBundleLoadError, string> loadFailed) {
-            var coroutines = new Dictionary<string, IEnumerator>();
-            foreach (var dependentAssetBundleName in dependentAssetBundleNames) {
-                // skip if assetBundle is already loaded.
-                if (assetBundleDict.ContainsKey(dependentAssetBundleName) && assetBundleDict[dependentAssetBundleName] != null) {
-                    continue;
-                }
-
-                var crc = list.assetBundles.Where(a => a.bundleName == dependentAssetBundleName).FirstOrDefault().crc;
-                var url = assetDownloadBasePath + dependentAssetBundleName;
-                Debug.LogError("LoadAssetBundlesOnMemory dependentAssetBundleName:" + dependentAssetBundleName);
-                var loadCoroutine = DownloadAssetThenCacheAndLoadOnMemory(dependentAssetBundleName, string.Empty, url, crc, loadFailed);
-
-                coroutines[dependentAssetBundleName] = loadCoroutine;
-            }
-
-            if (coroutines.Count == 0) {
-                yield break;
-            } 
-
-            while (true) {
-                for (var i = 0; i < coroutines.Count; i++) {
-                    var loadingAssetBundleName = coroutines.Keys.ToArray()[i];
-                    var coroutine = coroutines[loadingAssetBundleName];
-                    if (coroutine == null) continue;
-
-                    if (!coroutine.MoveNext()) {
-                        if (loadingAssetBundleNames.Contains(loadingAssetBundleName)) {
-                            loadingAssetBundleNames.Remove(loadingAssetBundleName);
-                        }
-
-                        coroutines[loadingAssetBundleName] = null;
-
-                        if (!coroutines.Where(c => c.Value != null).Any()) {
-                            // all assets are loaded.
-                            yield break;
-                        }
-                    }
-                }
-                yield return null;
-            }
-        }
-
         private IEnumerator DownloadAssetThenCacheAndLoadOnMemory (string bundleName, string assetName, string url, uint crc, Action<string, AssetBundleLoadError, string> failed) {
+            Debug.LogWarning("定冠詞を定義へ移動");
+            var connectionId = "asset_" + Guid.NewGuid().ToString();
+
+            Action<string, object> succeeded = (conId, downloadedAssetBundle) => {
+                // set loaded assetBundle to on-memory cache.
+                assetBundleDict[bundleName] = downloadedAssetBundle as AssetBundle;
+            };
+
+            Action<string, int, string> downloadFailed = (conId, code, reason) => {
+                // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
+
+                Debug.LogError("failed to download AssetBundle. code:" + code + " reason:" + reason);
+
+                failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason);
+            };
+
+            Debug.LogWarning("Autoyaのauth機構をめり込ませられる必要がある。後段はなんとかなってるので、あとは前段をなんとかする。http機能丸パクでもいいのかな、、");
             var connectionCoroutine = http.DownloadAssetBundle(
-                Guid.NewGuid().ToString(), 
-                null, // headerでなにかキーをつける？
+                connectionId,
+                null,
                 url, 
                 ASSETBUNDLE_FIXED_VERSION,
                 crc, 
                 (conId, code, responseHeader, downloadedAssetBundle) => {
-                    // set loaded assetBundle to on-memory cache.
-                    assetBundleDict[bundleName] = downloadedAssetBundle;
+                    HandleErrorFlow(connectionId, responseHeader, code, downloadedAssetBundle, string.Empty, succeeded, downloadFailed);
                 }, 
                 (conId, code, reason, responseHeader) => {
-                    // コードとかによっては、メインのフレームワーク側に飛ばす必要がある。フローを借りてくるっていうのもありなのかな？ どうやって借りてこようかな、、切れる線はあるはず。
-                    // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
-
-                    Debug.LogError("failed to download AssetBundle. code:" + code + " reason:" + reason);
-
-                    failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason);
+                    HandleErrorFlow(connectionId, responseHeader, code, string.Empty, reason, succeeded, downloadFailed);
                 }
             );
 

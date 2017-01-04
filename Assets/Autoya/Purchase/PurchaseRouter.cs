@@ -1,9 +1,21 @@
 using System;
+using System.Collections.Generic;
+using AutoyaFramework.Connections.HTTP;
 using UnityEngine;
 using UnityEngine.Purchasing;
 
 namespace AutoyaFramework.Purchase {
     public class PurchaseRouter : IStoreListener {
+        private class HandleErrorFlowClass : IHTTPErrorFlow {
+            // define nothing. use default error handling.
+        }
+
+        private readonly HandleErrorFlowClass flowInstance;
+        
+        private void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+            flowInstance.HandleErrorFlow(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
+        }
+        
         [Serializable] public struct ProductInfo {
             [SerializeField] public string productId;
             [SerializeField] public string platformProductId;
@@ -56,22 +68,59 @@ namespace AutoyaFramework.Purchase {
 
         private RouterState routerState = RouterState.None;
 
-        public Action<string, Action<string, string>, Action<string, int, string>> httpGet;
-        public Action<string, string, Action<string, string>, Action<string, int, string>> httpPost;
         private readonly string storeKind;
         
+        private readonly MonoBehaviour enumRunner = null;
+
+        private readonly Func<string, Dictionary<string, string>> requestHeader = data => {
+            return new Dictionary<string, string>();
+        };
+        private readonly HTTPConnection http;
+
+
         private Action readyPurchase;
         private Action<PurchaseError, string> failedToReady;
         
-        public PurchaseRouter (Action<string, Action<string, string>, Action<string, int, string>> httpGet, Action<string, string, Action<string, string>, Action<string, int, string>> httpPost) {
-            Debug.LogWarning("ここで、イベントフィルタを渡す。");
-            this.httpGet = httpGet;
-            this.httpPost = httpPost;
+        private class PurchaseMonoBehaviour : MonoBehaviour {}
+
+        /**
+            it's good to set non-null newEnumRunner for running http IEnumerator smart.
+            if null, this class creates own GameObject, and then add that for running.
+
+            Func<string, Dictionary<string, string>> requestHeader func is used to get request header. 
+            by default it returns empty headers.
+
+            also you can modify http error handling via flowInstance.
+            by default, response code 200 ~ 299 is treated as success, and others are treated as error.
+         */
+        public PurchaseRouter (MonoBehaviour newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
             this.storeKind = AppleAppStore.Name;
+            
+            if (newEnumRunner != null) {
+                this.enumRunner = newEnumRunner;
+            } else {
+                var go = new GameObject("PurchaseRouter");
+                this.enumRunner = go.AddComponent<PurchaseMonoBehaviour>();
+            }
+
+            if (newRequestHeader != null) {
+                this.requestHeader = newRequestHeader;
+            }
+
+            this.http = new HTTPConnection();
+            
+            /*
+                if flowInstance is set, use these http error handling. else, use default http error handling.
+            */
+            if (flowInstance != null) {
+                this.flowInstance = flowInstance as HandleErrorFlowClass;
+            } else {
+                this.flowInstance = new HandleErrorFlowClass();
+            }
 
             Reload(() => {}, (err, reason) => {});
         }
-
+        
         public void Reload (Action reloaded, Action<PurchaseError, string> reloadFailed) {
             if (routerState == RouterState.PurchaseReady) {
                 // IAP features are already running.
@@ -85,7 +134,7 @@ namespace AutoyaFramework.Purchase {
             routerState = RouterState.LoadingProducts;
             
             var url = "https://google.com";
-            httpGet(
+            HttpGet(
                 url, 
                 (conId, data) => {
                     Debug.LogWarning("アイテム取得したのでデータを入れる。現在はダミーAPIが適当なデータを入れてくるのを想定してる。");
@@ -206,7 +255,7 @@ namespace AutoyaFramework.Purchase {
             var data = productId;
 
             routerState = RouterState.GettingTransaction;
-            httpPost(
+            HttpPost(
                 transactionUrl,
                 data,
                 (conId, resultData) => {
@@ -296,7 +345,7 @@ namespace AutoyaFramework.Purchase {
                 case RouterState.Purchasing: {
                     var purchasedUrl = "https://httpbin.org/post";
                     var dataStr = JsonUtility.ToJson(new Ticket(callbacks.ticketId, e.purchasedProduct.receipt));
-                    httpPost(
+                    HttpPost(
                         purchasedUrl,
                         dataStr,
                         (conId, responseData) => {
@@ -335,7 +384,7 @@ namespace AutoyaFramework.Purchase {
             var purchasedUrl = "https://httpbin.org/post";
             var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
 
-            httpPost(
+            HttpPost(
                 purchasedUrl,
                 dataStr,
                 (conId, responseData) => {
@@ -436,7 +485,7 @@ namespace AutoyaFramework.Purchase {
             */
             var purchaseCancelledUrl = "https://httpbin.org/post";
             var dataStr = callbacks.ticketId;
-            httpPost(
+            HttpPost(
                 purchaseCancelledUrl,
                 dataStr,
                 (conId, responseData) => {
@@ -446,6 +495,57 @@ namespace AutoyaFramework.Purchase {
                     // do nothing.
                 }
             );
+        }
+
+
+        /*
+            http functions for purchase.
+        */
+        private void HttpGet (string url, Action<string, string> succeeded, Action<string, int, string> failed) {
+            var connectionId = "purchase_get_" + Guid.NewGuid().ToString();
+            
+            var header = this.requestHeader(string.Empty);
+            Action<string, object> onSucceeded = (conId, result) => {
+                succeeded(conId, result as string);
+            };
+
+            var httpGetEnum = http.Get(
+                connectionId,
+                header,
+                url,
+                (conId, code, respHeaders, result) => {
+                    flowInstance.HandleErrorFlow(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                },
+                (conId, code, reason, respHeaders) => {
+                    flowInstance.HandleErrorFlow(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                }
+            );
+
+            this.enumRunner.StartCoroutine(httpGetEnum);
+        }
+    
+        private void HttpPost (string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
+            var connectionId = "purchase_post_" + Guid.NewGuid().ToString();
+            
+            var header = this.requestHeader(data);
+            Action<string, object> onSucceeded = (conId, result) => {
+                succeeded(conId, result as string);
+            };
+
+            var httpGetEnum = http.Post(
+                connectionId,
+                header,
+                url,
+                data,
+                (conId, code, respHeaders, result) => {
+                    flowInstance.HandleErrorFlow(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                },
+                (conId, code, reason, respHeaders) => {
+                    flowInstance.HandleErrorFlow(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                }
+            );
+
+            this.enumRunner.StartCoroutine(httpGetEnum);
         }
     }
 }

@@ -66,7 +66,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			}
 		);
 
-		loader = new AssetBundleLoader(basePath, dummyList);
+		loader = new AssetBundleLoader(basePath, dummyList, null);
 	}
 	[MTeardown] public void Teardown () {
 		RunOnMainThread(() => loader.CleanCachedAssetBundles());
@@ -727,17 +727,5 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 	[MTest] public void Offline () {
 		Debug.LogError("オフライン時のテストを追加したい。");
-	}
-
-	[MTest] public void Maintenance () {
-		Debug.LogError("メンテナンス時のテストを追加したい。");
-	}
-
-	[MTest] public void DeleteCache () {
-		Debug.LogError("5.5あたりでできるようになってるっぽいぞ。って言っても本当かな〜。まあできた方が良い。");
-	}
-
-	[MTest] public void Timeout () {
-		Debug.LogError("autoya経由だと、タイムアウトが実装できる気がするんだけど、どうかなー、、");
 	}
 }

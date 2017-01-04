@@ -39,7 +39,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 	}
-
+	
 	[MTest] public void AutoyaHTTPGet () {
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Get(

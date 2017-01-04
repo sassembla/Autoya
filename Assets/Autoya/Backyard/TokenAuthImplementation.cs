@@ -233,10 +233,10 @@ namespace AutoyaFramework {
 					tokenRequestHeaders,
 					tokenUrl,
 					(conId, code, responseHeaders, data) => {
-						EvaluateTokenResult(conId, responseHeaders, code, data);
+						EvaluateTokenResult(conId, responseHeaders, code, data, string.Empty);
 					},
 					(conId, code, failedReason, responseHeaders) => {
-						EvaluateTokenResult(conId, responseHeaders, code, failedReason);
+						EvaluateTokenResult(conId, responseHeaders, code, string.Empty, failedReason);
 					}
 				)
 			).Timeout(
@@ -248,7 +248,7 @@ namespace AutoyaFramework {
 
 					switch (errorType.ToString()) {
 						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, string.Empty, "timeout:" + ex.ToString());
 							break;
 						}
 						default: {
@@ -282,10 +282,10 @@ namespace AutoyaFramework {
 					tokenRequestHeaders,
 					tokenUrl,
 					(conId, code, responseHeaders, data) => {
-						EvaluateTokenResult(conId, responseHeaders, code, data);
+						EvaluateTokenResult(conId, responseHeaders, code, data, string.Empty);
 					},
 					(conId, code, failedReason, responseHeaders) => {
-						EvaluateTokenResult(conId, responseHeaders, code, failedReason);
+						EvaluateTokenResult(conId, responseHeaders, code, string.Empty, failedReason);
 					}
 				)
 			).Timeout(
@@ -297,7 +297,7 @@ namespace AutoyaFramework {
 
 					switch (errorType.ToString()) {
 						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, string.Empty, "timeout:" + ex.ToString());
 							break;
 						}
 						default: {
@@ -308,19 +308,20 @@ namespace AutoyaFramework {
 			);
 		}
 
-		private void EvaluateTokenResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
+		private void EvaluateTokenResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultData, string errorReason) {
 			ErrorFlowHandling(
 				tokenConnectionId,
 				responseHeaders, 
 				responseCode,  
-				resultDataOrFailedReason, 
+				resultData, 
+				errorReason,
 				(succeededConId, succeededData) => {
-					var isValid = IsTokenExist(succeededData);
+					var isValid = IsTokenExist(succeededData as string);
 					
 					if (isValid) {
 						// Debug.LogWarning("token取得に成功 succeededData:" + succeededData);
 						var tokenCandidate = succeededData;
-						UpdateTokenThenAttemptLogin(tokenCandidate);
+						UpdateTokenThenAttemptLogin(tokenCandidate as string);
 					} else {
 						Debug.LogError("未解決の、invalidなtokenだと見做せた場合の処理");
 					}
@@ -341,7 +342,8 @@ namespace AutoyaFramework {
 					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason);
 
 					// other errors. 
-					var shouldRetry = OnAuthFailed(tokenConnectionId, resultDataOrFailedReason);
+					// input original errorReason error as message.
+					var shouldRetry = OnAuthFailed(tokenConnectionId, errorReason);
 					if (shouldRetry) {
 						Debug.LogError("なんかtoken取得からリトライすべきなんだけどちょっとまってな1");
 						// GetTokenThenLogin();
@@ -384,10 +386,10 @@ namespace AutoyaFramework {
 					loginHeaders,
 					loginUrl,
 					(conId, code, responseHeaders, data) => {
-						EvaluateLoginResult(conId, responseHeaders, code, data);
+						EvaluateLoginResult(conId, responseHeaders, code, data, string.Empty);
 					},
 					(conId, code, failedReason, responseHeaders) => {
-						EvaluateLoginResult(conId, responseHeaders, code, failedReason);
+						EvaluateLoginResult(conId, responseHeaders, code, string.Empty, failedReason);
 					}
 				)
 			).Timeout(
@@ -399,7 +401,7 @@ namespace AutoyaFramework {
 
 					switch (errorType.ToString()) {
 						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, "timeout:" + ex.ToString());
+							EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, string.Empty, "timeout:" + ex.ToString());
 							break;
 						}
 						default: {
@@ -410,12 +412,13 @@ namespace AutoyaFramework {
 			);
 		}
 
-		private void EvaluateLoginResult (string loginConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultDataOrFailedReason) {
+		private void EvaluateLoginResult (string loginConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultData, string errorReason) {
 			ErrorFlowHandling(
 				loginConnectionId,
 				responseHeaders, 
 				responseCode,  
-				resultDataOrFailedReason, 
+				resultData,
+				errorReason, 
 				(succeededConId, succeededData) => {
 					/*
 						succeeded to login with saved token.
@@ -437,7 +440,7 @@ namespace AutoyaFramework {
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。
 					
-					var shouldRetry = OnAuthFailed(loginConnectionId, resultDataOrFailedReason);
+					var shouldRetry = OnAuthFailed(loginConnectionId, errorReason);
 					if (shouldRetry) {
 						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとかがしたい。一定時間後に実行、というのがいいと思う。現状ではまだリトライしていない。");
 						// Login();
@@ -516,12 +519,12 @@ namespace AutoyaFramework {
 
 		/**
 			this method will be called when Autoya encountered "auth failed".
-			caused by: received 401 response by some reason will raise this method.
+			caused by: received 401 response by some reason.
 
-			1.server returns 401 as the result of login request.
+			1.server returns 401 as the result of login http request.
 			2.server returns 401 as the result of usual http connection.
 
-			and this method DOES NOT FIRE when logout intentionally.
+			and this method will NOT BE FIRED when logout intentionally.
 		*/
 		private Func<string, string, bool> OnAuthFailed;
 
@@ -554,6 +557,7 @@ namespace AutoyaFramework {
 				"Auth_Test_AccidentialLogout_ConnectionId", 
 				new Dictionary<string, string>(),
 				401, 
+				string.Empty,
 				"Auth_Test_AccidentialLogout test error", 
 				(conId, data) => {}, 
 				(conId, code, reason) => {}

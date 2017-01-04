@@ -13,21 +13,17 @@ using UnityEngine.Purchasing;
 */
 public class PurchaseRouterTests : MiyamasuTestRunner {
     /**
-        Unity 5.5対応のpurchaseのテスト。
-
-        通信機構はAutoyaの認証ありのものをそのまま使うので、外部へと通信処理を出せる必要がある。というか内部でAutoya使えばいいのか。
-        AssetBundleもそれができればいいな。できるルートを作ればいい。
-        -> 通信の結果判別Actionを受け入れさせればいいことに気づいた。ので、その部分を更新しよう。
+        Unity 5.5対応のpurchaseのテスト。以下のようなことをまるっとやる。
 
         {アイテム一覧取得処理}
             ・アイテム一覧を取得する。
 
-        {アップデート処理} (FW全体でいろいろペンディング？)
+        {アップデート処理} 
             ・起動時処理(勝手に購買処理が完了したりするはず)
-            ・storedチケットがない場合の購入完了処理
-            ・storedチケットがある場合の購入完了処理
+            ・チケットがない場合の購入完了処理
+            ・チケットがある場合の購入完了処理
 
-        {購入処理} (FW全体でいろいろペンディング？)
+        {購入処理} 
             ・事前通信
             ・購買処理
             ・チケットの保存
@@ -54,7 +50,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 
         RunOnMainThread(
             () => {
-                router = new PurchaseRouter(httpGet, httpPost);
+                router = new PurchaseRouter();
             }
         );
         
@@ -69,7 +65,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         Assert(router.IsPurchaseReady(), "not ready.");
     }
 
-    [MTest] public void StartPurchaseDummy () {
+    [MTest] public void Purchase () {
         if (router == null) {
             MarkSkipped();
             return;
@@ -93,7 +89,6 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
                         purchaseSucceeded = true;
                     },
                     (pId, err, reason) => {
-                        Debug.LogError("おや？");
                         purchaseDone = true;
                         failedReason = reason;
                     }
@@ -128,56 +123,140 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to reload.");
     }
 
+    [MTest] public void PurchaseCancell () {
+        Debug.LogError("購入キャンセルのテストがしたい");
+    }
+
+
+    [MTest] public void Offline () {
+        Debug.LogError("多段階時のオフラインのテストがしたい");
+    }
+    
+
+    /*
+        このへんどうやって書き直そうかな〜〜
+        errorFlowやMonoBehaviourを渡せるようになったんだけど、おかげで切り替えられなくなってテストができない。
+    */
+
     /**
         force fail initialize of router.
     */
-    [MTest] public void ReloadUnreadyStore () {
-        if (router == null) {
-            MarkSkipped();
-            return;
-        }
+    // [MTest] public void ReloadUnreadyStore () {
+    //     if (router == null) {
+    //         MarkSkipped();
+    //         return;
+    //     }
 
-        Action<string, Action<string, string>, Action<string, int, string>> httpGet = (url, successed, failed) => {
-            // empty http get. will be timeout.
-        };
-
-        Action<string, string, Action<string, string>, Action<string, int, string>> httpPost = (url, data, successed, failed) => {
-            // empty http post. will be timeout.
-        };
-
-        // renew router.
-        RunOnMainThread(
-            () => {
-                router = new PurchaseRouter(httpGet, httpPost);
-            }
-        );
+    //     // renew router.
+    //     RunOnMainThread(
+    //         () => {
+    //             router = new PurchaseRouter();
+    //         }
+    //     );
         
-        try {
-            WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
-        } catch {
-            // catch timeout. do nothing.
-        }
+    //     try {
+    //         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
+    //     } catch {
+    //         // catch timeout. do nothing.
+    //     }
 
-        Assert(!router.IsPurchaseReady(), "not intended.");
+    //     Assert(!router.IsPurchaseReady(), "not intended.");
         
-        // すでにnewされているrouterのハンドラを更新しないとダメか、、
-        router.httpGet = (url, successed, failed) => {
-            Autoya.Http_Get(url, successed, failed);
-        };
+    //     // すでにnewされているrouterのハンドラを更新しないとダメか、、
+    //     router.httpGet = (url, successed, failed) => {
+    //         Autoya.Http_Get(url, successed, failed);
+    //     };
 
-        router.httpPost = (url, data, successed, failed) => {
-            Autoya.Http_Post(url, data, successed, failed);
-        };
+    //     router.httpPost = (url, data, successed, failed) => {
+    //         Autoya.Http_Post(url, data, successed, failed);
+    //     };
 
-        var ready = false;
-        router.Reload(
-            () => {
-                ready = true;
-            },
-            (err, reason) => {}
-        );
+    //     var ready = false;
+    //     router.Reload(
+    //         () => {
+    //             ready = true;
+    //         },
+    //         (err, reason) => {}
+    //     );
 
-        WaitUntil(() => ready, 5, "not get ready.");
-        Assert(router.IsPurchaseReady(), "not ready.");
-    }
+    //     WaitUntil(() => ready, 5, "not get ready.");
+    //     Assert(router.IsPurchaseReady(), "not ready.");
+    // }
+
+//     [MTest] public void ReloadUnreadyStoreThenPurchase () {
+//         if (router == null) {
+//             MarkSkipped();
+//             return;
+//         }
+
+//         Action<string, Action<string, string>, Action<string, int, string>> httpGet = (url, successed, failed) => {
+//             // empty http get. will be timeout.
+//         };
+
+//         Action<string, string, Action<string, string>, Action<string, int, string>> httpPost = (url, data, successed, failed) => {
+//             // empty http post. will be timeout.
+//         };
+
+//         // renew router.
+//         RunOnMainThread(
+//             () => {
+//                 router = new PurchaseRouter(httpGet, httpPost);
+//             }
+//         );
+        
+//         try {
+//             WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
+//         } catch {
+//             // catch timeout. do nothing.
+//         }
+
+//         Assert(!router.IsPurchaseReady(), "not intended.");
+        
+//         // すでにnewされているrouterのハンドラを更新しないとダメか、、
+//         router.httpGet = (url, successed, failed) => {
+//             Autoya.Http_Get(url, successed, failed);
+//         };
+
+//         router.httpPost = (url, data, successed, failed) => {
+//             Autoya.Http_Post(url, data, successed, failed);
+//         };
+
+//         var ready = false;
+//         router.Reload(
+//             () => {
+//                 ready = true;
+//             },
+//             (err, reason) => {}
+//         );
+
+//         WaitUntil(() => ready, 5, "not get ready.");
+//         Assert(router.IsPurchaseReady(), "not ready.");
+
+//         var purchaseId = "dummy purchase Id";
+//         var productId = "100_gold_coins";
+
+//         var purchaseDone = false;
+//         var purchaseSucceeded = false;
+//         var failedReason = string.Empty;
+
+//         RunOnMainThread(
+//             () => {
+//                 router.PurchaseAsync(
+//                     purchaseId,
+//                     productId,
+//                     pId => {
+//                         purchaseDone = true;
+//                         purchaseSucceeded = true;
+//                     },
+//                     (pId, err, reason) => {
+//                         purchaseDone = true;
+//                         failedReason = reason;
+//                     }
+//                 );
+//             }
+//         );
+
+//         WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
+//         Assert(purchaseSucceeded, "purchase failed. reason:" + failedReason);
+//     }
 }
