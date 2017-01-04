@@ -21,32 +21,42 @@ This framework can help that.
 MIT.
 
 
-##Progress
+## Progress
 
 ###Log-in / Log-out
-done
+already implemented.
 
-###AssetBundle load/management
-done
+###AssetBundle list/preload/load
+already implemented.
 
 ###HTTP/TCP/UDP Connection feature
 | Protocol        | Progress     |
 | ------------- |:-------------:|
 | http/1 | done | 
-| http/2 | in 2016 | 
-| tcp      | in 2016      | 
-| udp	| in 2016      |  
+| http/2 | done | 
+| tcp      | not yet      | 
+| udp	| not yet      |  
 
 
 ###app-version/asset-version/server-condition changed handles
-done
+already implemented.
 
 ###Purchase/IAP flow
-in 2016
+already implemented.
 
 ###Notification(local/remote)
-in 2016
+in 2017 early.
 
 ###Information
-in 2016
+in 2017 early.
 
+
+## Tests
+implementing.
+
+
+## Installation
+now updating.
+
+## Usage
+now updating.
