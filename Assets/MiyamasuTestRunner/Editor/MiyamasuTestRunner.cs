@@ -231,12 +231,27 @@ namespace Miyamasu {
 				WaitUntil(() => done, -1);
 			}
 		}
+
+		public bool IsTestRunningInPlayingMode () {
+			bool isRunningInPlayingMode = false;
+			RunOnMainThread(
+				() => {
+					isRunningInPlayingMode = Application.isPlaying;
+				}
+			);
+			return isRunningInPlayingMode;
+		}
 		
 
 		public void Assert (bool condition, string message) {
 			if (!condition) {
 				throw new Exception("assert failed:" + message);
 			}
+		}
+
+		public void MarkSkipped () {
+			var callerMethodName = new Diag.StackFrame(1).GetMethod().Name;
+			TestLogger.Log("skipped:" + callerMethodName, true);
 		}
 
 		public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";

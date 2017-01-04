@@ -26,7 +26,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void GetPreloadList () {
-        // Preloadが終わった時に着火されるハンドラがほしいね。
+        // Preloadが終わった時に着火されるハンドラがほしいね。そしたらほっておける。
         var done = false;
         
         RunEnumeratorOnMainThread(

@@ -7,8 +7,6 @@ using UnityEngine;
 
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundleLoader {
-        
-
         public enum AssetBundleLoadError {
             NotContained,
             DownloadFailed,
@@ -21,12 +19,7 @@ namespace AutoyaFramework.AssetBundles {
         private readonly AssetBundleList list;
 
         public AssetBundleLoader (string basePath, AssetBundleList list) {
-            /*
-                あーー、HTTPConnectionを持ってこなくても、外的な要因を一覧みたいな感じで持ってきて、ここで作ったHTTPConnectionに反映させる、みたいなのはできそうなきがするぞ。
-                でも持ってきたほうが楽な気もするぞ。
-
-                とりあえず自前のHTTPConnectionを作っちゃおう。
-            */
+            
             this.assetDownloadBasePath = basePath;
             this.http = new HTTPConnection();
             this.list = list;
@@ -42,11 +35,12 @@ namespace AutoyaFramework.AssetBundles {
                     assetNamesAndAssetBundleNamesDict[assetName] = bundleName;
                 }
             }
-            // ここで、assetNamesAndAssetBundleNamesDictを、wholeなリストから読み出す。つまり渡したほうがいい気がする。リストが更新されたら、もう全部作り直しでいいんじゃねーかなーと思う。
-            // 読み込んでたリストは全てアンロードした上で、新規作成、っていう流れにするか。どうせロードする仕組みのインターフェースがキャッシュみるんだし。
         }
 
-        public bool CleanCache () {
+        /*
+            unload all assetBundles and delete all assetBundle caches.
+        */
+        public bool CleanCachedAssetBundles () {
             /*
                 clean all loaded assets.
             */
@@ -57,6 +51,11 @@ namespace AutoyaFramework.AssetBundles {
 
         private List<string> loadingAssetBundleNames = new List<string>();
         private Dictionary<string, string> assetNamesAndAssetBundleNamesDict = new Dictionary<string, string>();
+
+        /**
+            load specific type Asset from AssetBundle.
+            dependency of AssetBundle will be solved automatically.
+        */
         public IEnumerator LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
             if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
                 loadFailed(assetName, AssetBundleLoadError.NotContained, string.Empty);
@@ -306,7 +305,7 @@ namespace AutoyaFramework.AssetBundles {
 
             assetBundleDict.Clear();
         }
-        
+
         public void UnloadAssetBundle (string bundleName) {
             if (assetBundleDict.ContainsKey(bundleName)) {
                 var asset = assetBundleDict[bundleName];

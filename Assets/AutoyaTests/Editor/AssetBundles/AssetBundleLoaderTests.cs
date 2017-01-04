@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
 using Miyamasu;
 using UnityEngine;
@@ -72,14 +69,14 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		loader = new AssetBundleLoader(basePath, dummyList);
 	}
 	[MTeardown] public void Teardown () {
-		RunOnMainThread(() => loader.CleanCache());
+		RunOnMainThread(() => loader.CleanCachedAssetBundles());
 	}
 
 	[MTest] public void LoadAssetByAssetName () {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -114,7 +111,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -173,7 +170,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
         var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -220,7 +217,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
         var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -308,7 +305,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -378,7 +375,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -449,7 +446,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -522,7 +519,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -575,7 +572,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -608,7 +605,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -631,7 +628,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -666,7 +663,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -698,7 +695,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
-				cleaned = loader.CleanCache();
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
 		if (!cleaned) {
@@ -728,4 +725,19 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		Assert(!loader.OnMemoryAssetNames().Any(), "not unloaded.");
     }
 
+	[MTest] public void Offline () {
+		Debug.LogError("オフライン時のテストを追加したい。");
+	}
+
+	[MTest] public void Maintenance () {
+		Debug.LogError("メンテナンス時のテストを追加したい。");
+	}
+
+	[MTest] public void DeleteCache () {
+		Debug.LogError("5.5あたりでできるようになってるっぽいぞ。って言っても本当かな〜。まあできた方が良い。");
+	}
+
+	[MTest] public void Timeout () {
+		Debug.LogError("autoya経由だと、タイムアウトが実装できる気がするんだけど、どうかなー、、");
+	}
 }
