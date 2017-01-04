@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework.Connections.HTTP;
 using UnityEngine;
@@ -70,7 +71,7 @@ namespace AutoyaFramework.Purchase {
 
         private readonly string storeKind;
         
-        private readonly MonoBehaviour enumRunner = null;
+        private readonly Action<IEnumerator> runEnumerator;
 
         private readonly Func<string, Dictionary<string, string>> requestHeader = data => {
             return new Dictionary<string, string>();
@@ -91,14 +92,17 @@ namespace AutoyaFramework.Purchase {
             also you can modify http error handling via flowInstance.
             by default, response code 200 ~ 299 is treated as success, and others are treated as error.
          */
-        public PurchaseRouter (MonoBehaviour newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
+        public PurchaseRouter (Action<IEnumerator> newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
             this.storeKind = AppleAppStore.Name;
             
             if (newEnumRunner != null) {
-                this.enumRunner = newEnumRunner;
+                this.runEnumerator = newEnumRunner;
             } else {
                 var go = new GameObject("PurchaseRouter");
-                this.enumRunner = go.AddComponent<PurchaseMonoBehaviour>();
+                var runner = go.AddComponent<PurchaseMonoBehaviour>();
+                this.runEnumerator = ienum => {
+                    runner.StartCoroutine(ienum);
+                };
             }
 
             if (newRequestHeader != null) {
@@ -519,7 +523,7 @@ namespace AutoyaFramework.Purchase {
                 }
             );
 
-            this.enumRunner.StartCoroutine(httpGetEnum);
+            this.runEnumerator(httpGetEnum);
         }
     
         private void HttpPost (string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
@@ -543,7 +547,7 @@ namespace AutoyaFramework.Purchase {
                 }
             );
 
-            this.enumRunner.StartCoroutine(httpGetEnum);
+            this.runEnumerator(httpGetEnum);
         }
     }
 }
