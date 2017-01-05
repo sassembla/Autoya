@@ -271,18 +271,17 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		/*
 			fake server should be response 0.01 sec
 		*/
-		var connectionId = Autoya.Http_Post(
+		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/delay/10", 
-			"data",
 			(string conId, string resultData) => {
 				// do nothing.
 			},
 			(string conId, int code, string reason) => {
-				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match.");
+				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. code:" + code + " reason:" + reason);
 				timeoutError = reason;
 			},
 			null,
-			0.01
+			0.0001// 1ms
 		);
 
 		WaitUntil(

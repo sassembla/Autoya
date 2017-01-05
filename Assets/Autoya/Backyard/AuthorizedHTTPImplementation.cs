@@ -261,7 +261,7 @@ namespace AutoyaFramework {
 			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
 				succeeded(conId, resultData as string);
 			};
-			
+
 			Observable.FromCoroutine(
 				() => autoya._autoyaHttp.Post(
 					connectionId,
@@ -275,13 +275,8 @@ namespace AutoyaFramework {
 						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
 					}
 				)
-			).Timeout(
-				TimeSpan.FromSeconds(timeoutSec)
 			).Subscribe(
-				_ => {},
-				ex => {
-					failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + ex);
-				}
+				_ => {}
 			);
 
             return connectionId;

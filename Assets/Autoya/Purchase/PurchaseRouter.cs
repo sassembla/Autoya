@@ -26,6 +26,15 @@ namespace AutoyaFramework.Purchase {
                 this.platformProductId = platformProductId;
             }
         }
+
+        [Serializable] public struct PurchaseFailed {
+            public string ticketId;
+            public string reason;
+            public PurchaseFailed (string ticketId, string reason) {
+                this.ticketId = ticketId;
+                this.reason = reason;
+            }
+        }
         
         private enum RouterState {
             None,
@@ -83,7 +92,7 @@ namespace AutoyaFramework.Purchase {
         private Action<PurchaseError, string> failedToReady;
         
         /**
-            it's good to set non-null newEnumRunner for running http IEnumerator smart.
+            it's good to set non-null newEnumRunner for running http IEnumerator with detailed control.
             if null, this class creates own GameObject, and then add that for running.
 
             Func<string, Dictionary<string, string>> requestHeader func is used to get request header. 
@@ -135,8 +144,11 @@ namespace AutoyaFramework.Purchase {
             this.failedToReady = reloadFailed;
             routerState = RouterState.LoadingProducts;
             
+            var connectionId = "purchase_ready_" + Guid.NewGuid().ToString();
+
             var url = "https://google.com";
             HttpGet(
+                connectionId,
                 url, 
                 (conId, data) => {
                     Debug.LogWarning("アイテム取得したのでデータを入れる。現在はダミーAPIが適当なデータを入れてくるのを想定してる。");
@@ -257,7 +269,11 @@ namespace AutoyaFramework.Purchase {
             var data = productId;
 
             routerState = RouterState.GettingTransaction;
+
+            var connectionId = "purchase_start_" + Guid.NewGuid().ToString();
+
             HttpPost(
+                connectionId,
                 transactionUrl,
                 data,
                 (conId, resultData) => {
@@ -267,13 +283,14 @@ namespace AutoyaFramework.Purchase {
                     TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
                 },
                 (conId, code, reason) => {
+                    Debug.LogWarning("ふおーーー場合分けエラー出すの忘れてた、怖い。conId:" + conId + " code:" + code + " reason:" + reason);
                     purchaseFailed(purchaseId, PurchaseError.TicketGetError, "failed to purchase.");
                     routerState = RouterState.PurchaseReady;
                 }
             );
         }
         
-        public struct Callbacks {
+        private struct Callbacks {
             public readonly Product p;
             public readonly string ticketId;
             public readonly Action purchaseSucceeded;
@@ -347,7 +364,11 @@ namespace AutoyaFramework.Purchase {
                 case RouterState.Purchasing: {
                     var purchasedUrl = "https://httpbin.org/post";
                     var dataStr = JsonUtility.ToJson(new Ticket(callbacks.ticketId, e.purchasedProduct.receipt));
+
+                    var connectionId = "purchase_succeeded_" + Guid.NewGuid().ToString();
+                    
                     HttpPost(
+                        connectionId,
                         purchasedUrl,
                         dataStr,
                         (conId, responseData) => {
@@ -386,7 +407,10 @@ namespace AutoyaFramework.Purchase {
             var purchasedUrl = "https://httpbin.org/post";
             var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
 
+            var connectionId = "purchase_paid_" + Guid.NewGuid().ToString();
+
             HttpPost(
+                connectionId,
                 purchasedUrl,
                 dataStr,
                 (conId, responseData) => {
@@ -486,8 +510,11 @@ namespace AutoyaFramework.Purchase {
                 send failed/cancelled ticketId if possible.
             */
             var purchaseCancelledUrl = "https://httpbin.org/post";
-            var dataStr = callbacks.ticketId;
+            var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, reason));
+            var connectionId = "purchase_cancelled_" + Guid.NewGuid().ToString();
+
             HttpPost(
+                connectionId,
                 purchaseCancelledUrl,
                 dataStr,
                 (conId, responseData) => {
@@ -503,9 +530,7 @@ namespace AutoyaFramework.Purchase {
         /*
             http functions for purchase.
         */
-        private void HttpGet (string url, Action<string, string> succeeded, Action<string, int, string> failed) {
-            var connectionId = "purchase_get_" + Guid.NewGuid().ToString();
-            
+        private void HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
             var header = this.requestHeader(string.Empty);
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
@@ -520,15 +545,14 @@ namespace AutoyaFramework.Purchase {
                 },
                 (conId, code, reason, respHeaders) => {
                     flowInstance.HandleErrorFlow(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
-                }
+                },
+                10.0
             );
 
             this.runEnumerator(httpGetEnum);
         }
     
-        private void HttpPost (string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
-            var connectionId = "purchase_post_" + Guid.NewGuid().ToString();
-            
+        private void HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
             var header = this.requestHeader(data);
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
@@ -544,7 +568,8 @@ namespace AutoyaFramework.Purchase {
                 },
                 (conId, code, reason, respHeaders) => {
                     flowInstance.HandleErrorFlow(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
-                }
+                },
+                10.0
             );
 
             this.runEnumerator(httpGetEnum);

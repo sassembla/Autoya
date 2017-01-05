@@ -228,7 +228,7 @@ namespace AutoyaFramework {
 			};
 			
 			Observable.FromCoroutine(
-				() => tokenHttp.Get(
+				_ => tokenHttp.Get(
 					tokenConnectionId,
 					tokenRequestHeaders,
 					tokenUrl,
@@ -237,27 +237,11 @@ namespace AutoyaFramework {
 					},
 					(conId, code, failedReason, responseHeaders) => {
 						EvaluateTokenResult(conId, responseHeaders, code, string.Empty, failedReason);
-					}
+					},
+					BackyardSettings.HTTP_TIMEOUT_SEC
 				)
-			).Timeout(
-				TimeSpan.FromSeconds(BackyardSettings.HTTP_TIMEOUT_SEC)
 			).Subscribe(
-				_ => {},
-				ex => {
-					var errorType = ex.GetType();
-
-					switch (errorType.ToString()) {
-						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, string.Empty, "timeout:" + ex.ToString());
-							break;
-						}
-						default: {
-							Debug.LogError("failed to get token by undefined reason:" + ex.Message);
-							// throw new Exception("failed to get token by undefined reason:" + ex.Message);
-							break;
-						}
-					}
-				}
+				_ => {}
 			);
 		}
 
@@ -277,7 +261,7 @@ namespace AutoyaFramework {
 			};
 
 			Observable.FromCoroutine(
-				() => tokenHttp.Get(
+				_ => tokenHttp.Get(
 					tokenConnectionId,
 					tokenRequestHeaders,
 					tokenUrl,
@@ -286,25 +270,11 @@ namespace AutoyaFramework {
 					},
 					(conId, code, failedReason, responseHeaders) => {
 						EvaluateTokenResult(conId, responseHeaders, code, string.Empty, failedReason);
-					}
+					},
+					BackyardSettings.HTTP_TIMEOUT_SEC
 				)
-			).Timeout(
-				TimeSpan.FromSeconds(BackyardSettings.HTTP_TIMEOUT_SEC)
 			).Subscribe(
-				_ => {},
-				ex => {
-					var errorType = ex.GetType();
-
-					switch (errorType.ToString()) {
-						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateTokenResult(tokenConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, string.Empty, "timeout:" + ex.ToString());
-							break;
-						}
-						default: {
-							throw new Exception("failed to get token by undefined reason:" + ex.Message);
-						}
-					}
-				}
+				_ => {}
 			);
 		}
 
@@ -370,7 +340,7 @@ namespace AutoyaFramework {
 				set token candidate and identitiy to request header basement.
 			*/
 			SetHTTPAuthorizedPart("dummy-id", tokenCandidate);
-
+			
 			/*
 				create login request.
 			*/
@@ -390,25 +360,11 @@ namespace AutoyaFramework {
 					},
 					(conId, code, failedReason, responseHeaders) => {
 						EvaluateLoginResult(conId, responseHeaders, code, string.Empty, failedReason);
-					}
+					},
+					BackyardSettings.HTTP_TIMEOUT_SEC
 				)
-			).Timeout(
-				TimeSpan.FromSeconds(BackyardSettings.HTTP_TIMEOUT_SEC)
 			).Subscribe(
-				_ => {},
-				ex => {
-					var errorType = ex.GetType();
-
-					switch (errorType.ToString()) {
-						case BackyardSettings.AUTH_HTTP_INTERNALERROR_TYPE_TIMEOUT: {
-							EvaluateLoginResult(loginConnectionId, new Dictionary<string, string>(), BackyardSettings.AUTH_HTTP_INTERNALERROR_CODE_TIMEOUT, string.Empty, "timeout:" + ex.ToString());
-							break;
-						}
-						default: {
-							throw new Exception("failed to get token by undefined reason:" + ex.Message);
-						}
-					}
-				}
+				_ => {}
 			);
 		}
 
@@ -435,7 +391,7 @@ namespace AutoyaFramework {
 						we should handling NOT 401(Unauthorized) result.
 					*/
 
-					Debug.LogError("failedConId:" + failedConId + " failedReason:" + failedReason + " これが出た時にテストが失敗する = 停止するのがあれ。");
+					Debug.LogError("failedConId:" + failedConId + " failedCode:" + failedCode + " failedReason:" + failedReason + " これが出た時にテストが失敗する = 停止するのがあれ。");
 					
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。

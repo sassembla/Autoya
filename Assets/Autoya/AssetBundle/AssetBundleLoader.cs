@@ -227,7 +227,7 @@ namespace AutoyaFramework.AssetBundles {
                 failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason);
             };
 
-            Debug.LogWarning("Autoyaのauth機構をめり込ませられる必要がある。後段はなんとかなってるので、あとは前段をなんとかする。http機能丸パクでもいいのかな、、");
+            Debug.LogWarning("Autoyaのauth機構をめり込ませられる必要がある。後段はなんとかなってるので、あとは前段をなんとかする。ヘッダ部、http機能丸パクでもいいのかな、、");
             var connectionCoroutine = http.DownloadAssetBundle(
                 connectionId,
                 null,

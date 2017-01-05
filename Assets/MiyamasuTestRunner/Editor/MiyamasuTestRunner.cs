@@ -244,8 +244,9 @@ namespace Miyamasu {
 		
 
 		public void Assert (bool condition, string message) {
+			var callerMethodName = new Diag.StackFrame(2).GetMethod().Name;
 			if (!condition) {
-				throw new Exception("assert failed:" + message);
+				throw new Exception("assert failed @ " + callerMethodName + " message:" + message);
 			}
 		}
 

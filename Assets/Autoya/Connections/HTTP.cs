@@ -12,11 +12,25 @@ namespace AutoyaFramework.Connections.HTTP {
 
     public class HTTPConnection {
 		
-		public IEnumerator Get (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+		public IEnumerator Get (string connectionId, Dictionary<string, string> requestHeaders, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+			var currentDate = DateTime.UtcNow;
+			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+			
 			using (var request = UnityWebRequest.Get(url)) {
-				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
 				
-				yield return request.Send();
+				var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+						yield break;
+					}
+				}
 				
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
@@ -28,19 +42,30 @@ namespace AutoyaFramework.Connections.HTTP {
 
 				var data = request.downloadHandler.data;
 				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
-				yield break;
 			}
 		}
-		
-		public IEnumerator Post (string connectionId, Dictionary<string, string> headers, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+
+		public IEnumerator Post (string connectionId, Dictionary<string, string> requestHeaders, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+			var currentDate = DateTime.UtcNow;
+			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+			
 			using (var request = UnityWebRequest.Post(url, data)) {
-				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
-
-				yield return request.Send();
+				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
+				var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+					// check timeout.
+					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+						yield break;
+					}
+				}
 				
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
-
+				
 				if (request.isError) {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
@@ -48,15 +73,28 @@ namespace AutoyaFramework.Connections.HTTP {
 
 				var resultData = request.downloadHandler.data;
 				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(resultData));
-				yield break;
 			}
 		}
 
-		public IEnumerator Put (string connectionId, Dictionary<string, string> headers, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+		public IEnumerator Put (string connectionId, Dictionary<string, string> requestHeaders, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+			var currentDate = DateTime.UtcNow;
+			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+			
 			using (var request = UnityWebRequest.Put(url, data)) {
-				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
 
-				yield return request.Send();
+				var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+						yield break;
+					}
+				}
 				
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
@@ -68,15 +106,28 @@ namespace AutoyaFramework.Connections.HTTP {
 
 				var resultData = request.downloadHandler.data;
 				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(resultData));
-				yield break;
 			}
 		}
 
-		public IEnumerator Delete (string connectionId, Dictionary<string, string> headers, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+		public IEnumerator Delete (string connectionId, Dictionary<string, string> requestHeaders, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+			var currentDate = DateTime.UtcNow;
+			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+			
 			using (var request = UnityWebRequest.Delete(url)) {
-				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
 				
-				yield return request.Send();
+				var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+						yield break;
+					}
+				}
 				
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
@@ -88,15 +139,28 @@ namespace AutoyaFramework.Connections.HTTP {
 				
 				var data = request.downloadHandler.data;
 				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
-				yield break;
 			}
 		}
 		
-		public IEnumerator DownloadAssetBundle (string connectionId, Dictionary<string, string> headers, string url, uint version, uint crc, Action<string, int, Dictionary<string, string>, AssetBundle> succeeded, Action<string, int, string, Dictionary<string, string>> failed) {
+		public IEnumerator DownloadAssetBundle (string connectionId, Dictionary<string, string> requestHeaders, string url, uint version, uint crc, Action<string, int, Dictionary<string, string>, AssetBundle> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+			var currentDate = DateTime.UtcNow;
+			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+			
 			using (var request = UnityWebRequest.GetAssetBundle(url, version, crc)) {
-				if (headers != null) foreach (var kv in headers) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
 				
-				yield return request.Send();
+				var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+						yield break;
+					}
+				}
 
 				while (!request.isDone) {
 					yield return null;

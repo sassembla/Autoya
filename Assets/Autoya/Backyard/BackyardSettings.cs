@@ -29,6 +29,6 @@ namespace AutoyaFramework {
 		public const double HTTP_TIMEOUT_SEC = 5.0;
 		public const int HTTP_TIMEOUT_CODE = 408;
         public const string HTTP_401_MESSAGE = "unauthorized:";
-        public const string HTTP_TIMEOUT_MESSAGE = "timeout:";
+        public const string HTTP_TIMEOUT_MESSAGE = "timeout. sec:";
     }
 }
