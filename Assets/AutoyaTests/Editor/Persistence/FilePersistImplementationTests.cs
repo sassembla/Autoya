@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using AutoyaFramework;
 using Miyamasu;
+using UnityEngine;
 
 /**
 	test for file persist controll.
@@ -22,11 +23,22 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 						loginDone = true;
 					}
 				);
+				Autoya.Auth_SetOnAuthFailed(
+					(conId, reason) => {
+						loginDone = false;
+						return false;
+					}
+				);
 			}
 		);
 		
-		WaitUntil(() => loginDone, 5, "failed to log in.");
 
+		WaitUntil(
+			() => {
+				return loginDone;
+			},
+			3
+		);
 		Autoya.Persist_DeleteByDomain(AutoyaFilePersistTestsFileDomain);
 	}
 	

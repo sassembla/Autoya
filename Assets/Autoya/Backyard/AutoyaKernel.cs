@@ -7,6 +7,9 @@ using AutoyaFramework.Persistence.Files;
 */
 namespace AutoyaFramework {
     public partial class Autoya {
+
+		private AutoyaMainthreadDispatcher mainthreadDispatcher;
+		
 		/**
 			all conditions which Autoya has.
 		*/
@@ -16,13 +19,21 @@ namespace AutoyaFramework {
 			
 			public string _buildNumber;
 		}
-		
+			
 		private AutoyaParameters _parameters;
 		
 		private Autoya (string basePath="") {
 			// Debug.LogWarning("autoya initialize start.");
 			
-			// UniRxとMiyamasuの相性が悪いのがこのへんにある。
+			var go = GameObject.Find("AutoyaMainthreadDispatcher");
+			if (go == null) {
+				go = new GameObject("AutoyaMainthreadDispatcher");
+				// go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
+				this.mainthreadDispatcher = go.AddComponent<AutoyaMainthreadDispatcher>();
+			} else {
+				this.mainthreadDispatcher = go.GetComponent<AutoyaMainthreadDispatcher>();
+			}
+			
 			_parameters = new AutoyaParameters();
 
 			_autoyaFilePersistence = new FilePersistence(basePath);

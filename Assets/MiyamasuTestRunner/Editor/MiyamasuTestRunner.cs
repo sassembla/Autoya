@@ -58,6 +58,12 @@ namespace Miyamasu {
 		public object lockObj = new object();
 
 		public IEnumerator RunTestsOnEditorMainThread () {
+            // EditorApplication.CallbackFunction isAlive = () => {
+			// 	Debug.Log("alive.");
+			// };
+
+			// EditorApplication.update += isAlive;
+			
 			var typeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
 				.Where(tAndMInfo => tAndMInfo.hasTests)
@@ -87,34 +93,39 @@ namespace Miyamasu {
 						
 						TestLogger.Log("start tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
 						foreach (var methodInfo in typeAndMethodInfo.asyncMethodInfos) {
-							if (typeAndMethodInfo.setupMethodInfo != null) typeAndMethodInfo.setupMethodInfo.Invoke(instance, null);
 							var methodName = methodInfo.Name;
+							TestLogger.Log("start methodName:" + methodName, true);
+
+							// setup.
+							try {
+								if (typeAndMethodInfo.setupMethodInfo != null) {
+									typeAndMethodInfo.setupMethodInfo.Invoke(instance, null);
+								}
+							} catch (Exception e) {
+								failed++;
+								LogTestFailed(e, methodName);
+								continue;
+							}
 							
+							/*
+								run test.
+							*/
 							try {
 								methodInfo.Invoke(instance, null);
 								passed++;
 							} catch (Exception e) {
 								failed++;
-								
-								var location = string.Empty;
-								var errorStackLines = e.ToString().Split('\n');
-								
-								for (var i = 0; i < errorStackLines.Length; i++) {
-									var line = errorStackLines[i];
-									
-									if (line.StartsWith("  at Miyamasu.MiyamasuTestRunner.Assert")) {
-										location = errorStackLines[i+1].Substring("  at ".Length);
-										break;
-									}
-									if (line.StartsWith("  at Miyamasu.MiyamasuTestRunner.WaitUntil")) {
-										location = errorStackLines[i+1].Substring("  at ".Length);
-										break;
-									}
-								}
-
-								TestLogger.Log("test FAILED by:" + e.InnerException.Message + " @ " + location, true);
+								LogTestFailed(e);
 							}
-							if (typeAndMethodInfo.teardownMethodInfo != null) typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
+
+							// teardown.
+							try {
+								if (typeAndMethodInfo.teardownMethodInfo != null) {
+									typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
+								}
+							} catch (Exception e) {
+								LogTestFailed(e, methodName);
+							}
 						}
 
 						TestLogger.Log("done tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
@@ -141,8 +152,29 @@ namespace Miyamasu {
 			}
 			
 			TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
-			TestLogger.LogEnd();
+			TestLogger.LogEnd();			
+		}
+
+
+		private void LogTestFailed (Exception e, string subLocation=null) {
+			var location = string.Empty;
+			var errorStackLines = e.ToString().Split('\n');
 			
+			for (var i = 0; i < errorStackLines.Length; i++) {
+				var line = errorStackLines[i];
+				
+				if (line.StartsWith("  at Miyamasu.MiyamasuTestRunner.Assert")) {
+					location = errorStackLines[i+1].Substring("  at ".Length);
+					break;
+				}
+				if (line.StartsWith("  at Miyamasu.MiyamasuTestRunner.WaitUntil")) {
+					location = errorStackLines[i+1].Substring("  at ".Length);
+					break;
+				}
+			}
+
+			if (string.IsNullOrEmpty(subLocation)) TestLogger.Log("test FAILED by:" + e.InnerException.Message + " @ " + location, true);
+			else TestLogger.Log("test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
 		}
 		
 		/**
@@ -241,6 +273,10 @@ namespace Miyamasu {
 			);
 			return isRunningInPlayingMode;
 		}
+
+		public void SkipCurrentTest (string message) {
+			throw new Exception("test skipped with message:" + message);
+		}
 		
 
 		public void Assert (bool condition, string message) {
@@ -248,11 +284,6 @@ namespace Miyamasu {
 			if (!condition) {
 				throw new Exception("assert failed @ " + callerMethodName + " message:" + message);
 			}
-		}
-
-		public void MarkSkipped () {
-			var callerMethodName = new Diag.StackFrame(1).GetMethod().Name;
-			TestLogger.Log("skipped:" + callerMethodName, true);
 		}
 
 		public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";
@@ -268,10 +299,10 @@ namespace Miyamasu {
 			private static string pathOfLogFile;
 			private static StringBuilder _logs = new StringBuilder();
 			
-			public static void Log (string message, bool export=false) {
+			public static void Log (string message, bool writeSoon=false) {
 				if (outputLog) UnityEngine.Debug.Log("log:" + message);
 				lock (lockObject) {
-					if (!export) {
+					if (!writeSoon) {
 						_logs.AppendLine(message);
 						return;
 					}

@@ -1,12 +1,9 @@
 using UnityEngine;
 using AutoyaFramework.Connections.HTTP;
-using AutoyaFramework.Representation;
 using AutoyaFramework.Settings.Auth;
 
 using System;
 using System.Collections.Generic;
-using UniRx;
-using System.Text;
 
 namespace AutoyaFramework {
 	public partial class Autoya {
@@ -227,21 +224,21 @@ namespace AutoyaFramework {
 				{"Auth", authStr}
 			};
 			
-			Observable.FromCoroutine(
-				_ => tokenHttp.Get(
+			mainthreadDispatcher.Commit(
+				tokenHttp.Get(
 					tokenConnectionId,
 					tokenRequestHeaders,
 					tokenUrl,
 					(conId, code, responseHeaders, data) => {
+						Debug.Log("continue tokenConnectionId:" + tokenConnectionId + " code:" + code + " data:" + data);
 						EvaluateTokenResult(conId, responseHeaders, code, data, string.Empty);
 					},
 					(conId, code, failedReason, responseHeaders) => {
+						Debug.LogError("failed to boot,");
 						EvaluateTokenResult(conId, responseHeaders, code, string.Empty, failedReason);
 					},
 					BackyardSettings.HTTP_TIMEOUT_SEC
 				)
-			).Subscribe(
-				_ => {}
 			);
 		}
 
@@ -260,8 +257,8 @@ namespace AutoyaFramework {
 				{"identity", "dummy-id"}
 			};
 
-			Observable.FromCoroutine(
-				_ => tokenHttp.Get(
+			mainthreadDispatcher.Commit(
+				tokenHttp.Get(
 					tokenConnectionId,
 					tokenRequestHeaders,
 					tokenUrl,
@@ -273,8 +270,6 @@ namespace AutoyaFramework {
 					},
 					BackyardSettings.HTTP_TIMEOUT_SEC
 				)
-			).Subscribe(
-				_ => {}
 			);
 		}
 
@@ -350,8 +345,8 @@ namespace AutoyaFramework {
 			var loginHttp = new HTTPConnection();
 			var loginConnectionId = BackyardSettings.AUTH_CONNECTIONID_ATTEMPTLOGIN_PREFIX + Guid.NewGuid().ToString();
 			
-			Observable.FromCoroutine(
-				_ => loginHttp.Get(
+			mainthreadDispatcher.Commit(
+				loginHttp.Get(
 					loginConnectionId,
 					loginHeaders,
 					loginUrl,
@@ -363,8 +358,6 @@ namespace AutoyaFramework {
 					},
 					BackyardSettings.HTTP_TIMEOUT_SEC
 				)
-			).Subscribe(
-				_ => {}
 			);
 		}
 
@@ -400,6 +393,8 @@ namespace AutoyaFramework {
 					if (shouldRetry) {
 						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとかがしたい。一定時間後に実行、というのがいいと思う。現状ではまだリトライしていない。");
 						// Login();
+					} else {
+						Debug.LogError("リトライを断っている、んだけど、まあ何か表示したほうがよさそ。");
 					}
 				}
 			);

@@ -19,6 +19,7 @@ public class BasicUsage : MonoBehaviour {
 		while (!Autoya.Auth_IsLoggedIn()) {
 			yield return null;
 		}
+		Debug.Log("logged in!");
 	}
 	
 	// Update is called once per frame

@@ -38,7 +38,9 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
     private PurchaseRouter router;
     
     [MSetup] public void Setup () {
-        if (!IsTestRunningInPlayingMode()) return;
+        if (!IsTestRunningInPlayingMode()) {
+			SkipCurrentTest("Purchase feature should run on MainThread.");
+		};
 
         Action<string, Action<string, string>, Action<string, int, string>> httpGet = (url, successed, failed) => {
             Autoya.Http_Get(url, successed, failed);
@@ -58,19 +60,10 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
     }
 
     [MTest] public void ReadyPurchase () {
-        if (router == null) {
-            MarkSkipped();
-            return;
-        }
         Assert(router.IsPurchaseReady(), "not ready.");
     }
 
     [MTest] public void Purchase () {
-        if (router == null) {
-            MarkSkipped();
-            return;
-        }
-        
         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
         var purchaseId = "dummy purchase Id";
         var productId = "100_gold_coins";
@@ -101,11 +94,6 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
     }
 
     [MTest] public void ReloadStore () {
-        if (router == null) {
-            MarkSkipped();
-            return;
-        }
-        
         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
         
         /*

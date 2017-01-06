@@ -29,6 +29,10 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	private AssetBundleLoader loader;
 	private AssetBundleList dummyList;
 	[MSetup] public void Setup () {
+		if (!IsTestRunningInPlayingMode()) {
+			SkipCurrentTest("AssetBundle request should run on MainThread.");
+		};
+
 		/*
 			set dummy list of AssetBundleList.
 		*/
@@ -167,7 +171,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void LoadAssetWithDependency () {
-        var cleaned = false;
+		var cleaned = false;
 		RunOnMainThread(
 			() => {
 				cleaned = loader.CleanCachedAssetBundles();

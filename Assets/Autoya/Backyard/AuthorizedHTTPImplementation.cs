@@ -1,6 +1,5 @@
 using UnityEngine;
 using System;
-using UniRx;
 using AutoyaFramework.Connections.HTTP;
 using System.Collections.Generic;
 
@@ -106,7 +105,6 @@ namespace AutoyaFramework {
 				Debug.LogError("httpCode = 0, misc errors. errorReason:" + errorReason);
 				var troubleMessage = errorReason;
 				failed(connectionId, httpCode, troubleMessage);
-				Debug.LogError("connectionId:" + connectionId + " Unityの内部エラー、いろんな理由が入り込む場所、 troubleMessage:" + troubleMessage + " 対処方法としてはだいたい一辺倒な気がする");
 				return;
 			}
 			
@@ -197,7 +195,7 @@ namespace AutoyaFramework {
 					}
 				);
 
-				StartCoroutine(connectionEnum);
+				Commit(connectionEnum);
 		*/
 		public static void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
 			autoya.ErrorFlowHandling(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
@@ -214,6 +212,13 @@ namespace AutoyaFramework {
 			Dictionary<string, string> additionalHeader=null, 
 			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
 		) {
+			// if (autoya == null) {
+			// 	failed();
+			// } 
+			// if (Autoya.Auth_IsLoggedIn()) {
+			// 	failed();
+			// }
+
 			var connectionId = Guid.NewGuid().ToString();
 			
 			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
@@ -222,8 +227,8 @@ namespace AutoyaFramework {
 				succeeded(conId, resultData as string);
 			};
 
-			Observable.FromCoroutine(
-				() => autoya._autoyaHttp.Get(
+			autoya.mainthreadDispatcher.Commit(
+				autoya._autoyaHttp.Get(
 					connectionId,
 					headers,
 					url,
@@ -232,17 +237,11 @@ namespace AutoyaFramework {
 					},
 					(conId, code, reason, responseHeaders) => {
 						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
-					}
+					},
+					timeoutSec
 				)
-			).Timeout(
-				TimeSpan.FromSeconds(timeoutSec)
-			).Subscribe(
-				_ => {},
-				ex => {
-					failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + ex);
-				}
 			);
-
+			
             return connectionId;
         }
 
@@ -254,6 +253,13 @@ namespace AutoyaFramework {
 			Dictionary<string, string> additionalHeader=null, 
 			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
 		) {
+			// if (autoya == null) {
+			// 	failed();
+			// } 
+			// if (Autoya.Auth_IsLoggedIn()) {
+			// 	failed();
+			// }
+
 			var connectionId = Guid.NewGuid().ToString();
 			
 			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
@@ -262,8 +268,8 @@ namespace AutoyaFramework {
 				succeeded(conId, resultData as string);
 			};
 
-			Observable.FromCoroutine(
-				() => autoya._autoyaHttp.Post(
+			autoya.mainthreadDispatcher.Commit(
+				autoya._autoyaHttp.Post(
 					connectionId,
 					headers,
 					url,
@@ -273,10 +279,9 @@ namespace AutoyaFramework {
 					},
 					(conId, code, reason, responseHeaders) => {
 						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
-					}
+					},
+					timeoutSec
 				)
-			).Subscribe(
-				_ => {}
 			);
 
             return connectionId;

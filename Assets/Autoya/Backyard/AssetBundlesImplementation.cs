@@ -1,6 +1,5 @@
 using System;
 using AutoyaFramework.AssetBundles;
-using UniRx;
 using UnityEngine;
 
 namespace AutoyaFramework {
@@ -30,14 +29,30 @@ namespace AutoyaFramework {
         */
         private static AssetBundleLoader _assetBundleLoader;
         public static void AssetBundle_UpdateList (string path, AssetBundleList list) {
+            // if (autoya == null) {
+			// 	failed();
+			// } 
+			// if (Autoya.Auth_IsLoggedIn()) {
+			// 	failed();
+			// }
+
             _assetBundleLoader = new AssetBundleLoader(path, list, autoya);// 仮のリストの更新API。実際に使うとしたら、内部から。
         }
 
         public static void AssetBundle_LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoader.AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
+            // if (autoya == null) {
+			// 	failed();
+			// } 
+			// if (Autoya.Auth_IsLoggedIn()) {
+			// 	failed();
+			// }
+
             if (_assetBundleLoader == null) {
                 _assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya);
             }
-            Observable.FromCoroutine(() => _assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)).Subscribe();
+            autoya.mainthreadDispatcher.Commit(
+                _assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)
+            );
         }
         public static void AssetBundle_UnloadAllAssets () {
             if (_assetBundleLoader == null) {

@@ -14,21 +14,28 @@ using UnityEngine;
 */
 public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 	[MSetup] public void Setup () {
-		
 		var authorized = false;
 		Action onMainThread = () => {
 			var dataPath = string.Empty;
 			Autoya.TestEntryPoint(dataPath);
-			
+			Debug.LogWarning("自動的に初期化されてるので、特定のクラスを渡してハンドラぶっ叩くとかをしたほうがいいかもしれない。渡した時点でいろんなハンドラがぶっ叩かれるほうが制御が楽というか。勝手に見つけてくるんでもいいんだけど。自分で初期化しなくなったことでいろいろある。というか[まとめて登録]みたいな感じか。");
+
 			Autoya.Auth_SetOnLoginSucceeded(
 				() => {
 					authorized = true;
 				}
 			);
+
+			Autoya.Auth_SetOnAuthFailed(
+				(conId, reason) => {
+					return false;
+				}
+			);
 		};
 		RunOnMainThread(onMainThread);
 		
-		WaitUntil(() => authorized, 10); 
+		WaitUntil(() => authorized, 3, "failed to auth."); 
+		Assert(Autoya.Auth_IsLoggedIn(), "not logged in.");
 	}
 
 	[MTeardown] public void Teardown () {
@@ -136,27 +143,35 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void AutoyaHTTPGetFailWithTimeout () {
+		var failedCode = -1;
 		var timeoutError = string.Empty;
 		/*
-			fake server should be response 0.01 sec
+			fake server should be response in 1msec. 
+			server responses 1 sec later.
+			it is impossible.
 		*/
 		var connectionId = Autoya.Http_Get(
-			"https://httpbin.org/delay/10", 
+			"https://httpbin.org/delay/1", 
 			(string conId, string resultData) => {
-				// do nothing.
+				Assert(false, "got success result.");
 			},
 			(string conId, int code, string reason) => {
-				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match.");
+				Debug.LogError("AutoyaHTTPGetFailWithTimeout error, code:" + code + " reason:" + reason);
+				failedCode = code;
 				timeoutError = reason;
 			},
 			null,
-			0.01
+			0.0001
 		);
 
 		WaitUntil(
-			() => !string.IsNullOrEmpty(timeoutError), 
-			5
+			() => {
+				return !string.IsNullOrEmpty(timeoutError);
+			}, 
+			3
 		);
+
+		Assert(failedCode == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. failedCode:" + failedCode + " message:" + timeoutError);
 	}
 
 	[MTest] public void AutoyaHTTPPost () {
@@ -245,7 +260,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		);
 
 		/*
-			dummy server returns 401 forcely.
+			dummy server returns 401 definitely.
 		*/
 		var connectionId = Autoya.Http_Post(
 			"https://httpbin.org/status/401",
@@ -260,21 +275,23 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 
 		WaitUntil(
 			() => !string.IsNullOrEmpty(unauthReason), 
-			5
+			3,
+			"timeout."
 		);
 		
-		Assert(!string.IsNullOrEmpty(unauthReason), "code note match. unauthReason:" + unauthReason);
+		Assert(!string.IsNullOrEmpty(unauthReason), "unauthReason is empty.");
 	}
 
 	[MTest] public void AutoyaHTTPPostFailWithTimeout () {
 		var timeoutError = string.Empty;
 		/*
-			fake server should be response 0.01 sec
+			fake server should be response 1msec
 		*/
-		var connectionId = Autoya.Http_Get(
-			"https://httpbin.org/delay/10", 
+		var connectionId = Autoya.Http_Post(
+			"https://httpbin.org/delay/1",
+			"data",
 			(string conId, string resultData) => {
-				// do nothing.
+				Assert(false, "got success result.");
 			},
 			(string conId, int code, string reason) => {
 				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. code:" + code + " reason:" + reason);
@@ -285,8 +302,10 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		);
 
 		WaitUntil(
-			() => !string.IsNullOrEmpty(timeoutError), 
-			5
+			() => {
+				return !string.IsNullOrEmpty(timeoutError);
+			}, 
+			3
 		);
 	}
 	
