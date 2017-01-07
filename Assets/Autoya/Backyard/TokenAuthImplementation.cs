@@ -316,7 +316,7 @@ namespace AutoyaFramework {
 				}
 			);
 		}
-
+		
 		private bool IsTokenExist (string tokenCandidate) {
 			if (string.IsNullOrEmpty(tokenCandidate)) return false;
 			return true;

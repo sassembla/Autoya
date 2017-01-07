@@ -23,7 +23,7 @@ namespace AutoyaFramework {
 		private AutoyaParameters _parameters;
 		
 		private Autoya (string basePath="") {
-			Debug.LogWarning("autoya initialize start.");
+			// Debug.LogWarning("autoya initialize start.");
 			
 			if (Application.isPlaying) { 
 				var go = GameObject.Find("AutoyaMainthreadDispatcher");

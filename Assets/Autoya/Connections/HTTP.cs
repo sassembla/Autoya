@@ -141,53 +141,6 @@ namespace AutoyaFramework.Connections.HTTP {
 				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
 			}
 		}
-		
-		public IEnumerator DownloadAssetBundle (string connectionId, Dictionary<string, string> requestHeaders, string url, uint version, uint crc, Action<string, int, Dictionary<string, string>, AssetBundle> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.GetAssetBundle(url, version, crc)) {
-				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
-				
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
-
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-
-				while (!request.isDone) {
-					yield return null;
-				}
-
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
-
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
-
-				while (!Caching.IsVersionCached(url, (int)version)) {
-					yield return null;
-				}
-
-				var dataHandler = (DownloadHandlerAssetBundle)request.downloadHandler;
-				
-				var assetBundle = dataHandler.assetBundle;
-				if (assetBundle == null) {
-					failed(connectionId, responseCode, "failed to load assetBundle.", responseHeaders);
-				} else {
-					succeeded(connectionId, responseCode, responseHeaders, assetBundle);
-				}
-			}
-		}
 	}
 
 }

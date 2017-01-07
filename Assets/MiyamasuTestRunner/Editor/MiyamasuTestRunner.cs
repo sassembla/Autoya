@@ -80,7 +80,7 @@ namespace Miyamasu {
 
 			TestLogger.Log("tests started.", true);
 			
-			var totalMethodCount = typeAndMethodInfos.Count();
+			var totalMethodCount = typeAndMethodInfos.Count() -1;
 			var allTestsDone = false;
 
 			// generate waitingThread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.

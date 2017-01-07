@@ -17,13 +17,9 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		と、
 		・AssetBundleから特定のAssetを名前で呼び出す
 
-		このテストはEditorがプレイモード時のみ、きちんと動く。
-		原因は、UnityWebRequestがAssetをLoadするまでが、なんらかPlayerでないと(or EditorのGUIがタッチされるとかの刺激がないと)稼働しない、というもの。
-		うーーん、、つきとめておくことはしよう。
-
-		原因は2種類あって、
-		・Play中で、LoadAssetFromCacheで同じAssetBundleがメモリ上にあるのを多重にロードしてしまった、というケース(しかも手元でマネージドではない)
-		・非Play時、GUIアクションがないとisDoneが動かない時
+		このテストはプレイモード時のみ、きちんと動く。
+		LoadAssetAsyncがプレイ中でないとisDoneにならないのが原因。
+		
 	*/
 	private const string basePath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/AssetBundles/";
 	private AssetBundleLoader loader;
@@ -101,7 +97,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					done = true;
 				},
 				(assetName, failEnum, reason) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
 				}
@@ -572,6 +567,18 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				}
 			);
 		}
+	}
+
+
+	[MTest] public void LoadMissingBundle () {
+		Debug.LogError("指定したassetを含むbundleがDLできない");
+	}
+	[MTest] public void LoadMissingDependentBundle () {
+		Debug.LogError("依存したassetが依存しているbundleが存在しなかったり、エラーを出すので、そのエラーがちゃんと出るか試す");
+	}
+
+	[MTest] public void LoadBundleWithTimeout () {
+		Debug.LogError("指定したassetを時間内にDL、展開する(httpにのみ関連する)");
 	}
 
 	[MTest] public void LoadAllAssetsOnce () {

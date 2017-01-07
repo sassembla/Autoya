@@ -2,20 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AutoyaFramework.Connections.HTTP;
+using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundleLoader {
         public enum AssetBundleLoadError {
             NotContained,
             DownloadFailed,
-            AssetLoadFailed
+            AssetLoadFailed,
+            NullAssetFound,
+            FailedToLoadDependentBundles
         }
 
         private uint ASSETBUNDLE_FIXED_VERSION = 1;
         private readonly string assetDownloadBasePath;
-        private readonly HTTPConnection http;
         private readonly AssetBundleList list;
 
         private class HandleErrorFlowClass : IHTTPErrorFlow {
@@ -30,7 +32,6 @@ namespace AutoyaFramework.AssetBundles {
 
         public AssetBundleLoader (string basePath, AssetBundleList list, IHTTPErrorFlow flowInstance=null) {
             this.assetDownloadBasePath = basePath;
-            this.http = new HTTPConnection();
             this.list = list;
             
             /*
@@ -70,75 +71,114 @@ namespace AutoyaFramework.AssetBundles {
         /**
             load specific type Asset from AssetBundle.
             dependency of AssetBundle will be solved automatically.
+
+            note:
+                this timeoutSec param is enabled only for downloading AssetBundle from web.
+
+                複数のAssetBundleに依存していて、それのうちのひとつとかがtimeoutしたらどうなっちゃうんだろう。
+                -> failedが呼ばれるんだけど、他のが停止しなくない？
+                -> 停止信号が必要なのか？ んーーー failedが呼ばれるの自体はしょうがないんだけど、他のは停止したくない。でもってあとでfailedが呼ばれるのも
+                    困る。うーーん、、
+                    ・どっかでfailしたら、その時点で大元のfailedを呼ぶ予約をする
+                    ・予約があれば、最終元締めの箇所で一度だけfailedが呼ばれる
+                    というのでいけそう。枝葉のfailedにboolを渡そう。
+
         */
-        public IEnumerator LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
+        public IEnumerator LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed, double timeoutSec=0) where T : UnityEngine.Object {
             if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
                 loadFailed(assetName, AssetBundleLoadError.NotContained, string.Empty);
                 yield break;
             }
             
             var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
+            var timeoutTick = (DateTime.Now + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+            if (timeoutSec == 0) timeoutTick = 0;
 
-            var coroutine = LoadAssetBundle(bundleName, assetName, loadSucceeded, loadFailed);
+            var coroutine = LoadAssetBundleOnMemory(bundleName, assetName, loadSucceeded, loadFailed, timeoutTick);
             while (coroutine.MoveNext()) {
                 yield return null;
             }
         }
 
-        private IEnumerator LoadAssetBundle<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed, bool isDependency=false) where T : UnityEngine.Object {
-            var dependentAssetBundleNames = list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault().dependsBundleNames;
+        private struct DependentBundleError {
+            readonly public string bundleName;
+            readonly public AssetBundleLoadError err;
+            readonly public string reason;
+
+            public DependentBundleError (string bundleName, AssetBundleLoadError err, string reason) {
+                this.bundleName = bundleName;
+                this.err = err;
+                this.reason = reason;
+            }
+        }
+
+        /**
+            load assetBundle on memory.
+        */
+        private IEnumerator LoadAssetBundleOnMemory<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed, long timeoutTick, bool isDependency=false) where T : UnityEngine.Object {
+            var dependentBundleNames = list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault().dependsBundleNames;
+
+            var dependentBundleLoadErrors = new List<DependentBundleError>();
 
             /*
                 resolve dependencies.
             */
-            if (dependentAssetBundleNames.Any()) {
-                var coroutines = new Dictionary<string, IEnumerator>();
+            {
+                if (dependentBundleNames.Any()) {
+                    var coroutines = new Dictionary<string, IEnumerator>();
 
-                foreach (var dependentAssetBundleName in dependentAssetBundleNames) {
-                    // skip if assetBundle is already loaded.
-                    if (assetBundleDict.ContainsKey(dependentAssetBundleName) && assetBundleDict[dependentAssetBundleName] != null) {
-                        continue;
-                    }
-
-                    var loadCoroutine = LoadAssetBundle(
-                        dependentAssetBundleName, 
-                        string.Empty, 
-                        (string dependentAssetName, GameObject obj) => {},
-                        loadFailed,
-                        true // this loading is for resolve dependency. no need to return any instances.
-                    );
-
-                    coroutines[dependentAssetBundleName] = loadCoroutine;
-                }
-
-                if (coroutines.Count != 0) {
-                   while (true) {
-                        if (!coroutines.Where(c => c.Value != null).Any()) {
-                            // load done.
-                            break;
+                    foreach (var dependentBundleName in dependentBundleNames) {
+                        // skip if assetBundle is already loaded.
+                        if (assetBundleDict.ContainsKey(dependentBundleName) && assetBundleDict[dependentBundleName] != null) {
+                            continue;
                         }
 
-                        for (var i = 0; i < coroutines.Count; i++) {
-                            var loadingAssetBundleName = coroutines.Keys.ToArray()[i];
-                            var coroutine = coroutines[loadingAssetBundleName];
-                            if (coroutine == null) continue;
+                        var loadCoroutine = LoadAssetBundleOnMemory(
+                            dependentBundleName, 
+                            string.Empty,// bundleName not required.
+                            (string depBundleName, GameObject depObj) => {
+                                // do nothing. this bundle is currently on memory.
+                            },
+                            (string depBundleName, AssetBundleLoadError depErr, string depReason) => {
+                                // collect error for this dependent bundle loading.
+                                dependentBundleLoadErrors.Add(new DependentBundleError(depBundleName, depErr, depReason));
+                            },
+                            timeoutTick,
+                            true // this loading is for resolve dependency of root asset. no need to return any instances.
+                        );
 
-                            if (!coroutine.MoveNext()) {
-                                if (loadingAssetBundleNames.Contains(loadingAssetBundleName)) {
-                                    loadingAssetBundleNames.Remove(loadingAssetBundleName);
-                                }
+                        coroutines[dependentBundleName] = loadCoroutine;
+                    }
 
-                                coroutines[loadingAssetBundleName] = null;
+                    if (coroutines.Count != 0) {
+                    while (true) {
+                            if (!coroutines.Where(c => c.Value != null).Any()) {
+                                // load done.
+                                break;
                             }
-                        }
-                        yield return null;
-                    }
 
-                    // all dependencies are loaded on memory.
+                            for (var i = 0; i < coroutines.Count; i++) {
+                                var loadingAssetBundleName = coroutines.Keys.ToArray()[i];
+                                var coroutine = coroutines[loadingAssetBundleName];
+                                if (coroutine == null) continue;
+
+                                if (!coroutine.MoveNext()) {
+                                    if (loadingAssetBundleNames.Contains(loadingAssetBundleName)) {
+                                        loadingAssetBundleNames.Remove(loadingAssetBundleName);
+                                    }
+
+                                    coroutines[loadingAssetBundleName] = null;
+                                }
+                            }
+                            yield return null;
+                        }
+
+                        // all dependencies are loaded on memory.
+                    }
                 }
             }
 
-            // check now loading or not. if loading, wait it here.
+            // check now loading or not. if same bundle is already under loading, wait it here.
             while (loadingAssetBundleNames.Contains(bundleName)) {
                 yield return null;
             }
@@ -179,38 +219,65 @@ namespace AutoyaFramework.AssetBundles {
                 assetBundle is..
                     not yet cached (or) already cached.
                     not allocated on memory.
+
+                assetBundle is not on memory yet. start downloading.
             */
             
-            // assetBundle is not on memory yet. start downloading.
+            // start binding by bundle name. this bundle is now loading.
             if (!loadingAssetBundleNames.Contains(bundleName)) {
                 loadingAssetBundleNames.Add(bundleName);
             }
             
-            var downloadCoroutine = DownloadAssetThenCacheAndLoadOnMemory(bundleName, assetName, url, crc, loadFailed);// ここで起こりうる通信エラーは、unauth含めてめっちゃいっぱいあるんだけど、認証をアセットが置いてあるところにまでかけるかどうか、という選択肢をどうにかして使用者に渡した方がいい感じがする。
-            while (downloadCoroutine.MoveNext()) {
-                yield return null;
-            }
-
-            if (!assetBundleDict.ContainsKey(bundleName)) {
-                // error is already fired in above.
-                yield break;
-            }
-            
-            if (!isDependency) { 
-                /*
-                    load asset from on memory AssetBundle.
-                */
-                var loadAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
-                while (loadAssetCoroutine.MoveNext()) {
+            /*
+                download bundle or load donwloaded bundle from cache.
+                load to memory.
+            */
+            {
+                var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(bundleName, assetName, url, crc, loadFailed, timeoutTick);
+                while (downloadCoroutine.MoveNext()) {
                     yield return null;
+                }
+
+                if (!assetBundleDict.ContainsKey(bundleName)) {
+                    // error is already fired in above.
+                    yield break;
+                }
+                
+                if (!isDependency) {
+
+                    /*
+                        break if dependent bundle has load error.
+                    */
+                    if (dependentBundleLoadErrors.Any()) {
+                        var loadErrorBundleMessages = new StringBuilder();
+                        loadErrorBundleMessages.Append("failed to load/download dependent bundle:");
+                        foreach (var dependentBundleLoadError in dependentBundleLoadErrors) {
+                            loadErrorBundleMessages.Append("bundleName:");
+                            loadErrorBundleMessages.Append(dependentBundleLoadError.bundleName);
+                            loadErrorBundleMessages.Append(" error:");
+                            loadErrorBundleMessages.Append(dependentBundleLoadError.err);
+                            loadErrorBundleMessages.Append(" reason:");
+                            loadErrorBundleMessages.Append(dependentBundleLoadError.reason);
+                        }
+                        loadFailed(assetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString());
+                        yield break;
+                    }
+
+                    /*
+                        load asset from on memory AssetBundle.
+                    */
+                    var loadAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
+                    while (loadAssetCoroutine.MoveNext()) {
+                        yield return null;
+                    }
                 }
             }
 
-            // unlock.
+            // unbind.
             loadingAssetBundleNames.Remove(bundleName);
         }
 
-        private IEnumerator DownloadAssetThenCacheAndLoadOnMemory (string bundleName, string assetName, string url, uint crc, Action<string, AssetBundleLoadError, string> failed) {
+        private IEnumerator DownloadAssetThenCacheAndLoadToMemory (string bundleName, string assetName, string url, uint crc, Action<string, AssetBundleLoadError, string> failed, long timeoutTick) {
             Debug.LogWarning("定冠詞を定義へ移動");
             var connectionId = "asset_" + Guid.NewGuid().ToString();
 
@@ -228,9 +295,12 @@ namespace AutoyaFramework.AssetBundles {
             };
 
             Debug.LogWarning("Autoyaのauth機構をめり込ませられる必要がある。後段はなんとかなってるので、あとは前段をなんとかする。ヘッダ部、http機能丸パクでもいいのかな、、");
-            var connectionCoroutine = http.DownloadAssetBundle(
+            var requestHeaders = new Dictionary<string, string>();
+
+            var connectionCoroutine = DownloadAssetBundle(
+                bundleName,
                 connectionId,
-                null,
+                requestHeaders,
                 url, 
                 ASSETBUNDLE_FIXED_VERSION,
                 crc, 
@@ -239,7 +309,8 @@ namespace AutoyaFramework.AssetBundles {
                 }, 
                 (conId, code, reason, responseHeader) => {
                     HandleErrorFlow(connectionId, responseHeader, code, string.Empty, reason, succeeded, downloadFailed);
-                }
+                },
+                timeoutTick
             );
 
             while (connectionCoroutine.MoveNext()) {
@@ -247,17 +318,73 @@ namespace AutoyaFramework.AssetBundles {
             }
         }
 
+        private IEnumerator DownloadAssetBundle (string bundleName, string connectionId, Dictionary<string, string> requestHeaders, string url, uint version, uint crc, Action<string, int, Dictionary<string, string>, AssetBundle> succeeded, Action<string, int, string, Dictionary<string, string>> failed, long limitTick) {
+			using (var request = UnityWebRequest.GetAssetBundle(url, version, crc)) {
+				if (requestHeaders != null) {
+                    foreach (var kv in requestHeaders) {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
+				
+				var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+                    if (limitTick != 0 && limitTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "AssetBundleのダウンロードのタイムアウトのメッセージ", null);
+						yield break;
+					}
+				}
+
+				while (!request.isDone) {
+					yield return null;
+				}
+
+				var responseCode = (int)request.responseCode;
+				var responseHeaders = request.GetResponseHeaders();
+
+				if (request.isError) {
+					failed(connectionId, responseCode, request.error, responseHeaders);
+					yield break;
+				}
+
+				while (!Caching.IsVersionCached(url, (int)version)) {
+					yield return null;
+				}
+
+				var dataHandler = (DownloadHandlerAssetBundle)request.downloadHandler;
+				
+				var assetBundle = dataHandler.assetBundle;
+				if (assetBundle == null) {
+					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + " is null.", responseHeaders);
+				} else {
+					succeeded(connectionId, responseCode, responseHeaders, assetBundle);
+				}
+			}
+		}
+
         private Dictionary<string, AssetBundle> assetBundleDict = new Dictionary<string, AssetBundle>();
         private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
             var assetBundle = assetBundleDict[bundleName];
-
-            var request = assetBundle.LoadAssetAsync(assetName);
+            
+            var request = assetBundle.LoadAssetAsync<T>(assetName);
             while (!request.isDone) {
                 yield return null;
             }
 
+            /*
+                asset is loaded asynchronously.
+            */
             try {
                 var asset = request.asset as T;
+                if (asset == null) {
+                    loadFailed(assetName, AssetBundleLoadError.NullAssetFound, "loaded assetName:" + assetName + " type:" + typeof(T) + " is null. from bundleName:" + bundleName + ". please check if bundle contains this asset.");
+                    yield break;
+                }
+
                 loadSucceeded(assetName, asset);
             } catch (Exception e) {
                 loadFailed(assetName, AssetBundleLoadError.AssetLoadFailed, e.ToString());

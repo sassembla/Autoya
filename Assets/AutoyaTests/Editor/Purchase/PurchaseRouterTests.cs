@@ -1,12 +1,9 @@
 using System;
-using System.Collections;
-using System.Threading;
 using AutoyaFramework;
-using AutoyaFramework.Connections.HTTP;
 using AutoyaFramework.Purchase;
 using Miyamasu;
+using UnityEditor;
 using UnityEngine;
-using UnityEngine.Purchasing;
 
 /**
 	tests for Autoya Purchase
@@ -34,6 +31,9 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
             ・購入失敗チケットの処理
         
         レストアとかは対応しないぞ。
+
+        特定のUnityのメソッドが、Playing中でないとProgressしない。そのため、このテストをEditorで走らせることができない。
+        特定のメソッドのスタブで避けることもできるけど、まあ、、いらんだろ、、
     */
     private PurchaseRouter router;
     
@@ -42,17 +42,22 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			SkipCurrentTest("Purchase feature should run on MainThread.");
 		};
 
-        Action<string, Action<string, string>, Action<string, int, string>> httpGet = (url, successed, failed) => {
-            Autoya.Http_Get(url, successed, failed);
-        };
-
-        Action<string, string, Action<string, string>, Action<string, int, string>> httpPost = (url, data, successed, failed) => {
-            Autoya.Http_Post(url, data, successed, failed);
-        };
-
         RunOnMainThread(
             () => {
-                router = new PurchaseRouter();
+                router = new PurchaseRouter(
+                    iEnum => {
+                        // fake mainthread dispatcher.
+                        EditorApplication.CallbackFunction c = null;
+                        c = () => {
+                            var isContinued = iEnum.MoveNext();
+                            if (!isContinued) {
+                                EditorApplication.update -= c;
+                            }
+                        };
+
+                        EditorApplication.update += c;
+                    }
+                );
             }
         );
         
@@ -171,80 +176,80 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
     //     Assert(router.IsPurchaseReady(), "not ready.");
     // }
 
-//     [MTest] public void ReloadUnreadyStoreThenPurchase () {
-//         if (router == null) {
-//             MarkSkipped();
-//             return;
-//         }
+    // [MTest] public void ReloadUnreadyStoreThenPurchase () {
+    //     if (router == null) {
+    //         MarkSkipped();
+    //         return;
+    //     }
 
-//         Action<string, Action<string, string>, Action<string, int, string>> httpGet = (url, successed, failed) => {
-//             // empty http get. will be timeout.
-//         };
+    //     Action<string, Action<string, string>, Action<string, int, string>> httpGet = (url, successed, failed) => {
+    //         // empty http get. will be timeout.
+    //     };
 
-//         Action<string, string, Action<string, string>, Action<string, int, string>> httpPost = (url, data, successed, failed) => {
-//             // empty http post. will be timeout.
-//         };
+    //     Action<string, string, Action<string, string>, Action<string, int, string>> httpPost = (url, data, successed, failed) => {
+    //         // empty http post. will be timeout.
+    //     };
 
-//         // renew router.
-//         RunOnMainThread(
-//             () => {
-//                 router = new PurchaseRouter(httpGet, httpPost);
-//             }
-//         );
+    //     // renew router.
+    //     RunOnMainThread(
+    //         () => {
+    //             router = new PurchaseRouter(httpGet, httpPost);
+    //         }
+    //     );
         
-//         try {
-//             WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
-//         } catch {
-//             // catch timeout. do nothing.
-//         }
+    //     try {
+    //         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
+    //     } catch {
+    //         // catch timeout. do nothing.
+    //     }
 
-//         Assert(!router.IsPurchaseReady(), "not intended.");
+    //     Assert(!router.IsPurchaseReady(), "not intended.");
         
-//         // すでにnewされているrouterのハンドラを更新しないとダメか、、
-//         router.httpGet = (url, successed, failed) => {
-//             Autoya.Http_Get(url, successed, failed);
-//         };
+    //     // すでにnewされているrouterのハンドラを更新しないとダメか、、
+    //     router.httpGet = (url, successed, failed) => {
+    //         Autoya.Http_Get(url, successed, failed);
+    //     };
 
-//         router.httpPost = (url, data, successed, failed) => {
-//             Autoya.Http_Post(url, data, successed, failed);
-//         };
+    //     router.httpPost = (url, data, successed, failed) => {
+    //         Autoya.Http_Post(url, data, successed, failed);
+    //     };
 
-//         var ready = false;
-//         router.Reload(
-//             () => {
-//                 ready = true;
-//             },
-//             (err, reason) => {}
-//         );
+    //     var ready = false;
+    //     router.Reload(
+    //         () => {
+    //             ready = true;
+    //         },
+    //         (err, reason) => {}
+    //     );
 
-//         WaitUntil(() => ready, 5, "not get ready.");
-//         Assert(router.IsPurchaseReady(), "not ready.");
+    //     WaitUntil(() => ready, 5, "not get ready.");
+    //     Assert(router.IsPurchaseReady(), "not ready.");
 
-//         var purchaseId = "dummy purchase Id";
-//         var productId = "100_gold_coins";
+    //     var purchaseId = "dummy purchase Id";
+    //     var productId = "100_gold_coins";
 
-//         var purchaseDone = false;
-//         var purchaseSucceeded = false;
-//         var failedReason = string.Empty;
+    //     var purchaseDone = false;
+    //     var purchaseSucceeded = false;
+    //     var failedReason = string.Empty;
 
-//         RunOnMainThread(
-//             () => {
-//                 router.PurchaseAsync(
-//                     purchaseId,
-//                     productId,
-//                     pId => {
-//                         purchaseDone = true;
-//                         purchaseSucceeded = true;
-//                     },
-//                     (pId, err, reason) => {
-//                         purchaseDone = true;
-//                         failedReason = reason;
-//                     }
-//                 );
-//             }
-//         );
+    //     RunOnMainThread(
+    //         () => {
+    //             router.PurchaseAsync(
+    //                 purchaseId,
+    //                 productId,
+    //                 pId => {
+    //                     purchaseDone = true;
+    //                     purchaseSucceeded = true;
+    //                 },
+    //                 (pId, err, reason) => {
+    //                     purchaseDone = true;
+    //                     failedReason = reason;
+    //                 }
+    //             );
+    //         }
+    //     );
 
-//         WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
-//         Assert(purchaseSucceeded, "purchase failed. reason:" + failedReason);
-//     }
+    //     WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
+    //     Assert(purchaseSucceeded, "purchase failed. reason:" + failedReason);
+    // }
 }
