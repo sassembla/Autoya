@@ -19,7 +19,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		このテストはプレイモード時のみ、きちんと動く。
 		LoadAssetAsyncがプレイ中でないとisDoneにならないのが原因。
-		http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
+			http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
 		
 	*/
 	private const string basePath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/AssetBundles/";

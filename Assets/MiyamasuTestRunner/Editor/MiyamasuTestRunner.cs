@@ -104,11 +104,6 @@ namespace Miyamasu {
 							} catch (Exception e) {
 								failed++;
 								LogTestFailed(e, methodName);
-								try {
-									if (typeAndMethodInfo.teardownMethodInfo != null) {
-										typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
-									}
-								} catch {}
 								continue;
 							}
 							
@@ -138,7 +133,7 @@ namespace Miyamasu {
 						count++;
 					}
 
-					allTestsDone = true;
+					thread.Abort();
 				}
 			);
 			
@@ -152,7 +147,7 @@ namespace Miyamasu {
 			yield return null;
 
 			while (true) {
-				if (allTestsDone) break; 
+				if (!thread.IsAlive) break; 
 				yield return null;
 			}
 			
