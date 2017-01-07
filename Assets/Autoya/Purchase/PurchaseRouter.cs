@@ -108,21 +108,35 @@ namespace AutoyaFramework.Purchase {
             by default it returns empty headers.
 
             also you can modify http error handling via flowInstance.
-            by default, response code 200 ~ 299 is treated as success, and other codes are treated as network error.
+            by default, http response code 200 ~ 299 is treated as success, and other codes are treated as network error.
          */
         public PurchaseRouter (Action onPurchaseReady, Action<PurchaseError, string> onPurchaseReadyFailed, Action<IEnumerator> newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
-            this.storeKind = AppleAppStore.Name;
+            /*
+                set store kind by platform.
+            */
+            #if UNITY_EDITOR
+                this.storeKind = AppleAppStore.Name;
+            #elif UNITY_IOS
+                this.storeKind = AppleAppStore.Name;
+            #elif UNITY_ANDROID
+                this.storeKind = GooglePlay.Name;
+            #endif
+
             
             if (newEnumRunner != null) {
                 this.runEnumerator = newEnumRunner;
             } else {
+                /*
+                    make naked MonoBehaviour and set DontDestroyOnLoad.
+                */
                 var go = GameObject.Find("PurchaseRouter");
                 if (go == null) {
                     go = new GameObject("PurchaseRouter");
+                    GameObject.DontDestroyOnLoad(go);
                 }
-
+                
                 var runner = go.AddComponent<MonoBehaviour>();
-                this.runEnumerator = ienum => runner.StartCoroutine(ienum);
+                this.runEnumerator = iEnum => runner.StartCoroutine(iEnum);
             }
 
             if (newRequestHeader != null) {
@@ -324,7 +338,7 @@ namespace AutoyaFramework.Purchase {
                 };
             }
         }
-        
+
         private Callbacks callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason) => {});
         private void TicketReceived (string purchaseId, string productId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string> purchaseFailed) {
             var product = this.controller.products.WithID(productId);
