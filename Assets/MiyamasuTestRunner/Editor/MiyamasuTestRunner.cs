@@ -181,10 +181,10 @@ namespace Miyamasu {
 			var waitingThread = new Thread(
 				() => {
 					resetEvent.Reset();
-					var endTick = (DateTime.Now + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+					var endTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 					
 					while (!isCompleted()) {
-						var current = DateTime.Now.Ticks;
+						var current = DateTime.UtcNow.Ticks;
 						
 						if (0 < timeoutSec && endTick < current) {
 							if (!string.IsNullOrEmpty(message)) {

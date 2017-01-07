@@ -44,9 +44,13 @@ public class LoadAssetBundle : MonoBehaviour {
 		// loadList -> preload assetBundles -> load asset.
 		Autoya.AssetBundle_UpdateList(basePath, dummyList);
 
-		Autoya.AssetBundle_LoadAsset(
+		/*
+			load asset from bundle.
+			automatically download bundle then load asset.
+		*/
+		Autoya.AssetBundle_LoadAsset<GameObject>(
 			"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab",
-			(string assetName, GameObject prefab) => {
+			(assetName, prefab) => {
 				Instantiate(prefab);
 			},
 			(assetName, err, reason) => {

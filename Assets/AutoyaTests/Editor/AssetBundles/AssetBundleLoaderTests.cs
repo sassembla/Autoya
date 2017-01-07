@@ -63,7 +63,11 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					new string[]{"dependsbundlename"}, 
 					779842307
 				),
-				
+				// このへんに、他のAssetから依存されてるけどサーバ上にないAsset
+
+				// このへんに、他のAssetに依存してるんだけどサーバ上にないAsset
+
+				// 依存元も、自身もサーバ上にないAsset
 			}
 		);
 
@@ -184,6 +188,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				() => {
 					// check prefab instance contains dependent texture.
 					var obj = GameObject.Instantiate(prefab);
+					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
 					var renderer = obj.GetComponent<SpriteRenderer>();
 					var sprite = renderer.sprite;
 					Assert(sprite != null, "sprite is null.");
@@ -221,6 +226,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					() => {
 						// check prefab instance contains dependent texture.
 						var obj = GameObject.Instantiate(prefab);
+						obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
 						var renderer = obj.GetComponent<SpriteRenderer>();
 						var sprite = renderer.sprite;
 						Assert(sprite != null, "sprite is null.");
@@ -257,6 +263,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					() => {
 						// check prefab instance contains dependent texture.
 						var obj = GameObject.Instantiate(prefab);
+						obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
 						var renderer = obj.GetComponent<SpriteRenderer>();
 						var sprite = renderer.sprite;
 						Assert(sprite != null, "sprite is null.");
@@ -317,6 +324,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				() => {
 					// check prefab instance contains dependent texture.
 					var obj = GameObject.Instantiate(prefab);
+					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
 					var renderer = obj.GetComponent<SpriteRenderer>();
 					var sprite = renderer.sprite;
 					Assert(sprite != null, "sprite is null.");
@@ -337,7 +345,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
 				(string assetName, GameObject prefabAsset) => {
-					
 					prefab = prefabAsset;
 					prefabLoadDone = true;
 				},
@@ -377,6 +384,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				() => {
 					// check prefab instance contains dependent texture.
 					var obj = GameObject.Instantiate(prefab);
+					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
 					var renderer = obj.GetComponent<SpriteRenderer>();
 					var sprite = renderer.sprite;
 					Assert(sprite != null, "sprite is null.");
@@ -434,11 +442,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				() => {
 					// check prefab instance contains dependent texture.
 					var obj = GameObject.Instantiate(prefab1);
+					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
 					var renderer = obj.GetComponent<SpriteRenderer>();
 					var sprite = renderer.sprite;
 					Assert(sprite != null, "sprite is null.");
 
 					var obj2 = GameObject.Instantiate(prefab2);
+					obj2.hideFlags = obj2.hideFlags | HideFlags.HideAndDontSave;
 					var renderer2 = obj2.GetComponent<SpriteRenderer>();
 					var sprite2 = renderer2.sprite;
 					Assert(sprite2 != null, "sprite is null.");
@@ -477,7 +487,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				() => {
 					// check prefab instance contains dependent texture.
 					var nestedObj = GameObject.Instantiate(prefab);
-
+					nestedObj.hideFlags = nestedObj.hideFlags | HideFlags.HideAndDontSave;
 					var scriptObj = nestedObj.GetComponent<PrefabHolder>();
 					Assert(scriptObj != null, "failed to get script.");
 

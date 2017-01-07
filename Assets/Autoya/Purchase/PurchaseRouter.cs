@@ -5,6 +5,13 @@ using AutoyaFramework.Connections.HTTP;
 using UnityEngine;
 using UnityEngine.Purchasing;
 
+/**
+    purchase feature of Autoya.
+    should be use as singleton.
+
+    depends on HTTP api.
+    not depends on Autoya itself.
+*/
 namespace AutoyaFramework.Purchase {
     public class PurchaseRouter : IStoreListener {
         private class HandleErrorFlowClass : IHTTPErrorFlow {
@@ -92,26 +99,30 @@ namespace AutoyaFramework.Purchase {
         private Action<PurchaseError, string> failedToReady;
         
         /**
-            it's good to set non-null newEnumRunner for running http IEnumerator with detailed control.
-            if null, this class creates own GameObject, and then add that for running.
+            constructor.
 
-            Func<string, Dictionary<string, string>> requestHeader func is used to get request header. 
+            it's good to set non-null newEnumRunner for running http IEnumerator under detailed control.
+            if newEnumRunner is null, this class creates own GameObject("PurchaseRouter"), and then add MonoBehaviour for running.
+
+            Func<string, Dictionary<string, string>> requestHeader func is used to get request header from outside of this feature. 
             by default it returns empty headers.
 
             also you can modify http error handling via flowInstance.
-            by default, response code 200 ~ 299 is treated as success, and others are treated as error.
+            by default, response code 200 ~ 299 is treated as success, and other codes are treated as network error.
          */
-        public PurchaseRouter (Action<IEnumerator> newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
+        public PurchaseRouter (Action onPurchaseReady, Action<PurchaseError, string> onPurchaseReadyFailed, Action<IEnumerator> newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
             this.storeKind = AppleAppStore.Name;
             
             if (newEnumRunner != null) {
                 this.runEnumerator = newEnumRunner;
             } else {
-                var go = new GameObject("PurchaseRouter");
-                var runner = go.AddComponent<PurchaseMonoBehaviour>();
-                this.runEnumerator = ienum => {
-                    runner.StartCoroutine(ienum);
-                };
+                var go = GameObject.Find("PurchaseRouter");
+                if (go == null) {
+                    go = new GameObject("PurchaseRouter");
+                }
+
+                var runner = go.AddComponent<MonoBehaviour>();
+                this.runEnumerator = ienum => runner.StartCoroutine(ienum);
             }
 
             if (newRequestHeader != null) {
@@ -129,7 +140,10 @@ namespace AutoyaFramework.Purchase {
                 this.flowInstance = new HandleErrorFlowClass();
             }
 
-            Reload(() => {}, (err, reason) => {});
+            Reload(
+                () => onPurchaseReady(),
+                (err, reason) => onPurchaseReadyFailed(err, reason)
+            );
         }
         
         public void Reload (Action reloaded, Action<PurchaseError, string> reloadFailed) {
@@ -151,7 +165,7 @@ namespace AutoyaFramework.Purchase {
                 connectionId,
                 url, 
                 (conId, data) => {
-                    Debug.LogWarning("アイテム取得したのでデータを入れる。現在はダミーAPIが適当なデータを入れてくるのを想定してる。");
+                    Debug.LogWarning("アイテム取得したのでデータを入れる。現在はダミーAPIが適当なデータを入れてくるのを想定してる。サーバがプラットフォームdependsなデータを返してくる想定。そのほうがいいっしょ。");
                     var productInfos = new ProductInfo[]{
                         new ProductInfo("100_gold_coins", "100_gold_coins_iOS")
                     };
@@ -205,8 +219,8 @@ namespace AutoyaFramework.Purchase {
             this.controller = controller;
             this.extensions = extensions;
 
-            readyPurchase();
             routerState = RouterState.PurchaseReady;
+            if (readyPurchase != null) readyPurchase();
         }
 
         /// <summary>
@@ -233,6 +247,9 @@ namespace AutoyaFramework.Purchase {
             }
         }
         
+        /**
+            start purchase.
+        */
         public void PurchaseAsync (string purchaseId, string productId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string> purchaseFailed) {
             if (Application.internetReachability == NetworkReachability.NotReachable) {
                 purchaseFailed(purchaseId, PurchaseError.Offline, "network is offline.");
@@ -307,6 +324,7 @@ namespace AutoyaFramework.Purchase {
                 };
             }
         }
+        
         private Callbacks callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason) => {});
         private void TicketReceived (string purchaseId, string productId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string> purchaseFailed) {
             var product = this.controller.products.WithID(productId);

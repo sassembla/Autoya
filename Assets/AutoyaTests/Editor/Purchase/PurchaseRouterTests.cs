@@ -1,5 +1,3 @@
-using System;
-using AutoyaFramework;
 using AutoyaFramework.Purchase;
 using Miyamasu;
 using UnityEditor;
@@ -10,7 +8,7 @@ using UnityEngine;
 */
 public class PurchaseRouterTests : MiyamasuTestRunner {
     /**
-        Unity 5.5対応のpurchaseのテスト。以下のようなことをまるっとやる。
+        Unity 5.5対応のpurchaseのテスト。以下のようなことをまるっとやっている。
 
         {アイテム一覧取得処理}
             ・アイテム一覧を取得する。
@@ -32,8 +30,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         
         レストアとかは対応しないぞ。
 
-        特定のUnityのメソッドが、Playing中でないとProgressしない。そのため、このテストをEditorで走らせることができない。
-        特定のメソッドのスタブで避けることもできるけど、まあ、、いらんだろ、、
+        特定のUnityのIAPの ConfigurationBuilder.Instance メソッドが、Playing中でないとProgressしない。そのため、このテストをEditorで走らせることができない。
+        ちょっと回避しようがない。
     */
     private PurchaseRouter router;
     
@@ -45,7 +43,9 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         RunOnMainThread(
             () => {
                 router = new PurchaseRouter(
-                    iEnum => {
+                    () => {},
+                    (err, reason) => {},
+                    iEnum => {// in Editor test, create plane MonoBehaviour is not allowed.
                         // fake mainthread dispatcher.
                         EditorApplication.CallbackFunction purchaseCoroutine = null;
 
@@ -62,11 +62,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
             }
         );
         
-        WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
-    }
-
-    [MTest] public void ReadyPurchase () {
-        Assert(router.IsPurchaseReady(), "not ready.");
+        WaitUntil(() => router.IsPurchaseReady(), 5, "failed to ready.");
     }
 
     [MTest] public void Purchase () {

@@ -168,13 +168,13 @@ namespace AutoyaFramework {
 
 
 		/**
-			autoya's error flow handler is able to use outside of Autoya for handling events via http codes.
+			autoya's error flow handler is able to use outside of Autoya, for handling events via http codes.
 
 			input HTTP success/fail handler -> emit Autoya flow on HTTP result -> running Autoya flow then fire success/fail handler.
 			
 			e,g,
 				// connection id, this is useful for find identity of connection.
-				var newConnectionId = Guid.NewGuid().ToString();
+				var newConnectionId = "myConnectionForAPI_X_" + Guid.NewGuid().ToString();
 
 				//
 				// handlers for 
@@ -274,6 +274,89 @@ namespace AutoyaFramework {
 					headers,
 					url,
 					data,
+					(conId, code, responseHeaders, resultData) => {
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+					},
+					(conId, code, reason, responseHeaders) => {
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+					},
+					timeoutSec
+				)
+			);
+
+            return connectionId;
+        }
+
+		public static string Http_Put (
+			string url, 
+			string data,
+			Action<string, string> succeeded, 
+			Action<string, int, string> failed, 
+			Dictionary<string, string> additionalHeader=null, 
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+		) {
+			// if (autoya == null) {
+			// 	failed();
+			// } 
+			// if (Autoya.Auth_IsLoggedIn()) {
+			// 	failed();
+			// }
+
+			var connectionId = Guid.NewGuid().ToString();
+			
+			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
+			
+			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
+				succeeded(conId, resultData as string);
+			};
+
+			autoya.mainthreadDispatcher.Commit(
+				autoya._autoyaHttp.Put(
+					connectionId,
+					headers,
+					url,
+					data,
+					(conId, code, responseHeaders, resultData) => {
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+					},
+					(conId, code, reason, responseHeaders) => {
+						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+					},
+					timeoutSec
+				)
+			);
+
+            return connectionId;
+        }
+
+		public static string Http_Delete (
+			string url, 
+			string data,
+			Action<string, string> succeeded, 
+			Action<string, int, string> failed, 
+			Dictionary<string, string> additionalHeader=null, 
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+		) {
+			// if (autoya == null) {
+			// 	failed();
+			// } 
+			// if (Autoya.Auth_IsLoggedIn()) {
+			// 	failed();
+			// }
+
+			var connectionId = Guid.NewGuid().ToString();
+			
+			var headers = autoya.GetAuthorizedAndAdditionalHeaders(additionalHeader);
+			
+			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
+				succeeded(conId, resultData as string);
+			};
+
+			autoya.mainthreadDispatcher.Commit(
+				autoya._autoyaHttp.Delete(
+					connectionId,
+					headers,
+					url,
 					(conId, code, responseHeaders, resultData) => {
 						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
 					},

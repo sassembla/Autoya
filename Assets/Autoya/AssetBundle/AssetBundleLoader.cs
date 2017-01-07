@@ -86,7 +86,7 @@ namespace AutoyaFramework.AssetBundles {
             }
             
             var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
-            var timeoutTick = (DateTime.Now + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+            var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
             if (timeoutSec == 0) timeoutTick = 0;
 
             var coroutine = LoadAssetBundleOnMemory(bundleName, assetName, loadSucceeded, loadFailed, timeoutTick);
