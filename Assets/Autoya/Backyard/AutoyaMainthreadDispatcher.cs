@@ -1,10 +1,12 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+    micro main thread dispatcher for Autoya.
+*/
 namespace AutoyaFramework {
-    public class AutoyaMainthreadDispatcher : MonoBehaviour, ICoroutineUpdater {
+    public class AutoyaMainThreadDispatcher : MonoBehaviour, ICoroutineUpdater {
         private List<IEnumerator> coroutines = new List<IEnumerator>();
         
         public void Commit (IEnumerator iEnum) {
@@ -21,10 +23,13 @@ namespace AutoyaFramework {
             }
         }
 
+        /**
+            automatically destory this gameObject.
+        */
         private void OnApplicationQuit () {
             Destroy(gameObject);
         }
-
+        
         public void Destroy () {
             GameObject.Destroy(gameObject);
         }
@@ -39,7 +44,7 @@ namespace AutoyaFramework {
         public EditorUpdator () {
             #if UNITY_EDITOR
             {
-                UnityEditor.EditorApplication.update += this.Update;
+                UnityEditor.EditorApplication.update += this.EditorCoroutineUpdate;
             }
             #endif
         }
@@ -51,7 +56,7 @@ namespace AutoyaFramework {
         private List<IEnumerator> runningCoroutines = new List<IEnumerator>();
         private List<IEnumerator> finishedCoroutines = new List<IEnumerator>();
 
-        private void Update () {
+        private void EditorCoroutineUpdate () {
             // run coroutines.
             {
                 foreach (var runningCoroutine in runningCoroutines) {

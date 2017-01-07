@@ -68,14 +68,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 
 		loader = new AssetBundleLoader(basePath, dummyList, null);
-	}
-	[MTeardown] public void Teardown () {
-		if (loader != null) {
-			RunOnMainThread(() => loader.CleanCachedAssetBundles());
-		}
-	}
 
-	[MTest] public void LoadAssetByAssetName () {
 		var cleaned = false;
 		RunOnMainThread(
 			() => {
@@ -84,9 +77,15 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 		if (!cleaned) {
 			Assert(false, "clean cache failed.");
-			return;
 		}
+	}
+	[MTeardown] public void Teardown () {
+		if (loader != null) {
+			RunOnMainThread(() => loader.CleanCachedAssetBundles());
+		}
+	}
 
+	[MTest] public void LoadAssetByAssetName () {
 		Texture2D tex = null;
 		var done = false;
 
@@ -110,17 +109,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void LoadSameAssetByAssetName () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		{// 1
 			Texture2D tex = null;
 			var done = false;
@@ -169,17 +157,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void LoadAssetWithDependency () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		GameObject prefab = null;
 		var done = false;
 
@@ -216,18 +193,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void LoadSameAssetWithDependsOnOneAssetBundle () {
-        var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
-		{// 1
+        {// 1
 			GameObject prefab = null;
 			var done = false;
 
@@ -304,17 +270,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		1 <- 2
 	*/
 	[MTest] public void Load2Assets_1isDependsOnAnother_DependedFirst () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		// texture = depended asset.
 		Texture2D tex = null;
 		var textureLoadDone = false;
@@ -374,17 +329,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		1 -> 2
 	*/
 	[MTest] public void Load2Assets_1isDependsOnAnother_DependingFirst () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		// prefab = depending asset.
         GameObject prefab = null;
 		var prefabLoadDone = false;
@@ -445,17 +389,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		A -> B <- C
 	*/
 	[MTest] public void Load2AssetsWhichDependsOnSameAssetBundle () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		GameObject prefab1 = null;
 		var prefabLoadDone1 = false;
 
@@ -518,17 +451,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		A -> B -> C
 	*/
 	[MTest] public void NestedDependency () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		GameObject prefab = null;
 		var prefabLoadDone = false;
 
@@ -583,17 +505,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void LoadAllAssetsOnce () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		var loadedAssetAssets = new Dictionary<string, object>();
 		var assetNames = dummyList.assetBundles.SelectMany(a => a.assetNames).ToArray();
 
@@ -641,17 +552,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void OnMemoryAssetNames () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		/*
 			load all assets.
 		*/
@@ -664,17 +564,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void UnloadAllAssetBundles () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		/*
 			load all.
 		*/
@@ -699,18 +588,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void GetContainedAssetBundleName () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
@@ -734,17 +611,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void UnloadAssetBundle () {
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-			return;
-		}
-
 		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
@@ -766,6 +632,53 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		Assert(!loader.OnMemoryAssetNames().Any(), "not unloaded.");
     }
+
+	[MTest] public void IsBundleCachedOnStorage () {
+		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
+		var done = false;
+
+		RunEnumeratorOnMainThread(
+			loader.LoadAsset(
+				assetName, 
+				(string loadedAssetName, Texture2D prefabAsset) => {
+					done = true;
+				},
+				(loadedAssetName, failEnum, reason) => {}
+			),
+			false
+		);
+
+		WaitUntil(() => done, 10, "failed to load asset in time.");
+
+		var bundleName = loader.GetContainedAssetBundleName(assetName);
+
+		RunOnMainThread(
+			() => {
+				Assert(loader.IsAssetBundleCachedOnStorage(bundleName), "not cached on storage.");
+			}
+		);
+	}
+
+	[MTest] public void IsBundleCachedOnMemory () {
+		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
+		var done = false;
+
+		RunEnumeratorOnMainThread(
+			loader.LoadAsset(
+				assetName, 
+				(string loadedAssetName, Texture2D prefabAsset) => {
+					done = true;
+				},
+				(loadedAssetName, failEnum, reason) => {}
+			),
+			false
+		);
+
+		WaitUntil(() => done, 10, "failed to load asset in time.");
+
+		var bundleName = loader.GetContainedAssetBundleName(assetName);
+		Assert(loader.IsAssetBundleCachedOnMemory(bundleName), "not cached on memory.");
+	}
 
 	[MTest] public void Offline () {
 		Debug.LogError("オフライン時のテストを追加したい。");

@@ -58,12 +58,6 @@ namespace Miyamasu {
 		public object lockObj = new object();
 
 		public IEnumerator RunTestsOnEditorMainThread () {
-            // EditorApplication.CallbackFunction isAlive = () => {
-			// 	Debug.Log("alive.");
-			// };
-
-			// EditorApplication.update += isAlive;
-			
 			var typeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
 				.Where(tAndMInfo => tAndMInfo.hasTests)
@@ -81,8 +75,7 @@ namespace Miyamasu {
 			TestLogger.Log("tests started.", true);
 			
 			var totalMethodCount = typeAndMethodInfos.Count() -1;
-			var allTestsDone = false;
-
+			
 			// generate waitingThread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.
 			Thread thread = null;
 			thread = new Thread(

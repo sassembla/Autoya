@@ -29,10 +29,10 @@ namespace AutoyaFramework {
 				var go = GameObject.Find("AutoyaMainthreadDispatcher");
 				if (go == null) {
 					go = new GameObject("AutoyaMainthreadDispatcher");
-					this.mainthreadDispatcher = go.AddComponent<AutoyaMainthreadDispatcher>();
+					this.mainthreadDispatcher = go.AddComponent<AutoyaMainThreadDispatcher>();
 					GameObject.DontDestroyOnLoad(go);
 				} else {
-					this.mainthreadDispatcher = go.GetComponent<AutoyaMainthreadDispatcher>();
+					this.mainthreadDispatcher = go.GetComponent<AutoyaMainThreadDispatcher>();
 				}
 			} else {
 				this.mainthreadDispatcher = new EditorUpdator();

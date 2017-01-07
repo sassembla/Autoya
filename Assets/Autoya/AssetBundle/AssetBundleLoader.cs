@@ -182,7 +182,7 @@ namespace AutoyaFramework.AssetBundles {
                 yield return null;
             }
 
-            var url = assetDownloadBasePath + bundleName;
+            var url = GetAssetBundleDownloadUrl(bundleName);
             var crc = list.assetBundles.Where(a => a.bundleName == bundleName).FirstOrDefault().crc;
             
             // check cached or not.
@@ -375,7 +375,7 @@ namespace AutoyaFramework.AssetBundles {
             */
             try {
                 var asset = request.asset as T;
-                
+
                 if (asset == null) {
                     loadFailed(assetName, AssetBundleLoadError.NullAssetFound, "loaded assetName:" + assetName + " type:" + typeof(T) + " is null. maybe type does not matched. from bundleName:" + bundleName + ". please check asset type and that bundle contains this asset.");
                     yield break;
@@ -385,6 +385,10 @@ namespace AutoyaFramework.AssetBundles {
             } catch (Exception e) {
                 loadFailed(assetName, AssetBundleLoadError.AssetLoadFailed, "failed to load assetName:" + assetName + " from bundleName:" + bundleName + " error:" + e.ToString());
             }
+        }
+
+        private string GetAssetBundleDownloadUrl (string bundleName) {
+            return assetDownloadBasePath + bundleName;
         }
 
         public string[] OnMemoryAssetNames () {
@@ -397,6 +401,16 @@ namespace AutoyaFramework.AssetBundles {
                 return string.Empty;
             }
             return assetNamesAndAssetBundleNamesDict[assetName];
+        }
+
+        public bool IsAssetBundleCachedOnMemory (string bundleName) {
+            var assetBundleNames = assetBundleDict.Keys.ToArray();
+            return assetBundleNames.Contains(bundleName);
+        }
+
+        public bool IsAssetBundleCachedOnStorage (string bundleName) {
+            var url = GetAssetBundleDownloadUrl(bundleName);
+            return Caching.IsVersionCached(url, (int)ASSETBUNDLE_FIXED_VERSION);
         }
 
         public void UnloadAllAssetBundles () {
