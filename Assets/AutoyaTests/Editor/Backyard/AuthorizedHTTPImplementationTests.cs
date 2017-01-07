@@ -17,15 +17,15 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		var authorized = false;
 		Action onMainThread = () => {
 			var dataPath = string.Empty;
-			Autoya.TestEntryPoint(dataPath);
 			Debug.LogWarning("自動的に初期化されてるので、特定のクラスを渡してハンドラぶっ叩くとかをしたほうがいいかもしれない。渡した時点でいろんなハンドラがぶっ叩かれるほうが制御が楽というか。勝手に見つけてくるんでもいいんだけど。自分で初期化しなくなったことでいろいろある。というか[まとめて登録]みたいな感じか。");
-
+			Autoya.TestEntryPoint(dataPath);
+			
 			Autoya.Auth_SetOnLoginSucceeded(
 				() => {
 					authorized = true;
 				}
 			);
-
+			
 			Autoya.Auth_SetOnAuthFailed(
 				(conId, reason) => {
 					return false;
@@ -34,19 +34,20 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		};
 		RunOnMainThread(onMainThread);
 		
-		WaitUntil(() => authorized, 3, "failed to auth."); 
+		WaitUntil(
+			() => {
+				return authorized;
+			}, 
+			5, 
+			"failed to auth."
+		);
 		Assert(Autoya.Auth_IsLoggedIn(), "not logged in.");
 	}
-
-	[MTeardown] public void Teardown () {
-		RunOnMainThread(
-			() => {
-				var obj = GameObject.Find("MainThreadDispatcher");
-				if (obj != null) GameObject.DestroyImmediate(obj); 
-			}
-		);
-	}
 	
+	[MTeardown] public void Teardown () {
+		RunOnMainThread(Autoya.Shutdown);
+	}
+
 	[MTest] public void AutoyaHTTPGet () {
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Get(
@@ -55,7 +56,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 				result = "done!:" + resultData;
 			},
 			(string conId, int code, string reason) => {
-				// do nothing.
+				Assert(false, "failed. code:" + code + " reason:" + reason);
 			}
 		);
 
@@ -73,7 +74,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 				result = resultData;
 			},
 			(string conId, int code, string reason) => {
-				// do nothing.
+				Assert(false, "failed. code:" + code + " reason:" + reason);
 			},
 			new Dictionary<string, string>{
 				{"Hello", "World"}
@@ -92,7 +93,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/status/404", 
 			(string conId, string resultData) => {
-				// do nothing.
+				Assert(false, "unexpected succeeded. resultData:" + resultData);
 			},
 			(string conId, int code, string reason) => {
 				resultCode = code;
@@ -105,7 +106,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		);
 		
 		// result should be have reason,
-		Assert(resultCode == 404, "code note match. resultCode:" + resultCode);
+		Assert(resultCode == 404, "code unmatched. resultCode:" + resultCode);
 	}
 
 	[MTest] public void AutoyaHTTPGetFailWithUnauth () {
@@ -127,7 +128,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/status/401", 
 			(string conId, string resultData) => {
-				// do nothing.
+				Assert(false, "unexpected succeeded. resultData:" + resultData);
 			},
 			(string conId, int code, string reason) => {
 				// do nothing.
@@ -139,7 +140,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			5
 		);
 		
-		Assert(!string.IsNullOrEmpty(unauthReason), "code note match. unauthReason:" + unauthReason);
+		Assert(!string.IsNullOrEmpty(unauthReason), "code unmatched. unauthReason:" + unauthReason);
 	}
 
 	[MTest] public void AutoyaHTTPGetFailWithTimeout () {
@@ -156,7 +157,6 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 				Assert(false, "got success result.");
 			},
 			(string conId, int code, string reason) => {
-				Debug.LogError("AutoyaHTTPGetFailWithTimeout error, code:" + code + " reason:" + reason);
 				failedCode = code;
 				timeoutError = reason;
 			},
@@ -171,7 +171,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 			3
 		);
 
-		Assert(failedCode == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. failedCode:" + failedCode + " message:" + timeoutError);
+		Assert(failedCode == BackyardSettings.HTTP_TIMEOUT_CODE, "unmatch. failedCode:" + failedCode + " message:" + timeoutError);
 	}
 
 	[MTest] public void AutoyaHTTPPost () {
@@ -243,7 +243,7 @@ public class AuthorizedHTTPImplementationTests : MiyamasuTestRunner {
 		);
 		
 		// result should be have reason,
-		Assert(resultCode == 404, "code note match. resultCode:" + resultCode);
+		Assert(resultCode == 404, "code unmatched. resultCode:" + resultCode);
 	}
 
 	[MTest] public void AutoyaHTTPPostFailWithUnauth () {

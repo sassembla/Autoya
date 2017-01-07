@@ -104,6 +104,11 @@ namespace Miyamasu {
 							} catch (Exception e) {
 								failed++;
 								LogTestFailed(e, methodName);
+								try {
+									if (typeAndMethodInfo.teardownMethodInfo != null) {
+										typeAndMethodInfo.teardownMethodInfo.Invoke(instance, null);
+									}
+								} catch {}
 								continue;
 							}
 							
@@ -183,26 +188,27 @@ namespace Miyamasu {
 		public void WaitUntil (Func<bool> isCompleted, int timeoutSec=1, string message="") {
 			var methodName = new Diag.StackFrame(1).GetMethod().Name;
 			Exception error = null;
-
+			
 			var resetEvent = new ManualResetEvent(false);
 			var waitingThread = new Thread(
 				() => {
 					resetEvent.Reset();
-					var startTime = DateTime.Now.Second;
+					var endTick = (DateTime.Now + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 					
 					while (!isCompleted()) {
-						var current = DateTime.Now.Second;
-						var distanceSeconds = (current - startTime);
-
-						if (0 < timeoutSec && timeoutSec < distanceSeconds) {
-							if (!string.IsNullOrEmpty(message)) error = new Exception("timeout. reason:" + message);
-							else error = new Exception("timeout.");
+						var current = DateTime.Now.Ticks;
+						
+						if (0 < timeoutSec && endTick < current) {
+							if (!string.IsNullOrEmpty(message)) {
+								error = new Exception("timeout. reason:" + message);
+							} else {
+								error = new Exception("timeout.");
+							}
 							break;
 						}
 						
 						System.Threading.Thread.Sleep(10);
 					}
-
 					resetEvent.Set();
 				}
 			);
@@ -210,6 +216,7 @@ namespace Miyamasu {
 			waitingThread.Start();
 			
 			resetEvent.WaitOne();
+			
 			if (error != null) {
 				throw error;
 			}
@@ -241,7 +248,7 @@ namespace Miyamasu {
 				WaitUntil(() => done, -1);
 			}
 		}
-
+		
 		/**
 			IEnumerator version. continue running while IEnumerator is running.
 		*/

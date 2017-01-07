@@ -15,7 +15,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
-		DeleteAllData(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+        DeleteAllData(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 		
 		var authorized = false;
 		Action onMainThread = () => {
@@ -34,16 +34,23 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 				}
 			);
 		};
+
 		RunOnMainThread(onMainThread);
 		
 		WaitUntil(
-			() => authorized,
-			3,
+			() => {
+				return authorized;
+			},
+			5,
 			"timeout in setup."
 		);
 
 		Assert(Autoya.Auth_IsLoggedIn(), "not logged in.");
 	}
+
+    [MTeardown] public void Teardown () {
+        RunOnMainThread(Autoya.Shutdown);
+    }
 
 	
 	[MTest] public void WaitDefaultAuthorize () {
@@ -102,7 +109,6 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
 		WaitUntil(
 			() => {
-				Debug.LogError("waiting..");
 				return (!string.IsNullOrEmpty(fakeReason) && authorized);
 			},
 			3,

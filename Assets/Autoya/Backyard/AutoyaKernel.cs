@@ -8,7 +8,7 @@ using AutoyaFramework.Persistence.Files;
 namespace AutoyaFramework {
     public partial class Autoya {
 
-		private AutoyaMainthreadDispatcher mainthreadDispatcher;
+		private ICoroutineUpdater mainthreadDispatcher;
 		
 		/**
 			all conditions which Autoya has.
@@ -23,15 +23,19 @@ namespace AutoyaFramework {
 		private AutoyaParameters _parameters;
 		
 		private Autoya (string basePath="") {
-			// Debug.LogWarning("autoya initialize start.");
+			Debug.LogWarning("autoya initialize start.");
 			
-			var go = GameObject.Find("AutoyaMainthreadDispatcher");
-			if (go == null) {
-				go = new GameObject("AutoyaMainthreadDispatcher");
-				// go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
-				this.mainthreadDispatcher = go.AddComponent<AutoyaMainthreadDispatcher>();
+			if (Application.isPlaying) { 
+				var go = GameObject.Find("AutoyaMainthreadDispatcher");
+				if (go == null) {
+					go = new GameObject("AutoyaMainthreadDispatcher");
+					this.mainthreadDispatcher = go.AddComponent<AutoyaMainthreadDispatcher>();
+					GameObject.DontDestroyOnLoad(go);
+				} else {
+					this.mainthreadDispatcher = go.GetComponent<AutoyaMainthreadDispatcher>();
+				}
 			} else {
-				this.mainthreadDispatcher = go.GetComponent<AutoyaMainthreadDispatcher>();
+				this.mainthreadDispatcher = new EditorUpdator();
 			}
 			
 			_parameters = new AutoyaParameters();
@@ -61,7 +65,10 @@ namespace AutoyaFramework {
 		public static int BuildNumber () {
 			return -1;
 		}
-		
+
+		public static void Shutdown () {
+			autoya.mainthreadDispatcher.Destroy();
+		}
     }
 
 

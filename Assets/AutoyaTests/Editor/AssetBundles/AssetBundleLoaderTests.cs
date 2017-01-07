@@ -73,7 +73,9 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		loader = new AssetBundleLoader(basePath, dummyList, null);
 	}
 	[MTeardown] public void Teardown () {
-		RunOnMainThread(() => loader.CleanCachedAssetBundles());
+		if (loader != null) {
+			RunOnMainThread(() => loader.CleanCachedAssetBundles());
+		}
 	}
 
 	[MTest] public void LoadAssetByAssetName () {

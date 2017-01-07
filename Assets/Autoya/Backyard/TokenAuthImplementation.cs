@@ -167,6 +167,9 @@ namespace AutoyaFramework {
 			load token then login.
 		*/
 		private void Login () {
+			/*
+				initial boot.
+			*/
 			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(BackyardSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 			if (tokenCandidatePaths.Length == 0) {
 				StartBootAccess();
@@ -215,8 +218,7 @@ namespace AutoyaFramework {
 			*/
 			var tokenHttp = new HTTPConnection();
 			var tokenConnectionId = BackyardSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
-			Debug.Log("tokenConnectionId:" + tokenConnectionId);
-
+			
 			var bootKeyword = AuthSettings.AUTH_BOOT;
 			var authStr = Editable.EncryptionEditable.OnFirstBootRequestEncryption(bootKeyword);
 			
@@ -230,11 +232,9 @@ namespace AutoyaFramework {
 					tokenRequestHeaders,
 					tokenUrl,
 					(conId, code, responseHeaders, data) => {
-						Debug.Log("continue tokenConnectionId:" + tokenConnectionId + " code:" + code + " data:" + data);
 						EvaluateTokenResult(conId, responseHeaders, code, data, string.Empty);
 					},
 					(conId, code, failedReason, responseHeaders) => {
-						Debug.LogError("failed to boot,");
 						EvaluateTokenResult(conId, responseHeaders, code, string.Empty, failedReason);
 					},
 					BackyardSettings.HTTP_TIMEOUT_SEC

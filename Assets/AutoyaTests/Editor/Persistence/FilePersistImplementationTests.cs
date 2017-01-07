@@ -32,7 +32,6 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 			}
 		);
 		
-
 		WaitUntil(
 			() => {
 				return loginDone;
