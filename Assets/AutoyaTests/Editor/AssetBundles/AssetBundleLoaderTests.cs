@@ -593,25 +593,50 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			return;
 		}
 
-		var loadedAssetNames = new List<string>();
+		var loadedAssetAssets = new Dictionary<string, object>();
 		var assetNames = dummyList.assetBundles.SelectMany(a => a.assetNames).ToArray();
 
 		foreach (var loadingAssetName in assetNames) {
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					loadingAssetName, 
-					(string assetName, GameObject prefabAsset) => {
-						loadedAssetNames.Add(assetName);
-					},
-					(assetName, failEnum, reason) => {
-						Assert(false, "fail, loadingAssetName:" + loadingAssetName + " failEnum:" + failEnum + " reason:" + reason);
-					}
-				),
-				false
-			);
+			switch (loadingAssetName) {
+				case "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png": {
+					RunEnumeratorOnMainThread(
+						loader.LoadAsset<Texture2D>(
+							loadingAssetName, 
+							(assetName, asset) => {
+								loadedAssetAssets[assetName] = asset;
+							},
+							(assetName, failEnum, reason) => {
+								Assert(false, "fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
+							}
+						),
+						false
+					);
+					break;
+				}
+				default: {
+					RunEnumeratorOnMainThread(
+						loader.LoadAsset<GameObject>(
+							loadingAssetName, 
+							(assetName, asset) => {
+								loadedAssetAssets[assetName] = asset;
+							},
+							(assetName, failEnum, reason) => {
+								Assert(false, "fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
+							}
+						),
+						false
+					);
+					break;
+				}
+			}
 		}
 
-		WaitUntil(() => loadedAssetNames.Count == assetNames.Length, 20, "failed to load all assets.");
+		WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, 20, "failed to load all assets.");
+		foreach (var loadedAssetAssetKey in loadedAssetAssets.Keys) {
+			var key = loadedAssetAssetKey;
+			var asset = loadedAssetAssets[key];
+			Assert(asset != null, "loaded asset:" + key + " is null.");
+		}
     }
 
 	[MTest] public void OnMemoryAssetNames () {
@@ -679,6 +704,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
+
 		if (!cleaned) {
 			Assert(false, "clean cache failed.");
 			return;
@@ -690,10 +716,12 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				assetName, 
-				(string loadedAssetName, GameObject prefabAsset) => {
+				(string loadedAssetName, Texture2D tex) => {
 					done = true;
 				},
-				(loadedAssetName, failEnum, reason) => {}
+				(loadedAssetName, failEnum, reason) => {
+					
+				}
 			),
 			false
 		);
@@ -722,7 +750,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				assetName, 
-				(string loadedAssetName, GameObject prefabAsset) => {
+				(string loadedAssetName, Texture2D prefabAsset) => {
 					done = true;
 				},
 				(loadedAssetName, failEnum, reason) => {}

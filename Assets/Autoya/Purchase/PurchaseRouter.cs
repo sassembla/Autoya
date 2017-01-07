@@ -146,7 +146,7 @@ namespace AutoyaFramework.Purchase {
             
             var connectionId = "purchase_ready_" + Guid.NewGuid().ToString();
 
-            var url = "https://google.com";
+            var url = "https://httpbin.org/get";
             HttpGet(
                 connectionId,
                 url, 
@@ -159,6 +159,7 @@ namespace AutoyaFramework.Purchase {
                     ReadyIAPFeature(productInfos);
                 },
                 (conId, code, reason) => {
+                    Debug.LogError("failed, code:" + code + " reason:" + reason);
                     routerState = RouterState.NotReady;
                     failedToReady(PurchaseError.UnknownError, reason);
                 }
@@ -183,7 +184,7 @@ namespace AutoyaFramework.Purchase {
                 check network connectivity again. because Unity IAP never tells offline.
             */
             if (Application.internetReachability == NetworkReachability.NotReachable) {
-                failedToReady(PurchaseError.Offline, "network seems offline.");
+                failedToReady(PurchaseError.Offline, "network is offline.");
                 return;
             }
 
@@ -317,7 +318,6 @@ namespace AutoyaFramework.Purchase {
                         renew callback.
                     */
                     callbacks = new Callbacks(product, purchaseId, ticketId, purchaseSucceeded, purchaseFailed);
-
                     this.controller.InitiatePurchase(product, ticketId);
                     return;
                 }

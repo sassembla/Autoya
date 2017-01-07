@@ -75,13 +75,8 @@ namespace AutoyaFramework.AssetBundles {
             note:
                 this timeoutSec param is enabled only for downloading AssetBundle from web.
 
-                複数のAssetBundleに依存していて、それのうちのひとつとかがtimeoutしたらどうなっちゃうんだろう。
-                -> failedが呼ばれるんだけど、他のが停止しなくない？
-                -> 停止信号が必要なのか？ んーーー failedが呼ばれるの自体はしょうがないんだけど、他のは停止したくない。でもってあとでfailedが呼ばれるのも
-                    困る。うーーん、、
-                    ・どっかでfailしたら、その時点で大元のfailedを呼ぶ予約をする
-                    ・予約があれば、最終元締めの箇所で一度だけfailedが呼ばれる
-                    というのでいけそう。枝葉のfailedにboolを渡そう。
+                複数のAssetBundleに依存していて、それのうちのひとつとかがtimeoutしたら
+                
 
         */
         public IEnumerator LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed, double timeoutSec=0) where T : UnityEngine.Object {
@@ -151,7 +146,7 @@ namespace AutoyaFramework.AssetBundles {
                     }
 
                     if (coroutines.Count != 0) {
-                    while (true) {
+                        while (true) {
                             if (!coroutines.Where(c => c.Value != null).Any()) {
                                 // load done.
                                 break;
@@ -380,14 +375,15 @@ namespace AutoyaFramework.AssetBundles {
             */
             try {
                 var asset = request.asset as T;
+                
                 if (asset == null) {
-                    loadFailed(assetName, AssetBundleLoadError.NullAssetFound, "loaded assetName:" + assetName + " type:" + typeof(T) + " is null. from bundleName:" + bundleName + ". please check if bundle contains this asset.");
+                    loadFailed(assetName, AssetBundleLoadError.NullAssetFound, "loaded assetName:" + assetName + " type:" + typeof(T) + " is null. maybe type does not matched. from bundleName:" + bundleName + ". please check asset type and that bundle contains this asset.");
                     yield break;
                 }
 
                 loadSucceeded(assetName, asset);
             } catch (Exception e) {
-                loadFailed(assetName, AssetBundleLoadError.AssetLoadFailed, e.ToString());
+                loadFailed(assetName, AssetBundleLoadError.AssetLoadFailed, "failed to load assetName:" + assetName + " from bundleName:" + bundleName + " error:" + e.ToString());
             }
         }
 

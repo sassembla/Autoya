@@ -47,15 +47,16 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
                 router = new PurchaseRouter(
                     iEnum => {
                         // fake mainthread dispatcher.
-                        EditorApplication.CallbackFunction c = null;
-                        c = () => {
+                        EditorApplication.CallbackFunction purchaseCoroutine = null;
+
+                        purchaseCoroutine = () => {
                             var isContinued = iEnum.MoveNext();
                             if (!isContinued) {
-                                EditorApplication.update -= c;
+                                EditorApplication.update -= purchaseCoroutine;
                             }
                         };
 
-                        EditorApplication.update += c;
+                        EditorApplication.update += purchaseCoroutine;
                     }
                 );
             }
