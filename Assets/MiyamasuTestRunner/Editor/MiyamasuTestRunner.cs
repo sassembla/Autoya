@@ -62,7 +62,7 @@ namespace Miyamasu {
 			}
 		}
 
-		public void RunTestsOnEditorThread () {
+		public void RunTests () {
 			var typeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
 				.Where(tAndMInfo => tAndMInfo.hasTests)

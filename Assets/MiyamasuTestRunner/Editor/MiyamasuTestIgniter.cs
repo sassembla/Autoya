@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -48,7 +47,10 @@ namespace Miyamasu {
 					when Application.isPlaying == true, start tests on player.
 				*/
 				if (EditorApplication.isPlayingOrWillChangePlaymode) {
-					var coroutine = WaitUntilIsPlaying(
+					var coroutine = WaitUntilTrueThen(
+						() => {
+							return Application.isPlaying;
+						},
 						() => {
 							RunTests(
 								TestRunnerMode.Batch,
@@ -56,21 +58,18 @@ namespace Miyamasu {
 									/*
 										set gameObject from Editor thread(pseudo-mainThread.)
 									*/
-									EditorApplication.CallbackFunction exe = null;
-									
-									exe = () => {
-										var go = new GameObject("MiyamasuTestMainThreadRunner");
-										var mb = go.AddComponent<MainThreadRunner>();
-										mb.Commit(
-											iEnum,
-											() => {
-												GameObject.Destroy(go);
-											}
-										);
-										EditorApplication.update -= exe;
-									};
-
-									EditorApplication.update += exe;
+									RunOnEditorThread(
+										() => {
+											var go = new GameObject("MiyamasuTestMainThreadRunner");
+											var mb = go.AddComponent<MainThreadRunner>();
+											mb.Commit(
+												iEnum,
+												() => {
+													GameObject.Destroy(go);
+												}
+											);
+										}
+									);
 								}, 
 								() => {
 									// all test done. exit application.
@@ -90,9 +89,12 @@ namespace Miyamasu {
 				return;
 			}
 			
-			// playing mode.
+			// playing mode on Editor.
 			if (EditorApplication.isPlayingOrWillChangePlaymode) {
-				var coroutine = WaitUntilIsPlaying(
+				var coroutine = WaitUntilTrueThen(
+					() => {
+						return Application.isPlaying;
+					},
 					() => {
 						RunTests(
 							TestRunnerMode.Player,
@@ -100,22 +102,21 @@ namespace Miyamasu {
 								/*
 									set gameObject from Editor thread(pseudo-mainThread.)
 								*/
-								EditorApplication.CallbackFunction exe = null;
 								
-								exe = () => {
-									var go = new GameObject("MiyamasuTestMainThreadRunner");
-									go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
-									var mb = go.AddComponent<MainThreadRunner>();
-									mb.Commit(
-										iEnum,
-										() => {
-											GameObject.Destroy(go);
-										}
-									);
-									EditorApplication.update -= exe;
-								};
-
-								EditorApplication.update += exe;
+								RunOnEditorThread(
+									() => {
+										var go = new GameObject("MiyamasuTestMainThreadRunner");
+										go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
+										
+										var mb = go.AddComponent<MainThreadRunner>();
+										mb.Commit(
+											iEnum,
+											() => {
+												GameObject.Destroy(go);
+											}
+										);
+									}
+								);
 							}, 
 							() => {
 								// do nothing.
@@ -131,7 +132,7 @@ namespace Miyamasu {
 				// editor mode.
 				RunTests(
 					TestRunnerMode.Editor, 
-					RunOnEditorThread, 
+					RunEnumeratorOnEditorThread, 
 					() => {
 						// do nothing.
 					}
@@ -150,26 +151,53 @@ namespace Miyamasu {
 		}
 		
 		/**
-			wait Applcation isPlaying return true, then run Action.
+			wait condition in enum, then execute action.
 		*/
-		private static IEnumerator WaitUntilIsPlaying (Action act) {
-			while (!Application.isPlaying) {
+		private static IEnumerator WaitUntilTrueThen (Func<bool> waitUntil, Action act) {
+			while (true) {
 				yield return null;
+				if (waitUntil()) break;
 			}
 			act();
 		}
-		
+
 		public static void RunTests (TestRunnerMode mode, Action<IEnumerator> mainThreadDispatcher, Action onEnd) {
-			Debug.Log("start test mode:" + mode);
+			Debug.Log("start test, mode:" + mode);
 			var testRunner = new MiyamasuTestRunner(mainThreadDispatcher, onEnd);
-			testRunner.RunTestsOnEditorThread();
+			testRunner.RunTests();
 		}
 
-		private static void RunOnEditorThread (IEnumerator cor) {
+		private static void RunEnumeratorOnEditorThread (IEnumerator cor) {
 			UnityEditor.EditorApplication.CallbackFunction exe = null;
 			
 			exe = () => {
 				var contiune = cor.MoveNext();
+				if (!contiune) {
+					EditorApplication.update -= exe;
+				}
+			};
+
+			EditorApplication.update += exe;
+		}
+
+		private static void RunOnEditorThread (Action act) {
+			// create enum which contains act().
+			var waitThenEnum = WaitUntilTrueThen(
+				() => {
+					return true;
+				},
+				() => {
+					act();
+				}
+			);
+
+			/*
+				set enum to Editor main thread.
+			*/
+			UnityEditor.EditorApplication.CallbackFunction exe = null;
+			
+			exe = () => {
+				var contiune = waitThenEnum.MoveNext();
 				if (!contiune) {
 					EditorApplication.update -= exe;
 				}
