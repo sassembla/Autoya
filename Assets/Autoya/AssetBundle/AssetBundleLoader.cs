@@ -365,7 +365,7 @@ namespace AutoyaFramework.AssetBundles {
         private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
             var assetBundle = assetBundleDict[bundleName];
             
-            var request = assetBundle.LoadAssetAsync<T>(assetName);
+            var request = assetBundle.LoadAssetAsync<T>(assetName);            
             while (!request.isDone) {
                 yield return null;
             }

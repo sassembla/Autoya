@@ -14,6 +14,7 @@ namespace AutoyaFramework {
         }
 
         private void Update () {
+            
             if (0 < coroutines.Count) {
                 foreach (var coroutine in coroutines) {
                     // Debug.Log("commiting:" + coroutine);
@@ -36,7 +37,7 @@ namespace AutoyaFramework {
     }
 
     /**
-        Update() runner for Editor.
+        Update() runner class for Editor.
     */
     public class EditorUpdator : ICoroutineUpdater {
         private List<IEnumerator> readyCoroutines = new List<IEnumerator>();

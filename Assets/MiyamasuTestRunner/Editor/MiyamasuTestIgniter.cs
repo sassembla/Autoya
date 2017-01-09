@@ -1,136 +1,215 @@
 using System;
-using Diag = System.Diagnostics;
-using System.Threading;
+using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
-using System.ComponentModel;
 
 namespace Miyamasu {
+	public enum TestRunnerMode {
+		None,
+		Editor,
+		Batch,
+		Player,
+		NUnit,
+	}
+	
 	/*
 		Run tests when Initialize on load.
 		this thread is Unity Editor's MainThread, is ≒ Unity Player's MainThread.
+
+		Run Miyamasu on Player : simply play app.
+		Run Miyamasu on Editor : write code & compile it, then Miyamasu start running tests.
+		Run Miyamasu on Batch  : 'sh run_miyamasu_tests.sh' or 'exec run_miyamasu_tests.bat'.
 	*/
-	[InitializeOnLoad] public class MiyamasuTestIgniter {
+    [InitializeOnLoad] public class MiyamasuTestIgniter {
 		static MiyamasuTestIgniter () {
 			/*
-				・CLOUDBUILD フラグがついてる場合は実行しない
-				・コマンドラインからの実行時にはテストを実行しない(コマンドラインで特定のメソッドから実行する)
-				・上記以外のケースでは、ローカルでのビルド時には、コンパイル後ごとにテストを実行する
+				cloudbuild is not supported yet. it's hard to run asynchronous tests in NUnit.
+				because NUnit uses main thread, and asynchronous test requires sub-thread.
+
+				NUnit for Unity only supports main thread && synchrouns things only. 
+				it can not wait any events running on other thread. (even on main thread.)
 			*/
-
-			// このコンパイルフラグが実行時に判断できるといいんだけどな〜 取得法がわからん。
-
 			#if CLOUDBUILD
 			{
 				// do nothing.
 				return;
 			}
-			#else
-			{
-				var commandLineOptions = System.Environment.CommandLine;
-				if (commandLineOptions.Contains("-batchmode")) {
-					// do nothing.
-					return;
-				}
-			}
 			#endif
 
-			RunTests();
+			var commandLineOptions = System.Environment.CommandLine;
+			if (commandLineOptions.Contains("-batchmode")) {
+				// do nothing if not in playmode. batchmode will run from "RunButchMode" method.
+
+				/*
+					first boot (from batch) -> start playmode.
+					second boot (from start playmode) -> wait start of play.
+					when Application.isPlaying == true, start tests on player.
+				*/
+				if (EditorApplication.isPlayingOrWillChangePlaymode) {
+					var coroutine = WaitUntilIsPlaying(
+						() => {
+							RunTests(
+								TestRunnerMode.Batch,
+								(iEnum) => {
+									/*
+										set gameObject from Editor thread(pseudo-mainThread.)
+									*/
+									EditorApplication.CallbackFunction exe = null;
+									
+									exe = () => {
+										var go = new GameObject("MiyamasuTestMainThreadRunner");
+										var mb = go.AddComponent<MainThreadRunner>();
+										mb.Commit(
+											iEnum,
+											() => {
+												GameObject.Destroy(go);
+											}
+										);
+										EditorApplication.update -= exe;
+									};
+
+									EditorApplication.update += exe;
+								}, 
+								() => {
+									// all test done. exit application.
+									EditorApplication.Exit(0);
+								}
+							);
+						}
+					);
+
+					/*
+						set coroutine to Editor thread.
+					*/
+					EditorApplication.update += () => {
+						coroutine.MoveNext();
+					};
+				}
+				return;
+			}
+			
+			// playing mode.
+			if (EditorApplication.isPlayingOrWillChangePlaymode) {
+				var coroutine = WaitUntilIsPlaying(
+					() => {
+						RunTests(
+							TestRunnerMode.Player,
+							(iEnum) => {
+								/*
+									set gameObject from Editor thread(pseudo-mainThread.)
+								*/
+								EditorApplication.CallbackFunction exe = null;
+								
+								exe = () => {
+									var go = new GameObject("MiyamasuTestMainThreadRunner");
+									go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
+									var mb = go.AddComponent<MainThreadRunner>();
+									mb.Commit(
+										iEnum,
+										() => {
+											GameObject.Destroy(go);
+										}
+									);
+									EditorApplication.update -= exe;
+								};
+
+								EditorApplication.update += exe;
+							}, 
+							() => {
+								// do nothing.
+							}
+						);
+					}
+				);
+
+				EditorApplication.update += () => {
+					coroutine.MoveNext();
+				};
+			} else {
+				// editor mode.
+				RunTests(
+					TestRunnerMode.Editor, 
+					RunOnEditorThread, 
+					() => {
+						// do nothing.
+					}
+				);
+			}
 		}
 
+		/**
+			entry point for BatchMode.
+		*/
+		public static void RunBatchMode () {
+			/*
+				set isPlaying true will run app, that raises re-compile and call InitializeOnLoad constructor of above.
+			*/
+			EditorApplication.isPlaying = true;
+		}
 		
 		/**
-			テスト実行
+			wait Applcation isPlaying return true, then run Action.
 		*/
-		public static void RunTests () {
-			var testRunner = new MiyamasuTestRunner();
-			var cor = testRunner.RunTestsOnEditorMainThread();
-			
-			// var sr = new GameObject("test");
-			// var c = sr.AddComponent<CoroutineExecutor>();
-			// c.Set(cor);
+		private static IEnumerator WaitUntilIsPlaying (Action act) {
+			while (!Application.isPlaying) {
+				yield return null;
+			}
+			act();
+		}
+		
+		public static void RunTests (TestRunnerMode mode, Action<IEnumerator> mainThreadDispatcher, Action onEnd) {
+			Debug.Log("start test mode:" + mode);
+			var testRunner = new MiyamasuTestRunner(mainThreadDispatcher, onEnd);
+			testRunner.RunTestsOnEditorThread();
+		}
 
-			// これで、MainThreadの所在は変わってないんだよな。うーーんやっぱりコマンドライン系の知見が要る。
+		private static void RunOnEditorThread (IEnumerator cor) {
+			UnityEditor.EditorApplication.CallbackFunction exe = null;
 			
-			// bool createdNew;
-			// var waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, "CF2D4313-33DE-489D-9721-6AFF69841DEA", out createdNew);
-			// waitHandle.Set();
-
-			// var signaled = false;
-			// do {
-			// 	// signaled = waitHandle.WaitOne(TimeSpan.FromSeconds(0.01));
-			// 	// Debug.LogError("signaled:" + signaled);
-			// 	Thread.Sleep(10);
-			// } while (true);
-			UnityEditor.EditorApplication.CallbackFunction exe = () => {
-				// if (sr == null) return; 
-				// sr.name = sr.name + "1";
-				// if (sr.name.Length == 10) {
-				// 	sr.name = "test";
-				// }
+			exe = () => {
 				var contiune = cor.MoveNext();
 				if (!contiune) {
-					var commandLineOptions = System.Environment.CommandLine;
-					if (commandLineOptions.Contains("-batchmode")) {	
-						EditorApplication.Exit(0);
-					}
+					EditorApplication.update -= exe;
 				}
 			};
 
 			EditorApplication.update += exe;
-
-			// // これでコンソールアプリとしての寿命が伸びてくれるといいな~、、、と思うのだが、なかなか上手くいかない。
-
-			// x
-			// m_LoginBackgroundWorker = new BackgroundWorker();
-			// m_LoginBackgroundWorker.DoWork += LoginBackgroundWorker_DoWork;
-			// m_LoginBackgroundWorker.RunWorkerCompleted += LoginBackgroundWorker_RunWorkerCompleted;
-			// m_LoginBackgroundWorker.RunWorkerAsync(sr);
-
-			// x
-			// Diag.Process p = new Diag.Process();
-			// p.StartInfo.FileName = "TextEdit";
-			// p.Start();
-
-			// Debug.LogError("end of method.");
 		}
-
-		// private static void LoginBackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
-		// 	// this.successfullyLogin();
-		// 	Debug.LogError("done.");
-		// }
-		// private static void LoginBackgroundWorker_DoWork (object sender, DoWorkEventArgs e) {
-		// 	// exe();
-		// 	while (true) {
-		// 		if (false) break; 
-		// 	}
-		// }
-
-		// private static BackgroundWorker m_LoginBackgroundWorker;
-		
-		// static UnityEditor.EditorApplication.CallbackFunction loop;
-
-		// [MenuItem("/Miyamasu/Run")] public static void Do () {
-		// 	RunTests();
-		// }
 	}
-
 
 	/**
 		in cloudBuild, this NUnit test method is as entrypoint of UnitTest.
-		but this mechanism is imcomplete.
+		but this mechanism does not work well.
 	*/
 	public class CloudBuildTestEntryPoint {
-		[Test] public static void Start () {
-			MiyamasuTestIgniter.RunTests();
-		}
-	}
+		[Test] public static void RunFromNUnit () {
+			var go = new GameObject("MiyamasuTestMainThreadRunner");
+			var mb = go.AddComponent<MainThreadRunner>();
+			
+			MiyamasuTestIgniter.RunTests(
+				TestRunnerMode.NUnit, 
+				(iEnum) => {
+					mb.Commit(
+						iEnum,
+						() => {
+							// GameObject.Destroy(go);
+						}
+					);
+				},
+				() => {
+					
+				}
+			);
 
-	public class TestEntryPoint {
-		[Test] public static void Start () {
-			MiyamasuTestIgniter.RunTests();
+			// ここでテストの終了を待てないと、非同期メソッドのテストの際に使い物にならない。
+			// また、このメソッド起動中はEditorUpdateも走らないので、mainThread的な動作を待つこともできない。
+
+			// ここでwait系をかけてしまうと、mainThreadがロックしてしまって死ぬので、asyncができればいいというものでもない。
+			// できて欲しいのは、「このメソッドが実行されているスレッドをロックせずに」「特定の処理が終わるまでこのメソッドの終了を遅らせる」という矛盾した処理。
+
+			// IEnumeratorを返すことができるユニットテストが欲しい。
 		}
 	}
 }

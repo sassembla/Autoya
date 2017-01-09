@@ -128,7 +128,7 @@ namespace AutoyaFramework {
 				*/
 				if (IsAuthFailed(httpCode, responseHeaders)) {
 					var unauthReason = BackyardSettings.HTTP_401_MESSAGE + errorReason;
-					var shouldRelogin = OnAuthFailed(connectionId, unauthReason);
+					var shouldRelogin = OnAuthFailed(connectionId, httpCode, unauthReason);
 					if (shouldRelogin) Login();
 				}
 			}

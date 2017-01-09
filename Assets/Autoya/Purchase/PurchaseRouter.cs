@@ -172,9 +172,9 @@ namespace AutoyaFramework.Purchase {
             this.failedToReady = reloadFailed;
             routerState = RouterState.LoadingProducts;
             
-            var connectionId = "purchase_ready_" + Guid.NewGuid().ToString();
-
-            var url = "https://httpbin.org/get";
+            var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_READY_PREFIX + Guid.NewGuid().ToString();
+            var url = PurchaseSettings.PURCHASE_URL_READY;
+            
             HttpGet(
                 connectionId,
                 url, 
@@ -184,6 +184,7 @@ namespace AutoyaFramework.Purchase {
                         new ProductInfo("100_gold_coins", "100_gold_coins_iOS")
                     };
 
+                    // これ、実機でも複数回よばれてOKなのかな、、
                     ReadyIAPFeature(productInfos);
                 },
                 (conId, code, reason) => {
@@ -285,9 +286,6 @@ namespace AutoyaFramework.Purchase {
                 return;
             }
 
-            /*
-                該当するproductを購買させる許可があるかどうか、という以前に、このクラスにいろいろbindするチャンス。
-            */
             Debug.LogWarning("該当するproductを購買させる許可があるかどうか。事前に取得しておいたアイテムリストで判断する。");
             if (false) {
                 purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.");
@@ -297,16 +295,16 @@ namespace AutoyaFramework.Purchase {
             // renew callback.
             callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason) => {});
             
-            var transactionUrl = "https://httpbin.org/post";
+            var ticketUrl = PurchaseSettings.PURCHASE_URL_TICKET;
             var data = productId;
 
             routerState = RouterState.GettingTransaction;
 
-            var connectionId = "purchase_start_" + Guid.NewGuid().ToString();
+            var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_TICKET_PREFIX + Guid.NewGuid().ToString();
 
             HttpPost(
                 connectionId,
-                transactionUrl,
+                ticketUrl,
                 data,
                 (conId, resultData) => {
                     Debug.LogWarning("ticketの取得完了 resultData:" + resultData);
@@ -394,10 +392,10 @@ namespace AutoyaFramework.Purchase {
             */
             switch (routerState) {
                 case RouterState.Purchasing: {
-                    var purchasedUrl = "https://httpbin.org/post";
+                    var purchasedUrl = PurchaseSettings.PURCHASE_URL_PURCHASE;
                     var dataStr = JsonUtility.ToJson(new Ticket(callbacks.ticketId, e.purchasedProduct.receipt));
 
-                    var connectionId = "purchase_succeeded_" + Guid.NewGuid().ToString();
+                    var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PURCHASE_PREFIX + Guid.NewGuid().ToString();
                     
                     HttpPost(
                         connectionId,
@@ -435,11 +433,11 @@ namespace AutoyaFramework.Purchase {
         }
 
         private void SendPaidTicket (PurchaseEventArgs e) {
-            Debug.LogError("get paid & uncompleted purchase. e:" + e);
-            var purchasedUrl = "https://httpbin.org/post";
+            Debug.LogError("get paid & uncompleted purchase. e:" + e);// 確認したいところ。
+            var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
             var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
 
-            var connectionId = "purchase_paid_" + Guid.NewGuid().ToString();
+            var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PAID_PREFIX + Guid.NewGuid().ToString();
 
             HttpPost(
                 connectionId,
@@ -541,9 +539,9 @@ namespace AutoyaFramework.Purchase {
             /*
                 send failed/cancelled ticketId if possible.
             */
-            var purchaseCancelledUrl = "https://httpbin.org/post";
+            var purchaseCancelledUrl = PurchaseSettings.PURCHASE_URL_CANCEL;
             var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, reason));
-            var connectionId = "purchase_cancelled_" + Guid.NewGuid().ToString();
+            var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
 
             HttpPost(
                 connectionId,

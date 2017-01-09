@@ -1,9 +1,10 @@
+using System;
+using System.Collections;
 using System.IO;
-using UnityEngine;
 
 /**
-	data storage which can be hacked easily.
-	do not use severe data. (should use with some kind of encryption.)
+	features for control data storage.
+	do not use severe data without encryption.
 */
 namespace AutoyaFramework.Persistence.Files {
     public class FilePersistence {
@@ -15,6 +16,11 @@ namespace AutoyaFramework.Persistence.Files {
 		
 		/*
 			sync series.
+			run on Unity's MainThread.
+		*/
+
+		/**
+			append data to end of domain/fileName file.
 		*/
 		public bool Append (string domain, string fileName, string data) {
 			var domainPath = Path.Combine(basePath, domain);
@@ -47,6 +53,10 @@ namespace AutoyaFramework.Persistence.Files {
 			return false;
 		}
 
+
+		/**
+			update data of domain/fileName file.
+		*/
 		public bool Update (string domain, string fileName, string data) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
@@ -78,6 +88,9 @@ namespace AutoyaFramework.Persistence.Files {
 			return false;
 		}
 
+		/**
+			returns all file names in domain/.
+		*/
 		public string[] FileNamesInDomain (string domain) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
@@ -97,6 +110,10 @@ namespace AutoyaFramework.Persistence.Files {
 			return new string[]{};
 		}
 
+		/**
+			load data from domain/fileName if file is exists.
+			else return empty.
+		*/
 		public string Load (string domain, string fileName) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
@@ -110,6 +127,10 @@ namespace AutoyaFramework.Persistence.Files {
 			return string.Empty;
 		}
 
+		/**
+			delete domain/fileName if exists. then return true.
+			else return false.
+		*/
 		public bool Delete (string domain, string fileName) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
@@ -121,7 +142,10 @@ namespace AutoyaFramework.Persistence.Files {
 			}
 			return false;
 		}
-
+		
+		/**
+			delete all files in domain/.
+		*/
 		public bool DeleteByDomain (string domain) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
@@ -131,9 +155,41 @@ namespace AutoyaFramework.Persistence.Files {
 			return false;
 		}
 
-		// /*
-		// 	async series.
-		// */
+		/*
+			async series.
+		*/
+
+		public void AppendAsync (string domain, string fileName, string data, Action<bool> result) {
+			var domainPath = Path.Combine(basePath, domain);
+			if (Directory.Exists(domainPath)) {
+
+				var filePath = Path.Combine(domainPath, fileName);
+				using (var sw = new StreamWriter(filePath, false))	{
+					sw.WriteLine(data);
+				}
+
+				result(true);
+			} else {// no directory = domain exists.
+				var created = Directory.CreateDirectory(domainPath);
+				
+				if (created.Exists) {
+
+					#if UNITY_IOS
+					{
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+					}
+					#endif
+
+					var filePath = Path.Combine(domainPath, fileName);
+					using (var sw = new StreamWriter(filePath, false))	{
+						sw.WriteLine(data);
+					}
+					result(true);
+				} 
+			}
+			result(false);
+		}
+
 		// public void UpdateAsync (string domain, string fileName, string data, Action<bool> result) {
 		// 	var domainPath = Path.Combine(basePath, domain);
 		// 	if (Directory.Exists(domainPath)) {

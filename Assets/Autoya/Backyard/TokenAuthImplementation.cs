@@ -128,7 +128,7 @@ namespace AutoyaFramework {
 				LoggedIn();
 			};
 
-			OnAuthFailed = (conId, reason) => {
+			OnAuthFailed = (conId, code, reason) => {
 				LogOut();
 				return false;
 			};
@@ -308,7 +308,7 @@ namespace AutoyaFramework {
 
 					// other errors. 
 					// input original errorReason error as message.
-					var shouldRetry = OnAuthFailed(tokenConnectionId, errorReason);
+					var shouldRetry = OnAuthFailed(tokenConnectionId, failedCode, errorReason);
 					if (shouldRetry) {
 						Debug.LogError("なんかtoken取得からリトライすべきなんだけどちょっとまってな1");
 						// GetTokenThenLogin();
@@ -383,13 +383,11 @@ namespace AutoyaFramework {
 					/*
 						we should handling NOT 401(Unauthorized) result.
 					*/
-
-					Debug.LogError("failedConId:" + failedConId + " failedCode:" + failedCode + " failedReason:" + failedReason + " これが出た時にテストが失敗する = 停止するのがあれ。");
 					
 					// tokenはあったんだけど通信失敗とかで予定が狂ったケースか。
 					// tokenはあるんで、エラーわけを細かくやって、なんともできなかったら再チャレンジっていうコースな気がする。
 					
-					var shouldRetry = OnAuthFailed(loginConnectionId, errorReason);
+					var shouldRetry = OnAuthFailed(loginConnectionId, failedCode, errorReason);
 					if (shouldRetry) {
 						Debug.LogError("トークン取得、すぐに再開すべきかどうかは疑問。ちょっと時間おくとかがしたい。一定時間後に実行、というのがいいと思う。現状ではまだリトライしていない。");
 						// Login();
@@ -455,10 +453,10 @@ namespace AutoyaFramework {
 			Note that:this method is not pair of above "Auth_SetOnLoginSucceeded" method.
 
 		*/
-		public static void Auth_SetOnAuthFailed (Func<string, string, bool> onAuthFailed) {
-            autoya.OnAuthFailed = (conId, reason) => {
+		public static void Auth_SetOnAuthFailed (Func<int, string, bool> onAuthFailed) {
+            autoya.OnAuthFailed = (conId, code, reason) => {
 				autoya.LogOut();
-				return onAuthFailed(conId, reason);
+				return onAuthFailed(code, reason);
 			};
         }
 
@@ -477,7 +475,7 @@ namespace AutoyaFramework {
 
 			and this method will NOT BE FIRED when logout intentionally.
 		*/
-		private Func<string, string, bool> OnAuthFailed;
+		private Func<string, int, string, bool> OnAuthFailed;
 
 
 		

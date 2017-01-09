@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using Diag = System.Diagnostics;
 using UnityEngine;
-using UnityEditor;
 
 /**
 	MiyamasuTestRunner
@@ -19,6 +18,14 @@ using UnityEditor;
 namespace Miyamasu {
 	public class MiyamasuTestRunner {
 		public MiyamasuTestRunner () {}
+
+		private static Action<IEnumerator> mainThreadDispatcher;
+		private readonly Action onEnd;
+		
+		public MiyamasuTestRunner (Action<IEnumerator> newMainThreadDispatcher, Action newOnEnd) {
+			mainThreadDispatcher = newMainThreadDispatcher;
+			onEnd = newOnEnd;
+		}
 
 		private class TypeAndMedhods {
 			public Type type;
@@ -55,18 +62,16 @@ namespace Miyamasu {
 			}
 		}
 
-		public object lockObj = new object();
-
-		public IEnumerator RunTestsOnEditorMainThread () {
+		public void RunTestsOnEditorThread () {
 			var typeAndMethodInfos = Assembly.GetExecutingAssembly().GetTypes()
 				.Select(t => new TypeAndMedhods(t))
 				.Where(tAndMInfo => tAndMInfo.hasTests)
 				.ToArray();
-
 			
 			if (!typeAndMethodInfos.Any()) {
 				TestLogger.Log("no tests found. please set \"[MTest]\" attribute to method.", true);
-				yield break;
+				onEnd();
+				return;
 			}
 
 			var passed = 0;
@@ -76,8 +81,9 @@ namespace Miyamasu {
 			
 			var totalMethodCount = typeAndMethodInfos.Count() -1;
 			
-			// generate waitingThread for waiting asynchronous(=running on MainThread or other thread) ops on Not-MainThread.
+			// generate waitingThread for waiting asynchronous(=running on MainThread or other thread) ops.
 			Thread thread = null;
+
 			thread = new Thread(
 				() => {
 					var count = 0;
@@ -122,32 +128,22 @@ namespace Miyamasu {
 						}
 
 						TestLogger.Log("done tests of class:" + typeAndMethodInfo.type + ". classes:" + count + " of " + totalMethodCount, true);
-						
 						count++;
 					}
+					
+					TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
+					TestLogger.LogEnd();
+					
+					/*
+						run end on main thread.
+					*/
+					RunOnMainThread(onEnd);
 
 					thread.Abort();
 				}
 			);
-			
-
-			try {
-				thread.Start();
-			} catch (Exception e) {
-				TestLogger.Log("Miyamasu TestRunner error:" + e);
-			}
-			
-			yield return null;
-
-			while (true) {
-				if (!thread.IsAlive) break; 
-				yield return null;
-			}
-			
-			TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
-			TestLogger.LogEnd();			
+			thread.Start();
 		}
-
 
 		private void LogTestFailed (Exception e, string subLocation=null) {
 			var location = string.Empty;
@@ -181,10 +177,10 @@ namespace Miyamasu {
 			var waitingThread = new Thread(
 				() => {
 					resetEvent.Reset();
-					var endTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+					var endTick = (DateTime.Now + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 					
 					while (!isCompleted()) {
-						var current = DateTime.UtcNow.Ticks;
+						var current = DateTime.Now.Ticks;
 						
 						if (0 < timeoutSec && endTick < current) {
 							if (!string.IsNullOrEmpty(message)) {
@@ -211,27 +207,20 @@ namespace Miyamasu {
 		}
 
 		/**
-			Run action on UnityEditor's MainThread.
+			Run action on someone's thread.
 			let set [bool sync] = false if you want to execute action on MainThread but async.
 			default is sync.
 		*/
 		public void RunOnMainThread (Action invokee, bool @sync = true) {
-			UnityEditor.EditorApplication.CallbackFunction runner = null;
-			
 			var done = false;
 			
-			runner = () => {
-				// run only once.
-				EditorApplication.update -= runner;
-				if (invokee != null) invokee();
+			Action act = () => {
+				invokee();
 				done = true;
-				// 実際にインスタンスを作ってUpdateさせるモード、大差なかった。残念。
-				// var sr = new GameObject("test");
-				// var c = sr.AddComponent<CoroutineExecutor>();
-				// c.Set(invokee);
 			};
-			
-			EditorApplication.update += runner;
+
+			mainThreadDispatcher(new RunnerInstance().Runner(act));
+
 			if (@sync) {
 				WaitUntil(() => done, -1);
 			}
@@ -241,21 +230,30 @@ namespace Miyamasu {
 			IEnumerator version. continue running while IEnumerator is running.
 		*/
 		public void RunEnumeratorOnMainThread (IEnumerator invokee, bool @sync = true) {
-			UnityEditor.EditorApplication.CallbackFunction runner = null;
-			
 			var done = false;
 			
-			runner = () => {
-				var result = invokee.MoveNext();
-				if (!result) {
-					EditorApplication.update -= runner;
-					done = true;
-				}
+			Action act = () => {
+				done = true;
 			};
 			
-			EditorApplication.update += runner;
+			mainThreadDispatcher(new RunnerInstance().Runner(invokee, act));
+			
 			if (@sync) {
 				WaitUntil(() => done, -1);
+			}
+		}
+
+		private class RunnerInstance {
+			public IEnumerator Runner (Action act) {
+				act();
+				yield break;
+			}
+
+			public IEnumerator Runner (IEnumerator actEnum, Action done) {
+				while (actEnum.MoveNext()) {
+					yield return null;
+				}
+				done();
 			}
 		}
 
@@ -340,6 +338,13 @@ namespace Miyamasu {
 					}
 				}
 			}
+		}
+
+		/**
+			write log message into test log.
+		*/
+		public static void Log (string message) {
+			TestLogger.Log(message, true);
 		}
 	}
 
