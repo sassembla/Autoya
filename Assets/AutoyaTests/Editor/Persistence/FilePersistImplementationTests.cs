@@ -13,20 +13,14 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 
 	[MSetup] public void Setup () {
 		var loginDone = false;
-
+        
 		var dataPath = string.Empty;
 		RunOnMainThread(
 			() => {
 				Autoya.TestEntryPoint(dataPath);
-				Autoya.Auth_SetOnLoginSucceeded(
+				Autoya.Auth_SetOnAuthenticated(
 					() => {
 						loginDone = true;
-					}
-				);
-				Autoya.Auth_SetOnAuthFailed(
-					(conId, reason) => {
-						loginDone = false;
-						return false;
 					}
 				);
 			}

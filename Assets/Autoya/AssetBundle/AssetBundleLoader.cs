@@ -35,7 +35,8 @@ namespace AutoyaFramework.AssetBundles {
             this.list = list;
             
             /*
-                if flowInstance is set, use these http error handling. else, use default http error handling.
+                if flowInstance is set, use these http error handling. 
+                else, use default http error handling.
             */
             if (flowInstance != null) this.flowInstance = flowInstance as HandleErrorFlowClass;
             else this.flowInstance = new HandleErrorFlowClass();

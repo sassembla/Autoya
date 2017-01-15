@@ -14,7 +14,7 @@ namespace AutoyaFramework {
 		private HTTPConnection _autoyaHttp;
 
 		private void SetHTTPAuthorizedPart (string identity, string token) {
-
+			Debug.LogWarning("do nothing yet.");
 		}
 		
 		private Dictionary<string, string> GetAuthorizedAndAdditionalHeaders (Dictionary<string, string> additionalHeader=null, Func<Dictionary<string, string>, Dictionary<string, string>> customizer=null) {
@@ -77,99 +77,9 @@ namespace AutoyaFramework {
 			return headerDict;
 		}
 		
-		
 		/**
-			core feature of Autoya's status handling.
-
-			analyze connection errors and handle Autoya's status like login/logout.
-
-			many 
-				online/offline,
-				maintenaince/open,
-				login/logout,
-		*/
-		private void ErrorFlowHandling (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
-			/*
-				handle Autoya internal error.
-			*/
-			if (httpCode < 0) {
-				var internalErrorMessage = errorReason;
-				failed(connectionId, httpCode, internalErrorMessage);
-				return;
-			}
-
-			/*
-				UnityWebRequest handled internal error.
-			*/
-			if (httpCode == 0) {
-				Debug.LogError("httpCode = 0, misc errors. errorReason:" + errorReason);
-				var troubleMessage = errorReason;
-				failed(connectionId, httpCode, troubleMessage);
-				return;
-			}
+			autoya's error flow handler is usable from outside of Autoya class, for handling events via http codes.
 			
-			/*
-				fall-through handling area of Autoya's events.
-
-				this block NEVER fire succeeded/failed handler and never return controls from this block.
-				these events are possibly overlap.
-			*/
-			{
-				/*
-					detect maintenance response code or response header value.
-				*/
-				if (IsInMaintenance(httpCode, responseHeaders)) {
-					Debug.LogError("maintenance mechanism should be impl.");
-					// OnMaintenance();
-				}
-
-				/*
-					detect unauthorized response code or response header value.
-				*/
-				if (IsAuthFailed(httpCode, responseHeaders)) {
-					var unauthReason = BackyardSettings.HTTP_401_MESSAGE + errorReason;
-					var shouldRelogin = OnAuthFailed(connectionId, httpCode, unauthReason);
-					if (shouldRelogin) Login();
-				}
-			}
-			
-			// Debug.LogError("connectionId:" + connectionId + " httpCode:" + httpCode + " data:" + data);
-			
-			/*
-				pit falls for not 2XX.
-			*/
-			{
-				if (httpCode < 200) {
-					failed(connectionId, httpCode, errorReason);
-					return;
-				}
-
-				if (299 < httpCode) {
-					failed(connectionId, httpCode, errorReason);
-					return; 
-				}
-			}
-
-			/*
-				finally, connection is done as succeeded.
-			*/
-			succeeded(connectionId, data);
-		}
-		
-		
-		private bool IsInMaintenance (int httpCode, Dictionary<string, string> responseHeaders) {
-			if (httpCode == BackyardSettings.MAINTENANCE_CODE) return true;
-			return false;
-		}
-		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeaders) {
-			if (httpCode == 401) return true;
-			return false;
-		}
-
-
-		/**
-			autoya's error flow handler is able to use outside of Autoya, for handling events via http codes.
-
 			input HTTP success/fail handler -> emit Autoya flow on HTTP result -> running Autoya flow then fire success/fail handler.
 			
 			e,g,
@@ -198,9 +108,10 @@ namespace AutoyaFramework {
 				Commit(connectionEnum);
 		*/
 		public static void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
-			autoya.ErrorFlowHandling(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
+			autoya.HttpResponseHandling(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
 		}
 
+		
 		/*
 			public HTTP APIs.
 		*/
@@ -233,10 +144,10 @@ namespace AutoyaFramework {
 					headers,
 					url,
 					(conId, code, responseHeaders, resultData) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
 					},
 					(conId, code, reason, responseHeaders) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
 					},
 					timeoutSec
 				)
@@ -275,10 +186,10 @@ namespace AutoyaFramework {
 					url,
 					data,
 					(conId, code, responseHeaders, resultData) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
 					},
 					(conId, code, reason, responseHeaders) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
 					},
 					timeoutSec
 				)
@@ -317,10 +228,10 @@ namespace AutoyaFramework {
 					url,
 					data,
 					(conId, code, responseHeaders, resultData) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
 					},
 					(conId, code, reason, responseHeaders) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
 					},
 					timeoutSec
 				)
@@ -358,10 +269,10 @@ namespace AutoyaFramework {
 					headers,
 					url,
 					(conId, code, responseHeaders, resultData) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
 					},
 					(conId, code, reason, responseHeaders) => {
-						autoya.ErrorFlowHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
 					},
 					timeoutSec
 				)

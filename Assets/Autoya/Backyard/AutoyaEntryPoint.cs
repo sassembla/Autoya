@@ -2,14 +2,13 @@
 
 /**
 	Autoya framework entry point.
-	This method will be called from Unity when Application started running.
-	ignite before all "Awake" handler.
+	This method will be called from Unity when the App starts running.
 */
 namespace AutoyaFramework {
     public partial class Autoya : IHTTPErrorFlow {
 		private static Autoya autoya;
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] private static void EntryPoint () {
-			autoya = new Autoya(Application.dataPath);
+			autoya = new Autoya(Application.persistentDataPath);
 		}
 		
 		#if UNITY_EDITOR

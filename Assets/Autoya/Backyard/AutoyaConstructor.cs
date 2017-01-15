@@ -1,9 +1,10 @@
 using UnityEngine;
 using AutoyaFramework.Connections.HTTP;
 using AutoyaFramework.Persistence.Files;
+using AutoyaFramework.Settings.Auth;
 
 /**
-	main behaviour implementation of Autoya.
+	constructor implementation of Autoya.
 */
 namespace AutoyaFramework {
     public partial class Autoya {
@@ -15,17 +16,16 @@ namespace AutoyaFramework {
 		*/
 		private class AutoyaParameters {
 			public string _app_version;
-			public string _asset_version;
+			public string _assets_version;
 			
 			public string _buildNumber;
 		}
-			
-		private AutoyaParameters _parameters;
 		
+
 		private Autoya (string basePath="") {
-			// Debug.LogWarning("autoya initialize start.");
+			// Debug.LogWarning("autoya initialize start. basePath:" + basePath);
 			
-			if (Application.isPlaying) { 
+			if (Application.isPlaying) {// create game object for Autoya.
 				var go = GameObject.Find("AutoyaMainthreadDispatcher");
 				if (go == null) {
 					go = new GameObject("AutoyaMainthreadDispatcher");
@@ -34,12 +34,10 @@ namespace AutoyaFramework {
 				} else {
 					this.mainthreadDispatcher = go.GetComponent<AutoyaMainThreadDispatcher>();
 				}
-			} else {
+			} else {// create editor runnner for Autoya.
 				this.mainthreadDispatcher = new EditorUpdator();
 			}
 			
-			_parameters = new AutoyaParameters();
-
 			_autoyaFilePersistence = new FilePersistence(basePath);
 
 			_autoyaHttp = new HTTPConnection();
@@ -49,18 +47,15 @@ namespace AutoyaFramework {
 				asset_versionはAssetsListに組み込まれてるんで、それを読みだして云々、っていう感じにできる。
 			*/
 			
-			// authの状態を取得する、、そのためのユーティリティは必要かなあ、、まあこのクラス内で良い気がするな。
-			// ログインが終わってるかどうかっていうのでなんか判断すれば良いのではっていう。
-			// ログインが成功した記録があれば、そのトークンを使って接続を試みる。
-			// あれ、、試みるだけなら、token読めたらログイン完了っていう扱いでいいのでは？　って思ったけど
-			// 毎回なんか初回通信を蹴られるの面倒だからやっぱ通信しておこうねっていう気持ちになった。
-			
-			/*
-				初期化機構を起動する
-			*/
-			this.InitializeTokenAuth();
-		}
+			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+			var isFirstBoot = tokenCandidatePaths.Length == 0;
 
+			/*
+				start authentication.
+			*/
+			Authenticate(isFirstBoot);
+		}
+        
 
 		public static int BuildNumber () {
 			return -1;
@@ -70,15 +65,4 @@ namespace AutoyaFramework {
 			autoya.mainthreadDispatcher.Destroy();
 		}
     }
-
-
-	public enum AutoyaErrorFlowCode {
-		Autoya_Logout,
-		Autoya_Maintenance,
-		Autoya_ShouldUpdateApp,
-		Autoya_PleaseUpdateApp,
-		Autoya_UpdateAssets,
-		StorageChecker_NoSpace,
-		Connection_Offline
-	}
 }

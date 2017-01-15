@@ -3,27 +3,39 @@ using System.Collections;
 using AutoyaFramework;
 using System;
 
+/*
+	basic usage of autoya.
+	authentication sequence is running in background. nothing to do for login.
+*/
 public class BasicUsage : MonoBehaviour {
 	
-	void Awake () {
-		var loggedIn = Autoya.Auth_IsLoggedIn();
-		
-		Action Login = () => {
-			Debug.Log("login is done.");
+	IEnumerator Start () {
+		/*
+			authentication is running.
+			wait finish of the authentication.
+		*/
+		var authenticated = false;
+
+		Action done = () => {
+			authenticated = true;
 		};
 
-		Autoya.Auth_SetOnLoginSucceeded(Login);
-	}
-	// Use this for initialization
-	IEnumerator Start () {
-		while (!Autoya.Auth_IsLoggedIn()) {
+		/*
+			set the action to be called when authentication succeeds.
+		*/
+		Autoya.Auth_SetOnAuthenticated(done);
+
+		while (!authenticated) {
 			yield return null;
 		}
-		Debug.Log("logged in!");
+
+		Debug.Log("login is done! welcome to Autoya.");
 	}
-	
-	// Update is called once per frame
+
 	void Update () {
-	
+		// let's type "Autoya." ,
+		// maybe autocompletion tells you something luckey.
+
+		// Autoya.
 	}
 }

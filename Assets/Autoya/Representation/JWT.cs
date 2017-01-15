@@ -27,7 +27,7 @@ namespace AutoyaFramework.Representation.JWT {
             var headerStr = datas[0];
             var payloadStr = datas[1];
             var signature = datas[2];
-
+            
             var generatedSignatureBytes = SHA_2.Sha256Bytes(headerStr + "." + payloadStr, request);
             var encodedSignature = Base64.Base64.FromBytes(generatedSignatureBytes);
             var uppaddedEncodedSignature = Base64.Base64.Unpadded(encodedSignature);
