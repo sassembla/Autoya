@@ -1,12 +1,27 @@
 using System;
 using System.Collections;
-using UnityEngine;
+using System.Collections.Generic;
 
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundlePreloader {
         private readonly string urlBase;
-        public AssetBundlePreloader (string urlBase) {
+        private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+            if (200 <= httpCode && httpCode < 299) {
+                succeeded(connectionId, data);
+                return;
+            }
+            failed(connectionId, httpCode, errorReason);
+        }
+        public AssetBundlePreloader (string urlBase, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
             this.urlBase = urlBase;
+
+            if (httpResponseHandlingDelegate == null) {
+                this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
+            } else {
+                this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
+            }
         }
 
         public IEnumerator Preload (string preloadKey, Action<string> done) {

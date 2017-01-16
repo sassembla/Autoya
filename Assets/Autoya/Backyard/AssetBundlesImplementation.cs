@@ -3,10 +3,9 @@ using AutoyaFramework.AssetBundles;
 using UnityEngine;
 
 namespace AutoyaFramework {
-	public partial class Autoya : IHTTPErrorFlow {
+	public partial class Autoya {
 
         private const string basePath = "まだセットされてない。APIとかを鑑みるに、Settingsにあるといいと思う。リスト取得、preloadリスト取得、assetBundle取得の3種。";
-
 
         /*
             Downloader
@@ -37,7 +36,7 @@ namespace AutoyaFramework {
 			// 	failed();
 			// }
 
-            autoya._assetBundleLoader = new AssetBundleLoader(path, list, autoya);// 仮のリストの更新API。実際に使うとしたら、内部から。
+            autoya._assetBundleLoader = new AssetBundleLoader(path, list, autoya.httpResponseHandlingDelegate);// 仮のリストの更新API。実際に使うとしたら、内部から。
         }
 
         public static void AssetBundle_LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoader.AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
@@ -49,7 +48,7 @@ namespace AutoyaFramework {
 			// }
 
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya);
+                autoya._assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpResponseHandlingDelegate);
             }
             autoya.mainthreadDispatcher.Commit(
                 autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)
@@ -57,7 +56,7 @@ namespace AutoyaFramework {
         }
         public static void AssetBundle_UnloadAllAssets () {
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya);
+                autoya._assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpResponseHandlingDelegate);
             }
             autoya._assetBundleLoader.UnloadAllAssetBundles();
         }

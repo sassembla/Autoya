@@ -17,6 +17,7 @@ namespace AutoyaFramework {
 		private Action onAuthenticated = () => {};
 
 		private void Authenticate (bool isFirstBoot) {
+			this.httpResponseHandlingDelegate = HttpResponseHandling;
 
 			Action onLogonSucceeded = () => {
 				onAuthenticated();
@@ -426,8 +427,6 @@ namespace AutoyaFramework {
 			}
 		}
 
-
-
 		/**
 			Autoyaのhttpエラーハンドリングのコアメソッド。
 
@@ -509,6 +508,8 @@ namespace AutoyaFramework {
 			succeeded(connectionId, data);
 		}
 
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed);
+		public HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 		
 		/**
 			received 401 response code from server.

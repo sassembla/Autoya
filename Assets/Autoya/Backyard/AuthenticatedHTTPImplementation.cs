@@ -77,41 +77,6 @@ namespace AutoyaFramework {
 			return headerDict;
 		}
 		
-		/**
-			autoya's error flow handler is usable from outside of Autoya class, for handling events via http codes.
-			
-			input HTTP success/fail handler -> emit Autoya flow on HTTP result -> running Autoya flow then fire success/fail handler.
-			
-			e,g,
-				// connection id, this is useful for find identity of connection.
-				var newConnectionId = "myConnectionForAPI_X_" + Guid.NewGuid().ToString();
-
-				//
-				// handlers for 
-				//
-				Action<string, string> succeede = (conId, b) => {};
-				Action<string, int, string> faile = (conId, code, reason) => {};
-
-				// call http -> set Autoya.HandleErrorFlow to it's result block. both success and fail.
-				var connectionEnum = new HTTPConnection().Get(
-					newConnectionId,
-					null,
-					"https://somewhere/api",
-					(conId, code, respHeaders, result) => {
-						Autoya.HandleErrorFlow(conId, respHeaders, code, result, succeede, faile);
-					},
-					(conId, code, reason, respHeaders) => {
-						Autoya.HandleErrorFlow(conId, respHeaders, code, reason, succeede, faile);
-					}
-				);
-
-				Commit(connectionEnum);
-		*/
-		public static void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
-			autoya.HttpResponseHandling(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
-		}
-
-		
 		/*
 			public HTTP APIs.
 		*/

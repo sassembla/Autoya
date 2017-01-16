@@ -16,30 +16,29 @@ namespace AutoyaFramework.AssetBundles {
             FailedToLoadDependentBundles
         }
 
-        private uint ASSETBUNDLE_FIXED_VERSION = 1;
+        private uint ASSETBUNDLE_FIXED_VERSION = 1;// see http://sassembla.github.io/Public/2015:02:04%2012-47-46/2015:02:04%2012-47-46.html
         private readonly string assetDownloadBasePath;
         private readonly AssetBundleList list;
 
-        private class HandleErrorFlowClass : IHTTPErrorFlow {
-            // define nothing. use default error handling.
+        private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+            if (200 <= httpCode && httpCode < 299) {
+                succeeded(connectionId, data);
+                return;
+            }
+            failed(connectionId, httpCode, errorReason);
         }
 
-        private readonly HandleErrorFlowClass flowInstance;
-        
-        private void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
-            flowInstance.HandleErrorFlow(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
-        }
-
-        public AssetBundleLoader (string basePath, AssetBundleList list, IHTTPErrorFlow flowInstance=null) {
+        public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
             this.assetDownloadBasePath = basePath;
             this.list = list;
             
-            /*
-                if flowInstance is set, use these http error handling. 
-                else, use default http error handling.
-            */
-            if (flowInstance != null) this.flowInstance = flowInstance as HandleErrorFlowClass;
-            else this.flowInstance = new HandleErrorFlowClass();
+            if (httpResponseHandlingDelegate == null) {
+                this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
+            } else {
+                this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
+            }
 
             /*
                 construct assetName - AssetBundleName dictionary for fast loading.
@@ -301,10 +300,10 @@ namespace AutoyaFramework.AssetBundles {
                 ASSETBUNDLE_FIXED_VERSION,
                 crc, 
                 (conId, code, responseHeader, downloadedAssetBundle) => {
-                    HandleErrorFlow(connectionId, responseHeader, code, downloadedAssetBundle, string.Empty, succeeded, downloadFailed);
+                    httpResponseHandlingDelegate(connectionId, responseHeader, code, downloadedAssetBundle, string.Empty, succeeded, downloadFailed);
                 }, 
                 (conId, code, reason, responseHeader) => {
-                    HandleErrorFlow(connectionId, responseHeader, code, string.Empty, reason, succeeded, downloadFailed);
+                    httpResponseHandlingDelegate(connectionId, responseHeader, code, string.Empty, reason, succeeded, downloadFailed);
                 },
                 timeoutTick
             );

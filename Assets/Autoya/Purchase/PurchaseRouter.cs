@@ -14,15 +14,7 @@ using UnityEngine.Purchasing;
 */
 namespace AutoyaFramework.Purchase {
     public class PurchaseRouter : IStoreListener {
-        private class HandleErrorFlowClass : IHTTPErrorFlow {
-            // define nothing. use default error handling.
-        }
-
-        private readonly HandleErrorFlowClass flowInstance;
         
-        private void HandleErrorFlow (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
-            flowInstance.HandleErrorFlow(connectionId, responseHeaders, httpCode, data, errorReason, succeeded, failed);
-        }
         
         [Serializable] public struct ProductInfo {
             [SerializeField] public string productId;
@@ -97,6 +89,16 @@ namespace AutoyaFramework.Purchase {
 
         private Action readyPurchase;
         private Action<PurchaseError, string> failedToReady;
+
+        private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+            if (200 <= httpCode && httpCode < 299) {
+                succeeded(connectionId, data);
+                return;
+            }
+            failed(connectionId, httpCode, errorReason);
+        }
         
         /**
             constructor.
@@ -107,10 +109,10 @@ namespace AutoyaFramework.Purchase {
             Func<string, Dictionary<string, string>> requestHeader func is used to get request header from outside of this feature. 
             by default it returns empty headers.
 
-            also you can modify http error handling via flowInstance.
+            also you can modify http error handling via httpResponseHandlingDelegate.
             by default, http response code 200 ~ 299 is treated as success, and other codes are treated as network error.
          */
-        public PurchaseRouter (Action onPurchaseReady, Action<PurchaseError, string> onPurchaseReadyFailed, Action<IEnumerator> newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, IHTTPErrorFlow flowInstance=null) {
+        public PurchaseRouter (Action onPurchaseReady, Action<PurchaseError, string> onPurchaseReadyFailed, Action<IEnumerator> newEnumRunner=null, Func<string, Dictionary<string, string>> newRequestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
             /*
                 set store kind by platform.
             */
@@ -145,13 +147,10 @@ namespace AutoyaFramework.Purchase {
 
             this.http = new HTTPConnection();
             
-            /*
-                if flowInstance is set, use these http error handling. else, use default http error handling.
-            */
-            if (flowInstance != null) {
-                this.flowInstance = flowInstance as HandleErrorFlowClass;
+            if (httpResponseHandlingDelegate == null) {
+                this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             } else {
-                this.flowInstance = new HandleErrorFlowClass();
+                this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
             }
 
             Reload(
@@ -571,10 +570,10 @@ namespace AutoyaFramework.Purchase {
                 header,
                 url,
                 (conId, code, respHeaders, result) => {
-                    flowInstance.HandleErrorFlow(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                    httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
                 },
                 (conId, code, reason, respHeaders) => {
-                    flowInstance.HandleErrorFlow(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                    httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
                 },
                 10.0
             );
@@ -594,10 +593,10 @@ namespace AutoyaFramework.Purchase {
                 url,
                 data,
                 (conId, code, respHeaders, result) => {
-                    flowInstance.HandleErrorFlow(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                    httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
                 },
                 (conId, code, reason, respHeaders) => {
-                    flowInstance.HandleErrorFlow(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                    httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
                 },
                 10.0
             );
