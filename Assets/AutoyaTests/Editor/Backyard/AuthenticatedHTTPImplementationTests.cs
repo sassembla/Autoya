@@ -27,7 +27,6 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		var authorized = false;
 		Action onMainThread = () => {
 			var dataPath = string.Empty;
-			
 			Autoya.TestEntryPoint(dataPath);
 			
 			Autoya.Auth_SetOnAuthenticated(
@@ -45,6 +44,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			5, 
 			"failed to auth."
 		);
+		
 		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
 	}
 	
@@ -59,7 +59,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			(string conId, string resultData) => {
 				result = "done!:" + resultData;
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				Assert(false, "failed. code:" + code + " reason:" + reason);
 			}
 		);
@@ -74,10 +74,10 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		var result = string.Empty;
 		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/headers", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				result = resultData;
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				Assert(false, "failed. code:" + code + " reason:" + reason);
 			},
 			new Dictionary<string, string>{
@@ -96,10 +96,10 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		
 		var connectionId = Autoya.Http_Get(
 			"https://httpbin.org/status/404", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				Assert(false, "unexpected succeeded. resultData:" + resultData);
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				resultCode = code;
 			}
 		);
@@ -135,7 +135,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		// 	(string conId, string resultData) => {
 		// 		Assert(false, "unexpected succeeded. resultData:" + resultData);
 		// 	},
-		// 	(string conId, int code, string reason) => {
+		// 	(conId, code, reason) => {
 		// 		// do nothing.
 		// 	}
 		// );
@@ -161,7 +161,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			(string conId, string resultData) => {
 				Assert(false, "got success result.");
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				failedCode = code;
 				timeoutError = reason;
 			},
@@ -187,7 +187,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			(string conId, string resultData) => {
 				result = "done!:" + resultData;
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				// do nothing.
 			}
 		);
@@ -210,7 +210,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	// 			TestLogger.Log("resultData:" + resultData);
 	// 			result = resultData;
 	// 		},
-	// 		(string conId, int code, string reason) => {
+	// 		(conId, code, reason) => {
 	// 			TestLogger.Log("fmmmm,,,,, AutoyaHTTPPostWithAdditionalHeader failed conId:" + conId + " reason:" + reason);
 	// 			// do nothing.
 	// 		},
@@ -237,7 +237,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			(string conId, string resultData) => {
 				// do nothing.
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				resultCode = code;
 			}
 		);
@@ -274,7 +274,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		// 	(string conId, string resultData) => {
 		// 		// do nothing.
 		// 	},
-		// 	(string conId, int code, string reason) => {
+		// 	(conId, code, reason) => {
 		// 		// do nothing.
 		// 	}
 		// );
@@ -296,10 +296,10 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		var connectionId = Autoya.Http_Post(
 			"https://httpbin.org/delay/1",
 			"data",
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				Assert(false, "got success result.");
 			},
-			(string conId, int code, string reason) => {
+			(conId, code, reason, autoyaStatus) => {
 				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. code:" + code + " reason:" + reason);
 				timeoutError = reason;
 			},

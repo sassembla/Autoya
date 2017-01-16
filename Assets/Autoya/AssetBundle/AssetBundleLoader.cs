@@ -22,12 +22,12 @@ namespace AutoyaFramework.AssetBundles {
 
         private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
-        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             if (200 <= httpCode && httpCode < 299) {
                 succeeded(connectionId, data);
                 return;
             }
-            failed(connectionId, httpCode, errorReason);
+            failed(connectionId, httpCode, errorReason, new Autoya.AutoyaStatus());
         }
 
         public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
@@ -281,7 +281,7 @@ namespace AutoyaFramework.AssetBundles {
                 assetBundleDict[bundleName] = downloadedAssetBundle as AssetBundle;
             };
 
-            Action<string, int, string> downloadFailed = (conId, code, reason) => {
+            Action<string, int, string, Autoya.AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
                 // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
 
                 Debug.LogError("failed to download AssetBundle. code:" + code + " reason:" + reason);

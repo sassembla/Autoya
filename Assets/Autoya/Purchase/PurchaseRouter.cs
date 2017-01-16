@@ -92,12 +92,12 @@ namespace AutoyaFramework.Purchase {
 
         private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
-        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             if (200 <= httpCode && httpCode < 299) {
                 succeeded(connectionId, data);
                 return;
             }
-            failed(connectionId, httpCode, errorReason);
+            failed(connectionId, httpCode, errorReason, new Autoya.AutoyaStatus());
         }
         
         /**
@@ -186,7 +186,7 @@ namespace AutoyaFramework.Purchase {
                     // これ、実機でも複数回よばれてOKなのかな、、
                     ReadyIAPFeature(productInfos);
                 },
-                (conId, code, reason) => {
+                (conId, code, reason, autoyaStatus) => {
                     Debug.LogError("failed, code:" + code + " reason:" + reason);
                     routerState = RouterState.NotReady;
                     failedToReady(PurchaseError.UnknownError, reason);
@@ -311,7 +311,7 @@ namespace AutoyaFramework.Purchase {
                     
                     TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
                 },
-                (conId, code, reason) => {
+                (conId, code, reason, autoyaStatus) => {
                     Debug.LogWarning("ふおーーー場合分けエラー出すの忘れてた、怖い。conId:" + conId + " code:" + code + " reason:" + reason);
                     purchaseFailed(purchaseId, PurchaseError.TicketGetError, "failed to purchase.");
                     routerState = RouterState.PurchaseReady;
@@ -409,7 +409,7 @@ namespace AutoyaFramework.Purchase {
                             }
                             routerState = RouterState.PurchaseReady;
                         },
-                        (conId, code, reason) => {
+                        (conId, code, reason, autoyaStatus) => {
                             // 通信が失敗したら、アイテムがdeployできてないので、再度送り出す必要がある。自動リトライが必須。
                             Debug.LogError("failed to deploy. code:" + code + " reason:" + reason);
                         }
@@ -446,7 +446,7 @@ namespace AutoyaFramework.Purchase {
                     var product = e.purchasedProduct;
                     controller.ConfirmPendingPurchase(e.purchasedProduct);
                 },
-                (conId, code, reason) => {
+                (conId, code, reason, autoyaStatus) => {
                     // systems do this process again automatically.
                     // no need to do something.
                 }
@@ -549,7 +549,7 @@ namespace AutoyaFramework.Purchase {
                 (conId, responseData) => {
                     // do nothing.
                 },
-                (conId, code, errorReason) => {
+                (conId, code, errorReason, autoyaStatus) => {
                     // do nothing.
                 }
             );
@@ -559,7 +559,7 @@ namespace AutoyaFramework.Purchase {
         /*
             http functions for purchase.
         */
-        private void HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
+        private void HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             var header = this.requestHeader(string.Empty);
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
@@ -581,7 +581,7 @@ namespace AutoyaFramework.Purchase {
             this.runEnumerator(httpGetEnum);
         }
     
-        private void HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
+        private void HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             var header = this.requestHeader(data);
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);

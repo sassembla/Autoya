@@ -18,6 +18,10 @@ namespace AutoyaFramework {
 		public static void TestEntryPoint (string basePath) {
 			autoya = new Autoya(basePath);
 		}
+
+		public static bool forceFailFirstBoot = false;
+		public static bool forceMaintenance = false;
+		
 		#endif
 	}
 }

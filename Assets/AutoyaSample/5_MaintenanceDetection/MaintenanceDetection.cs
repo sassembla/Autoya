@@ -18,7 +18,7 @@ public class MaintenanceDetection : MonoBehaviour {
         }
 
         // test method for set fake maintenance mode.
-        Autoya.Maintenance_TestStartFakeMaintenance(true);
+        Autoya.forceMaintenance = true;
 
         /*
             ready for handle maintenance mode.
@@ -35,7 +35,7 @@ public class MaintenanceDetection : MonoBehaviour {
             (conId, data) => {
                 // do nothing.
             },
-            (conId, code, reason) => {
+            (conId, code, reason, autoyaStatus) => {
                 Debug.Log("connection failed.");
             }
         );

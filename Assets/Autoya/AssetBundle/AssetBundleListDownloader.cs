@@ -31,12 +31,12 @@ namespace AutoyaFramework.AssetBundles {
         private readonly string basePath;
         private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
-        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             if (200 <= httpCode && httpCode < 299) {
                 succeeded(connectionId, data);
                 return;
             }
-            failed(connectionId, httpCode, errorReason);
+            failed(connectionId, httpCode, errorReason, new Autoya.AutoyaStatus());
         }
 
         public AssetBundleListDownloader (string basePath, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {

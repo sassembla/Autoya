@@ -3,7 +3,7 @@ namespace AutoyaFramework.Settings.Auth {
         /*
             sample urls and connectionIds.
         */
-        public const string AUTH_URL_BOOT = "https://httpbin.org/post";//"http://localhost:8082/admin/main"
+        public const string AUTH_URL_BOOT = "https://httpbin.org/post";
         public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";
 		
         public const string AUTH_URL_REFRESH_TOKEN = "https://httpbin.org/post";
@@ -17,6 +17,8 @@ namespace AutoyaFramework.Settings.Auth {
 
 		public const int AUTH_FIRSTBOOT_MAX_RETRY_COUNT = 3;
 		public const int AUTH_TOKENREFRESH_MAX_RETRY_COUNT = 3;
+
+        public const int AUTH_HTTP_CODE_UNAUTHORIZED = 401;
 
         /*
             sample key.

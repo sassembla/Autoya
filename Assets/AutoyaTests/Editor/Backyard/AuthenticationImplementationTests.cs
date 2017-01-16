@@ -51,117 +51,82 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	[MTest] public void WaitDefaultAuthorize () {
 		Assert(Autoya.Auth_IsAuthenticated(), "not yet logged in.");
 	}
+
+	[MTest] public void HandleBootAuthFailed () {
+		DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+		
+		var authorized = false;
+		Action onMainThread = () => {
+
+			Autoya.forceFailFirstBoot = true;
+
+			var dataPath = string.Empty;
+			Autoya.TestEntryPoint(dataPath);
+
+			Autoya.Auth_SetOnAuthenticated(
+				() => {
+					authorized = true;
+				}
+			);
+		};
+
+		RunOnMainThread(onMainThread);
+		
+		WaitUntil(
+			() => {
+				return authorized;
+			},
+			5,
+			"timeout in setup."
+		);
+
+		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
+	}
 	
 	[MTest] public void HandleAccidentialAuthErrorThenManualLoginSucceeded () {
-		Debug.LogError("refreshTokenが走るテスト。まだ書けてない。authenImplにリトライエラー時のハンドラを書かねば。");
-		// var fakeReason = string.Empty;
-		// Autoya.Auth_SetOnAuthFailed(
-		// 	(conId, reason) => {
-		// 		fakeReason = reason;
-		// 		return false;
-		// 	}
-		// );
-		
-		// // emit fake logout
-		// Autoya.Auth_Test_CreateAuthError();
-
-		// WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5);
-
-		// var authorized = false;
-		// Autoya.Auth_SetOnAuthenticated(
-		// 	() => {
-		// 		authorized = true;
-		// 	}
-		// );
-
-		// Autoya.Auth_AttemptAuthentication();
-		
-		// WaitUntil(() => authorized, 5);
-	}
-	
-
-	[MTest] public void HandleAccidentialLogoutThenAutoReloginSucceeded () {
-		Debug.LogError("refreshTokenが走るテスト2。まだ書けてない。");
-		// var fakeReason = string.Empty;
-		// Autoya.Auth_SetOnAuthFailed(
-		// 	(conId, reason) => {
-		// 		fakeReason = reason;
-		// 		return true;// auto relogin
-		// 	}
-		// );
-		
-		// var authorized = false;
-		// Autoya.Auth_SetOnLoginSucceeded(
-		// 	() => {
-		// 		authorized = true;
-		// 	}
-		// );
-
-		// // emit fake-accidential logout
-		// Autoya.Auth_Test_CreateAuthError();
-
-		// /*
-		// 	loggedIn -> fake 401 request -> logout -> autoLogin -> loggedIn succeed.
-		// */
-
-		// WaitUntil(
-		// 	() => {
-		// 		return (!string.IsNullOrEmpty(fakeReason) && authorized);
-		// 	},
-		// 	3,
-		// 	"timeout."
-		// );
-	}
-
-	// [MTest] public void HandleAccidentialLoginThenFailedAgain () {
+		Debug.LogError("まだ書いてない");
 	// 	var fakeReason = string.Empty;
-	// 	Autoya.Auth_SetOnAuthFailed(
-	// 		(conId, reason) => {
+	// 	Autoya.Auth_SetOnRefreshAuthFailed(
+	// 		(code, reason) => {
 	// 			fakeReason = reason;
-	// 			return true;
 	// 		}
 	// 	);
 		
-	// 	// emit fake-accidential logout
-	// 	Autoya.Auth_Test_AccidentialLogout();
+	// 	// emit fake 401 response.
+	// 	Autoya.Auth_Test_CreateAuthError();
 
-	// 	/*
-	// 		fake request -> received 401 response -> logout will be called -> OnAuthFailed called.
-	// 	*/
-
-	// 	if (!WaitUntil(() => !string.IsNullOrEmpty(fakeReason), 5)) return false;
-
-	// 	/*
-	// 		re-login feature is attempt. this time, it should be fail. keep waiting.
-	// 	*/
-
-	// 	var unauthorized = false;
-	// 	Autoya.Auth_SetOnAuthFailed(
-	// 		(conId, reason) => {
-	// 			unauthorized = true;
-	// 			return false;
+	// 	var authorized = false;
+	// 	Autoya.Auth_SetOnAuthenticated(
+	// 		() => {
+	// 			authorized = true;
 	// 		}
 	// 	);
 
-		// ここんとこの方法が気にくわない。
-	// 	// intentionally goto fail again.
-	// 	Autoya.Auth_Test_AccidentialLogout();
+	// 	WaitUntil(() => !string.IsNullOrEmpty(fakeReason) && authorized, 5);
 
+	// 	/*
+	// 		明示的にrefreshAuthのAttemptを行うシーンをどう用意しようかな、、
+	// 		・authErrorだす
+	// 		・retryに失敗する
+	// 		という条件が必要で、これはなかなか、、そこまでいかないと、
+	// 		「リトライしますか？」という画面が出てこない。
+
+	// 		他の経路として、「bootAuthが失敗する」「refreshAuthが失敗する」という経路も必要な気がする。
+	// 		Attemptはbootにもrefreshにも対応しているので、
+	// 	*/
+	}
+
+	
+	[MTest] public void IntentionalLogout () {
+		Debug.LogError("someone needs logout? part1");
+		// Autoya.Auth_Logout();
 		
+		// var loggedIn = Autoya.Auth_IsAuthenticated();
+		// Assert(!loggedIn, "state does not match.");
+	}
 
-	// 	if (!WaitUntil(() => unauthorized, 5)) return false;
-	// }
-
-	// logout feature is dead.
-	// [MTest] public void IntentionalLogout () {
-	// 	Autoya.Auth_Logout();
-		
-	// 	var loggedIn = Autoya.Auth_IsAuthenticated();
-	// 	Assert(!loggedIn, "state does not match.");
-	// }
-
-	[MTest] public void IntentionalLogoutThenLoginWillBeSucceeded () {
-		Debug.LogError("refreshTokenが走るテスト3。まだ書けてない。");
+	[MTest] public void IntentionalLogoutThenRefreshAuthWillBeSucceeded () {
+		Debug.LogError("someone needs logout? part2");
 		// Autoya.Auth_Logout();
 		// var auth = false;
 		// Autoya.Auth_SetOnLoginSucceeded(

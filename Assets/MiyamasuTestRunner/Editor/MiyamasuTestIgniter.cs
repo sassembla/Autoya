@@ -23,6 +23,7 @@ namespace Miyamasu {
 	*/
     [InitializeOnLoad] public class MiyamasuTestIgniter {
 		static MiyamasuTestIgniter () {
+
 			/*
 				cloudbuild is not supported yet. it's hard to run asynchronous tests in NUnit.
 				because NUnit uses main thread, and asynchronous test requires sub-thread.

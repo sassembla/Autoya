@@ -15,25 +15,30 @@ namespace AutoyaFramework {
 		private AuthRouter _autoyaAuthRouter;
 
 		private Action onAuthenticated = () => {};
+		private Action<int, string> onBootAuthFailed = (code, reason) => {};
+		private Action<int, string> onRefreshAuthFailed = (code, reason) => {};
 
 		private void Authenticate (bool isFirstBoot) {
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
 
-			Action onLogonSucceeded = () => {
+			Action onAuthSucceeded = () => {
 				onAuthenticated();
 			};
-			Action onLogonRetryFailed = () => {
-				Debug.LogError("メンテナンス以外の理由で、初回起動 or refreshTokenに3連続で失敗した。ので、なんかお知らせを出す必要がある。「時間をあけてアクセスしてね」とかそのへん。");
+			Action<int, string> onBootAuthenticationRetryFailed = (code, reason) => {
+				onBootAuthFailed(code, reason);
+			};
+			Action<int, string> onRefreshAuthenticationRetryFailed = (code, reason) => {
+				onRefreshAuthFailed(code, reason);
 			};
 
 			_autoyaAuthRouter = new AuthRouter(
 				this.mainthreadDispatcher,
 				
-				onLogonSucceeded,
-				onLogonRetryFailed,
+				onAuthSucceeded,
+				onBootAuthenticationRetryFailed,
 				
-				onLogonSucceeded,
-				onLogonRetryFailed,
+				onAuthSucceeded,
+				onRefreshAuthenticationRetryFailed,
 
 				isFirstBoot
 			);
@@ -68,6 +73,8 @@ namespace AutoyaFramework {
 		*/
 		private class AuthRouter {
 			private enum AuthState {
+				None,
+
 				Booting,
 				BootFailed,
 				
@@ -79,15 +86,15 @@ namespace AutoyaFramework {
 
 			private readonly ICoroutineUpdater mainthreadDispatcher;
 
-			private AuthState authState = AuthState.Booting;
+			private AuthState authState = AuthState.None;
 			
 			private Action onBootSucceeded;
-			private Action onBootFailed;
+			private Action<int, string> onBootFailed;
 
 			private Action onRefreshSucceeded;
-			private Action onRefreshFailed;
+			private Action<int, string> onRefreshFailed;
 			
-			public AuthRouter (ICoroutineUpdater mainthreadDispatcher, Action onBootSucceeded, Action onBootFailed, Action onRefreshSucceeded, Action onRefreshFailed, bool isFirstBoot) {
+			public AuthRouter (ICoroutineUpdater mainthreadDispatcher, Action onBootSucceeded, Action<int, string> onBootFailed, Action onRefreshSucceeded, Action<int, string> onRefreshFailed, bool isFirstBoot) {
 				this.mainthreadDispatcher = mainthreadDispatcher;
 				
 				// set boot handler.
@@ -103,71 +110,80 @@ namespace AutoyaFramework {
 					onBootSucceeded();
 					return;
 				}
-				
+
 				// start first boot.
-				FirstBoot();
+				authState = AuthState.Booting;
+				mainthreadDispatcher.Commit(FirstBoot());
 			}
 			
 			public bool IsLogon () {
 				return authState == AuthState.Logon;
 			}
 
-			private void FirstBoot () {
+			public bool IsBootAuthFailed () {
+				return authState == AuthState.BootFailed;
+			}
+
+			public bool IsRefreshAuthFailed () {
+				return authState == AuthState.RefreshFailed;
+			}
+
+			private IEnumerator FirstBoot () {
 				var tokenHttp = new HTTPConnection();
 				var tokenConnectionId = AuthSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
 				
 				var tokenUrl = AuthSettings.AUTH_URL_BOOT;
 				var bootData = 1048524945039600.ToString();
 				
-				var key = Autoya.OnBootAuthRequested();
-
-				var tokenRequestHeaders = new Dictionary<string, string>{
-					{"Authorization", key}
+				Dictionary<string, string> tokenRequestHeader = null;
+				Action<Dictionary<string, string>> authRequestHeaderLoaded = requestHeader => {
+					tokenRequestHeader = requestHeader;
 				};
-
-				mainthreadDispatcher.Commit(
-					tokenHttp.Post(
-						tokenConnectionId,
-						tokenRequestHeaders,
-						tokenUrl,
-						bootData,
-						(conId, code, responseHeaders, data) => {
-							OnBootResult(conId, responseHeaders, code, data, string.Empty);
-						},
-						(conId, code, failedReason, responseHeaders) => {
-							OnBootResult(conId, responseHeaders, code, string.Empty, failedReason);
-						},
-						BackyardSettings.HTTP_TIMEOUT_SEC
-					)
+				var bootKeyLoadCor = autoya.OnBootAuthKeyRequested(authRequestHeaderLoaded);
+				
+				while (bootKeyLoadCor.MoveNext()) {
+					yield return null;
+				}
+				
+				var cor = tokenHttp.Post(
+					tokenConnectionId,
+					tokenRequestHeader,
+					tokenUrl,
+					bootData,
+					(conId, code, responseHeader, data) => {
+						OnBootResult(conId, responseHeader, code, data, string.Empty);
+					},
+					(conId, code, failedReason, responseHeader) => {
+						OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
+					},
+					BackyardSettings.HTTP_TIMEOUT_SEC
 				);
+
+				while (cor.MoveNext()) {
+					yield return null;
+				}
 			}
 
 			/**
 				boot処理完了時のハンドル、完全に独自の処理でいいんだと思う。
 			*/
-			private void OnBootResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultData, string errorReason) {
+			private void OnBootResult (string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, string resultData, string errorReason) {
 				autoya.HttpResponseHandling(
 					tokenConnectionId,
-					responseHeaders, 
+					responseHeader, 
 					responseCode,  
 					resultData, 
 					errorReason,
 					(succeededConId, succeededData) => {
 						var tokenData = succeededData as string;
 						
-						autoya.OnBootReceived(responseHeaders, tokenData);
-
-						// reset retry count.
-						bootRetryCount = 0;
-						
-						authState = AuthState.Logon;
-						onBootSucceeded();
+						mainthreadDispatcher.Commit(OnBootSucceeded(responseHeader, tokenData));
 					},
-					(failedConId, failedCode, failedReason) => {
+					(failedConId, failedCode, failedReason, autoyaStatus) => {
 						/*
 							maintenance or auth failed is already handled.
 						*/
-						if (autoya.IsMaintenance(responseCode, responseHeaders) || autoya.IsAuthFailed(responseCode, responseHeaders)) {
+						if (autoyaStatus.inMaintenance || autoyaStatus.isAuthFailed) {
 							return;
 						}
 
@@ -176,7 +192,7 @@ namespace AutoyaFramework {
 						// reached to the max retry for boot access.
 						if (bootRetryCount == AuthSettings.AUTH_FIRSTBOOT_MAX_RETRY_COUNT) {
 							authState = AuthState.BootFailed;
-							onBootFailed();
+							onBootFailed(failedCode, failedReason);
 							return;
 						}
 
@@ -184,6 +200,19 @@ namespace AutoyaFramework {
 						mainthreadDispatcher.Commit(BootRetryCoroutine());
 					}
 				);
+			}
+
+			private IEnumerator OnBootSucceeded (Dictionary<string, string> responseHeader, string tokenData) {
+				var cor = autoya.OnBootReceived(responseHeader, tokenData);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+
+				// reset retry count.
+				bootRetryCount = 0;
+
+				authState = AuthState.Logon;
+				onBootSucceeded();
 			}
 
 			private int bootRetryCount = 0;
@@ -204,22 +233,26 @@ namespace AutoyaFramework {
 				var tokenUrl = AuthSettings.AUTH_URL_BOOT;
 				var bootData = 1048524945039600.ToString();
 				
-				var key = Autoya.OnBootAuthRequested();
-
-				var tokenRequestHeaders = new Dictionary<string, string>{
-					{"Authorization", key}
+				Dictionary<string, string> tokenRequestHeader = null;
+				Action<Dictionary<string, string>> authRequestHeaderLoaded = requestHeader => {
+					tokenRequestHeader = requestHeader;
 				};
+				var bootKeyLoadCor = autoya.OnBootAuthKeyRequested(authRequestHeaderLoaded);
+
+				while (bootKeyLoadCor.MoveNext()) {
+					yield return null;
+				}
 
 				var cor = tokenHttp.Post(
 					tokenConnectionId,
-					tokenRequestHeaders,
+					tokenRequestHeader,
 					tokenUrl,
 					bootData,
-					(conId, code, responseHeaders, data) => {
-						OnBootResult(conId, responseHeaders, code, data, string.Empty);
+					(conId, code, responseHeader, data) => {
+						OnBootResult(conId, responseHeader, code, data, string.Empty);
 					},
-					(conId, code, failedReason, responseHeaders) => {
-						OnBootResult(conId, responseHeaders, code, string.Empty, failedReason);
+					(conId, code, failedReason, responseHeader) => {
+						OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
 					},
 					BackyardSettings.HTTP_TIMEOUT_SEC
 				);
@@ -241,7 +274,9 @@ namespace AutoyaFramework {
 					}
 					case AuthState.Logon:
 					case AuthState.RefreshFailed: {
-						RefreshToken();
+						authState = AuthState.Refreshing;
+
+						mainthreadDispatcher.Commit(RefreshToken());
 						break;
 					}
 					default: {
@@ -251,9 +286,7 @@ namespace AutoyaFramework {
 				}
 			}
 
-			private void RefreshToken () {
-				authState = AuthState.Refreshing;
-
+			private IEnumerator RefreshToken () {
 				// start refreshing token.
 				var refresingTokenHttp = new HTTPConnection();
 				var refreshTokenUrl = AuthSettings.AUTH_URL_REFRESH_TOKEN;
@@ -262,52 +295,52 @@ namespace AutoyaFramework {
 
 				var refreshTokenConnectionId = AuthSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 				
-				var authStr = autoya.OnTokenRefreshRequested();
-				
-				var tokenRequestHeaders = new Dictionary<string, string>{
-					{"Authorization", authStr}
+				Dictionary<string, string> refreshRequestHeader = null;
+				Action<Dictionary<string, string>> refreshRequestHeaderLoaded = requestHeader => {
+					refreshRequestHeader = requestHeader;
 				};
+
+				var authKeyLoadCor = autoya.OnTokenRefreshRequested(refreshRequestHeaderLoaded);
+				while (authKeyLoadCor.MoveNext()) {
+					yield return null;
+				}
 				
-				mainthreadDispatcher.Commit(
-					refresingTokenHttp.Post(
-						refreshTokenConnectionId,
-						tokenRequestHeaders,
-						refreshTokenUrl,
-						refreshTokenData,
-						(conId, code, responseHeaders, data) => {
-							OnRefreshResult(conId, responseHeaders, code, data, string.Empty);
-						},
-						(conId, code, failedReason, responseHeaders) => {
-							OnRefreshResult(conId, responseHeaders, code, string.Empty, failedReason);
-						},
-						BackyardSettings.HTTP_TIMEOUT_SEC
-					)
+				var refreshingTokenCor = refresingTokenHttp.Post(
+					refreshTokenConnectionId,
+					refreshRequestHeader,
+					refreshTokenUrl,
+					refreshTokenData,
+					(conId, code, responseHeader, data) => {
+						OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+					},
+					(conId, code, failedReason, responseHeader) => {
+						OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+					},
+					BackyardSettings.HTTP_TIMEOUT_SEC
 				);
+
+				while (refreshingTokenCor.MoveNext()) {
+					yield return null;
+				}
 			}
 
-			private void OnRefreshResult (string tokenConnectionId, Dictionary<string, string> responseHeaders, int responseCode, string resultData, string errorReason) {
+			private void OnRefreshResult (string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, string resultData, string errorReason) {
 				autoya.HttpResponseHandling(
 					tokenConnectionId,
-					responseHeaders, 
+					responseHeader, 
 					responseCode,  
 					resultData, 
 					errorReason,
 					(succeededConId, succeededData) => {
 						var tokenData = succeededData as string;
 						
-						autoya.OnTokenRefreshReceived(responseHeaders, tokenData);
-						
-						// reset retry count.
-						tokenRefreshRetryCount = 0;
-
-						authState = AuthState.Logon;
-						onRefreshSucceeded();
+						mainthreadDispatcher.Commit(OnTokenRefreshSucceeded(responseHeader, tokenData));
 					},
-					(failedConId, failedCode, failedReason) => {
+					(failedConId, failedCode, failedReason, autoyaStatus) => {
 						/*
 							maintenance or auth failed is already handled.
 						*/
-						if (autoya.IsMaintenance(responseCode, responseHeaders) || autoya.IsAuthFailed(responseCode, responseHeaders)) {
+						if (autoyaStatus.inMaintenance || autoyaStatus.isAuthFailed) {
 							/*
 								すっげー考えるの難しいんですけど、
 								ここでmaintenanceが出ると、メンテ画面が表示される。
@@ -341,7 +374,7 @@ namespace AutoyaFramework {
 						// reached to the max retry for token refresh access.
 						if (tokenRefreshRetryCount == AuthSettings.AUTH_TOKENREFRESH_MAX_RETRY_COUNT) {
 							authState = AuthState.RefreshFailed;
-							onRefreshFailed();
+							onRefreshFailed(failedCode, failedReason);
 							return;
 						}
 
@@ -350,6 +383,19 @@ namespace AutoyaFramework {
 						mainthreadDispatcher.Commit(TokenRefreshRetryCoroutine());
 					}
 				);
+			}
+
+			private IEnumerator OnTokenRefreshSucceeded (Dictionary<string, string> responseHeader, string tokenData) {
+				var cor = autoya.OnTokenRefreshReceived(responseHeader, tokenData);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+						
+				// reset retry count.
+				tokenRefreshRetryCount = 0;
+
+				authState = AuthState.Logon;
+				onRefreshSucceeded();
 			}
 
 			private int tokenRefreshRetryCount = 0;
@@ -371,22 +417,26 @@ namespace AutoyaFramework {
 
 				var refreshTokenConnectionId = AuthSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 				
-				var authStr = autoya.OnTokenRefreshRequested();
-				
-				var tokenRequestHeaders = new Dictionary<string, string>{
-					{"Authorization", authStr}
+				Dictionary<string, string> refreshRequestHeader = null;
+				Action<Dictionary<string, string>> refreshRequestHeaderLoaded = requestHeader => {
+					refreshRequestHeader = requestHeader;
 				};
+
+				var authKeyLoadCor = autoya.OnTokenRefreshRequested(refreshRequestHeaderLoaded);
+				while (authKeyLoadCor.MoveNext()) {
+					yield return null;
+				}
 				
 				var cor = refresingTokenHttp.Post(
 					refreshTokenConnectionId,
-					tokenRequestHeaders,
+					refreshRequestHeader,
 					refreshTokenUrl,
 					refreshTokenData,
-					(conId, code, responseHeaders, data) => {
-						OnRefreshResult(conId, responseHeaders, code, data, string.Empty);
+					(conId, code, responseHeader, data) => {
+						OnRefreshResult(conId, responseHeader, code, data, string.Empty);
 					},
-					(conId, code, failedReason, responseHeaders) => {
-						OnRefreshResult(conId, responseHeaders, code, string.Empty, failedReason);
+					(conId, code, failedReason, responseHeader) => {
+						OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
 					},
 					BackyardSettings.HTTP_TIMEOUT_SEC
 				);
@@ -412,11 +462,13 @@ namespace AutoyaFramework {
 
 				switch (authState) {
 					case AuthState.BootFailed: {
-						FirstBoot();
+						authState = AuthState.Booting;
+						mainthreadDispatcher.Commit(FirstBoot());
 						break;
 					}
 					case AuthState.RefreshFailed: {
-						RefreshToken();
+						authState = AuthState.Refreshing;
+						mainthreadDispatcher.Commit(RefreshToken());
 						break;
 					}
 					default: {
@@ -424,6 +476,15 @@ namespace AutoyaFramework {
 						break;
 					}
 				}
+			}
+		}
+
+		public struct AutoyaStatus {
+			public readonly bool inMaintenance;
+			public readonly bool isAuthFailed;
+			public AutoyaStatus (bool inMaintenance, bool isAuthFailed) {
+				this.inMaintenance = inMaintenance;
+				this.isAuthFailed = isAuthFailed;
 			}
 		}
 
@@ -447,13 +508,13 @@ namespace AutoyaFramework {
 
 			・200系であればsucceededを着火する。
 		*/
-		private void HttpResponseHandling (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
+		private void HttpResponseHandling (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			/*
 				handle Autoya internal error.
 			*/
 			if (httpCode < 0) {
 				var internalErrorMessage = errorReason;
-				failed(connectionId, httpCode, internalErrorMessage);
+				failed(connectionId, httpCode, internalErrorMessage, new AutoyaStatus());
 				return;
 			}
 
@@ -463,41 +524,39 @@ namespace AutoyaFramework {
 			if (httpCode == 0) {
 				Debug.LogError("httpCode = 0, misc errors. errorReason:" + errorReason);
 				var troubleMessage = errorReason;
-				failed(connectionId, httpCode, troubleMessage);
+				failed(connectionId, httpCode, troubleMessage, new AutoyaStatus());
 				return;
 			}
 			
-			/*
-				fall-through handling area of Autoya's events.
-
-				this block NEVER fire succeeded/failed handler and never return controls from this block.
-				these events are possibly overlap.
-			*/
-			{
-				/*
-					detect maintenance from response code or response header value.
-				*/
-				CheckMaintenance(httpCode, responseHeaders);
-
-				/*
-					detect unauthorized from response code or response header value.
-				*/
-				CheckAuthFailed(httpCode, responseHeaders);
-			}
 			
+			// fall-through handling area of Autoya's events.
+			
+			
+			/*
+				detect maintenance from response code or response header value.
+			*/
+			var inMaintenance = CheckMaintenance(httpCode, responseHeader);
+
+			/*
+				detect unauthorized from response code or response header value.
+			*/
+			var isAuthFailed = CheckAuthFailed(httpCode, responseHeader);
+			
+
 			// Debug.LogError("connectionId:" + connectionId + " httpCode:" + httpCode + " data:" + data);
 			
+
 			/*
 				pit falls for not 2XX.
 			*/
 			{
 				if (httpCode < 200) {
-					failed(connectionId, httpCode, errorReason);
+					failed(connectionId, httpCode, errorReason, new AutoyaStatus(inMaintenance, isAuthFailed));
 					return;
 				}
 
 				if (299 < httpCode) {
-					failed(connectionId, httpCode, errorReason);
+					failed(connectionId, httpCode, errorReason, new AutoyaStatus(inMaintenance, isAuthFailed));
 					return; 
 				}
 			}
@@ -508,22 +567,35 @@ namespace AutoyaFramework {
 			succeeded(connectionId, data);
 		}
 
-		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed);
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
 		public HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 		
 		/**
-			received 401 response code from server.
+			received auth-failed response from server.
 			should authenticate again.
 		*/
-		private void CheckAuthFailed (int httpCode, Dictionary<string, string> responseHeaders) {
-			if (IsAuthFailed(httpCode, responseHeaders)) {
+		private bool CheckAuthFailed (int httpCode, Dictionary<string, string> responseHeader) {
+			if (IsAuthFailed(httpCode, responseHeader)) {
 				_autoyaAuthRouter.Expired();
+				return true;
 			}
+			return false;
 		}
 
-		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeaders) {
-			return httpCode == 401;
+		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeader) {
+			#if UNITY_EDITOR
+			{
+				if (forceFailFirstBoot) {
+					return true;
+				}
+			}
+			#endif
+			
+			return IsUnauthorized(httpCode, responseHeader);
 		}
+
+
+
 
 		/*
 			public authenticate APIs
@@ -538,6 +610,29 @@ namespace AutoyaFramework {
 
 			if (authenticated != null) {
 				autoya.onAuthenticated = authenticated;
+			}
+		}
+		public static void Auth_SetOnBootAuthFailed (Action<int, string> bootAuthenticationFailed=null) {
+			if (autoya._autoyaAuthRouter.IsBootAuthFailed()) {
+				if (bootAuthenticationFailed != null) {
+					bootAuthenticationFailed(0, "already failed. let's show interface.");// すでに起こった要素を表示してもいい気がする。どっちにしても「あとでアクセスしてみて」になる気がする。
+				}
+			} 
+
+			if (bootAuthenticationFailed != null) {
+				autoya.onBootAuthFailed = bootAuthenticationFailed;
+			}
+		}
+
+		public static void Auth_SetOnRefreshAuthFailed (Action<int, string> refreshAuthenticationFailed=null) {
+			if (autoya._autoyaAuthRouter.IsRefreshAuthFailed()) {
+				if (refreshAuthenticationFailed != null) {
+					refreshAuthenticationFailed(0, "already failed to refresh token. let's show interface.　なぜなのか、は書けそう。");
+				}
+			} 
+
+			if (refreshAuthenticationFailed != null) {
+				autoya.onRefreshAuthFailed = refreshAuthenticationFailed;
 			}
 		}
 
@@ -556,9 +651,11 @@ namespace AutoyaFramework {
 		/*
 			test methods.
 		*/
+
+		#if UNITY_EDITOR
 		public static void Auth_Test_CreateAuthError () {
 			/*
-				generate fake response for generate fake accidential logout error.
+				generate fake response for reproduce token expired situation.
 			*/
 			autoya.HttpResponseHandling(
 				"Auth_Test_AccidentialLogout_ConnectionId", 
@@ -567,9 +664,9 @@ namespace AutoyaFramework {
 				string.Empty,
 				"Auth_Test_AccidentialLogout test error", 
 				(conId, data) => {}, 
-				(conId, code, reason) => {}
+				(conId, code, reason, autoyaStatus) => {}
 			);
 		}
-		
+		#endif
 	}
 }

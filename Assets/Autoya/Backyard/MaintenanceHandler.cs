@@ -11,13 +11,23 @@ using UnityEngine;
 */
 namespace AutoyaFramework {
     public partial class Autoya {
-        private void CheckMaintenance (int httpCode, Dictionary<string, string> responseHeaders) {
-			if (IsMaintenance(httpCode, responseHeaders)) {
+        private bool CheckMaintenance (int httpCode, Dictionary<string, string> responseHeader) {
+			if (IsMaintenance(httpCode, responseHeader)) {
 				OnMaintenance();
+                return true;
 			}
+            return false;
 		}
-		private bool IsMaintenance (int httpCode, Dictionary<string, string> responseHeaders) {
-			return httpCode == BackyardSettings.MAINTENANCE_CODE || forceMaintenance;
+
+		private bool IsMaintenance (int httpCode, Dictionary<string, string> responseHeader) {
+            #if UNITY_EDITOR
+            {
+                if (forceMaintenance) {
+                    return true;
+                }
+            }
+            #endif
+			return IsUnderMaintenance(httpCode, responseHeader);
 		}
         
         private void OnMaintenance () {
@@ -52,14 +62,6 @@ namespace AutoyaFramework {
 
         public static void Maintenance_SetOnMaintenance (Action<string> onMaintenance) {
             autoya.onMaintenanceAction = onMaintenance;
-        }
-
-        /*
-            api for test.
-        */
-        private bool forceMaintenance;
-        public static void Maintenance_TestStartFakeMaintenance (bool @set) {
-            autoya.forceMaintenance = @set;
         }
     }
 }

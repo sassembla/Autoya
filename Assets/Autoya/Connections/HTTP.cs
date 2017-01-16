@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using UnityEngine;
 using UnityEngine.Networking;
 
 /**
@@ -11,12 +12,12 @@ namespace AutoyaFramework.Connections.HTTP {
 
     public class HTTPConnection {
 		
-		public IEnumerator Get (string connectionId, Dictionary<string, string> requestHeaders, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator Get (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Get(url)) {
-				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
 				
 				var p = request.Send();
 				
@@ -44,12 +45,12 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 
-		public IEnumerator Post (string connectionId, Dictionary<string, string> requestHeaders, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator Post (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Post(url, data)) {
-				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
 				var p = request.Send();
 				
 				while (!p.isDone) {
@@ -75,12 +76,12 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 
-		public IEnumerator Put (string connectionId, Dictionary<string, string> requestHeaders, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator Put (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Put(url, data)) {
-				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
 
 				var p = request.Send();
 				
@@ -108,12 +109,12 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 
-		public IEnumerator Delete (string connectionId, Dictionary<string, string> requestHeaders, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator Delete (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Delete(url)) {
-				if (requestHeaders != null) foreach (var kv in requestHeaders) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
 				
 				var p = request.Send();
 				
@@ -141,5 +142,4 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 	}
-
 }
