@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundleLoader {
         public enum AssetBundleLoadError {
+            Unauthorized,
             NotContained,
             DownloadFailed,
             AssetLoadFailed,
@@ -20,6 +22,11 @@ namespace AutoyaFramework.AssetBundles {
         private readonly string assetDownloadBasePath;
         private readonly AssetBundleList list;
 
+        private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
+        private Dictionary<string, string> BasicRequestHeaderDelegate (Autoya.HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+            return requestHeader;
+        }
+
         private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
         private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
@@ -30,10 +37,17 @@ namespace AutoyaFramework.AssetBundles {
             failed(connectionId, httpCode, errorReason, new Autoya.AutoyaStatus());
         }
 
-        public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
+        public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+
             this.assetDownloadBasePath = basePath;
             this.list = list;
-            
+
+            if (requestHeader != null) {
+                this.requestHeader = requestHeader;
+            } else {
+                this.requestHeader = BasicRequestHeaderDelegate;
+            }
+
             if (httpResponseHandlingDelegate == null) {
                 this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             } else {
@@ -79,9 +93,9 @@ namespace AutoyaFramework.AssetBundles {
                 
 
         */
-        public IEnumerator LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed, double timeoutSec=0) where T : UnityEngine.Object {
+        public IEnumerator LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, Autoya.AutoyaStatus> loadFailed, double timeoutSec=0) where T : UnityEngine.Object {
             if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
-                loadFailed(assetName, AssetBundleLoadError.NotContained, string.Empty);
+                loadFailed(assetName, AssetBundleLoadError.NotContained, string.Empty, new Autoya.AutoyaStatus());
                 yield break;
             }
             
@@ -99,18 +113,20 @@ namespace AutoyaFramework.AssetBundles {
             readonly public string bundleName;
             readonly public AssetBundleLoadError err;
             readonly public string reason;
+            readonly public Autoya.AutoyaStatus status;
 
-            public DependentBundleError (string bundleName, AssetBundleLoadError err, string reason) {
+            public DependentBundleError (string bundleName, AssetBundleLoadError err, string reason, Autoya.AutoyaStatus status) {
                 this.bundleName = bundleName;
                 this.err = err;
                 this.reason = reason;
+                this.status = status;
             }
         }
 
         /**
             load assetBundle on memory.
         */
-        private IEnumerator LoadAssetBundleOnMemory<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed, long timeoutTick, bool isDependency=false) where T : UnityEngine.Object {
+        private IEnumerator LoadAssetBundleOnMemory<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, Autoya.AutoyaStatus> loadFailed, long timeoutTick, bool isDependency=false) where T : UnityEngine.Object {
             var dependentBundleNames = list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault().dependsBundleNames;
 
             var dependentBundleLoadErrors = new List<DependentBundleError>();
@@ -128,15 +144,16 @@ namespace AutoyaFramework.AssetBundles {
                             continue;
                         }
 
-                        var loadCoroutine = LoadAssetBundleOnMemory(
+                        Debug.LogWarning("ここに問題あるかも〜。GameObjectになれないものをロードできないのでは？ つまりAssetTypeの指定が必要？");
+                        var loadCoroutine = LoadAssetBundleOnMemory<GameObject>(
                             dependentBundleName, 
                             string.Empty,// bundleName not required.
-                            (string depBundleName, GameObject depObj) => {
+                            (depBundleName, depObj) => {
                                 // do nothing. this bundle is currently on memory.
                             },
-                            (string depBundleName, AssetBundleLoadError depErr, string depReason) => {
+                            (depBundleName, depErr, depReason, autoyaStatus) => {
                                 // collect error for this dependent bundle loading.
-                                dependentBundleLoadErrors.Add(new DependentBundleError(depBundleName, depErr, depReason));
+                                dependentBundleLoadErrors.Add(new DependentBundleError(depBundleName, depErr, depReason, autoyaStatus));
                             },
                             timeoutTick,
                             true // this loading is for resolve dependency of root asset. no need to return any instances.
@@ -253,8 +270,11 @@ namespace AutoyaFramework.AssetBundles {
                             loadErrorBundleMessages.Append(dependentBundleLoadError.err);
                             loadErrorBundleMessages.Append(" reason:");
                             loadErrorBundleMessages.Append(dependentBundleLoadError.reason);
+                            loadErrorBundleMessages.Append(" autoyaStatus:");
+                            loadErrorBundleMessages.Append("  inMaintenance:" + dependentBundleLoadError.status.inMaintenance);
+                            loadErrorBundleMessages.Append("  isAuthFailed:" + dependentBundleLoadError.status.isAuthFailed);
                         }
-                        loadFailed(assetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString());
+                        loadFailed(assetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString(), new Autoya.AutoyaStatus());
                         yield break;
                     }
 
@@ -272,9 +292,8 @@ namespace AutoyaFramework.AssetBundles {
             loadingAssetBundleNames.Remove(bundleName);
         }
 
-        private IEnumerator DownloadAssetThenCacheAndLoadToMemory (string bundleName, string assetName, string url, uint crc, Action<string, AssetBundleLoadError, string> failed, long timeoutTick) {
-            Debug.LogWarning("定冠詞を定義へ移動");
-            var connectionId = "asset_" + Guid.NewGuid().ToString();
+        private IEnumerator DownloadAssetThenCacheAndLoadToMemory (string bundleName, string assetName, string url, uint crc, Action<string, AssetBundleLoadError, string, Autoya.AutoyaStatus> failed, long timeoutTick) {
+            var connectionId = AssetBundlesSettings.ASSETBUNDLES_DOWNLOAD_PREFIX + Guid.NewGuid().ToString();
 
             Action<string, object> succeeded = (conId, downloadedAssetBundle) => {
                 // set loaded assetBundle to on-memory cache.
@@ -283,19 +302,16 @@ namespace AutoyaFramework.AssetBundles {
 
             Action<string, int, string, Autoya.AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
                 // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
-
-                Debug.LogError("failed to download AssetBundle. code:" + code + " reason:" + reason);
-
-                failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason);
+                Debug.LogError("assetName:" + assetName + " err:" + AssetBundleLoadError.DownloadFailed + " failed to download AssetBundle. code:" + code + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + "  autoyaStatus/isAuthFailed:" + autoyaStatus.isAuthFailed);
+                failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason, autoyaStatus);
             };
 
-            Debug.LogWarning("Autoyaのauth機構をめり込ませられる必要がある。後段はなんとかなってるので、あとは前段をなんとかする。ヘッダ部、http機能丸パクでもいいのかな、、");
-            var requestHeaders = new Dictionary<string, string>();
-
+            var reqHeader = requestHeader(Autoya.HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+            
             var connectionCoroutine = DownloadAssetBundle(
                 bundleName,
                 connectionId,
-                requestHeaders,
+                reqHeader,
                 url, 
                 ASSETBUNDLE_FIXED_VERSION,
                 crc, 
@@ -362,7 +378,7 @@ namespace AutoyaFramework.AssetBundles {
 		}
 
         private Dictionary<string, AssetBundle> assetBundleDict = new Dictionary<string, AssetBundle>();
-        private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
+        private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, Autoya.AutoyaStatus> loadFailed) where T : UnityEngine.Object {
             var assetBundle = assetBundleDict[bundleName];
             
             var request = assetBundle.LoadAssetAsync<T>(assetName);            
@@ -377,13 +393,13 @@ namespace AutoyaFramework.AssetBundles {
                 var asset = request.asset as T;
 
                 if (asset == null) {
-                    loadFailed(assetName, AssetBundleLoadError.NullAssetFound, "loaded assetName:" + assetName + " type:" + typeof(T) + " is null. maybe type does not matched. from bundleName:" + bundleName + ". please check asset type and that bundle contains this asset.");
+                    loadFailed(assetName, AssetBundleLoadError.NullAssetFound, "loaded assetName:" + assetName + " type:" + typeof(T) + " is null. maybe type does not matched. from bundleName:" + bundleName + ". please check asset type and that bundle contains this asset.", new Autoya.AutoyaStatus());
                     yield break;
                 }
 
                 loadSucceeded(assetName, asset);
             } catch (Exception e) {
-                loadFailed(assetName, AssetBundleLoadError.AssetLoadFailed, "failed to load assetName:" + assetName + " from bundleName:" + bundleName + " error:" + e.ToString());
+                loadFailed(assetName, AssetBundleLoadError.AssetLoadFailed, "failed to load assetName:" + assetName + " from bundleName:" + bundleName + " error:" + e.ToString(), new Autoya.AutoyaStatus());
             }
         }
 

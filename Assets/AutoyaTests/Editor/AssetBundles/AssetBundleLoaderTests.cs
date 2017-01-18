@@ -100,7 +100,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					tex = texAsset;
 					done = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
 				}
@@ -124,7 +124,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						tex = texAsset;
 						done = true;
 					},
-					(assetName, failEnum, reason) => {
+					(assetName, failEnum, reason, status) => {
 						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
@@ -147,7 +147,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						tex = texAsset;
 						done = true;
 					},
-					(assetName, failEnum, reason) => {
+					(assetName, failEnum, reason, status) => {
 						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
@@ -171,7 +171,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefab = prefabAsset;
 					done = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
@@ -209,7 +209,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						prefab = prefabAsset;
 						done = true;
 					},
-					(assetName, failEnum, reason) => {
+					(assetName, failEnum, reason, status) => {
 						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
@@ -246,7 +246,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						prefab = prefabAsset;
 						done = true;
 					},
-					(assetName, failEnum, reason) => {
+					(assetName, failEnum, reason, status) => {
 						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
@@ -288,7 +288,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					tex = texAsset;
 					textureLoadDone = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					textureLoadDone = true;
@@ -308,7 +308,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefab = prefabAsset;
 					prefabLoadDone = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
@@ -348,7 +348,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefab = prefabAsset;
 					prefabLoadDone = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
@@ -368,7 +368,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					tex = texAsset;
 					textureLoadDone = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					textureLoadDone = true;
@@ -407,7 +407,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefab1 = prefabAsset;
 					prefabLoadDone1 = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone1 = true;
@@ -426,7 +426,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefab2 = prefabAsset;
 					prefabLoadDone2 = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone2 = true;
@@ -471,7 +471,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefab = prefabAsset;
 					prefabLoadDone = true;
 				},
-				(assetName, failEnum, reason) => {
+				(assetName, failEnum, reason, status) => {
 					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
 					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
@@ -527,7 +527,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 							(assetName, asset) => {
 								loadedAssetAssets[assetName] = asset;
 							},
-							(assetName, failEnum, reason) => {
+							(assetName, failEnum, reason, status) => {
 								Assert(false, "fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
 							}
 						),
@@ -542,7 +542,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 							(assetName, asset) => {
 								loadedAssetAssets[assetName] = asset;
 							},
-							(assetName, failEnum, reason) => {
+							(assetName, failEnum, reason, status) => {
 								Assert(false, "fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
 							}
 						),
@@ -607,7 +607,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				(string loadedAssetName, Texture2D tex) => {
 					done = true;
 				},
-				(loadedAssetName, failEnum, reason) => {
+				(loadedAssetName, failEnum, reason, status) => {
 					
 				}
 			),
@@ -630,7 +630,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				(string loadedAssetName, Texture2D prefabAsset) => {
 					done = true;
 				},
-				(loadedAssetName, failEnum, reason) => {}
+				(loadedAssetName, failEnum, reason, status) => {}
 			),
 			false
 		);
@@ -653,7 +653,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				(string loadedAssetName, Texture2D prefabAsset) => {
 					done = true;
 				},
-				(loadedAssetName, failEnum, reason) => {}
+				(loadedAssetName, failEnum, reason, status) => {}
 			),
 			false
 		);
@@ -679,7 +679,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				(string loadedAssetName, Texture2D prefabAsset) => {
 					done = true;
 				},
-				(loadedAssetName, failEnum, reason) => {}
+				(loadedAssetName, failEnum, reason, status) => {}
 			),
 			false
 		);

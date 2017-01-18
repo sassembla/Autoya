@@ -19,6 +19,7 @@ namespace AutoyaFramework {
 		private Action<int, string> onRefreshAuthFailed = (code, reason) => {};
 
 		private void Authenticate (bool isFirstBoot) {
+			this.httpRequestHeaderDelegate = OnHttpRequest;
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
 
 			Action onAuthSucceeded = () => {
@@ -479,6 +480,8 @@ namespace AutoyaFramework {
 			}
 		}
 
+
+
 		public struct AutoyaStatus {
 			public readonly bool inMaintenance;
 			public readonly bool isAuthFailed;
@@ -487,6 +490,12 @@ namespace AutoyaFramework {
 				this.isAuthFailed = isAuthFailed;
 			}
 		}
+
+		/*
+			delegates for supply http request header generate func for other class.
+		*/
+		public delegate Dictionary<string, string> HttpRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data);
+		public HttpRequestHeaderDelegate httpRequestHeaderDelegate;
 
 		/**
 			Autoyaのhttpエラーハンドリングのコアメソッド。

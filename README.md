@@ -1,13 +1,15 @@
 # Autoya
+var 0.8.0
+
 small, thin framework for Unity.  
 which contains essential game features.
 
 ## Features
-* Log-in / Log-out
+* Authentication handling
 * AssetBundle load/management
 * HTTP/TCP/UDP Connection feature
-* app-version/asset-version/server-condition changed handles
-* Purchase/IAP flow
+* Maintenance changed handling
+* Purchase/IAP feature
 * Notification(local/remote)
 * Information
 

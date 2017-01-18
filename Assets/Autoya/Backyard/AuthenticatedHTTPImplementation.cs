@@ -2,6 +2,7 @@ using System;
 using AutoyaFramework.Connections.HTTP;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine;
 
 namespace AutoyaFramework {
     public partial class Autoya {
@@ -43,7 +44,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.OnHttpGetRequest(url, additionalHeader);
+			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Get, url, additionalHeader, string.Empty);
 			
 			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
 				succeeded(conId, resultData as string);
@@ -92,7 +93,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.OnHttpPostRequest(url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Post, url, additionalHeader, data);
 			
 			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
 				succeeded(conId, resultData as string);
@@ -142,7 +143,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.OnHttpPutRequest(url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Put, url, additionalHeader, data);
 			
 			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
 				succeeded(conId, resultData as string);
@@ -192,7 +193,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.OnHttpDeleteRequest(url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Delete, url, additionalHeader, data);
 			
 			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
 				succeeded(conId, resultData as string);
@@ -225,6 +226,7 @@ namespace AutoyaFramework {
 			private static AutoyaStatus status = new AutoyaStatus();
 
 			public ConnectionErrorInstance (string connectionId, string reason, Action<string, int, string, AutoyaStatus> failed) {
+				Debug.LogWarning("まだauthが終わっていない状態でのhttpのエラーコードcodeが　0に固定されているのをなんとかする。判別できたほうがいい。");
 				this.connectionId = connectionId;
 				this.reason = reason;
 				this.failed = failed;

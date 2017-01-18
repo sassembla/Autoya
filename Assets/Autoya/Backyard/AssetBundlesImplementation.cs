@@ -1,16 +1,16 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using AutoyaFramework.AssetBundles;
 using UnityEngine;
 
 namespace AutoyaFramework {
 	public partial class Autoya {
 
-        private const string basePath = "まだセットされてない。APIとかを鑑みるに、Settingsにあるといいと思う。リスト取得、preloadリスト取得、assetBundle取得の3種。";
-
         /*
             Downloader
         */
-        private AssetBundleListDownloader _assetBundleListDownloader = new AssetBundleListDownloader(basePath);
+        private AssetBundleListDownloader _assetBundleListDownloader = new AssetBundleListDownloader("listDlPath");
         public static void AssetBundle_DownloadList () {
             Debug.LogError("リスト自体のロードを開始する。Connectionとかを使って云々。IEnumeratorになるので、なんかUniRxがらみで処理できる気がする。総合的なTimeoutとかをセットする？ 終わったことだけが検知できればいい感じ。");
             autoya._assetBundleListDownloader.DownloadList();
@@ -19,7 +19,7 @@ namespace AutoyaFramework {
         /*
             Preloader
         */
-        private AssetBundlePreloader _assetBundlePreloader = new AssetBundlePreloader(basePath);
+        private AssetBundlePreloader _assetBundlePreloader = new AssetBundlePreloader("preloadListDlPath");
         public static void AssetBundle_Preload (string preloadKey) {
             autoya._assetBundlePreloader.Preload(preloadKey, preloadedKey => {});
         }
@@ -36,29 +36,53 @@ namespace AutoyaFramework {
 			// 	failed();
 			// }
 
-            autoya._assetBundleLoader = new AssetBundleLoader(path, list, autoya.httpResponseHandlingDelegate);// 仮のリストの更新API。実際に使うとしたら、内部から。
+            autoya._assetBundleLoader = new AssetBundleLoader(path, list, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);// 仮のリストの更新API。実際に使うとしたら、内部から。
         }
 
-        public static void AssetBundle_LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoader.AssetBundleLoadError, string> loadFailed) where T : UnityEngine.Object {
-            // if (autoya == null) {
-			// 	failed();
-			// } 
-			// if (Autoya.Auth_IsLoggedIn()) {
-			// 	failed();
-			// }
+        public static void AssetBundle_LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoader.AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object {
+            if (autoya == null) {
+				var cor = new AssetBundleLoadErrorInstance(assetName, "Autoya is null.", loadFailed).Coroutine();
+				autoya.mainthreadDispatcher.Commit(cor);
+				return;
+			} 
+			if (!Autoya.Auth_IsAuthenticated()) {
+				var cor = new AssetBundleLoadErrorInstance(assetName, "not authenticated.", loadFailed).Coroutine();
+				autoya.mainthreadDispatcher.Commit(cor);				
+				return;
+			}
 
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpResponseHandlingDelegate);
+                autoya._assetBundleLoader = new AssetBundleLoader("bundleDlPath", new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
             }
+
             autoya.mainthreadDispatcher.Commit(
                 autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)
             );
         }
         public static void AssetBundle_UnloadAllAssets () {
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader(basePath, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpResponseHandlingDelegate);
+                autoya._assetBundleLoader = new AssetBundleLoader("bundleDlPath", new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
             }
             autoya._assetBundleLoader.UnloadAllAssetBundles();
         }
+
+        private class AssetBundleLoadErrorInstance {
+			private readonly string connectionId;
+			private const AssetBundleLoader.AssetBundleLoadError code = AssetBundleLoader.AssetBundleLoadError.Unauthorized;
+			private readonly string reason;
+			private readonly Action<string, AssetBundleLoader.AssetBundleLoadError, string, AutoyaStatus> failed;
+			private static AutoyaStatus status = new AutoyaStatus();
+
+			public AssetBundleLoadErrorInstance (string connectionId, string reason, Action<string, AssetBundleLoader.AssetBundleLoadError, string, AutoyaStatus> failed) {
+                this.connectionId = connectionId;
+				this.reason = reason;
+				this.failed = failed;
+			}
+
+			public IEnumerator Coroutine () {
+				yield return null;
+				failed(connectionId, code, reason, status);
+			}
+		}
     }
 }

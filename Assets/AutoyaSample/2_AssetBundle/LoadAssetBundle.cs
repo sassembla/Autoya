@@ -53,7 +53,16 @@ public class LoadAssetBundle : MonoBehaviour {
 			(assetName, prefab) => {
 				Instantiate(prefab);
 			},
-			(assetName, err, reason) => {
+			(assetName, err, reason, status) => {
+				if (status.isAuthFailed) {
+					// no need to do about auth. show interface. "download failed. Retry?".
+					return;
+				}
+				if (status.inMaintenance) {
+					// sno need to do about auth. system will show "maintenance will open at ~~!".
+					return;
+				}
+				
 				Debug.LogError("failed to load assetName:" + assetName + " err:" + err + " reason:" + reason);
 			}
 		);

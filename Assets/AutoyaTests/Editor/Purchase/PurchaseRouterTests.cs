@@ -40,24 +40,15 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			SkipCurrentTest("Purchase feature should run on MainThread.");
 		};
 
+        
         RunOnMainThread(
             () => {
                 router = new PurchaseRouter(
+                    iEnum => {
+                        Debug.LogError("あとでかく");
+                    },
                     () => {},
-                    (err, reason) => {},
-                    iEnum => {// in Editor test, create plane MonoBehaviour is not allowed.
-                        // fake mainthread dispatcher.
-                        EditorApplication.CallbackFunction purchaseCoroutine = null;
-
-                        purchaseCoroutine = () => {
-                            var isContinued = iEnum.MoveNext();
-                            if (!isContinued) {
-                                EditorApplication.update -= purchaseCoroutine;
-                            }
-                        };
-
-                        EditorApplication.update += purchaseCoroutine;
-                    }
+                    (err, reason, autpyaStatus) => {}
                 );
             }
         );
@@ -74,21 +65,19 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         var purchaseSucceeded = false;
         var failedReason = string.Empty;
 
-        RunOnMainThread(
-            () => {
-                router.PurchaseAsync(
-                    purchaseId,
-                    productId,
-                    pId => {
-                        purchaseDone = true;
-                        purchaseSucceeded = true;
-                    },
-                    (pId, err, reason) => {
-                        purchaseDone = true;
-                        failedReason = reason;
-                    }
-                );
-            }
+        RunEnumeratorOnMainThread(
+            router.PurchaseAsync(
+                purchaseId,
+                productId,
+                pId => {
+                    purchaseDone = true;
+                    purchaseSucceeded = true;
+                },
+                (pId, err, reason, autoyaStatus) => {
+                    purchaseDone = true;
+                    failedReason = reason;
+                }
+            )
         );
 
         WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
@@ -105,7 +94,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
             () => {
                 router.Reload(
                     () => {},
-                    (err, reason) => {}
+                    (err, reason, status) => {}
                 );
             }
         );
