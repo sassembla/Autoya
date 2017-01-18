@@ -214,7 +214,6 @@ namespace AutoyaFramework.Purchase {
         private IStoreController controller;
         private IExtensionProvider extensions;
         
-
         public bool IsPurchaseReady () {
             return routerState == RouterState.PurchaseReady;
         }

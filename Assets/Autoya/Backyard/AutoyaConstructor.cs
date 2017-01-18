@@ -2,6 +2,7 @@ using UnityEngine;
 using AutoyaFramework.Connections.HTTP;
 using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Settings.Auth;
+using AutoyaFramework.Purchase;
 
 /**
 	constructor implementation of Autoya.
@@ -43,7 +44,21 @@ namespace AutoyaFramework {
 
 			_autoyaHttp = new HTTPConnection();
 
-			
+			Debug.LogWarning("調整中");
+			// _purchaseRouter = new PurchaseRouter(
+			// 	iEnum => {
+			// 		mainthreadDispatcher.Commit(iEnum);
+			// 	},
+			// 	() => {
+			// 		Debug.Log("ready purchase,");
+			// 	}, 
+			// 	(err, reason, autoyaStatus) => {
+			// 		Debug.Log("failed to ready purchase, err:" + err + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + " isAuthFailed:" + autoyaStatus.isAuthFailed);
+			// 	},
+			// 	httpRequestHeaderDelegate, 
+			// 	httpResponseHandlingDelegate
+			// );
+
 			var isFirstBoot = IsFirstBoot();
 
 			/*
