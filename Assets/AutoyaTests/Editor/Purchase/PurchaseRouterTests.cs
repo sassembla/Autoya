@@ -39,13 +39,21 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         if (!IsTestRunningInPlayingMode()) {
 			SkipCurrentTest("Purchase feature should run on MainThread.");
 		};
-
         
         RunOnMainThread(
             () => {
                 router = new PurchaseRouter(
                     iEnum => {
-                        Debug.LogError("あとでかく");
+                        EditorApplication.CallbackFunction purchaseCoroutine = null;
+
+                        purchaseCoroutine = () => {
+                            var isContinued = iEnum.MoveNext();
+                            if (!isContinued) {
+                                EditorApplication.update -= purchaseCoroutine;
+                            }
+                        };
+
+                        EditorApplication.update += purchaseCoroutine;
                     },
                     () => {},
                     (err, reason, autpyaStatus) => {}

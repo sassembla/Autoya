@@ -140,7 +140,7 @@ namespace AutoyaFramework {
 				Action<Dictionary<string, string>> authRequestHeaderLoaded = requestHeader => {
 					tokenRequestHeader = requestHeader;
 				};
-				var bootKeyLoadCor = autoya.OnBootAuthKeyRequested(authRequestHeaderLoaded);
+				var bootKeyLoadCor = autoya.OnBootAuthRequest(authRequestHeaderLoaded);
 				
 				while (bootKeyLoadCor.MoveNext()) {
 					yield return null;
@@ -204,7 +204,7 @@ namespace AutoyaFramework {
 			}
 
 			private IEnumerator OnBootSucceeded (Dictionary<string, string> responseHeader, string tokenData) {
-				var cor = autoya.OnBootReceived(responseHeader, tokenData);
+				var cor = autoya.OnBootAuthResponse(responseHeader, tokenData);
 				while (cor.MoveNext()) {
 					yield return null;
 				}
@@ -238,7 +238,7 @@ namespace AutoyaFramework {
 				Action<Dictionary<string, string>> authRequestHeaderLoaded = requestHeader => {
 					tokenRequestHeader = requestHeader;
 				};
-				var bootKeyLoadCor = autoya.OnBootAuthKeyRequested(authRequestHeaderLoaded);
+				var bootKeyLoadCor = autoya.OnBootAuthRequest(authRequestHeaderLoaded);
 
 				while (bootKeyLoadCor.MoveNext()) {
 					yield return null;

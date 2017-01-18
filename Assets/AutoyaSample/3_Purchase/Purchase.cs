@@ -14,7 +14,9 @@ public class Purchase : MonoBehaviour {
     
     void Awake () {
         purchaseRouter = new PurchaseRouter(
-            iEnum => {},
+            iEnum => {
+                StartCoroutine(iEnum);
+            },
             () => {
                     Debug.Log("ready for purchase.");
             },

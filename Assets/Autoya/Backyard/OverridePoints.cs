@@ -18,11 +18,18 @@ namespace AutoyaFramework {
             return httpCode == BackyardSettings.MAINTENANCE_CODE;
         }
 
-        
+        /**
+            detect if already authenticated or not.
+        */
+        private bool IsFirstBoot () {
+            var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+            return tokenCandidatePaths.Length == 0;
+        }
+
         /**
             send authentication data to server at first boot.
         */
-        private IEnumerator OnBootAuthKeyRequested (Action<Dictionary<string, string>> setHeaderToRequest) {
+        private IEnumerator OnBootAuthRequest (Action<Dictionary<string, string>> setHeaderToRequest) {
             // set boot authentication data.
             var bootKey = AuthSettings.AUTH_BOOT;
             var base64Str = Base64.FromBytes(bootKey);
@@ -38,7 +45,7 @@ namespace AutoyaFramework {
         /**
             received first boot authentication result.
         */
-        private IEnumerator OnBootReceived (Dictionary<string, string> responseHeader, string data) {
+        private IEnumerator OnBootAuthResponse (Dictionary<string, string> responseHeader, string data) {
             var isValidResponse = true;
             if (isValidResponse) {
                 Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, data);

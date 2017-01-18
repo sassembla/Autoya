@@ -17,5 +17,7 @@ namespace AutoyaFramework.Purchase {
 
         public const string PURCHASE_URL_CANCEL = "https://httpbin.org/post";
         public const string PURCHASE_CONNECTIONID_CANCEL_PREFIX = "purchase_cancelled_";
+
+        public const double TIMEOUT_SEC = 10.0;
     }
 }

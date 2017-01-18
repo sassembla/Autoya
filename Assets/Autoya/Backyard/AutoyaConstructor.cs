@@ -43,13 +43,8 @@ namespace AutoyaFramework {
 
 			_autoyaHttp = new HTTPConnection();
 
-			/* 
-				セッティングよみ出ししちゃおう。なんか、、LocalStorageからapp_versionとかだな。Unityで起動時に上書きとかしとけば良い気がする。
-				asset_versionはAssetsListに組み込まれてるんで、それを読みだして云々、っていう感じにできる。
-			*/
 			
-			var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-			var isFirstBoot = tokenCandidatePaths.Length == 0;
+			var isFirstBoot = IsFirstBoot();
 
 			/*
 				start authentication.

@@ -100,7 +100,8 @@ namespace AutoyaFramework.Purchase {
             }
             failed(connectionId, httpCode, errorReason, new Autoya.AutoyaStatus());
         }
-        
+        private readonly Action<IEnumerator> enumExecutor;
+
         /**
             constructor.
 
@@ -127,6 +128,8 @@ namespace AutoyaFramework.Purchase {
             #elif UNITY_ANDROID
                 this.storeKind = GooglePlay.Name;
             #endif
+
+            this.enumExecutor = enumExecutor;
 
             if (httpGetRequestHeaderDeletage != null) {
                 this.requestHeader = httpGetRequestHeaderDeletage;
@@ -296,7 +299,7 @@ namespace AutoyaFramework.Purchase {
 
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_TICKET_PREFIX + Guid.NewGuid().ToString();
 
-            var cor = HttpPost(
+            HttpPost(
                 connectionId,
                 ticketUrl,
                 data,
@@ -554,14 +557,14 @@ namespace AutoyaFramework.Purchase {
         /*
             http functions for purchase.
         */
-        private IEnumerator HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
+        private void HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             var header = this.requestHeader(Autoya.HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
             };
 
-            return http.Get(
+            var cor = http.Get(
                 connectionId,
                 header,
                 url,
@@ -571,18 +574,19 @@ namespace AutoyaFramework.Purchase {
                 (conId, code, reason, respHeaders) => {
                     httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
                 },
-                10.0
+                PurchaseSettings.TIMEOUT_SEC
             );
+            enumExecutor(cor);
         }
     
-        private IEnumerator HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
+        private void HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
             var header = this.requestHeader(Autoya.HttpMethod.Post, url, new Dictionary<string, string>(), data);
             
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
             };
 
-            return http.Post(
+            var cor = http.Post(
                 connectionId,
                 header,
                 url,
@@ -593,8 +597,9 @@ namespace AutoyaFramework.Purchase {
                 (conId, code, reason, respHeaders) => {
                     httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
                 },
-                10.0
+                PurchaseSettings.TIMEOUT_SEC
             );
+            enumExecutor(cor);
         }
     }
 }
