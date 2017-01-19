@@ -47,3 +47,5 @@ Assembly-CSharp-firstpass.csproj
 
 Assets/Plugins/UnityPurchasing/*
 
+
+Assets/SignerLibs/*
