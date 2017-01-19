@@ -480,17 +480,6 @@ namespace AutoyaFramework {
 			}
 		}
 
-
-
-		public struct AutoyaStatus {
-			public readonly bool inMaintenance;
-			public readonly bool isAuthFailed;
-			public AutoyaStatus (bool inMaintenance, bool isAuthFailed) {
-				this.inMaintenance = inMaintenance;
-				this.isAuthFailed = isAuthFailed;
-			}
-		}
-
 		/*
 			delegates for supply http request header generate func for other class.
 		*/

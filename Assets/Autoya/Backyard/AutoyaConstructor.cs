@@ -21,8 +21,6 @@ namespace AutoyaFramework {
 			
 			public string _buildNumber;
 		}
-		
-		public delegate void S(string a, int b, int c, int d, int e, int f);// あ〜なるほど、、定義済みってそういうことか。これでフローをもうちょっと楽に渡せるのでは。
 
 		private Autoya (string basePath="") {
 			// Debug.LogWarning("autoya initialize start. basePath:" + basePath);

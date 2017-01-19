@@ -13,8 +13,6 @@ namespace AutoyaFramework {
 		*/
 		
 		private HTTPConnection _autoyaHttp;
-
-		
 		
 		/*
 			public HTTP APIs.

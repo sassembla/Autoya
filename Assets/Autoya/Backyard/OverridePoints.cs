@@ -91,18 +91,15 @@ namespace AutoyaFramework {
             yield break;
         }
 
-
-        /*
-            http request header delegates.
-        */
-        public enum HttpMethod {
-            Get,
-            Post,
-            Put,
-            Delete
-        }
         
         private Dictionary<string, string> OnHttpRequest (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+            var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
+            requestHeader["Authorization"] = Base64.FromString(accessToken);
+            
+            return requestHeader;
+        }
+
+        private Dictionary<string, string> OnHttpResponse (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
             var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
             requestHeader["Authorization"] = Base64.FromString(accessToken);
             

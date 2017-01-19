@@ -7,12 +7,12 @@ namespace AutoyaFramework.AssetBundles {
         private readonly string urlBase;
         private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
-        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, Autoya.AutoyaStatus> failed) {
+        private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
             if (200 <= httpCode && httpCode < 299) {
                 succeeded(connectionId, data);
                 return;
             }
-            failed(connectionId, httpCode, errorReason, new Autoya.AutoyaStatus());
+            failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
         public AssetBundlePreloader (string urlBase, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
             this.urlBase = urlBase;

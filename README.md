@@ -1,7 +1,7 @@
 # Autoya
-var 0.8.0
+var 0.8.1
 
-
+![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true")
 
 small, thin framework for Unity.  
 which contains essential game features.
