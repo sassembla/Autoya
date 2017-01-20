@@ -23,7 +23,7 @@ namespace AutoyaFramework {
 		}
 
 		private Autoya (string basePath="") {
-			// Debug.LogWarning("autoya initialize start. basePath:" + basePath);
+			Debug.LogWarning("autoya initialize start. basePath:" + basePath);
 			
 			if (Application.isPlaying) {// create game object for Autoya.
 				var go = GameObject.Find("AutoyaMainthreadDispatcher");

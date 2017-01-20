@@ -135,6 +135,17 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 		RunOnMainThread(onMainThread);
 	}
 
+	[MTest] public void CreateFileThenDeleteFileThenFileNamesInDomain () {
+		Action onMainThread = () => {
+			Autoya.Persist_Update("testdomain", "testfile", "test");
+			Autoya.Persist_Delete("testdomain", "testfile");
+			var fileNamesInDomain = Autoya.Persist_FileNamesInDomain("testdomain");
+			Assert(fileNamesInDomain.Length == 0, "not match.");
+		};
+		RunOnMainThread(onMainThread);
+	}
+
+
 	/*
 		async series.
 	*/

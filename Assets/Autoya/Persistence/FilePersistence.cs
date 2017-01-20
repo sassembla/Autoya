@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 /**
@@ -90,9 +91,15 @@ namespace AutoyaFramework.Persistence.Files {
 
 		/**
 			returns all file names in domain/.
+			
+			ignore .(dot) start named file.
+			e.g. 
+				.dat will be ignored.
 		*/
 		public string[] FileNamesInDomain (string domain) {
 			var domainPath = Path.Combine(basePath, domain);
+			var fileNames = new List<string>();
+			
 			if (Directory.Exists(domainPath)) {
 				var filePaths = Directory.GetFiles(domainPath);
 				
@@ -100,12 +107,12 @@ namespace AutoyaFramework.Persistence.Files {
 					return new string[]{};
 				}
 
-				var fileNames = new string[filePaths.Length];
-				for (var i = 0; i < filePaths.Length; i++) {
-					var fileName = filePaths[i];
-					fileNames[i] = Path.GetFileName(fileName);
+				foreach (var filePath in filePaths) {
+					if (filePath.StartsWith(".")) continue;
+					fileNames.Add(filePath);
 				}
-				return fileNames;
+
+				return fileNames.ToArray();
 			}
 			return new string[]{};
 		}
