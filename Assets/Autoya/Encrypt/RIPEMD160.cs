@@ -12,8 +12,6 @@ namespace AutoyaFramework.Encrypt.RIPEMD {
 
 			var ripemd160 = new HMACRIPEMD160(keyBytes);
 
-			var outStream = new MemoryStream();
-
 			var hashBytes = ripemd160.ComputeHash(sourceBytes);
 			ripemd160.Clear();
 
