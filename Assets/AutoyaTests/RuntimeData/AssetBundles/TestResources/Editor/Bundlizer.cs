@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 
-public class Bundlizer {
+[InitializeOnLoad] public class Bundlizer {
 	[MenuItem("Window/Autoya/Generate Test AssetBundles")] public static void BuildAssetBundles () {
 		BuildPipeline.BuildAssetBundles("AssetBundles", BuildAssetBundleOptions.None, BuildTarget.StandaloneOSXIntel64);
 	}
@@ -21,5 +21,9 @@ public class Bundlizer {
 		}
 
 		AssetDatabase.ExportPackage(assetPaths.ToArray(), "Autoya.unitypackage", ExportPackageOptions.IncludeDependencies);
+	}
+
+	static Bundlizer () {
+		UnityPackage();
 	}
 }
