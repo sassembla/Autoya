@@ -1,5 +1,5 @@
 # Autoya
-ver 0.8.1
+ver 0.8.2
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true")
 
@@ -27,7 +27,7 @@ MIT.
 
 ## Progress
 
-###Log-in / Log-out
+### automatic Authentication
 already implemented.
 
 ###AssetBundle list/preload/load
@@ -37,7 +37,7 @@ already implemented.
 | Protocol        | Progress     |
 | ------------- |:-------------:|
 | http/1 | done | 
-| http/2 | done | 
+| http/2 | not yet | 
 | tcp      | not yet      | 
 | udp	| not yet      |  
 
@@ -62,6 +62,10 @@ implementing.
 ## Installation
 unitypackage is ready!
 
+1. use Autoya.unitypackage.
+2. add Purchase plugin via Unity Services.
+3. done!
+
 ## Usage
-now updating.
+all example usage is in Assets/AutoyaSamples folder.
 

@@ -144,8 +144,8 @@ namespace AutoyaFramework.AssetBundles {
                             continue;
                         }
 
-                        Debug.LogWarning("ここに問題あるかも〜。GameObjectになれないものをロードできないのでは？ つまりAssetTypeの指定が必要？");
-                        var loadCoroutine = LoadAssetBundleOnMemory<GameObject>(
+                        // set UnityEngine.Object for request. this asset will never use directory.
+                        var loadCoroutine = LoadAssetBundleOnMemory<UnityEngine.Object>(
                             dependentBundleName, 
                             string.Empty,// bundleName not required.
                             (depBundleName, depObj) => {
