@@ -1,5 +1,5 @@
 # Autoya
-var 0.8.1
+ver 0.8.1
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true")
 
@@ -60,7 +60,8 @@ implementing.
 
 
 ## Installation
-now updating.
+unitypackage is ready!
 
 ## Usage
 now updating.
+

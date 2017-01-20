@@ -134,11 +134,12 @@ namespace AutoyaFramework {
 				var tokenConnectionId = AuthSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
 				
 				var tokenUrl = AuthSettings.AUTH_URL_BOOT;
-				var bootData = 1048524945039600.ToString();
 				
 				Dictionary<string, string> tokenRequestHeader = null;
-				Action<Dictionary<string, string>> authRequestHeaderLoaded = requestHeader => {
+				var bootData = string.Empty;
+				Action<Dictionary<string, string>, string> authRequestHeaderLoaded = (requestHeader, data) => {
 					tokenRequestHeader = requestHeader;
+					bootData = data;
 				};
 				var bootKeyLoadCor = autoya.OnBootAuthRequest(authRequestHeaderLoaded);
 				
@@ -146,22 +147,42 @@ namespace AutoyaFramework {
 					yield return null;
 				}
 				
-				var cor = tokenHttp.Post(
-					tokenConnectionId,
-					tokenRequestHeader,
-					tokenUrl,
-					bootData,
-					(conId, code, responseHeader, data) => {
-						OnBootResult(conId, responseHeader, code, data, string.Empty);
-					},
-					(conId, code, failedReason, responseHeader) => {
-						OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
-					},
-					BackyardSettings.HTTP_TIMEOUT_SEC
-				);
+				if (string.IsNullOrEmpty(bootData)) {
+					var cor = tokenHttp.Get(
+						tokenConnectionId,
+						tokenRequestHeader,
+						tokenUrl,
+						(conId, code, responseHeader, data) => {
+							OnBootResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
 
-				while (cor.MoveNext()) {
-					yield return null;
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+				} else {
+					var cor = tokenHttp.Post(
+						tokenConnectionId,
+						tokenRequestHeader,
+						tokenUrl,
+						bootData,
+						(conId, code, responseHeader, data) => {
+							OnBootResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
+
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+
 				}
 			}
 
@@ -232,34 +253,53 @@ namespace AutoyaFramework {
 				var tokenConnectionId = AuthSettings.AUTH_CONNECTIONID_BOOT_PREFIX + Guid.NewGuid().ToString();
 				
 				var tokenUrl = AuthSettings.AUTH_URL_BOOT;
-				var bootData = 1048524945039600.ToString();
 				
 				Dictionary<string, string> tokenRequestHeader = null;
-				Action<Dictionary<string, string>> authRequestHeaderLoaded = requestHeader => {
+				var bootData = string.Empty;
+				Action<Dictionary<string, string>, string> authRequestHeaderLoaded = (requestHeader, data) => {
 					tokenRequestHeader = requestHeader;
+					bootData = data;
 				};
 				var bootKeyLoadCor = autoya.OnBootAuthRequest(authRequestHeaderLoaded);
 
 				while (bootKeyLoadCor.MoveNext()) {
 					yield return null;
 				}
+				if (string.IsNullOrEmpty(bootData)) { 
+					var cor = tokenHttp.Get(
+						tokenConnectionId,
+						tokenRequestHeader,
+						tokenUrl,
+						(conId, code, responseHeader, data) => {
+							OnBootResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
 
-				var cor = tokenHttp.Post(
-					tokenConnectionId,
-					tokenRequestHeader,
-					tokenUrl,
-					bootData,
-					(conId, code, responseHeader, data) => {
-						OnBootResult(conId, responseHeader, code, data, string.Empty);
-					},
-					(conId, code, failedReason, responseHeader) => {
-						OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
-					},
-					BackyardSettings.HTTP_TIMEOUT_SEC
-				);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+				} else {
+					var cor = tokenHttp.Post(
+						tokenConnectionId,
+						tokenRequestHeader,
+						tokenUrl,
+						bootData,
+						(conId, code, responseHeader, data) => {
+							OnBootResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnBootResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
 
-				while (cor.MoveNext()) {
-					yield return null;
+					while (cor.MoveNext()) {
+						yield return null;
+					}
 				}
 			}
 
@@ -292,36 +332,55 @@ namespace AutoyaFramework {
 				var refresingTokenHttp = new HTTPConnection();
 				var refreshTokenUrl = AuthSettings.AUTH_URL_REFRESH_TOKEN;
 				
-				var refreshTokenData = 28245896454354.ToString();
-
 				var refreshTokenConnectionId = AuthSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 				
 				Dictionary<string, string> refreshRequestHeader = null;
-				Action<Dictionary<string, string>> refreshRequestHeaderLoaded = requestHeader => {
+				var refreshTokenData = string.Empty;
+				Action<Dictionary<string, string>, string> refreshRequestHeaderLoaded = (requestHeader, data) => {
 					refreshRequestHeader = requestHeader;
+					refreshTokenData = data;
 				};
 
-				var authKeyLoadCor = autoya.OnTokenRefreshRequested(refreshRequestHeaderLoaded);
+				var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded);
 				while (authKeyLoadCor.MoveNext()) {
 					yield return null;
 				}
 				
-				var refreshingTokenCor = refresingTokenHttp.Post(
-					refreshTokenConnectionId,
-					refreshRequestHeader,
-					refreshTokenUrl,
-					refreshTokenData,
-					(conId, code, responseHeader, data) => {
-						OnRefreshResult(conId, responseHeader, code, data, string.Empty);
-					},
-					(conId, code, failedReason, responseHeader) => {
-						OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
-					},
-					BackyardSettings.HTTP_TIMEOUT_SEC
-				);
+				if (string.IsNullOrEmpty(refreshTokenData)) {
+					var refreshingTokenCor = refresingTokenHttp.Get(
+						refreshTokenConnectionId,
+						refreshRequestHeader,
+						refreshTokenUrl,
+						(conId, code, responseHeader, data) => {
+							OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
 
-				while (refreshingTokenCor.MoveNext()) {
-					yield return null;
+					while (refreshingTokenCor.MoveNext()) {
+						yield return null;
+					}
+				} else {
+					var refreshingTokenCor = refresingTokenHttp.Post(
+						refreshTokenConnectionId,
+						refreshRequestHeader,
+						refreshTokenUrl,
+						refreshTokenData,
+						(conId, code, responseHeader, data) => {
+							OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
+
+					while (refreshingTokenCor.MoveNext()) {
+						yield return null;
+					}
 				}
 			}
 
@@ -387,7 +446,7 @@ namespace AutoyaFramework {
 			}
 
 			private IEnumerator OnTokenRefreshSucceeded (Dictionary<string, string> responseHeader, string tokenData) {
-				var cor = autoya.OnTokenRefreshReceived(responseHeader, tokenData);
+				var cor = autoya.OnTokenRefreshResponse(responseHeader, tokenData);
 				while (cor.MoveNext()) {
 					yield return null;
 				}
@@ -414,36 +473,55 @@ namespace AutoyaFramework {
 				var refresingTokenHttp = new HTTPConnection();
 				var refreshTokenUrl = AuthSettings.AUTH_URL_REFRESH_TOKEN;
 				
-				var refreshTokenData = 28245896454354.ToString();
-
 				var refreshTokenConnectionId = AuthSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 				
 				Dictionary<string, string> refreshRequestHeader = null;
-				Action<Dictionary<string, string>> refreshRequestHeaderLoaded = requestHeader => {
+				var refreshTokenData = string.Empty;
+				Action<Dictionary<string, string>, string> refreshRequestHeaderLoaded = (requestHeader, data) => {
 					refreshRequestHeader = requestHeader;
+					refreshTokenData = data;
 				};
 
-				var authKeyLoadCor = autoya.OnTokenRefreshRequested(refreshRequestHeaderLoaded);
+				var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded);
 				while (authKeyLoadCor.MoveNext()) {
 					yield return null;
 				}
 				
-				var cor = refresingTokenHttp.Post(
-					refreshTokenConnectionId,
-					refreshRequestHeader,
-					refreshTokenUrl,
-					refreshTokenData,
-					(conId, code, responseHeader, data) => {
-						OnRefreshResult(conId, responseHeader, code, data, string.Empty);
-					},
-					(conId, code, failedReason, responseHeader) => {
-						OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
-					},
-					BackyardSettings.HTTP_TIMEOUT_SEC
-				);
+				if (string.IsNullOrEmpty(refreshTokenData)) {
+					var cor = refresingTokenHttp.Get(
+						refreshTokenConnectionId,
+						refreshRequestHeader,
+						refreshTokenUrl,
+						(conId, code, responseHeader, data) => {
+							OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
 
-				while (cor.MoveNext()) {
-					yield return null;
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+				} else {
+					var cor = refresingTokenHttp.Post(
+						refreshTokenConnectionId,
+						refreshRequestHeader,
+						refreshTokenUrl,
+						refreshTokenData,
+						(conId, code, responseHeader, data) => {
+							OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+						},
+						(conId, code, failedReason, responseHeader) => {
+							OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+						},
+						BackyardSettings.HTTP_TIMEOUT_SEC
+					);
+
+					while (cor.MoveNext()) {
+						yield return null;
+					}
 				}
 			}
 

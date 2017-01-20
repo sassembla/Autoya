@@ -20,6 +20,7 @@ namespace AutoyaFramework {
 
         /**
             detect if already authenticated or not.
+            if not first boot, you can load your token here.
         */
         private bool IsFirstBoot () {
             var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
@@ -29,8 +30,11 @@ namespace AutoyaFramework {
         /**
             send authentication data to server at first boot.
         */
-        private IEnumerator OnBootAuthRequest (Action<Dictionary<string, string>> setHeaderToRequest) {
-            // set boot authentication data.
+        private IEnumerator OnBootAuthRequest (Action<Dictionary<string, string>, string> setHeaderAndDataToRequest) {
+            // set boot body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
+            var data = "some boot data";
+
+            // set boot authentication header.
             var bootKey = AuthSettings.AUTH_BOOT;
             var base64Str = Base64.FromBytes(bootKey);
 
@@ -38,7 +42,7 @@ namespace AutoyaFramework {
                 {"Authorization", base64Str}
             };
 
-            setHeaderToRequest(bootRequestHeader);
+            setHeaderAndDataToRequest(bootRequestHeader, data);
             yield break;
         }
 
@@ -65,7 +69,10 @@ namespace AutoyaFramework {
         /**
             received 401. should authenticate again.
         */
-        private IEnumerator OnTokenRefreshRequested (Action<Dictionary<string, string>> setHeaderToRequest) {
+        private IEnumerator OnTokenRefreshRequest (Action<Dictionary<string, string>, string> setHeaderToRequest) {
+            // set refresh body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
+            var data = "some refresh data";
+
             // return refresh token for re-authenticate.
             var refreshToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
 
@@ -73,14 +80,14 @@ namespace AutoyaFramework {
                 {"Authorization", refreshToken}
             };
 
-            setHeaderToRequest(refreshRequestHeader);
+            setHeaderToRequest(refreshRequestHeader, data);
             yield break;
         }
 
         /**
             received refreshed token.
         */
-        private IEnumerator OnTokenRefreshReceived (Dictionary<string, string> responseHeader, string data) {
+        private IEnumerator OnTokenRefreshResponse (Dictionary<string, string> responseHeader, string data) {
             var isValidResponse = true;
             if (isValidResponse) {
                 Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, data);
