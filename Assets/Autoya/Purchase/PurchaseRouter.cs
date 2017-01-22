@@ -13,19 +13,22 @@ using UnityEngine.Purchasing;
     not depends on Autoya itself.
 */
 namespace AutoyaFramework.Purchase {
+    [Serializable] public struct ProductInfos {
+        [SerializeField] public ProductInfo[] productInfos;
+    }
+
+    [Serializable] public struct ProductInfo {
+        [SerializeField] public string productId;
+        [SerializeField] public string platformProductId;
+
+        public ProductInfo (string productId, string platformProductId) {
+            this.productId = productId;
+            this.platformProductId = platformProductId;
+        }
+    }
+    
     public class PurchaseRouter : IStoreListener {
         
-        
-        [Serializable] public struct ProductInfo {
-            [SerializeField] public string productId;
-            [SerializeField] public string platformProductId;
-
-            public ProductInfo (string productId, string platformProductId) {
-                this.productId = productId;
-                this.platformProductId = platformProductId;
-            }
-        }
-
         [Serializable] public struct PurchaseFailed {
             public string ticketId;
             public string reason;
@@ -113,6 +116,7 @@ namespace AutoyaFramework.Purchase {
         private readonly string storeId;
         private readonly Action<IEnumerator> enumExecutor;
 
+        private readonly Func<string, string> onTicketResponse;
         /**
             constructor.
 
@@ -124,6 +128,8 @@ namespace AutoyaFramework.Purchase {
          */
         public PurchaseRouter (
             Action<IEnumerator> executor,
+            Func<string, ProductInfo[]> onLoadProducts,
+            Func<string, string> onTicketResponse,
             Action onPurchaseReady, 
             Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed,
             Autoya.HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
@@ -158,11 +164,14 @@ namespace AutoyaFramework.Purchase {
                 this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             }
 
-            var cor = _Ready(onPurchaseReady, onPurchaseReadyFailed);
+            this.onTicketResponse = onTicketResponse;
+
+            var cor = _Ready(onLoadProducts, onPurchaseReady, onPurchaseReadyFailed);
             enumExecutor(cor);
         }
         
         private IEnumerator _Ready (
+            Func<string, ProductInfo[]> onLoadProducts,
             Action reloaded, 
             Action<PurchaseError, string, AutoyaStatus> reloadFailed
         ) {
@@ -185,13 +194,8 @@ namespace AutoyaFramework.Purchase {
                 connectionId,
                 url, 
                 (conId, data) => {
-                    Debug.LogWarning("アイテム取得したのでデータを入れる。現在はダミーAPIが適当なデータを入れてくるのを想定してる。サーバがプラットフォームdependsなデータを返してくる想定。そのほうがいいっしょ。");
-                    var productInfos = new ProductInfo[]{
-                        new ProductInfo("100_gold_coins", "100_gold_coins_iOS"),
-                        new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS")
-                    };
-
-                    ReadyIAPFeature(productInfos);
+                    var products = onLoadProducts(data);
+                    ReadyIAPFeature(products);
                 },
                 (conId, code, reason, autoyaStatus) => {
                     Debug.LogError("failed, code:" + code + " reason:" + reason);
@@ -302,7 +306,7 @@ namespace AutoyaFramework.Purchase {
                 yield break;
             }
 
-            Debug.LogWarning("該当するproductを購買させる許可があるかどうか。事前に取得しておいたアイテムリストで判断する。");
+            
             if (false) {
                 purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.", new AutoyaStatus());
                 yield break;
@@ -323,8 +327,7 @@ namespace AutoyaFramework.Purchase {
                 ticketUrl,
                 data,
                 (conId, resultData) => {
-                    Debug.LogWarning("ticketの取得完了 resultData:" + resultData);
-                    var ticketId = resultData;
+                    var ticketId = onTicketResponse(resultData);
                     
                     TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
                 },

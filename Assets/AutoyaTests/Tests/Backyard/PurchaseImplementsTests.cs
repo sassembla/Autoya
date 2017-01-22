@@ -47,6 +47,11 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
     }
 
+    [MTest] public void DetectPurchaseReady () {
+        // うーーん動的にセットアップする方法、、ああ、テンプレートを嵌めるみたいなのができればいいのか。extendsしてそっちを使う、みたいな。
+        // 推奨できね〜〜、、
+    }
+
     [MTest] public void PurchaseViaAutoya () {
         var succeeded = false;
         var done = false;

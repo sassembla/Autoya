@@ -19,6 +19,7 @@ namespace AutoyaFramework.Settings.Auth {
 		public const int AUTH_TOKENREFRESH_MAX_RETRY_COUNT = 3;
 
         public const int AUTH_HTTP_CODE_UNAUTHORIZED = 401;
+        public const int AUTOYA_HTTP_CODE_INTERNAL_UNAUTHORIZED = 10401;// Autoya's original internal response code. emit until authentication feature is ready.
 
         /*
             sample key.

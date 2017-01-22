@@ -636,7 +636,7 @@ namespace AutoyaFramework {
 					return; 
 				}
 			}
-
+			
 			/*
 				finally, connection is done as succeeded.
 			*/

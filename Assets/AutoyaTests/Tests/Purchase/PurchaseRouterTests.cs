@@ -31,7 +31,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
             ・購入キャンセルチケットの削除
             ・購入失敗チケットの処理
         
-        レストアとかは対応しないぞ。
+        非消費アイテム、レストアとかは対応しないぞ。まだ。
 
         特定のUnityのIAPの ConfigurationBuilder.Instance メソッドが、Playing中でないとProgressしない。そのため、このテストをEditorで走らせることができない。
         ちょっと回避しようがない。
@@ -55,6 +55,14 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
             () => {
                 router = new PurchaseRouter(
                     mainThreadRunner,
+                    productData => {
+                        // dummy response.
+                        return new ProductInfo[] {
+                            new ProductInfo("100_gold_coins", "100_gold_coins_iOS"),
+                            new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS")
+                        };
+                    },
+                    ticketData => ticketData,
                     () => {},
                     (err, reason, status) => {}
                 );

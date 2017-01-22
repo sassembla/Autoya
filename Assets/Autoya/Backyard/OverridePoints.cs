@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using AutoyaFramework.Purchase;
 using AutoyaFramework.Representation.Base64;
 using AutoyaFramework.Settings.Auth;
 using UnityEngine;
@@ -102,6 +103,11 @@ namespace AutoyaFramework {
         /*
             standard http request & response handler.
         */
+
+        /**
+            fire when generating http request, via Autoya.Http_X.
+            you can add some kind of authorization parameter to request header.
+        */
         private Dictionary<string, string> OnHttpRequest (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
             var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
             requestHeader["Authorization"] = Base64.FromString(accessToken);
@@ -109,11 +115,22 @@ namespace AutoyaFramework {
             return requestHeader;
         }
 
-        private Dictionary<string, string> OnHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data) {
-            var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
-            var result = responseHeader["Authorization"];
-            
-            return responseHeader;
+        /**
+            fire when reveived http response from server, via Autoya.Http_X.
+            you can verify response data & header parameter.
+
+            accepted http code is 200 ~ 299.
+
+            if everything looks good, return string.Empty. 
+                then "succeeded" action of Autoya.Http_X will be raised.
+
+            else, return your origial error message. 
+                then "failed" action of Autoya.Http_X will be raised with your message.
+        */
+        private string OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, object data) {
+            if (true) {
+                return string.Empty;
+            }
         }
 
 
@@ -121,6 +138,28 @@ namespace AutoyaFramework {
             purchase feature handler.
         */
 
+
+        /**
+            fire when the server returns product datas for this app.
+            these datas should return platform-specific data.
+
+            e,g, if player is iOS, should return iOS item data.
+        */
+        private ProductInfo[] OnLoadProductsResponse (string responseData) {
+            /*
+                get ProductInfo[] data from this responseData.
+                server should return ProductInfos data type.
+
+                below is generating products data for exsample.
+                responseData is ignored.
+
+                let's change.
+            */
+            return new ProductInfo[] {
+                new ProductInfo("100_gold_coins", "100_gold_coins_iOS"),
+                new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS")
+            };
+        }
         
         /**
             purchase feature is succeeded to load.
@@ -129,15 +168,27 @@ namespace AutoyaFramework {
             // do something if need.
         }
 
-        private void OnPurchaseReadyFailed (Purchase.PurchaseRouter.PurchaseError err, string reason, AutoyaStatus autoyaStatus) {
-            // do something if need. e,g, show dialog to player.
-            
-            // show "reloading purchase feature... please wait amoment" or other message by error.
-            // this err includes "player can not available purchase feature" and other many situations.
-            // see Purchase.PurchaseRouter.PurchaseError enum.
+        /**
+            fire when failed to ready purchase feature.
 
-            // purchase feature is failed to load. but Autoya retries to load store feature intervally in background.
-            // when success, OnPurchaseReady will be called.
+            e,g, show dialog to player. show "reloading purchase feature... please wait amoment" or other message by error.
+            this err parameter includes "player can not available purchase feature" and other many situations are exists.
+            see Purchase.PurchaseRouter.PurchaseError enum.
+
+            purchase feature is failed to load. but Autoya retries to load store feature in background automatically.
+            when success, OnPurchaseReady will be called.
+        */
+        private void OnPurchaseReadyFailed (Purchase.PurchaseRouter.PurchaseError err, string reason, AutoyaStatus autoyaStatus) {
+            // do something if need. 
+        }
+
+        /**
+            received ticket data for purchasing product via Autoya.Purchase.
+            you can modify received ticket data string to desired data.
+            returned string will be send to the server for item-deploy information of this purchase.
+        */
+        private string OnTicketResponse (string ticketData) {
+            return ticketData;
         }
     }
 }

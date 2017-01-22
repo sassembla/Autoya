@@ -24,6 +24,15 @@ namespace AutoyaFramework {
 
             _purchaseRouter = new PurchaseRouter(
                 mainthreadDispatcher.Commit,
+                productSourceData => {
+                    /*
+                        handle received product datas to OverridePoint.
+                    */
+                    return OnLoadProductsResponse(productSourceData);
+                },
+                ticketData => {
+                    return OnTicketResponse(ticketData);
+                },
                 () => {
                     purchaseFeatureState = PurchaseFeatureState.Ready;
                     OnPurchaseReady();

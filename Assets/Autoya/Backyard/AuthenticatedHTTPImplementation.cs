@@ -3,6 +3,7 @@ using AutoyaFramework.Connections.HTTP;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using AutoyaFramework.Settings.Auth;
 
 namespace AutoyaFramework {
     public partial class Autoya {
@@ -44,20 +45,28 @@ namespace AutoyaFramework {
 			}
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Get, url, additionalHeader, string.Empty);
 			
-			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
-				succeeded(conId, resultData as string);
-			};
-
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Get(
 					connectionId,
 					headers,
 					url,
-					(conId, code, responseHeaders, resultData) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+					(conId, code, responseHeader, resultData) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty, 
+							(_conId, _data) => {
+								var stringData = _data as string;
+								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Get, url, responseHeader, stringData);
+								if (!string.IsNullOrEmpty(validateResult)) {
+									failed(connectionId, code, validateResult, new AutoyaStatus());
+									return;
+								}
+								
+								succeeded(_conId, stringData);
+							},
+							failed
+						);
 					},
-					(conId, code, reason, responseHeaders) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+					(conId, code, reason, responseHeader) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => {}, failed);
 					},
 					timeoutSec
 				)
@@ -93,21 +102,29 @@ namespace AutoyaFramework {
 			}
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Post, url, additionalHeader, data);
 			
-			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
-				succeeded(conId, resultData as string);
-			};
-
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Post(
 					connectionId,
 					headers,
 					url,
 					data,
-					(conId, code, responseHeaders, resultData) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+					(conId, code, responseHeader, resultData) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
+							(_conId, _data) => {
+								var stringData = _data as string;
+								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Post, url, responseHeader, stringData);
+								if (!string.IsNullOrEmpty(validateResult)) {
+									failed(connectionId, code, validateResult, new AutoyaStatus());
+									return;
+								}
+								
+								succeeded(_conId, stringData);
+							},
+							failed
+						);
 					},
-					(conId, code, reason, responseHeaders) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+					(conId, code, reason, responseHeader) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => {}, failed);
 					},
 					timeoutSec
 				)
@@ -143,21 +160,29 @@ namespace AutoyaFramework {
 			}
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Put, url, additionalHeader, data);
 			
-			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
-				succeeded(conId, resultData as string);
-			};
-
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Put(
 					connectionId,
 					headers,
 					url,
 					data,
-					(conId, code, responseHeaders, resultData) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+					(conId, code, responseHeader, resultData) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
+							(_conId, _data) => {
+								var stringData = _data as string;
+								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Put, url, responseHeader, stringData);
+								if (!string.IsNullOrEmpty(validateResult)) {
+									failed(connectionId, code, validateResult, new AutoyaStatus());
+									return;
+								}
+								
+								succeeded(_conId, stringData);
+							},
+							failed
+						);
 					},
-					(conId, code, reason, responseHeaders) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+					(conId, code, reason, responseHeader) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => {}, failed);
 					},
 					timeoutSec
 				)
@@ -193,20 +218,28 @@ namespace AutoyaFramework {
 			}
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Delete, url, additionalHeader, data);
 			
-			Action<string, object> onSucceededAsStringData = (conId, resultData) => {
-				succeeded(conId, resultData as string);
-			};
-
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Delete(
 					connectionId,
 					headers,
 					url,
-					(conId, code, responseHeaders, resultData) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, resultData, string.Empty, onSucceededAsStringData, failed);
+					(conId, code, responseHeader, resultData) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
+							(_conId, _data) => {
+								var stringData = _data as string;
+								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Delete, url, responseHeader, stringData);
+								if (!string.IsNullOrEmpty(validateResult)) {
+									failed(connectionId, code, validateResult, new AutoyaStatus());
+									return;
+								}
+								
+								succeeded(_conId, stringData);
+							}, 
+							failed
+						);
 					},
-					(conId, code, reason, responseHeaders) => {
-						autoya.HttpResponseHandling(conId, responseHeaders, code, string.Empty, reason, onSucceededAsStringData, failed);
+					(conId, code, reason, responseHeader) => {
+						autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => {}, failed);
 					},
 					timeoutSec
 				)
@@ -218,13 +251,12 @@ namespace AutoyaFramework {
 		private class ConnectionErrorInstance {
 			private readonly string connectionId;
 			private static Dictionary<string, string> responseHeader = new Dictionary<string, string>();
-			private const int code = 0;// そのうち変更する。
+			private const int code = AuthSettings.AUTOYA_HTTP_CODE_INTERNAL_UNAUTHORIZED;
 			private readonly string reason;
 			private readonly Action<string, int, string, AutoyaStatus> failed;
 			private static AutoyaStatus status = new AutoyaStatus();
 
 			public ConnectionErrorInstance (string connectionId, string reason, Action<string, int, string, AutoyaStatus> failed) {
-				Debug.LogWarning("まだauthが終わっていない状態でのhttpのエラーコードcodeが　0に固定されているのをなんとかする。判別できたほうがいい。");
 				this.connectionId = connectionId;
 				this.reason = reason;
 				this.failed = failed;
