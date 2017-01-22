@@ -38,29 +38,38 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 		
 		WaitUntil(
 			() => {
-				return authorized;
+				return authorized && Autoya.Purchase_IsReady();
 			}, 
 			5, 
-			"failed to auth."
+			"failed to auth or failed to ready purchase."
 		);
-		
-		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
     }
 
-    [MTest] public void DetectPurchaseReady () {
-        // うーーん動的にセットアップする方法、、ああ、テンプレートを嵌めるみたいなのができればいいのか。extendsしてそっちを使う、みたいな。
-        // 推奨できね〜〜、、
+    [MTest] public void GetProductInfos () {
+        var products = Autoya.Purchase_ProductInfos();
+        Assert(products.Length == 3, "not match.");
     }
 
     [MTest] public void PurchaseViaAutoya () {
         var succeeded = false;
         var done = false;
-        RunEnumeratorOnMainThread(
-            Purchase(isSucceeded => {
-                done = true;
-                succeeded = isSucceeded;
-            }),
-            false
+        RunOnMainThread(
+            () => {
+                var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
+        
+                Autoya.Purchase(
+                    purchaseId, 
+                    "1000_gold_coins",
+                    pId => {
+                        done = true;
+                        succeeded = true;
+                    }, 
+                    (pId, err, reason, autoyaStatus) => {
+                        done = true;
+                        succeeded = false;
+                    }
+                );
+            }
         );
 
         WaitUntil(
@@ -69,24 +78,5 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
             "failed to purchase."
         );
         Assert(succeeded, "not successed.");
-    }
-
-    private IEnumerator Purchase (Action<bool> done) {
-        while (!Autoya.Purchase_IsReady()) {
-            yield return null;
-        }
-        
-        var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
-        
-        Autoya.Purchase(
-            purchaseId, 
-            "1000_gold_coins",
-            pId => {
-                done(true);
-            }, 
-            (pId, err, reason, autoyaStatus) => {
-                done(false);
-            }
-        );
     }
 }

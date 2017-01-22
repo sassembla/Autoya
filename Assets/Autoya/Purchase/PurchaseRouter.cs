@@ -13,17 +13,20 @@ using UnityEngine.Purchasing;
     not depends on Autoya itself.
 */
 namespace AutoyaFramework.Purchase {
-    [Serializable] public struct ProductInfos {
-        [SerializeField] public ProductInfo[] productInfos;
-    }
-
+    /**
+        struct for product data.
+    */
     [Serializable] public struct ProductInfo {
         [SerializeField] public string productId;
         [SerializeField] public string platformProductId;
+        [SerializeField] public bool isAvailableToThisPlayer;
+        [SerializeField] public string info;
 
-        public ProductInfo (string productId, string platformProductId) {
+        public ProductInfo (string productId, string platformProductId, bool isPurchasableToThisPlayer, string info) {
             this.productId = productId;
             this.platformProductId = platformProductId;
+            this.isAvailableToThisPlayer = isPurchasableToThisPlayer;
+            this.info = info;
         }
     }
     
@@ -115,8 +118,10 @@ namespace AutoyaFramework.Purchase {
 
         private readonly string storeId;
         private readonly Action<IEnumerator> enumExecutor;
-
         private readonly Func<string, string> onTicketResponse;
+
+        private ProductInfo[] verifiedProducts;
+
         /**
             constructor.
 
@@ -169,6 +174,10 @@ namespace AutoyaFramework.Purchase {
             var cor = _Ready(onLoadProducts, onPurchaseReady, onPurchaseReadyFailed);
             enumExecutor(cor);
         }
+
+        public ProductInfo[] ProductInfos () {
+            return verifiedProducts;
+        }
         
         private IEnumerator _Ready (
             Func<string, ProductInfo[]> onLoadProducts,
@@ -195,6 +204,7 @@ namespace AutoyaFramework.Purchase {
                 url, 
                 (conId, data) => {
                     var products = onLoadProducts(data);
+                    this.verifiedProducts = products;
                     ReadyIAPFeature(products);
                 },
                 (conId, code, reason, autoyaStatus) => {
@@ -307,9 +317,18 @@ namespace AutoyaFramework.Purchase {
             }
 
             
-            if (false) {
-                purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.", new AutoyaStatus());
-                yield break;
+            if (verifiedProducts != null) {
+                var verified = false;
+                foreach (var verifiedProduct in verifiedProducts) {
+                    if (verifiedProduct.productId == productId && verifiedProduct.isAvailableToThisPlayer) {
+                        verified = true;
+                    }
+                }
+
+                if (!verified) {
+                    purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.", new AutoyaStatus());
+                    yield break;
+                }
             }
             
             // renew callback.
@@ -332,8 +351,7 @@ namespace AutoyaFramework.Purchase {
                     TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
                 },
                 (conId, code, reason, autoyaStatus) => {
-                    Debug.LogWarning("ふおーーー場合分けエラー出すの忘れてた、怖い。conId:" + conId + " code:" + code + " reason:" + reason);
-                    purchaseFailed(purchaseId, PurchaseError.TicketGetError, "failed to purchase.", autoyaStatus);
+                    purchaseFailed(purchaseId, PurchaseError.TicketGetError, "code:" + code + " reason:" + reason, autoyaStatus);
                     routerState = RouterState.PurchaseReady;
                 }
             );
@@ -456,8 +474,7 @@ namespace AutoyaFramework.Purchase {
         }
 
         private void SendPaidTicket (PurchaseEventArgs e) {
-            Debug.LogError("storeId:" + storeId + " get paid & uncompleted purchase. e:" + e.purchasedProduct.definition.id);// 確認したいところ。ストアインスタンスが他にもある、という状況に陥っている。
-            // どうすることで回避できるか。ストアインスタンスを2つ作らない、とかか。うーん、、あ、停止させればいいのか。わざわざ。
+            Debug.LogError("storeId:" + storeId + " get paid & uncompleted purchase. e:" + e.purchasedProduct.definition.id);
             var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
             var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
 

@@ -1,7 +1,7 @@
 namespace AutoyaFramework.Settings.Auth {
     public class AuthSettings {
         /*
-            sample urls and connectionIds.
+            sample urls and prefixies.
         */
         public const string AUTH_URL_BOOT = "https://httpbin.org/post";
         public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";
@@ -22,7 +22,7 @@ namespace AutoyaFramework.Settings.Auth {
         public const int AUTOYA_HTTP_CODE_INTERNAL_UNAUTHORIZED = 10401;// Autoya's original internal response code. emit until authentication feature is ready.
 
         /*
-            sample key.
+            sample authentication key.
         */
         public static readonly byte[] AUTH_BOOT = new byte[]{100, 101, 102};
     }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework.AssetBundles;
+using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
 
 namespace AutoyaFramework {
@@ -52,7 +53,7 @@ namespace AutoyaFramework {
 			}
 
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader("bundleDlPath", new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
+                autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
             }
 
             autoya.mainthreadDispatcher.Commit(
@@ -60,8 +61,9 @@ namespace AutoyaFramework {
             );
         }
         public static void AssetBundle_UnloadAllAssets () {
+            Debug.LogError("キャッシュから消す、っていうのをどう見せるか考える必要がある。明示が必要。　それとは別に、キャッシュから消すのも必要。");
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader("bundleDlPath", new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
+                autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
             }
             autoya._assetBundleLoader.UnloadAllAssetBundles();
         }

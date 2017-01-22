@@ -58,8 +58,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
                     productData => {
                         // dummy response.
                         return new ProductInfo[] {
-                            new ProductInfo("100_gold_coins", "100_gold_coins_iOS"),
-                            new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS")
+                            new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                            new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                         };
                     },
                     ticketData => ticketData,
@@ -93,8 +93,13 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         EditorApplication.update += purchaseCoroutine;
     };
 
+    [MTest] public void ShowProductInfos () {
+        var products = router.ProductInfos();
+        Assert(products.Length == 2, "not match.");
+    }
+
+
     [MTest] public void Purchase () {
-        WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
         var purchaseId = "dummy purchase Id";
         var productId = "100_gold_coins";
 

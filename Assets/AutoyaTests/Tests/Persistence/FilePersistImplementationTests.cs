@@ -54,7 +54,7 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
 			
 			var appendData = "append data " + Guid.NewGuid().ToString();
-			var appendResult = Autoya.Persist_Append(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, appendData);
+			Autoya.Persist_Append(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, appendData);
 			
 			var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
 			Assert(loadedData == data + appendData, "data does not match. loadedData:" + loadedData);

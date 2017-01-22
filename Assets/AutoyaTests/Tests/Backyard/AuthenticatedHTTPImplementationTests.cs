@@ -54,7 +54,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 
 	[MTest] public void AutoyaHTTPGet () {
 		var result = string.Empty;
-		var connectionId = Autoya.Http_Get(
+		Autoya.Http_Get(
 			"https://httpbin.org/get", 
 			(string conId, string resultData) => {
 				result = "done!:" + resultData;
@@ -72,7 +72,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 
 	[MTest] public void AutoyaHTTPGetWithAdditionalHeader () {
 		var result = string.Empty;
-		var connectionId = Autoya.Http_Get(
+		Autoya.Http_Get(
 			"https://httpbin.org/headers", 
 			(conId, resultData) => {
 				result = resultData;
@@ -94,7 +94,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	[MTest] public void AutoyaHTTPGetFailWith404 () {
 		var resultCode = 0;
 		
-		var connectionId = Autoya.Http_Get(
+		Autoya.Http_Get(
 			"https://httpbin.org/status/404", 
 			(conId, resultData) => {
 				Assert(false, "unexpected succeeded. resultData:" + resultData);
@@ -130,7 +130,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		// /*
 		// 	dummy server returns 401 forcely.
 		// */
-		// var connectionId = Autoya.Http_Get(
+		// Autoya.Http_Get(
 		// 	"https://httpbin.org/status/401", 
 		// 	(string conId, string resultData) => {
 		// 		Assert(false, "unexpected succeeded. resultData:" + resultData);
@@ -156,7 +156,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			server responses 1 sec later.
 			it is impossible.
 		*/
-		var connectionId = Autoya.Http_Get(
+		Autoya.Http_Get(
 			"https://httpbin.org/delay/1", 
 			(string conId, string resultData) => {
 				Assert(false, "got success result.");
@@ -181,7 +181,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 
 	[MTest] public void AutoyaHTTPPost () {
 		var result = string.Empty;
-		var connectionId = Autoya.Http_Post(
+		Autoya.Http_Post(
 			"https://httpbin.org/post", 
 			"data",
 			(string conId, string resultData) => {
@@ -203,7 +203,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	*/
 	// [MTest] public void AutoyaHTTPPostWithAdditionalHeader () {
 	// 	var result = string.Empty;
-	// 	var connectionId = Autoya.Http_Post(
+	// 	Autoya.Http_Post(
 	// 		"https://httpbin.org/headers", 
 	// 		"data",
 	// 		(string conId, string resultData) => {
@@ -231,7 +231,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	[MTest] public void AutoyaHTTPPostFailWith404 () {
 		var resultCode = 0;
 		
-		var connectionId = Autoya.Http_Post(
+		Autoya.Http_Post(
 			"https://httpbin.org/status/404",
 			"data", 
 			(string conId, string resultData) => {
@@ -268,7 +268,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		// /*
 		// 	dummy server returns 401 definitely.
 		// */
-		// var connectionId = Autoya.Http_Post(
+		// Autoya.Http_Post(
 		// 	"https://httpbin.org/status/401",
 		// 	"data", 
 		// 	(string conId, string resultData) => {
@@ -293,7 +293,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		/*
 			fake server should be response 1msec
 		*/
-		var connectionId = Autoya.Http_Post(
+		Autoya.Http_Post(
 			"https://httpbin.org/delay/1",
 			"data",
 			(conId, resultData) => {

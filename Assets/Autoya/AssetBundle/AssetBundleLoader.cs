@@ -302,7 +302,7 @@ namespace AutoyaFramework.AssetBundles {
 
             Action<string, int, string, AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
                 // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
-                Debug.LogError("assetName:" + assetName + " err:" + AssetBundleLoadError.DownloadFailed + " failed to download AssetBundle. code:" + code + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + "  autoyaStatus/isAuthFailed:" + autoyaStatus.isAuthFailed);
+                // Debug.LogError("assetName:" + assetName + " err:" + AssetBundleLoadError.DownloadFailed + " failed to download AssetBundle. code:" + code + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + "  autoyaStatus/isAuthFailed:" + autoyaStatus.isAuthFailed);
                 failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason, autoyaStatus);
             };
 

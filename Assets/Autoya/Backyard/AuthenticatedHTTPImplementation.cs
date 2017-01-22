@@ -6,13 +6,20 @@ using UnityEngine;
 using AutoyaFramework.Settings.Auth;
 
 namespace AutoyaFramework {
+	/*
+		http request methods.
+	*/
+	public enum HttpMethod {
+		Get,
+		Post,
+		Put,
+		Delete
+	}
+
+	/**
+		authenticated http feature.
+	*/
     public partial class Autoya {
-		/*
-			http.
-				1.hold header with auth-token and identity for each http action.
-				2.renew header when these are replaced or deleted. 
-		*/
-		
 		private HTTPConnection _autoyaHttp;
 		
 		/*
@@ -56,7 +63,7 @@ namespace AutoyaFramework {
 								var stringData = _data as string;
 								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Get, url, responseHeader, stringData);
 								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus());
+									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
 									return;
 								}
 								
@@ -114,7 +121,7 @@ namespace AutoyaFramework {
 								var stringData = _data as string;
 								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Post, url, responseHeader, stringData);
 								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus());
+									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
 									return;
 								}
 								
@@ -172,7 +179,7 @@ namespace AutoyaFramework {
 								var stringData = _data as string;
 								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Put, url, responseHeader, stringData);
 								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus());
+									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
 									return;
 								}
 								
@@ -229,7 +236,7 @@ namespace AutoyaFramework {
 								var stringData = _data as string;
 								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Delete, url, responseHeader, stringData);
 								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus());
+									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
 									return;
 								}
 								
@@ -250,7 +257,6 @@ namespace AutoyaFramework {
 
 		private class ConnectionErrorInstance {
 			private readonly string connectionId;
-			private static Dictionary<string, string> responseHeader = new Dictionary<string, string>();
 			private const int code = AuthSettings.AUTOYA_HTTP_CODE_INTERNAL_UNAUTHORIZED;
 			private readonly string reason;
 			private readonly Action<string, int, string, AutoyaStatus> failed;

@@ -4,19 +4,20 @@ using AutoyaFramework.Purchase;
 using UnityEngine;
 
 namespace AutoyaFramework {
+    public enum PurchaseFeatureState {
+        None,
+        Loading,
+        Ready,
+        Reloading,
+        Closed
+    }
+    
 	public partial class Autoya {
         /*
             Purchase implementation.
         */
         private PurchaseRouter _purchaseRouter;
         
-        public enum PurchaseFeatureState {
-            None,
-            Loading,
-            Ready,
-            Reloading,
-            Closed
-        }
         private PurchaseFeatureState purchaseFeatureState = PurchaseFeatureState.None;
         
         private void ReloadPurchasability () {
@@ -77,14 +78,23 @@ namespace AutoyaFramework {
             if (autoya.purchaseFeatureState != PurchaseFeatureState.Ready) {
                 return false;
             }
-           
-            var purchasability = autoya._purchaseRouter.IsPurchaseReady();
-
-            if (purchasability) {
-                return true;
-            } else {
+            
+            if (!autoya._purchaseRouter.IsPurchaseReady()) {
                 return false;
             }
+
+            return true;
+        }
+
+        public static ProductInfo[] Purchase_ProductInfos () {
+            if (autoya == null) {
+                return new ProductInfo[]{};
+			} 
+			if (!Autoya.Auth_IsAuthenticated()) {
+                return new ProductInfo[]{};
+			}
+
+            return autoya._purchaseRouter.ProductInfos();
         }
 
         

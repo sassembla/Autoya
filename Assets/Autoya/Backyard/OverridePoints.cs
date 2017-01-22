@@ -7,7 +7,7 @@ using AutoyaFramework.Settings.Auth;
 using UnityEngine;
 
 /**
-    modify this class for your authentication dataflow.
+    modify this class for your app's authentication, purchase dataflow.
 */
 namespace AutoyaFramework {
 
@@ -119,15 +119,16 @@ namespace AutoyaFramework {
             fire when reveived http response from server, via Autoya.Http_X.
             you can verify response data & header parameter.
 
-            accepted http code is 200 ~ 299.
+            accepted http code is 200 ~ 299. and these code is already fixed.
 
             if everything looks good, return string.Empty. 
                 then "succeeded" action of Autoya.Http_X will be raised.
 
             else, return your origial error message. 
-                then "failed" action of Autoya.Http_X will be raised with your message.
+                then "failed" action of Autoya.Http_X will be raised with code 200 ~ 299, autoyaStatus(userValidateFailed = true), and your message.
         */
-        private string OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, object data) {
+        private string OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data) {
+            // let's validate http response if need.
             if (true) {
                 return string.Empty;
             }
@@ -135,7 +136,7 @@ namespace AutoyaFramework {
 
 
         /*
-            purchase feature handler.
+            purchase feature handlers.
         */
 
 
@@ -150,14 +151,16 @@ namespace AutoyaFramework {
                 get ProductInfo[] data from this responseData.
                 server should return ProductInfos data type.
 
-                below is generating products data for exsample.
+                below is generating products data for example.
                 responseData is ignored.
 
-                let's change.
+                let's change for your app.
+                    responseData -> ProductInfo[]
             */
             return new ProductInfo[] {
-                new ProductInfo("100_gold_coins", "100_gold_coins_iOS"),
-                new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS")
+                new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins."),
+                new ProductInfo("10000_gold_coins", "10000_gold_coins_iOS", false, "ten tons of coins."),// this product setting is example of not allow to buy for this player, disable to buy but need to be displayed.
             };
         }
         
@@ -169,13 +172,13 @@ namespace AutoyaFramework {
         }
 
         /**
-            fire when failed to ready purchase feature.
+            fire when failed to ready the purchase feature.
 
-            e,g, show dialog to player. show "reloading purchase feature... please wait amoment" or other message by error.
+            e,g, show dialog to player. for example "reloading purchase feature... please wait a moment" or other message of error.
             this err parameter includes "player can not available purchase feature" and other many situations are exists.
             see Purchase.PurchaseRouter.PurchaseError enum.
 
-            purchase feature is failed to load. but Autoya retries to load store feature in background automatically.
+            also the purchase feature is failed to load. but Autoya already started to retry. reloading the store feature automatically.
             when success, OnPurchaseReady will be called.
         */
         private void OnPurchaseReadyFailed (Purchase.PurchaseRouter.PurchaseError err, string reason, AutoyaStatus autoyaStatus) {
@@ -188,6 +191,7 @@ namespace AutoyaFramework {
             returned string will be send to the server for item-deploy information of this purchase.
         */
         private string OnTicketResponse (string ticketData) {
+            // modify if need.
             return ticketData;
         }
     }

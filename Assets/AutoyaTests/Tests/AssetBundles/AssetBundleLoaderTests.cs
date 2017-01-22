@@ -278,14 +278,12 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	*/
 	[MTest] public void Load2Assets_1isDependsOnAnother_DependedFirst () {
 		// texture = depended asset.
-		Texture2D tex = null;
 		var textureLoadDone = false;
 		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
-					tex = texAsset;
 					textureLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
@@ -358,14 +356,12 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 
         // texture = depended asset.
-		Texture2D tex = null;
 		var textureLoadDone = false;
 		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
-					tex = texAsset;
 					textureLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {

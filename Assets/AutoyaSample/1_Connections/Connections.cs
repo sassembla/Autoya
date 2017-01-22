@@ -22,6 +22,7 @@ public class Connections : MonoBehaviour {
 			new Dictionary<string, string>(),// headers
 			3.0 							// timeout
 		);
+		Debug.Log("start get with connectionId:" + connectionId1);
 
 		var postData = "hello world.";
 		var connectionId2 = Autoya.Http_Post(
@@ -34,5 +35,6 @@ public class Connections : MonoBehaviour {
 				Debug.LogError("code:" + code + " reason:" + reason);
 			}
 		);
+		Debug.Log("start post with connectionId:" + connectionId2);
 	}
 }

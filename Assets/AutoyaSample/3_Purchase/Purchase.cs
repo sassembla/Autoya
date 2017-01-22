@@ -4,8 +4,7 @@ using AutoyaFramework;
 using UnityEngine;
 
 /**
-    まだAutoya本体とは独立した状態の課金実装。というかこのまま使ってもほぼ問題ない感じ。
-    Autoyaからラップされるのは、その独自のRequestHeadersとか、ErrorHandleFlow部分で、これはまあ理想的な感じ。
+    Purchase example.
 */
 public class Purchase : MonoBehaviour {
 	
@@ -13,6 +12,13 @@ public class Purchase : MonoBehaviour {
         while (!Autoya.Purchase_IsReady()) {
             yield return null;
         }
+
+        // display all products.
+        var products = Autoya.Purchase_ProductInfos();
+        foreach (var product in products) {
+            Debug.Log("productId:" + product.productId + " info:" + product.info + " avaliable:" + product.isAvailableToThisPlayer);
+        }
+        
 
         // it's convenient for taking purchase id for each purchase. because purchase feature is async.
         var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
