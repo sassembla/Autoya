@@ -11,17 +11,15 @@ namespace AutoyaFramework {
 			autoya = new Autoya(Application.persistentDataPath);
 		}
 		
-		#if UNITY_EDITOR
+		
 		/**
-			this method can be called from Editor for testing.
+			this method can be called for testing.
 		*/
 		public static void TestEntryPoint (string basePath) {
 			autoya = new Autoya(basePath);
 		}
-
+		
 		public static bool forceFailFirstBoot = false;
 		public static bool forceMaintenance = false;
-		
-		#endif
 	}
 }

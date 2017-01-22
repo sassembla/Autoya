@@ -3,7 +3,6 @@ using System.Collections;
 using AutoyaFramework;
 using AutoyaFramework.Purchase;
 using Miyamasu;
-using UnityEditor;
 using UnityEngine;
 
 /**
@@ -54,7 +53,9 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         RunOnMainThread(
             () => {
                 router = new PurchaseRouter(
-                    mainThreadRunner,
+                    iEnum => {
+                        RunEnumeratorOnMainThread(iEnum, false);
+                    },
                     productData => {
                         // dummy response.
                         return new ProductInfo[] {
@@ -79,19 +80,6 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
             yield return null;
         }
     }
-
-    private Action<IEnumerator> mainThreadRunner = iEnum => {
-        EditorApplication.CallbackFunction purchaseCoroutine = null;
-
-        purchaseCoroutine = () => {
-            var isContinued = iEnum.MoveNext();
-            if (!isContinued) {
-                EditorApplication.update -= purchaseCoroutine;
-            }
-        };
-
-        EditorApplication.update += purchaseCoroutine;
-    };
 
     [MTest] public void ShowProductInfos () {
         var products = router.ProductInfos();

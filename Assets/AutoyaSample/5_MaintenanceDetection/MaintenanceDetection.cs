@@ -19,7 +19,7 @@ public class MaintenanceDetection : MonoBehaviour {
 
         // test method for set fake maintenance mode.
         Autoya.forceMaintenance = true;
-
+        
         /*
             ready for handle maintenance mode.
         */
