@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework.Connections.HTTP;
+using AutoyaFramework.Settings.Maintenance;
 using UnityEngine;
 
 
@@ -31,6 +32,11 @@ namespace AutoyaFramework {
 		}
         
         private void OnMaintenance () {
+            if (Application.internetReachability == NetworkReachability.NotReachable) {
+                onMaintenanceAction("network is offline.");
+                return;
+            }
+
             mainthreadDispatcher.Commit(GetMaintenanceInfo());
         }
 
@@ -38,11 +44,10 @@ namespace AutoyaFramework {
             public api.
         */
         private IEnumerator GetMaintenanceInfo () {
-            Debug.LogWarning("まだメンテ時アクセス用urlとかを定数に切り出してない。");
             // use raw http connection. no need to authenticate.
             var http = new HTTPConnection();
-            var connectionId = "maintenance_" + Guid.NewGuid().ToString();
-            var maintenanceUrl = "http://google.com";
+            var connectionId = MaintenanceSettings.MAINTENANCE_PREFIX + Guid.NewGuid().ToString();
+            var maintenanceUrl = MaintenanceSettings.MAINTENANCE_URL;
 
             return http.Get(
                 connectionId,
