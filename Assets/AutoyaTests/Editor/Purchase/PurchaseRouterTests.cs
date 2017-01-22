@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using AutoyaFramework.Purchase;
 using Miyamasu;
 using UnityEditor;
@@ -42,27 +44,33 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         
         RunOnMainThread(
             () => {
-                router = new PurchaseRouter(
-                    iEnum => {
-                        EditorApplication.CallbackFunction purchaseCoroutine = null;
-
-                        purchaseCoroutine = () => {
-                            var isContinued = iEnum.MoveNext();
-                            if (!isContinued) {
-                                EditorApplication.update -= purchaseCoroutine;
-                            }
-                        };
-
-                        EditorApplication.update += purchaseCoroutine;
-                    },
+                router = new PurchaseRouter(mainThreadRunner);
+            }
+        );
+        RunOnMainThread(
+            () => {
+                router.ReadyPurchase(
                     () => {},
-                    (err, reason, autpyaStatus) => {}
+                    (err, reason, status) => {}
                 );
             }
         );
         
         WaitUntil(() => router.IsPurchaseReady(), 5, "failed to ready.");
     }
+
+    private Action<IEnumerator> mainThreadRunner = iEnum => {
+        EditorApplication.CallbackFunction purchaseCoroutine = null;
+
+        purchaseCoroutine = () => {
+            var isContinued = iEnum.MoveNext();
+            if (!isContinued) {
+                EditorApplication.update -= purchaseCoroutine;
+            }
+        };
+
+        EditorApplication.update += purchaseCoroutine;
+    };
 
     [MTest] public void Purchase () {
         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");

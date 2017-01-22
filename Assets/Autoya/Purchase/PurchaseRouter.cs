@@ -37,6 +37,7 @@ namespace AutoyaFramework.Purchase {
         
         private enum RouterState {
             None,
+            LoadingReady,
             LoadingProducts,
             LoadingStore,
 
@@ -112,12 +113,12 @@ namespace AutoyaFramework.Purchase {
             by default, http response code 200 ~ 299 is treated as success, and other codes are treated as network error.
          */
         public PurchaseRouter (
-            Action<IEnumerator> enumExecutor,
-            Action onPurchaseReady, 
-            Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed, 
+            Action<IEnumerator> executor,
             Autoya.HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
             Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null
         ) {
+            this.enumExecutor = executor;
+            
             /*
                 set store kind by platform.
             */
@@ -128,8 +129,6 @@ namespace AutoyaFramework.Purchase {
             #elif UNITY_ANDROID
                 this.storeKind = GooglePlay.Name;
             #endif
-
-            this.enumExecutor = enumExecutor;
 
             if (httpGetRequestHeaderDeletage != null) {
                 this.requestHeader = httpGetRequestHeaderDeletage;
@@ -145,18 +144,36 @@ namespace AutoyaFramework.Purchase {
                 this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             }
 
-            Reload(
-                () => onPurchaseReady(),
-                (err, reason, autoyaStatus) => onPurchaseReadyFailed(err, reason, autoyaStatus)
-            );
+            this.routerState = RouterState.LoadingReady;
         }
         
-        public void Reload (Action reloaded, Action<PurchaseError, string, AutoyaStatus> reloadFailed) {
+        public void ReadyPurchase (
+            Action onPurchaseReady, 
+            Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed
+        ) {
+            if (routerState == RouterState.LoadingReady) {    
+                var cor = _Ready(onPurchaseReady, onPurchaseReadyFailed);
+                enumExecutor(cor);
+            }
+        }
+
+        public void Reload (
+            Action reloaded, 
+            Action<PurchaseError, string, AutoyaStatus> reloadFailed
+        ) {
+            var cor = _Ready(reloaded, reloadFailed);
+            enumExecutor(cor);
+        }
+        
+        private IEnumerator _Ready (
+            Action reloaded, 
+            Action<PurchaseError, string, AutoyaStatus> reloadFailed
+        ) {
             if (routerState == RouterState.PurchaseReady) {
                 // IAP features are already running.
                 // no need to reload.
                 reloaded();
-                return;
+                yield break;
             }
 
             this.readyPurchase = reloaded;
@@ -167,7 +184,7 @@ namespace AutoyaFramework.Purchase {
             var url = PurchaseSettings.PURCHASE_URL_READY;
             
             
-            HttpGet(
+            var cor = HttpGet(
                 connectionId,
                 url, 
                 (conId, data) => {
@@ -176,7 +193,6 @@ namespace AutoyaFramework.Purchase {
                         new ProductInfo("100_gold_coins", "100_gold_coins_iOS")
                     };
 
-                    // これ、実機でも複数回よばれてOKなのかな、、
                     ReadyIAPFeature(productInfos);
                 },
                 (conId, code, reason, autoyaStatus) => {
@@ -185,6 +201,10 @@ namespace AutoyaFramework.Purchase {
                     failedToReady(PurchaseError.UnknownError, reason, autoyaStatus);
                 }
             );
+
+            while (cor.MoveNext()) {
+                yield return null;
+            }
         }
         
         private void ReadyIAPFeature (ProductInfo[] productInfos) {
@@ -256,6 +276,8 @@ namespace AutoyaFramework.Purchase {
         /**
             start purchase.
         */
+        
+
         public IEnumerator PurchaseAsync (
             string purchaseId, 
             string productId, 
@@ -298,7 +320,7 @@ namespace AutoyaFramework.Purchase {
 
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_TICKET_PREFIX + Guid.NewGuid().ToString();
 
-            HttpPost(
+            var cor = HttpPost(
                 connectionId,
                 ticketUrl,
                 data,
@@ -314,6 +336,9 @@ namespace AutoyaFramework.Purchase {
                     routerState = RouterState.PurchaseReady;
                 }
             );
+            while (cor.MoveNext()) {
+                yield return null;
+            }
         }
         
         private struct Callbacks {
@@ -393,7 +418,7 @@ namespace AutoyaFramework.Purchase {
 
                     var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PURCHASE_PREFIX + Guid.NewGuid().ToString();
                     
-                    HttpPost(
+                    var cor = HttpPost(
                         connectionId,
                         purchasedUrl,
                         dataStr,
@@ -411,6 +436,7 @@ namespace AutoyaFramework.Purchase {
                             Debug.LogError("failed to deploy. code:" + code + " reason:" + reason);
                         }
                     );
+                    enumExecutor(cor);
                     break;
                 }
                 default: {
@@ -435,7 +461,7 @@ namespace AutoyaFramework.Purchase {
 
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PAID_PREFIX + Guid.NewGuid().ToString();
 
-            HttpPost(
+            var cor = HttpPost(
                 connectionId,
                 purchasedUrl,
                 dataStr,
@@ -448,6 +474,7 @@ namespace AutoyaFramework.Purchase {
                     // no need to do something.
                 }
             );
+            enumExecutor(cor);
         }
 
         /// <summary>
@@ -539,7 +566,7 @@ namespace AutoyaFramework.Purchase {
             var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, reason));
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
 
-            HttpPost(
+            var cor = HttpPost(
                 connectionId,
                 purchaseCancelledUrl,
                 dataStr,
@@ -550,20 +577,21 @@ namespace AutoyaFramework.Purchase {
                     // do nothing.
                 }
             );
+            enumExecutor(cor);
         }
 
 
         /*
             http functions for purchase.
         */
-        private void HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+        private IEnumerator HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
             var header = this.requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
             };
 
-            var cor = http.Get(
+            return http.Get(
                 connectionId,
                 header,
                 url,
@@ -575,17 +603,16 @@ namespace AutoyaFramework.Purchase {
                 },
                 PurchaseSettings.TIMEOUT_SEC
             );
-            enumExecutor(cor);
         }
     
-        private void HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+        private IEnumerator HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
             var header = this.requestHeader(HttpMethod.Post, url, new Dictionary<string, string>(), data);
             
             Action<string, object> onSucceeded = (conId, result) => {
                 succeeded(conId, result as string);
             };
 
-            var cor = http.Post(
+            return http.Post(
                 connectionId,
                 header,
                 url,
@@ -598,7 +625,6 @@ namespace AutoyaFramework.Purchase {
                 },
                 PurchaseSettings.TIMEOUT_SEC
             );
-            enumExecutor(cor);
         }
     }
 }

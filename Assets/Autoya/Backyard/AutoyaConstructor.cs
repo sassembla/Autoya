@@ -25,7 +25,9 @@ namespace AutoyaFramework {
 		private Autoya (string basePath="") {
 			// Debug.LogWarning("autoya initialize start. basePath:" + basePath);
 			
+			var isPlayer = false;
 			if (Application.isPlaying) {// create game object for Autoya.
+				isPlayer = true;
 				var go = GameObject.Find("AutoyaMainthreadDispatcher");
 				if (go == null) {
 					go = new GameObject("AutoyaMainthreadDispatcher");
@@ -42,20 +44,22 @@ namespace AutoyaFramework {
 
 			_autoyaHttp = new HTTPConnection();
 
-			Debug.LogWarning("調整中");
-			// _purchaseRouter = new PurchaseRouter(
-			// 	iEnum => {
-			// 		mainthreadDispatcher.Commit(iEnum);
-			// 	},
-			// 	() => {
-			// 		Debug.Log("ready purchase,");
-			// 	}, 
-			// 	(err, reason, autoyaStatus) => {
-			// 		Debug.Log("failed to ready purchase, err:" + err + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + " isAuthFailed:" + autoyaStatus.isAuthFailed);
-			// 	},
-			// 	httpRequestHeaderDelegate, 
-			// 	httpResponseHandlingDelegate
-			// );
+			if (isPlayer) {
+				_purchaseRouter = new PurchaseRouter(
+					mainthreadDispatcher.Commit,
+					httpRequestHeaderDelegate, 
+					httpResponseHandlingDelegate
+				);
+
+				_purchaseRouter.ReadyPurchase(
+					() => {
+						isPurchaseReady = true;
+					}, 
+					(err, reason, autoyaStatus) => {
+						Debug.Log("failed to ready purchase, err:" + err + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + " isAuthFailed:" + autoyaStatus.isAuthFailed);
+					}
+				);
+			}
 
 			var isFirstBoot = IsFirstBoot();
 
