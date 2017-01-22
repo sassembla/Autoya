@@ -504,14 +504,14 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 
 	[MTest] public void LoadMissingBundle () {
-		Debug.LogError("指定したassetを含むbundleがDLできない");
+		Debug.LogError("指定したassetを含むbundleがDLできない場合のテスト");
 	}
 	[MTest] public void LoadMissingDependentBundle () {
-		Debug.LogError("依存したassetが依存しているbundleが存在しなかったり、エラーを出すので、そのエラーがちゃんと出るか試す");
+		Debug.LogError("依存したassetが依存しているbundleが存在しなかったり、エラーを出すので、そのエラーがちゃんと出るか試す場合のテスト");
 	}
 
 	[MTest] public void LoadBundleWithTimeout () {
-		Debug.LogError("指定したassetを時間内にDL、展開する(httpにのみ関連する)");
+		Debug.LogError("指定したassetを時間内にDL、展開する(httpにのみ関連する)テスト");
 	}
 
 	[MTest] public void LoadAllAssetsOnce () {
