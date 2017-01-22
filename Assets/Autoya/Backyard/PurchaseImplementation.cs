@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using AutoyaFramework.Purchase;
 using UnityEngine;
 
@@ -10,7 +9,53 @@ namespace AutoyaFramework {
             Purchase implementation.
         */
         private PurchaseRouter _purchaseRouter;
-        private bool isPurchaseReady;
+        
+        public enum PurchaseFeatureState {
+            None,
+            Loading,
+            Ready,
+            Reloading,
+            Closed
+        }
+        private PurchaseFeatureState purchaseFeatureState = PurchaseFeatureState.None;
+        
+        private void ReloadPurchasability () {
+            purchaseFeatureState = PurchaseFeatureState.Loading;
+
+            _purchaseRouter = new PurchaseRouter(
+                mainthreadDispatcher.Commit,
+                () => {
+                    purchaseFeatureState = PurchaseFeatureState.Ready;
+                    OnPurchaseReady();
+                }, 
+                (err, reason, autoyaStatus) => {
+                    purchaseFeatureState = PurchaseFeatureState.Reloading;
+                    OnPurchaseReadyFailed(err, reason, autoyaStatus);
+                    
+                    // start reloading.
+                    mainthreadDispatcher.Commit(ReloadPurchaseFeature());
+                },
+                httpRequestHeaderDelegate, 
+                httpResponseHandlingDelegate
+            );
+        }
+
+        private IEnumerator ReloadPurchaseFeature () {
+            ReloadPurchasability();
+
+            while (_purchaseRouter.IsPurchaseReady()) {
+                yield return null;
+            }
+        }
+
+
+        /*
+            public apis.
+        */
+
+        public static PurchaseFeatureState Purchase_State () {
+            return autoya.purchaseFeatureState;
+        }
         
         public static bool Purchase_IsReady () {
             if (autoya == null) {
@@ -20,10 +65,30 @@ namespace AutoyaFramework {
                 return false;
 			}
 
-            return autoya._purchaseRouter.IsPurchaseReady();
+            if (autoya.purchaseFeatureState != PurchaseFeatureState.Ready) {
+                return false;
+            }
+           
+            var purchasability = autoya._purchaseRouter.IsPurchaseReady();
+
+            if (purchasability) {
+                return true;
+            } else {
+                return false;
+            }
         }
+
         
-        public static void Purchase (string purchaseId,string productId, Action<string> done, Action<string, PurchaseRouter.PurchaseError, string, AutoyaStatus> failed) {
+        
+        /**
+            purchase item in asynchronously.
+            
+            string purchaseId: you can set id for this purchase. this param will back in done or failed handler.
+            string productId: platform-shard product id string.
+            Action<string> done: fire when purchase is done in succeessful. string is purchaseId.
+            Action<string, PurchaseRouter.PurchaseError, string, AutoyaStatus> failed: fire when purchase is failed. 1st string is purchaseId.
+        */
+        public static void Purchase (string purchaseId, string productId, Action<string> done, Action<string, PurchaseRouter.PurchaseError, string, AutoyaStatus> failed) {
             if (autoya == null) {
                 Debug.LogWarning("not yet. 1");
 				// var cor = new AssetBundleLoadErrorInstance(assetName, "Autoya is null.", loadFailed).Coroutine();
@@ -37,11 +102,31 @@ namespace AutoyaFramework {
 				return;
 			}
 
-            if (!autoya.isPurchaseReady) {
-				return;
-			}
+            if (autoya.purchaseFeatureState != PurchaseFeatureState.Ready) {
+                Debug.LogWarning("not yet. 3");
+                return;
+            }
+
+            var purchasability = autoya._purchaseRouter.IsPurchaseReady();
+            if (!purchasability) {
+                Debug.LogWarning("not yet. 4");
+                return;
+            }
 
             autoya.mainthreadDispatcher.Commit(autoya._purchaseRouter.PurchaseAsync(purchaseId, productId, done, failed));
+        }
+
+        /**
+            do not use this method in actual use.
+            this method is only for testing.
+        */
+        public static void Purchase_Shutdown () {
+            if (autoya == null) {
+                return;
+			}
+
+            autoya.purchaseFeatureState = PurchaseFeatureState.Closed;
+            autoya._purchaseRouter = null;
         }
     }
 }

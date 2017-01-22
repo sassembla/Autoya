@@ -35,17 +35,22 @@ namespace AutoyaFramework.Purchase {
             }
         }
         
-        private enum RouterState {
+        public enum RouterState {
             None,
             LoadingReady,
+            
             LoadingProducts,
+            FailedToLoadProducts,
+            
             LoadingStore,
+            FailedToLoadStore,
+            
 
             PurchaseReady,
-            NotReady,
+
+            
             GettingTransaction,
             Purchasing,
-            PurchaseCancelled,
         }
 
         public enum PurchaseError {
@@ -78,7 +83,10 @@ namespace AutoyaFramework.Purchase {
         }
 
         private RouterState routerState = RouterState.None;
-
+        public RouterState State () {
+            return routerState;
+        }
+        
         private readonly string storeKind;
 
         private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
@@ -101,6 +109,8 @@ namespace AutoyaFramework.Purchase {
             }
             failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
+
+        private readonly string storeId;
         private readonly Action<IEnumerator> enumExecutor;
 
         /**
@@ -114,9 +124,13 @@ namespace AutoyaFramework.Purchase {
          */
         public PurchaseRouter (
             Action<IEnumerator> executor,
+            Action onPurchaseReady, 
+            Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed,
             Autoya.HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
             Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null
         ) {
+            this.storeId = Guid.NewGuid().ToString();
+            // Debug.LogError("start storeId:" + storeId);
             this.enumExecutor = executor;
             
             /*
@@ -144,24 +158,7 @@ namespace AutoyaFramework.Purchase {
                 this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             }
 
-            this.routerState = RouterState.LoadingReady;
-        }
-        
-        public void ReadyPurchase (
-            Action onPurchaseReady, 
-            Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed
-        ) {
-            if (routerState == RouterState.LoadingReady) {    
-                var cor = _Ready(onPurchaseReady, onPurchaseReadyFailed);
-                enumExecutor(cor);
-            }
-        }
-
-        public void Reload (
-            Action reloaded, 
-            Action<PurchaseError, string, AutoyaStatus> reloadFailed
-        ) {
-            var cor = _Ready(reloaded, reloadFailed);
+            var cor = _Ready(onPurchaseReady, onPurchaseReadyFailed);
             enumExecutor(cor);
         }
         
@@ -190,14 +187,15 @@ namespace AutoyaFramework.Purchase {
                 (conId, data) => {
                     Debug.LogWarning("アイテム取得したのでデータを入れる。現在はダミーAPIが適当なデータを入れてくるのを想定してる。サーバがプラットフォームdependsなデータを返してくる想定。そのほうがいいっしょ。");
                     var productInfos = new ProductInfo[]{
-                        new ProductInfo("100_gold_coins", "100_gold_coins_iOS")
+                        new ProductInfo("100_gold_coins", "100_gold_coins_iOS"),
+                        new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS")
                     };
 
                     ReadyIAPFeature(productInfos);
                 },
                 (conId, code, reason, autoyaStatus) => {
                     Debug.LogError("failed, code:" + code + " reason:" + reason);
-                    routerState = RouterState.NotReady;
+                    routerState = RouterState.FailedToLoadProducts;
                     failedToReady(PurchaseError.UnknownError, reason, autoyaStatus);
                 }
             );
@@ -256,7 +254,7 @@ namespace AutoyaFramework.Purchase {
         /// will attempt initialization until it becomes available.
         /// </summary>
         public void OnInitializeFailed (InitializationFailureReason error) {
-            routerState = RouterState.NotReady;
+            routerState = RouterState.FailedToLoadStore;
             switch (error) {
                 case InitializationFailureReason.AppNotKnown: {
                     failedToReady(PurchaseError.UnityIAP_Initialize_AppNowKnown, "The store reported the app as unknown.", new AutoyaStatus());
@@ -455,7 +453,8 @@ namespace AutoyaFramework.Purchase {
         }
 
         private void SendPaidTicket (PurchaseEventArgs e) {
-            Debug.LogError("get paid & uncompleted purchase. e:" + e);// 確認したいところ。
+            Debug.LogError("storeId:" + storeId + " get paid & uncompleted purchase. e:" + e.purchasedProduct.definition.id);// 確認したいところ。ストアインスタンスが他にもある、という状況に陥っている。
+            // どうすることで回避できるか。ストアインスタンスを2つ作らない、とかか。うーん、、あ、停止させればいいのか。わざわざ。
             var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
             var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
 

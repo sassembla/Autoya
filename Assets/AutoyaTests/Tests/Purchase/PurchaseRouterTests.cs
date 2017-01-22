@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using AutoyaFramework;
 using AutoyaFramework.Purchase;
 using Miyamasu;
 using UnityEditor;
@@ -41,15 +42,19 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         if (!IsTestRunningInPlayingMode()) {
 			SkipCurrentTest("Purchase feature should run on MainThread.");
 		};
+
+        // overwrite Autoya instance for test purchase feature.
+        RunEnumeratorOnMainThread(
+            WaitPurchaseFeatureOfAutoya()
+        );
+
+        // shutdown purchase feature for get valid result from Unity IAP.
+        Autoya.Purchase_Shutdown();
         
         RunOnMainThread(
             () => {
-                router = new PurchaseRouter(mainThreadRunner);
-            }
-        );
-        RunOnMainThread(
-            () => {
-                router.ReadyPurchase(
+                router = new PurchaseRouter(
+                    mainThreadRunner,
                     () => {},
                     (err, reason, status) => {}
                 );
@@ -57,6 +62,14 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         );
         
         WaitUntil(() => router.IsPurchaseReady(), 5, "failed to ready.");
+    }
+
+    private IEnumerator WaitPurchaseFeatureOfAutoya () {
+        var dataPath = string.Empty;
+        Autoya.TestEntryPoint(dataPath);
+        while (!Autoya.Purchase_IsReady()) {
+            yield return null;
+        }
     }
 
     private Action<IEnumerator> mainThreadRunner = iEnum => {
@@ -100,24 +113,6 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         Assert(purchaseSucceeded, "purchase failed. reason:" + failedReason);
     }
 
-    [MTest] public void ReloadStore () {
-        WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
-        
-        /*
-            router is already ready. nothing to do.
-        */
-        RunOnMainThread(
-            () => {
-                router.Reload(
-                    () => {},
-                    (err, reason, status) => {}
-                );
-            }
-        );
-        
-        WaitUntil(() => router.IsPurchaseReady(), 2, "failed to reload.");
-    }
-
     [MTest] public void PurchaseCancell () {
         Debug.LogError("購入キャンセルのテストがしたい");
     }
@@ -127,7 +122,12 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         Debug.LogError("多段階時のオフラインのテストがしたい");
     }
     
-
+    /*
+        意図的にbeforeを出す方法が無いかな〜。
+        Listenerを複数作って、ランダムにどのインスタンスかがレスポンスを得る、っていうのは見つけたんだけど、イレギュラーすぎて安定させられる気がしない。
+        また状況も結構異なる。
+    */
+    
     /*
         このへんどうやって書き直そうかな〜〜
         errorFlowやMonoBehaviourを渡せるようになったんだけど、おかげで切り替えられなくなってテストができない。

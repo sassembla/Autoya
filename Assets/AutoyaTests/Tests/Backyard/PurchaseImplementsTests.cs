@@ -4,7 +4,6 @@ using System.IO;
 using AutoyaFramework;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
-using UnityEngine;
 
 /**
 	test for purchase via Autoya.
@@ -49,22 +48,22 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
     }
 
     [MTest] public void PurchaseViaAutoya () {
-        // var succeeded = false;
-        // var done = false;
-        // RunEnumeratorOnMainThread(
-        //     Purchase(isSucceeded => {
-        //         done = true;
-        //         succeeded = isSucceeded;
-        //     }),
-        //     false
-        // );
+        var succeeded = false;
+        var done = false;
+        RunEnumeratorOnMainThread(
+            Purchase(isSucceeded => {
+                done = true;
+                succeeded = isSucceeded;
+            }),
+            false
+        );
 
-        // WaitUntil(
-        //     () => done, 
-        //     10,
-        //     "failed to purchase."
-        // );
-        // Assert(succeeded, "not successed.");
+        WaitUntil(
+            () => done, 
+            10,
+            "failed to purchase."
+        );
+        Assert(succeeded, "not successed.");
     }
 
     private IEnumerator Purchase (Action<bool> done) {
@@ -76,7 +75,7 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
         
         Autoya.Purchase(
             purchaseId, 
-            "100_gold_coins", 
+            "1000_gold_coins",
             pId => {
                 done(true);
             }, 

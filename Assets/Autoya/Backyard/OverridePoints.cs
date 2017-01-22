@@ -99,6 +99,9 @@ namespace AutoyaFramework {
         }
 
         
+        /*
+            standard http request & response handler.
+        */
         private Dictionary<string, string> OnHttpRequest (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
             var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
             requestHeader["Authorization"] = Base64.FromString(accessToken);
@@ -106,11 +109,35 @@ namespace AutoyaFramework {
             return requestHeader;
         }
 
-        private Dictionary<string, string> OnHttpResponse (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+        private Dictionary<string, string> OnHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data) {
             var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
-            requestHeader["Authorization"] = Base64.FromString(accessToken);
+            var result = responseHeader["Authorization"];
             
-            return requestHeader;
+            return responseHeader;
+        }
+
+
+        /*
+            purchase feature handler.
+        */
+
+        
+        /**
+            purchase feature is succeeded to load.
+        */
+        private void OnPurchaseReady () {
+            // do something if need.
+        }
+
+        private void OnPurchaseReadyFailed (Purchase.PurchaseRouter.PurchaseError err, string reason, AutoyaStatus autoyaStatus) {
+            // do something if need. e,g, show dialog to player.
+            
+            // show "reloading purchase feature... please wait amoment" or other message by error.
+            // this err includes "player can not available purchase feature" and other many situations.
+            // see Purchase.PurchaseRouter.PurchaseError enum.
+
+            // purchase feature is failed to load. but Autoya retries to load store feature intervally in background.
+            // when success, OnPurchaseReady will be called.
         }
     }
 }

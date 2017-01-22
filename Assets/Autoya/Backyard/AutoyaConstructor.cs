@@ -44,23 +44,8 @@ namespace AutoyaFramework {
 
 			_autoyaHttp = new HTTPConnection();
 
-			if (isPlayer) {
-				_purchaseRouter = new PurchaseRouter(
-					mainthreadDispatcher.Commit,
-					httpRequestHeaderDelegate, 
-					httpResponseHandlingDelegate
-				);
-
-				_purchaseRouter.ReadyPurchase(
-					() => {
-						isPurchaseReady = true;
-					}, 
-					(err, reason, autoyaStatus) => {
-						Debug.Log("failed to ready purchase, err:" + err + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + " isAuthFailed:" + autoyaStatus.isAuthFailed);
-					}
-				);
-			}
-
+			if (isPlayer) ReloadPurchasability();
+			
 			var isFirstBoot = IsFirstBoot();
 
 			/*
