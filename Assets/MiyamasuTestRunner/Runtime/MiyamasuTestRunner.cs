@@ -17,6 +17,27 @@ using UnityEngine;
 */
 namespace Miyamasu {
 	public class MiyamasuTestRunner {
+
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] public static void RunTestsFromCode () {
+			var go = new GameObject("MiyamasuTestMainThreadRunner");
+			go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
+			
+			var mb = go.AddComponent<MainThreadRunner>();
+			
+			Action<IEnumerator> newMainThreadDispatcher = iEnum => {
+				mb.Commit(iEnum, () => {});
+			};
+
+			var testRunner = new MiyamasuTestRunner(
+				newMainThreadDispatcher, 
+				() => {
+					// do nothing yet.
+				}
+			);
+
+			testRunner.RunTests();
+		}
+
 		public MiyamasuTestRunner () {}
 
 		private static Action<IEnumerator> mainThreadDispatcher;
@@ -137,7 +158,11 @@ namespace Miyamasu {
 					/*
 						run end on main thread.
 					*/
-					RunOnMainThread(onEnd);
+					RunOnMainThread(
+						() => {
+							onEnd();
+						}
+					);
 
 					thread.Abort();
 				}
