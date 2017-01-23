@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 using UnityEngine.Networking;
 
 /**
@@ -40,8 +39,12 @@ namespace AutoyaFramework.Connections.HTTP {
 					yield break;
 				}
 
-				var data = request.downloadHandler.data;
-				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
+				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+				if (200 <= responseCode && responseCode <= 299) {
+					succeeded(connectionId, responseCode, responseHeaders, result);
+				} else {
+					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+				}
 			}
 		}
 
@@ -50,7 +53,9 @@ namespace AutoyaFramework.Connections.HTTP {
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Post(url, data)) {
+				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
 				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
+
 				var p = request.Send();
 				
 				while (!p.isDone) {
@@ -71,8 +76,12 @@ namespace AutoyaFramework.Connections.HTTP {
 					yield break;
 				}
 
-				var resultData = request.downloadHandler.data;
-				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(resultData));
+				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+				if (200 <= responseCode && responseCode <= 299) {
+					succeeded(connectionId, responseCode, responseHeaders, result);
+				} else {
+					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+				}
 			}
 		}
 
@@ -81,6 +90,7 @@ namespace AutoyaFramework.Connections.HTTP {
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Put(url, data)) {
+				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
 				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
 
 				var p = request.Send();
@@ -104,8 +114,12 @@ namespace AutoyaFramework.Connections.HTTP {
 					yield break;
 				}
 
-				var resultData = request.downloadHandler.data;
-				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(resultData));
+				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+				if (200 <= responseCode && responseCode <= 299) {
+					succeeded(connectionId, responseCode, responseHeaders, result);
+				} else {
+					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+				}
 			}
 		}
 
@@ -136,9 +150,13 @@ namespace AutoyaFramework.Connections.HTTP {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
 				}
-				
-				var data = request.downloadHandler.data;
-				succeeded(connectionId, responseCode, responseHeaders, Encoding.UTF8.GetString(data));
+
+				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+				if (200 <= responseCode && responseCode <= 299) {
+					succeeded(connectionId, responseCode, responseHeaders, result);
+				} else {
+					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+				}
 			}
 		}
 	}

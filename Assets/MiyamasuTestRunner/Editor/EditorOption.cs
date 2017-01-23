@@ -15,7 +15,7 @@ namespace Miyamasu {
 					assetPaths.Add(file);
 				}
 			}
-
+			
 			AssetDatabase.ExportPackage(assetPaths.ToArray(), "MiyamasuTestRunner.unitypackage", ExportPackageOptions.IncludeDependencies);
 		}
 	}
