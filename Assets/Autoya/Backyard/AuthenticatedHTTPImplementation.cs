@@ -61,9 +61,10 @@ namespace AutoyaFramework {
 						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty, 
 							(_conId, _data) => {
 								var stringData = _data as string;
-								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Get, url, responseHeader, stringData);
-								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
+								var reason = string.Empty;
+								var validated = autoya.OnValidateHttpResponse(HttpMethod.Get, url, responseHeader, stringData, out reason);
+								if (!validated) {
+									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
 								}
 								
@@ -119,9 +120,10 @@ namespace AutoyaFramework {
 						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
 							(_conId, _data) => {
 								var stringData = _data as string;
-								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Post, url, responseHeader, stringData);
-								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
+								var message = string.Empty;
+								var validated = autoya.OnValidateHttpResponse(HttpMethod.Post, url, responseHeader, stringData, out message);
+								if (!validated) {
+									failed(connectionId, code, message, new AutoyaStatus(false, false, true));
 									return;
 								}
 								
@@ -177,9 +179,10 @@ namespace AutoyaFramework {
 						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
 							(_conId, _data) => {
 								var stringData = _data as string;
-								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Put, url, responseHeader, stringData);
-								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
+								var reason = string.Empty;
+								var validated = autoya.OnValidateHttpResponse(HttpMethod.Put, url, responseHeader, stringData, out reason);
+								if (!validated) {
+									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
 								}
 								
@@ -234,9 +237,10 @@ namespace AutoyaFramework {
 						autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
 							(_conId, _data) => {
 								var stringData = _data as string;
-								var validateResult = autoya.OnValidateHttpResponse(HttpMethod.Delete, url, responseHeader, stringData);
-								if (!string.IsNullOrEmpty(validateResult)) {
-									failed(connectionId, code, validateResult, new AutoyaStatus(false, false, true));
+								var reason = string.Empty;
+								var validated = autoya.OnValidateHttpResponse(HttpMethod.Delete, url, responseHeader, stringData, out reason);
+								if (!validated) {
+									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
 								}
 								

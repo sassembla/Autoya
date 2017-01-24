@@ -49,13 +49,15 @@ namespace AutoyaFramework {
 
         /**
             received first boot authentication result.
+            if failed to validate response, call bootAuthFailed(int errorCode, string reason).
+                this bootAuthFailed method raises the notification against Autoya.Auth_SetOnBootAuthFailed() handler.
         */
-        private IEnumerator OnBootAuthResponse (Dictionary<string, string> responseHeader, string data) {
+        private IEnumerator OnBootAuthResponse (Dictionary<string, string> responseHeader, string data, Action<int, string> bootAuthFailed) {
             var isValidResponse = true;
             if (isValidResponse) {
                 Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, data);
             } else {
-                // failsafe here.
+                bootAuthFailed(-1, "failed to boot validation.");
             }
             yield break;
         }
@@ -68,7 +70,8 @@ namespace AutoyaFramework {
         }
 
         /**
-            received 401. should authenticate again.
+            received Unauthorized code from server. then, should authenticate again.
+            set header and data for refresh token.
         */
         private IEnumerator OnTokenRefreshRequest (Action<Dictionary<string, string>, string> setHeaderToRequest) {
             // set refresh body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
@@ -87,15 +90,18 @@ namespace AutoyaFramework {
 
         /**
             received refreshed token.
+            if failed to validate response, call refreshFailed(int errorCode, string reason).
+                this refreshFailed method raises the notification against Autoya.Auth_SetOnRefreshAuthFailed() handler.
         */
-        private IEnumerator OnTokenRefreshResponse (Dictionary<string, string> responseHeader, string data) {
+        private IEnumerator OnTokenRefreshResponse (Dictionary<string, string> responseHeader, string data, Action<int, string> refreshFailed) {
             var isValidResponse = true;
             if (isValidResponse) {
                 Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, data);
             } else {
                 // failsafe here.
+                refreshFailed(-1, "failed to refresh token.");
             }
-
+            
             yield break;
         }
 
@@ -121,16 +127,21 @@ namespace AutoyaFramework {
 
             accepted http code is 200 ~ 299. and these code is already fixed.
 
-            if everything looks good, return string.Empty. 
+            if everything looks good, return true.
+                although need to set reason(will not be used.)
                 then "succeeded" action of Autoya.Http_X will be raised.
 
-            else, return your origial error message. 
-                then "failed" action of Autoya.Http_X will be raised with code 200 ~ 299, autoyaStatus(userValidateFailed = true), and your message.
+            else, set reason.
+                then "failed" action of Autoya.Http_X will be raised with code 200 ~ 299 with the reason which you set.
         */
-        private string OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data) {
+        private bool OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data, out string reason) {
             // let's validate http response if need.
             if (true) {
-                return string.Empty;
+                reason = null;
+                return true;
+            } else {
+                reason = "dumped by bicycle.";
+                return false;
             }
         }
 

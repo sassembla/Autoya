@@ -1,5 +1,5 @@
 # Autoya
-ver 0.8.2
+ver 0.8.3
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true")
 

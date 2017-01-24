@@ -23,11 +23,9 @@ namespace AutoyaFramework {
 	public struct AutoyaStatus {
 		public readonly bool inMaintenance;
 		public readonly bool isAuthFailed;
-		public readonly bool userValidateFailed;
 		public AutoyaStatus (bool inMaintenance, bool isAuthFailed, bool userValidateFailed=false) {
 			this.inMaintenance = inMaintenance;
 			this.isAuthFailed = isAuthFailed;
-			this.userValidateFailed = userValidateFailed;
 		}
 	}
 
@@ -245,7 +243,18 @@ namespace AutoyaFramework {
 			}
 
 			private IEnumerator OnBootSucceeded (Dictionary<string, string> responseHeader, string tokenData) {
-				var cor = autoya.OnBootAuthResponse(responseHeader, tokenData);
+				var failed = false;
+				var code = 0;
+				var reason = string.Empty;
+				var cor = autoya.OnBootAuthResponse(
+					responseHeader, 
+					tokenData, 
+					(_code, _reason) => {
+						failed = true;
+						code = _code;
+						reason = _reason;
+					}
+				);
 				while (cor.MoveNext()) {
 					yield return null;
 				}
@@ -253,6 +262,12 @@ namespace AutoyaFramework {
 				// reset retry count.
 				bootRetryCount = 0;
 
+				if (failed) {
+					authState = AuthState.BootFailed;
+					onBootFailed(code, reason);
+					yield break;
+				}
+				
 				authState = AuthState.Logon;
 				onBootSucceeded();
 			}
@@ -466,13 +481,30 @@ namespace AutoyaFramework {
 			}
 
 			private IEnumerator OnTokenRefreshSucceeded (Dictionary<string, string> responseHeader, string tokenData) {
-				var cor = autoya.OnTokenRefreshResponse(responseHeader, tokenData);
+				var failed = false;
+				var code = 0;
+				var reason = string.Empty;
+				var cor = autoya.OnTokenRefreshResponse(
+					responseHeader, 
+					tokenData, 
+					(_code, _reason) => {
+						failed = true;
+						code = _code;
+						reason = _reason;
+					}
+				);
+
 				while (cor.MoveNext()) {
 					yield return null;
 				}
 						
 				// reset retry count.
 				tokenRefreshRetryCount = 0;
+
+				if (failed) {
+					authState = AuthState.RefreshFailed;
+					onRefreshFailed(code, reason);
+				} 
 
 				authState = AuthState.Logon;
 				onRefreshSucceeded();
@@ -587,9 +619,7 @@ namespace AutoyaFramework {
 		/**
 			Autoyaのhttpエラーハンドリングのコアメソッド。
 
-
-			共通処理、こいつがAPIレイヤにあるほうが好ましい。
-			HttpResultHandler
+			HttpResponseHandling
 
 			・Unityの返してくるhttpコードを処理し、failedを着火する。
 				offlineとかそのへん。
