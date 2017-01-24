@@ -3,8 +3,17 @@ using AutoyaFramework.AssetBundles;
 using UnityEngine;
 
 public class LoadAssetBundle : MonoBehaviour {
-	private const string basePath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/AssetBundles/";
-
+	private const string basePath = 
+		#if UNITY_STANDALONE_OSX
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
+		#elif UNITY_STANDALONE_WIN
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/AssetBundles/";
+		#elif UNITY_IOS
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
+		#elif UNITY_ANDROID
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+		#endif
+		
 	// Use this for initialization
 	void Start () {
 		var dummyList = new AssetBundleList("1.0.0", 

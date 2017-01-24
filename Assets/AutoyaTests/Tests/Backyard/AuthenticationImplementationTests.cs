@@ -20,7 +20,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		
 		var authorized = false;
 		Action onMainThread = () => {
-			var dataPath = string.Empty;
+			var dataPath = Application.persistentDataPath;
 			Autoya.TestEntryPoint(dataPath);
 
 			Autoya.Auth_SetOnAuthenticated(

@@ -14,9 +14,9 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 	[MSetup] public void Setup () {
 		var loginDone = false;
         
-		var dataPath = string.Empty;
 		RunOnMainThread(
 			() => {
+				var dataPath = Application.persistentDataPath;
 				Autoya.TestEntryPoint(dataPath);
 				Autoya.Auth_SetOnAuthenticated(
 					() => {

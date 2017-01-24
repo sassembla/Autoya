@@ -1,0 +1,19 @@
+ManifestFileVersion: 0
+CRC: 2075133078
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: bundlename
+      Dependencies: {}
+    Info_1:
+      Name: dependsbundlename
+      Dependencies:
+        Dependency_0: bundlename
+    Info_2:
+      Name: dependsbundlename2
+      Dependencies:
+        Dependency_0: bundlename
+    Info_3:
+      Name: nestedprefab
+      Dependencies:
+        Dependency_0: dependsbundlename

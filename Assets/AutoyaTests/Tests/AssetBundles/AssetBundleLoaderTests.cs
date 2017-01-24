@@ -22,7 +22,17 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
 		
 	*/
-	private const string basePath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/AssetBundles/";
+	private const string basePath = 
+		#if UNITY_EDITOR_OSX
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
+		#elif UNITY_EDITOR_WIN
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/AssetBundles/";
+		#elif UNITY_IOS
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
+		#elif UNITY_ANDROID
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+		#endif
+
 	private AssetBundleLoader loader;
 	private AssetBundleList dummyList;
 	[MSetup] public void Setup () {
@@ -33,6 +43,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		/*
 			set dummy list of AssetBundleList.
 		*/
+		Debug.Log("このデータをjsonでどっかサーバに置いておきたい。ショートカットできないとテストがつらい。");
 		dummyList = new AssetBundleList("1.0.0", 
 			new AssetBundleInfo[]{
 				// pngが一枚入ったAssetBundle

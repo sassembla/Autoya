@@ -1,0 +1,23 @@
+ManifestFileVersion: 0
+CRC: 2004707157
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 4a80ba4d5bae1932fab9c3d23d4f5cd7
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 98b07c85b7a318c393839910dc7ebad2
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 7e73406419bf54a50a1b5faf24749c6c, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab
+Dependencies:
+- /Users/choucho/Desktop/Autoya/AssetBundles/dependsbundlename
