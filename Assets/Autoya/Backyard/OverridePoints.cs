@@ -140,7 +140,7 @@ namespace AutoyaFramework {
                 reason = null;
                 return true;
             } else {
-                reason = "dumped by bicycle.";
+                reason = "run over by a bicycle.";
                 return false;
             }
         }

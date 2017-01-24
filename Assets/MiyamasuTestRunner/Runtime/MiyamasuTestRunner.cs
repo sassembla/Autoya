@@ -310,7 +310,7 @@ namespace Miyamasu {
 			static TestLogger () {
 				// ログ操作に関する処理で、ハンドラ周りをセットすると良さそう。
 			}
-
+			
 			public static bool outputLog = true;
 			private static object lockObject = new object();
 
@@ -319,30 +319,34 @@ namespace Miyamasu {
 			
 			public static void Log (string message, bool writeSoon=false) {
 				if (outputLog) UnityEngine.Debug.Log("log:" + message);
-				lock (lockObject) {
-					if (!writeSoon) {
-						_logs.AppendLine(message);
-						return;
-					}
+				#if UNITY_EDITOR
+				{
+					lock (lockObject) {
+						if (!writeSoon) {
+							_logs.AppendLine(message);
+							return;
+						}
 
-					pathOfLogFile = MIYAMASU_TESTLOG_FILE_NAME;
-					
-					// file write
-					using (var fs = new FileStream(
-						pathOfLogFile,
-						FileMode.Append,
-						FileAccess.Write,
-						FileShare.ReadWrite)
-					) {
-						using (var sr = new StreamWriter(fs)) {
-							if (0 < _logs.Length) {
-								sr.WriteLine(_logs.ToString());
-								_logs = new StringBuilder();
+						pathOfLogFile = MIYAMASU_TESTLOG_FILE_NAME;
+						
+						// file write
+						using (var fs = new FileStream(
+							pathOfLogFile,
+							FileMode.Append,
+							FileAccess.Write,
+							FileShare.ReadWrite)
+						) {
+							using (var sr = new StreamWriter(fs)) {
+								if (0 < _logs.Length) {
+									sr.WriteLine(_logs.ToString());
+									_logs = new StringBuilder();
+								}
+								sr.WriteLine("log:" + message);
 							}
-							sr.WriteLine("log:" + message);
 						}
 					}
 				}
+				#endif
 			}
 
 			public static void LogEnd () {
