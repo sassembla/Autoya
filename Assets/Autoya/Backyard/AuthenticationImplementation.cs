@@ -99,6 +99,7 @@ namespace AutoyaFramework {
 				BootFailed,
 				
 				Logon,
+				Logout,
 
 				Refreshing,
 				RefreshFailed
@@ -339,7 +340,14 @@ namespace AutoyaFramework {
 				}
 			}
 
-			
+
+			/**
+				logout.
+			*/
+			public void Logout () {
+				authState = AuthState.Logout;
+			}
+
 			/**
 				token has been expired. start refresh token if need.
 			*/
@@ -593,6 +601,7 @@ namespace AutoyaFramework {
 				}
 
 				switch (authState) {
+					case AuthState.Logout:
 					case AuthState.BootFailed: {
 						authState = AuthState.Booting;
 						mainthreadDispatcher.Commit(FirstBoot());
@@ -779,7 +788,10 @@ namespace AutoyaFramework {
 		}
 
 		public static void Auth_Logout () {
-			Debug.LogError("ログアウト、うーん、、必要？ tokenを消す処理とかをすることはできるんだけど、テスト以外でログアウトしたい、というニーズが存在しない気がする。");
+			if (autoya._autoyaAuthRouter.IsLogon()) { 
+				autoya.OnLogout();
+				autoya._autoyaAuthRouter.Logout();
+			}
 		}
 		
 		/*

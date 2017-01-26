@@ -20,12 +20,17 @@ namespace AutoyaFramework {
         }
 
         /**
-            detect if already authenticated or not.
-            if not first boot, you can load your token here.
+            return true if already authenticated, return false if not.
+            you can load your authenticated data (kind of Token) here.
         */
         private bool IsFirstBoot () {
             var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-            return tokenCandidatePaths.Length == 0;
+            var isFirstBoot = tokenCandidatePaths.Length == 0;
+            if (!isFirstBoot) {
+                // load saved data and hold it for after use.
+                return false;
+            }
+            return true;
         }
 
         /**
@@ -61,6 +66,15 @@ namespace AutoyaFramework {
             }
             yield break;
         }
+
+
+        /**
+            after here, you can call "Autoya.Auth_AttemptAuthentication()". then "OnBootAuthRequest()" will be called.
+        */
+        private void OnLogout () {
+            // do logout things here.
+        }
+
 
         /**
             check if server response is unauthorized or not.
