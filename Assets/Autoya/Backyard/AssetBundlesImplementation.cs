@@ -37,7 +37,7 @@ namespace AutoyaFramework {
 			// 	failed();
 			// }
 
-            autoya._assetBundleLoader = new AssetBundleLoader(path, list, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);// 仮のリストの更新API。実際に使うとしたら、内部から。
+            autoya._assetBundleLoader = new AssetBundleLoader(path, list, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);// 仮のリストの更新API。実際に使うとしたら、内部から。
         }
 
         public static void AssetBundle_LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoader.AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object {
@@ -53,7 +53,7 @@ namespace AutoyaFramework {
 			}
 
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
+                autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
             }
 
             autoya.mainthreadDispatcher.Commit(
@@ -63,7 +63,7 @@ namespace AutoyaFramework {
         public static void AssetBundle_UnloadAllAssets () {
             Debug.LogError("キャッシュから消す、っていうのをどう見せるか考える必要がある。明示が必要。　それとは別に、キャッシュから消すのも必要。");
             if (autoya._assetBundleLoader == null) {
-                autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
+                autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
             }
             autoya._assetBundleLoader.UnloadAllAssetBundles();
         }

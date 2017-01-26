@@ -38,6 +38,7 @@ namespace AutoyaFramework {
 
 		private void Authenticate (bool isFirstBoot) {
 			this.httpRequestHeaderDelegate = OnHttpRequest;
+			this.assetBundleRequestHeaderDelegate = OnAssetBundleGetRequest;
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
 
 			Action onAuthSucceeded = () => {
@@ -615,6 +616,13 @@ namespace AutoyaFramework {
 		*/
 		public delegate Dictionary<string, string> HttpRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data);
 		public HttpRequestHeaderDelegate httpRequestHeaderDelegate;
+
+
+		/*
+			delegates for supply assetBundle get request header geneate func for other class.
+		*/
+		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		public AssetBundleGetRequestHeaderDelegate assetBundleRequestHeaderDelegate;
 
 		/**
 			Autoyaのhttpエラーハンドリングのコアメソッド。

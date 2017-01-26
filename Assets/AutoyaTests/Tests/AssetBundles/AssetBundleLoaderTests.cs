@@ -24,13 +24,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	*/
 	private const string basePath = 
 		#if UNITY_EDITOR_OSX
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
 		#elif UNITY_EDITOR_WIN
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/AssetBundles/";
 		#elif UNITY_IOS
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
 		#elif UNITY_ANDROID
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
 		#endif
 
 	private AssetBundleLoader loader;
@@ -43,7 +43,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		/*
 			set dummy list of AssetBundleList.
 		*/
-		Debug.Log("このデータをjsonでどっかサーバに置いておきたい。ショートカットできないとテストがつらい。");
+		Debug.Log("このデータをjsonでどっかサーバに置いておきたい。ショートカットできないとテストがつらい。 json -> プラットフォームごと、データでいいか。");
 		dummyList = new AssetBundleList("1.0.0", 
 			new AssetBundleInfo[]{
 				// pngが一枚入ったAssetBundle

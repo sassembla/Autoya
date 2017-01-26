@@ -22,8 +22,8 @@ namespace AutoyaFramework.AssetBundles {
         private readonly string assetDownloadBasePath;
         private readonly AssetBundleList list;
 
-        private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
-        private Dictionary<string, string> BasicRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+        private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;
+        private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
             return requestHeader;
         }
 
@@ -37,7 +37,7 @@ namespace AutoyaFramework.AssetBundles {
             failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
 
-        public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+        public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.AssetBundleGetRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
 
             this.assetDownloadBasePath = basePath;
             this.list = list;
@@ -239,51 +239,60 @@ namespace AutoyaFramework.AssetBundles {
             if (!loadingAssetBundleNames.Contains(bundleName)) {
                 loadingAssetBundleNames.Add(bundleName);
             }
-            
-            /*
-                download bundle or load donwloaded bundle from cache.
-                load to memory.
-            */
+
+            // binded block. should unbind if break.
             {
-                var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(bundleName, assetName, url, crc, loadFailed, timeoutTick);
-                while (downloadCoroutine.MoveNext()) {
-                    yield return null;
-                }
-
-                if (!assetBundleDict.ContainsKey(bundleName)) {
-                    // error is already fired in above.
-                    yield break;
-                }
-                
-                if (!isDependency) {
-
-                    /*
-                        break if dependent bundle has load error.
-                    */
-                    if (dependentBundleLoadErrors.Any()) {
-                        var loadErrorBundleMessages = new StringBuilder();
-                        loadErrorBundleMessages.Append("failed to load/download dependent bundle:");
-                        foreach (var dependentBundleLoadError in dependentBundleLoadErrors) {
-                            loadErrorBundleMessages.Append("bundleName:");
-                            loadErrorBundleMessages.Append(dependentBundleLoadError.bundleName);
-                            loadErrorBundleMessages.Append(" error:");
-                            loadErrorBundleMessages.Append(dependentBundleLoadError.err);
-                            loadErrorBundleMessages.Append(" reason:");
-                            loadErrorBundleMessages.Append(dependentBundleLoadError.reason);
-                            loadErrorBundleMessages.Append(" autoyaStatus:");
-                            loadErrorBundleMessages.Append("  inMaintenance:" + dependentBundleLoadError.status.inMaintenance);
-                            loadErrorBundleMessages.Append("  isAuthFailed:" + dependentBundleLoadError.status.isAuthFailed);
-                        }
-                        loadFailed(assetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString(), new AutoyaStatus());
-                        yield break;
+                /*
+                    download bundle or load donwloaded bundle from cache.
+                    load to memory.
+                */
+                {
+                    var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(bundleName, assetName, url, crc, loadFailed, timeoutTick);
+                    while (downloadCoroutine.MoveNext()) {
+                        yield return null;
                     }
 
-                    /*
-                        load asset from on memory AssetBundle.
-                    */
-                    var loadAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
-                    while (loadAssetCoroutine.MoveNext()) {
-                        yield return null;
+                    if (!assetBundleDict.ContainsKey(bundleName)) {
+                        // error is already fired in above.
+
+                        // unbind.
+                        loadingAssetBundleNames.Remove(bundleName);
+                        yield break;
+                    }
+                    
+                    if (!isDependency) {
+
+                        /*
+                            break if dependent bundle has load error.
+                        */
+                        if (dependentBundleLoadErrors.Any()) {
+                            var loadErrorBundleMessages = new StringBuilder();
+                            loadErrorBundleMessages.Append("failed to load/download dependent bundle:");
+                            foreach (var dependentBundleLoadError in dependentBundleLoadErrors) {
+                                loadErrorBundleMessages.Append("bundleName:");
+                                loadErrorBundleMessages.Append(dependentBundleLoadError.bundleName);
+                                loadErrorBundleMessages.Append(" error:");
+                                loadErrorBundleMessages.Append(dependentBundleLoadError.err);
+                                loadErrorBundleMessages.Append(" reason:");
+                                loadErrorBundleMessages.Append(dependentBundleLoadError.reason);
+                                loadErrorBundleMessages.Append(" autoyaStatus:");
+                                loadErrorBundleMessages.Append("  inMaintenance:" + dependentBundleLoadError.status.inMaintenance);
+                                loadErrorBundleMessages.Append("  isAuthFailed:" + dependentBundleLoadError.status.isAuthFailed);
+                            }
+                            loadFailed(assetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString(), new AutoyaStatus());
+                            
+                            // unbind.
+                            loadingAssetBundleNames.Remove(bundleName);
+                            yield break;
+                        }
+
+                        /*
+                            load asset from on memory AssetBundle.
+                        */
+                        var loadAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
+                        while (loadAssetCoroutine.MoveNext()) {
+                            yield return null;
+                        }
                     }
                 }
             }
@@ -306,7 +315,7 @@ namespace AutoyaFramework.AssetBundles {
                 failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason, autoyaStatus);
             };
 
-            var reqHeader = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+            var reqHeader = requestHeader(url, new Dictionary<string, string>());
             
             var connectionCoroutine = DownloadAssetBundle(
                 bundleName,
@@ -329,10 +338,15 @@ namespace AutoyaFramework.AssetBundles {
             }
         }
 
-        private IEnumerator DownloadAssetBundle (string bundleName, string connectionId, Dictionary<string, string> requestHeaders, string url, uint version, uint crc, Action<string, int, Dictionary<string, string>, AssetBundle> succeeded, Action<string, int, string, Dictionary<string, string>> failed, long limitTick) {
+        private IEnumerator DownloadAssetBundle (string bundleName, string connectionId, Dictionary<string, string> requestHeader, string url, uint version, uint crc, Action<string, int, Dictionary<string, string>, AssetBundle> succeeded, Action<string, int, string, Dictionary<string, string>> failed, long limitTick) {
+            var alreadyStorageCached = false;
+            if (Caching.IsVersionCached(url, (int)version)) {
+                alreadyStorageCached = true;
+            }
+
 			using (var request = UnityWebRequest.GetAssetBundle(url, version, crc)) {
-				if (requestHeaders != null) {
-                    foreach (var kv in requestHeaders) {
+				if (requestHeader != null) {
+                    foreach (var kv in requestHeader) {
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
@@ -361,6 +375,16 @@ namespace AutoyaFramework.AssetBundles {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
 				}
+
+                if (alreadyStorageCached) {
+                    responseCode = 200;
+                } else {
+                    if (200 <= responseCode && responseCode <= 299) {}
+                    else {
+                        failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName, responseHeaders);
+                        yield break;
+                    }
+                }
 
 				while (!Caching.IsVersionCached(url, (int)version)) {
 					yield return null;

@@ -120,7 +120,7 @@ namespace AutoyaFramework {
             
             return requestHeader;
         }
-
+        
         /**
             fire when reveived http response from server, via Autoya.Http_X.
             you can verify response data & header parameter.
@@ -204,6 +204,14 @@ namespace AutoyaFramework {
         private string OnTicketResponse (string ticketData) {
             // modify if need.
             return ticketData;
+        }
+
+        /*
+            AssetBundles
+        */
+
+        private Dictionary<string, string> OnAssetBundleGetRequest (string url, Dictionary<string, string> requestHeader) {
+            return requestHeader;
         }
     }
 }
