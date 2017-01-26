@@ -69,12 +69,20 @@ namespace AutoyaFramework {
 
 
         /**
+            on logout handler.
             after here, you can call "Autoya.Auth_AttemptAuthentication()". then "OnBootAuthRequest()" will be called.
         */
         private void OnLogout () {
             // do logout things here.
         }
 
+        /**
+            handler of delete all user data.
+            after here, you can call "Autoya.Auth_AttemptAuthentication()". then "IsFirstBoot()" will be called.
+        */
+        private void OnDeleteAllUserData () {
+            Autoya.Persist_DeleteByDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+        }
 
         /**
             check if server response is unauthorized or not.
@@ -94,8 +102,10 @@ namespace AutoyaFramework {
             // return refresh token for re-authenticate.
             var refreshToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
 
+            var base64Str = Base64.FromString(refreshToken);
+            
             var refreshRequestHeader = new Dictionary<string, string> {
-                {"Authorization", refreshToken}
+                {"Authorization", base64Str}
             };
 
             setHeaderToRequest(refreshRequestHeader, data);
@@ -113,6 +123,9 @@ namespace AutoyaFramework {
                 Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, data);
             } else {
                 // failsafe here.
+
+
+                // set result as failure.
                 refreshFailed(-1, "failed to refresh token.");
             }
             

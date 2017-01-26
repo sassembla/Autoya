@@ -145,7 +145,7 @@ namespace AutoyaFramework {
 				return authState == AuthState.BootFailed;
 			}
 
-			public bool IsRefreshAuthFailed () {
+			public bool IsTokenRefreshFailed () {
 				return authState == AuthState.RefreshFailed;
 			}
 
@@ -207,9 +207,15 @@ namespace AutoyaFramework {
 			}
 
 			/**
-				boot処理完了時のハンドル、完全に独自の処理でいいんだと思う。
+				http response rooting of boot.
 			*/
 			private void OnBootResult (string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, string resultData, string errorReason) {
+
+				if (forceFailFirstBoot) {
+					responseCode = 500;
+					errorReason = "failed by forceFailFirstBoot = true.";
+				}
+
 				autoya.HttpResponseHandling(
 					tokenConnectionId,
 					responseHeader, 
@@ -279,6 +285,11 @@ namespace AutoyaFramework {
 			private IEnumerator BootRetryCoroutine () {
 				// wait 2, 4, 8... sec.
 				var bootRetryWait = Math.Pow(2, bootRetryCount);
+
+				if (forceFailFirstBoot) {
+					bootRetryWait = 1;
+				}
+
 				var limitTick = DateTime.Now.Ticks + TimeSpan.FromSeconds(bootRetryWait).Ticks;
 
 				while (DateTime.Now.Ticks < limitTick) {
@@ -429,6 +440,12 @@ namespace AutoyaFramework {
 			}
 
 			private void OnRefreshResult (string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, string resultData, string errorReason) {
+
+				if (forceFailTokenRefresh) {
+					responseCode = 500;
+					errorReason = "failed by forceFailTokenRefresh = true.";
+				}
+
 				autoya.HttpResponseHandling(
 					tokenConnectionId,
 					responseHeader, 
@@ -506,7 +523,7 @@ namespace AutoyaFramework {
 				while (cor.MoveNext()) {
 					yield return null;
 				}
-						
+				
 				// reset retry count.
 				tokenRefreshRetryCount = 0;
 
@@ -524,6 +541,11 @@ namespace AutoyaFramework {
 			private IEnumerator TokenRefreshRetryCoroutine () {
 				// wait 2, 4, 8... sec.
 				var refreshTokenRetryWait = Math.Pow(2, tokenRefreshRetryCount);
+				
+				if (forceFailTokenRefresh) {
+					refreshTokenRetryWait = 1;
+				}
+
 				var limitTick = DateTime.Now.Ticks + TimeSpan.FromSeconds(refreshTokenRetryWait).Ticks;
 
 				while (DateTime.Now.Ticks < limitTick) {
@@ -705,6 +727,13 @@ namespace AutoyaFramework {
 			}
 
 			/*
+				pit fall for maintenance or authFailed.
+			*/
+			if (inMaintenance || isAuthFailed) {
+				failed(connectionId, httpCode, "good status code but under maintenance or failed to auth or both.", new AutoyaStatus(inMaintenance, isAuthFailed));
+			}
+
+			/*
 				finally, connection is done as succeeded.
 			*/
 			succeeded(connectionId, data);
@@ -728,7 +757,7 @@ namespace AutoyaFramework {
 		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeader) {
 			#if UNITY_EDITOR
 			{
-				if (forceFailFirstBoot) {
+				if (forceFailAuthentication) {
 					return true;
 				}
 			}
@@ -758,7 +787,7 @@ namespace AutoyaFramework {
 		public static void Auth_SetOnBootAuthFailed (Action<int, string> bootAuthenticationFailed=null) {
 			if (autoya._autoyaAuthRouter.IsBootAuthFailed()) {
 				if (bootAuthenticationFailed != null) {
-					bootAuthenticationFailed(0, "already failed. let's show interface.");// すでに起こった要素を表示してもいい気がする。どっちにしても「あとでアクセスしてみて」になる気がする。
+					bootAuthenticationFailed(0, "already failed. let's show interface.");
 				}
 			} 
 
@@ -768,7 +797,7 @@ namespace AutoyaFramework {
 		}
 
 		public static void Auth_SetOnRefreshAuthFailed (Action<int, string> refreshAuthenticationFailed=null) {
-			if (autoya._autoyaAuthRouter.IsRefreshAuthFailed()) {
+			if (autoya._autoyaAuthRouter.IsTokenRefreshFailed()) {
 				if (refreshAuthenticationFailed != null) {
 					refreshAuthenticationFailed(0, "already failed to refresh token. let's show interface.　なぜなのか、は書けそう。");
 				}
@@ -776,6 +805,16 @@ namespace AutoyaFramework {
 
 			if (refreshAuthenticationFailed != null) {
 				autoya.onRefreshAuthFailed = refreshAuthenticationFailed;
+			}
+		}
+
+		/**
+			delete all user data. and set to logout.
+		*/
+		public static void Auth_DeleteAllUserData () {
+			if (autoya._autoyaAuthRouter.IsLogon()) { 
+				autoya.OnDeleteAllUserData();
+				autoya._autoyaAuthRouter.Logout();
 			}
 		}
 

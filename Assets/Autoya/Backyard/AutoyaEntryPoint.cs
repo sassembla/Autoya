@@ -20,6 +20,9 @@ namespace AutoyaFramework {
 		}
 		
 		public static bool forceFailFirstBoot = false;
+		public static bool forceFailTokenRefresh = false;
+
+		public static bool forceFailAuthentication = false;
 		public static bool forceMaintenance = false;
 	}
 }

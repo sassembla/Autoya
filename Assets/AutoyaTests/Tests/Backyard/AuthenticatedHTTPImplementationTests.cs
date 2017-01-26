@@ -4,7 +4,6 @@ using System.IO;
 using AutoyaFramework;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
-using UnityEngine;
 
 
 
@@ -23,15 +22,15 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	
 	[MSetup] public void Setup () {
 		DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-
-		var authorized = false;
+		
+		var authenticated = false;
 		Action onMainThread = () => {
 			var dataPath = string.Empty;
 			Autoya.TestEntryPoint(dataPath);
 			
 			Autoya.Auth_SetOnAuthenticated(
 				() => {
-					authorized = true;
+					authenticated = true;
 				}
 			);
 		};
@@ -39,7 +38,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		
 		WaitUntil(
 			() => {
-				return authorized;
+				return authenticated;
 			}, 
 			5, 
 			"failed to auth."
@@ -114,38 +113,32 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void AutoyaHTTPGetFailWithUnauth () {
-        Debug.LogError("401からrefreshTokenが走るテスト。まだ書けてない。");
-		// var unauthReason = string.Empty;
+		var unauthorized = false;
 
-		// // set unauthorized method callback.
-		// Autoya.Auth_SetOnAuthFailed(
-		// 	(conId, reason) => {
-		// 		unauthReason = reason;
-				
-		// 		// if want to start re-login, return true.
-		// 		return true;
-		// 	}
-		// );
+		/*
+			dummy server returns 401 forcibly.
+		*/
+		Autoya.Http_Get(
+			"https://httpbin.org/status/401", 
+			(string conId, string resultData) => {
+				// do nothing.
+			},
+			(conId, code, reason, autoyaStatus) => {
+				unauthorized = autoyaStatus.isAuthFailed;
+			}
+		);
 
-		// /*
-		// 	dummy server returns 401 forcely.
-		// */
-		// Autoya.Http_Get(
-		// 	"https://httpbin.org/status/401", 
-		// 	(string conId, string resultData) => {
-		// 		Assert(false, "unexpected succeeded. resultData:" + resultData);
-		// 	},
-		// 	(conId, code, reason) => {
-		// 		// do nothing.
-		// 	}
-		// );
+		WaitUntil(
+			() => unauthorized,
+			5
+		);
 
-		// WaitUntil(
-		// 	() => !string.IsNullOrEmpty(unauthReason), 
-		// 	5
-		// );
-		
-		// Assert(!string.IsNullOrEmpty(unauthReason), "code unmatched. unauthReason:" + unauthReason);
+		// token refresh feature is already running. wait end.
+		WaitUntil(
+			() => Autoya.Auth_IsAuthenticated(),
+			5,
+			"failed to refresh token."
+		);
 	}
 
 	[MTest] public void AutoyaHTTPGetFailWithTimeout () {
@@ -252,40 +245,34 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void AutoyaHTTPPostFailWithUnauth () {
-        Debug.LogError("401からrefreshTokenが走るテスト2。まだ書けてない。");
-		// var unauthReason = string.Empty;
+		var unauthorized = false;
 
-		// // set unauthorized method callback.
-		// Autoya.Auth_SetOnAuthFailed(
-		// 	(conId, reason) => {
-		// 		unauthReason = reason;
-				
-		// 		// if want to start re-login, return true.
-		// 		return true;
-		// 	}
-		// );
+		/*
+			dummy server returns 401 forcibly.
+		*/
+		Autoya.Http_Post(
+			"https://httpbin.org/status/401", 
+			"dummy_data",
+			(string conId, string resultData) => {
+				// do nothing.
+			},
+			(conId, code, reason, autoyaStatus) => {
+				unauthorized = autoyaStatus.isAuthFailed;
+			}
+		);
 
-		// /*
-		// 	dummy server returns 401 definitely.
-		// */
-		// Autoya.Http_Post(
-		// 	"https://httpbin.org/status/401",
-		// 	"data", 
-		// 	(string conId, string resultData) => {
-		// 		// do nothing.
-		// 	},
-		// 	(conId, code, reason) => {
-		// 		// do nothing.
-		// 	}
-		// );
+		WaitUntil(
+			() => unauthorized,
+			5
+		);
 
-		// WaitUntil(
-		// 	() => !string.IsNullOrEmpty(unauthReason), 
-		// 	3,
-		// 	"timeout."
-		// );
-		
-		// Assert(!string.IsNullOrEmpty(unauthReason), "unauthReason is empty.");
+
+		// token refresh feature is already running. wait end.
+		WaitUntil(
+			() => Autoya.Auth_IsAuthenticated(),
+			5,
+			"failed to refresh token."
+		);
 	}
 
 	[MTest] public void AutoyaHTTPPostFailWithTimeout () {

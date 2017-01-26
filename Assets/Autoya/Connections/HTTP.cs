@@ -16,7 +16,11 @@ namespace AutoyaFramework.Connections.HTTP {
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Get(url)) {
-				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) {
+					foreach (var kv in requestHeader) {
+						request.SetRequestHeader(kv.Key, kv.Value);
+					}
+				}
 				
 				var p = request.Send();
 				
@@ -54,7 +58,11 @@ namespace AutoyaFramework.Connections.HTTP {
 			
 			using (var request = UnityWebRequest.Post(url, data)) {
 				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
-				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) {
+					foreach (var kv in requestHeader) {
+						request.SetRequestHeader(kv.Key, kv.Value);
+					}
+				}
 
 				var p = request.Send();
 				
@@ -91,7 +99,11 @@ namespace AutoyaFramework.Connections.HTTP {
 			
 			using (var request = UnityWebRequest.Put(url, data)) {
 				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
-				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) {
+					foreach (var kv in requestHeader) {
+						request.SetRequestHeader(kv.Key, kv.Value);
+					}
+				}
 
 				var p = request.Send();
 				
@@ -128,7 +140,11 @@ namespace AutoyaFramework.Connections.HTTP {
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
 			using (var request = UnityWebRequest.Delete(url)) {
-				if (requestHeader != null) foreach (var kv in requestHeader) request.SetRequestHeader(kv.Key, kv.Value);
+				if (requestHeader != null) {
+					foreach (var kv in requestHeader) {
+						request.SetRequestHeader(kv.Key, kv.Value);
+					}
+				}
 				
 				var p = request.Send();
 				

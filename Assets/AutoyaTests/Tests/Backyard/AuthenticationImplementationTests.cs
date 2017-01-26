@@ -45,111 +45,185 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
     [MTeardown] public void Teardown () {
         RunOnMainThread(Autoya.Shutdown);
+		Autoya.forceFailFirstBoot = false;
+		Autoya.forceFailTokenRefresh = false;
     }
 
 	
-	[MTest] public void WaitDefaultAuthorize () {
+	[MTest] public void WaitDefaultAuthenticate () {
 		Assert(Autoya.Auth_IsAuthenticated(), "not yet logged in.");
 	}
 
-	[MTest] public void HandleBootAuthFailed () {
-		DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+	[MTest] public void DeleteAllUserData () {
+		Autoya.Auth_DeleteAllUserData();
 		
-		var authorized = false;
-		Action onMainThread = () => {
+		var authenticated = Autoya.Auth_IsAuthenticated();
+		Assert(!authenticated, "not deleted.");
 
-			Autoya.forceFailFirstBoot = true;
-
-			var dataPath = string.Empty;
-			Autoya.TestEntryPoint(dataPath);
-
-			Autoya.Auth_SetOnAuthenticated(
-				() => {
-					authorized = true;
-				}
-			);
-		};
-
-		RunOnMainThread(onMainThread);
-		
-		WaitUntil(
+		RunOnMainThread(
 			() => {
-				return authorized;
-			},
-			5,
-			"timeout in setup."
+				Autoya.Auth_AttemptAuthentication();
+			}
 		);
 
-		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
+		WaitUntil(
+			() => Autoya.Auth_IsAuthenticated(),
+			5,
+			"failed to firstBoot."
+		);
+	}
+
+	[MTest] public void HandleBootAuthFailed () {
+		Autoya.forceFailFirstBoot = true;
+
+		Autoya.Auth_DeleteAllUserData();
+		
+		var bootAuthFailHandled = false;
+		Autoya.Auth_SetOnBootAuthFailed(
+			(code, reason) => {
+				bootAuthFailHandled = true;
+			}
+		);
+
+		RunOnMainThread(
+			() => Autoya.Auth_AttemptAuthentication()
+		);
+		
+		WaitUntil(
+			() => bootAuthFailHandled,
+			10,
+			"failed to handle bootAuthFailed."
+		);
+		
+		Autoya.forceFailFirstBoot = false;
+	}
+
+	[MTest] public void HandleBootAuthFailedThenAttemptAuthentication () {
+		Autoya.forceFailFirstBoot = true;
+
+		Autoya.Auth_DeleteAllUserData();
+		
+		var bootAuthFailHandled = false;
+		Autoya.Auth_SetOnBootAuthFailed(
+			(code, reason) => {
+				bootAuthFailHandled = true;
+			}
+		);
+		
+		RunOnMainThread(
+			() => Autoya.Auth_AttemptAuthentication()
+		);
+		
+		WaitUntil(
+			() => bootAuthFailHandled,
+			10,
+			"failed to handle bootAuthFailed."
+		);
+		
+		Autoya.forceFailFirstBoot = false;
+
+		RunOnMainThread(
+			() => Autoya.Auth_AttemptAuthentication()
+		);
+
+		WaitUntil(
+			() => Autoya.Auth_IsAuthenticated(),
+			5,
+			"failed to attempt auth."
+		);
 	}
 	
-	[MTest] public void HandleAccidentialAuthErrorThenManualLoginSucceeded () {
-		Debug.LogError("まだ書いてない");
-	// 	var fakeReason = string.Empty;
-	// 	Autoya.Auth_SetOnRefreshAuthFailed(
-	// 		(code, reason) => {
-	// 			fakeReason = reason;
-	// 		}
-	// 	);
-		
-	// 	// emit fake 401 response.
-	// 	Autoya.Auth_Test_CreateAuthError();
+	[MTest] public void HandleLogoutThenAuthenticationAttemptSucceeded () {
+		Autoya.Auth_Logout();
 
-	// 	var authorized = false;
-	// 	Autoya.Auth_SetOnAuthenticated(
-	// 		() => {
-	// 			authorized = true;
-	// 		}
-	// 	);
+		RunOnMainThread(
+			() => Autoya.Auth_AttemptAuthentication()
+		);
 
-	// 	WaitUntil(() => !string.IsNullOrEmpty(fakeReason) && authorized, 5);
-
-	// 	/*
-	// 		明示的にrefreshAuthのAttemptを行うシーンをどう用意しようかな、、
-	// 		・authErrorだす
-	// 		・retryに失敗する
-	// 		という条件が必要で、これはなかなか、、そこまでいかないと、
-	// 		「リトライしますか？」という画面が出てこない。
-
-	// 		他の経路として、「bootAuthが失敗する」「refreshAuthが失敗する」という経路も必要な気がする。
-	// 		Attemptはbootにもrefreshにも対応しているので、
-	// 	*/
+		WaitUntil(
+			() => Autoya.Auth_IsAuthenticated(),
+			5,
+			"failed to auth"
+		);
 	}
 
 	
 	[MTest] public void IntentionalLogout () {
-		Debug.LogError("someone needs logout? part1");
-		// Autoya.Auth_Logout();
+		Autoya.Auth_Logout();
 		
-		// var loggedIn = Autoya.Auth_IsAuthenticated();
-		// Assert(!loggedIn, "state does not match.");
+		var loggedIn = Autoya.Auth_IsAuthenticated();
+		Assert(!loggedIn, "state does not match.");
 	}
 
-	[MTest] public void IntentionalLogoutThenRefreshAuthWillBeSucceeded () {
-		Debug.LogError("someone needs logout? part2");
-		// Autoya.Auth_Logout();
-		// var auth = false;
-		// Autoya.Auth_SetOnLoginSucceeded(
-		// 	() => {
-		// 		auth = true;
-		// 	}
-		// );
-
-		// Autoya.Auth_SetOnAuthFailed(
-		// 	(conId, reason) => {
-		// 		TestLogger.Log("Auth_SetOnAuthFailed:" + reason);
-		// 		return false;
-		// 	}
-		// );
-
-		// Autoya.Auth_AttemptAuthentication();
+	[MTest] public void HandleTokenRefreshFailed () {
+		Autoya.forceFailTokenRefresh = true;
 		
-		// WaitUntil(
-		// 	() => {
-		// 		return auth;
-		// 	}, 
-		// 	5,
-		// 	"failed to relogin."
-		// );
+		var tokenRefreshFailed = false;
+		Autoya.Auth_SetOnRefreshAuthFailed(
+			(code, reason) => {
+				tokenRefreshFailed = true;
+			}
+		);
+
+		// forcibly get 401 response.
+		Autoya.Http_Get(
+			"https://httpbin.org/status/401", 
+			(string conId, string resultData) => {
+				// do nothing.
+			},
+			(conId, code, reason, autoyaStatus) => {
+				// do nothing.
+			}
+		);
+
+		WaitUntil(
+			() => tokenRefreshFailed,
+			10,
+			"failed to handle tokenRefreshFailed."
+		);
+		
+		Autoya.forceFailTokenRefresh = false;
+	}
+
+	[MTest] public void HandleTokenRefreshFailedThenAttemptAuthentication () {
+		Autoya.forceFailTokenRefresh = true;
+		
+		var tokenRefreshFailed = false;
+		Autoya.Auth_SetOnRefreshAuthFailed(
+			(code, reason) => {
+				tokenRefreshFailed = true;
+			}
+		);
+
+		// forcibly get 401 response.
+		Autoya.Http_Get(
+			"https://httpbin.org/status/401", 
+			(string conId, string resultData) => {
+				// do nothing.
+			},
+			(conId, code, reason, autoyaStatus) => {
+				// do nothing.
+			}
+		);
+
+		WaitUntil(
+			() => tokenRefreshFailed,
+			10,
+			"failed to handle tokenRefreshFailed."
+		);
+		
+		Autoya.forceFailTokenRefresh = false;
+
+		RunOnMainThread(
+			() => {
+				Autoya.Auth_AttemptAuthentication();
+			}
+		);
+		
+		WaitUntil(
+			() => Autoya.Auth_IsAuthenticated(),
+			5,
+			"failed to handle tokenRefreshFailed."
+		);
 	}
 }

@@ -1,11 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using AutoyaFramework.Connections.HTTP;
-using AutoyaFramework.Settings.Maintenance;
-using UnityEngine;
-
-
 
 /*
     detect & notify if the server side services are no longer available by maintenance.
@@ -14,7 +9,10 @@ namespace AutoyaFramework {
     public partial class Autoya {
         private bool CheckMaintenance (int httpCode, Dictionary<string, string> responseHeader) {
 			if (IsMaintenance(httpCode, responseHeader)) {
-				OnMaintenance();
+                // start running onMaintenance action.
+				var cor = onMaintenanceAction();
+                mainthreadDispatcher.Commit(cor);
+                
                 return true;
 			}
             return false;
@@ -31,41 +29,20 @@ namespace AutoyaFramework {
 			return IsUnderMaintenance(httpCode, responseHeader);
 		}
         
-        private void OnMaintenance () {
-            if (Application.internetReachability == NetworkReachability.NotReachable) {
-                onMaintenanceAction("network is offline.");
-                return;
-            }
 
-            mainthreadDispatcher.Commit(GetMaintenanceInfo());
+        private static IEnumerator DefaultOnMaintenance () {
+            // do nothing.
+            yield break;            
         }
+
+        private Func<IEnumerator> onMaintenanceAction = () => {return DefaultOnMaintenance();};
+
 
         /*
             public api.
         */
-        private IEnumerator GetMaintenanceInfo () {
-            // use raw http connection. no need to authenticate.
-            var http = new HTTPConnection();
-            var connectionId = MaintenanceSettings.MAINTENANCE_PREFIX + Guid.NewGuid().ToString();
-            var maintenanceUrl = MaintenanceSettings.MAINTENANCE_URL;
 
-            return http.Get(
-                connectionId,
-                null,
-                maintenanceUrl,
-                (conId, code, respHeader, data) => {
-                    onMaintenanceAction(data);
-                },
-                (conId, code, reason, respHeader) => {
-                    Debug.LogWarning("maintenanceモードの情報取得に失敗するという辛いケース、どうしよう。");
-                    onMaintenanceAction(code + "_" + reason);
-                }
-            );
-        }
-
-        private Action<string> onMaintenanceAction = maintenanceReason => {};
-
-        public static void Maintenance_SetOnMaintenance (Action<string> onMaintenance) {
+        public static void Maintenance_SetOnMaintenance (Func<IEnumerator> onMaintenance) {
             autoya.onMaintenanceAction = onMaintenance;
         }
     }
