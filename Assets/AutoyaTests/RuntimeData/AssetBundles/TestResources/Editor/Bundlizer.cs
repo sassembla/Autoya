@@ -9,6 +9,11 @@ using System.IO;
 		BuildPipeline.BuildAssetBundles("AssetBundles", BuildAssetBundleOptions.None, BuildTarget.StandaloneOSXIntel64);
 	}
 
+	[MenuItem("Window/Autoya/Clean Cached AssetBundles")] public static void CleanCache () {
+		Caching.CleanCache();
+	}
+
+
 	[MenuItem("Window/Autoya/Update UnityPackage")] public static void UnityPackage () {
 		var assetPaths = new List<string>();
 		var dirPaths = Directory.GetDirectories("Assets/Autoya");
@@ -22,6 +27,7 @@ using System.IO;
 
 		AssetDatabase.ExportPackage(assetPaths.ToArray(), "Autoya.unitypackage", ExportPackageOptions.IncludeDependencies);
 	}
+
 
 	static Bundlizer () {
 		UnityPackage();

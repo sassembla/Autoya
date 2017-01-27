@@ -1,4 +1,5 @@
-﻿using AutoyaFramework;
+﻿using System.Collections;
+using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
 using UnityEngine;
 
@@ -15,7 +16,11 @@ public class LoadAssetBundle : MonoBehaviour {
 		#endif
 		
 	// Use this for initialization
-	void Start () {
+	IEnumerator Start () {
+		while (!Autoya.Auth_IsAuthenticated()) {
+			yield return null;
+		}
+		
 		var dummyList = new AssetBundleList("1.0.0", 
 			new AssetBundleInfo[]{
 				// pngが一枚入ったAssetBundle
@@ -60,18 +65,10 @@ public class LoadAssetBundle : MonoBehaviour {
 		Autoya.AssetBundle_LoadAsset<GameObject>(
 			"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab",
 			(assetName, prefab) => {
+				Debug.Log("asset:" + assetName + " is successfully loaded as:" + prefab);
 				Instantiate(prefab);
 			},
 			(assetName, err, reason, status) => {
-				if (status.isAuthFailed) {
-					// no need to do about auth. show interface. "download failed. Retry?".
-					return;
-				}
-				if (status.inMaintenance) {
-					// sno need to do about auth. system will show "maintenance will open at ~~!".
-					return;
-				}
-				
 				Debug.LogError("failed to load assetName:" + assetName + " err:" + err + " reason:" + reason);
 			}
 		);
