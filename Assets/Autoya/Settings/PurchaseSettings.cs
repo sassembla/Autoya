@@ -19,5 +19,7 @@ namespace AutoyaFramework.Purchase {
         public const string PURCHASE_CONNECTIONID_CANCEL_PREFIX = "purchase_cancelled_";
 
         public const double TIMEOUT_SEC = 10.0;
+
+        public const int PEADY_MAX_RETRY_COUNT = 3;
     }
 }

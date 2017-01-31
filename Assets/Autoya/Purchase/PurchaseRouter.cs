@@ -170,7 +170,6 @@ namespace AutoyaFramework.Purchase {
             }
 
             this.onTicketResponse = onTicketResponse;
-
             var cor = _Ready(onLoadProducts, onPurchaseReady, onPurchaseReadyFailed);
             enumExecutor(cor);
         }
@@ -208,7 +207,6 @@ namespace AutoyaFramework.Purchase {
                     ReadyIAPFeature(products);
                 },
                 (conId, code, reason, autoyaStatus) => {
-                    Debug.LogError("failed, code:" + code + " reason:" + reason);
                     routerState = RouterState.FailedToLoadProducts;
                     failedToReady(PurchaseError.UnknownError, reason, autoyaStatus);
                 }

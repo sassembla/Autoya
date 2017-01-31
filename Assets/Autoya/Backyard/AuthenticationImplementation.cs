@@ -687,7 +687,6 @@ namespace AutoyaFramework {
 				UnityWebRequest handled internal error.
 			*/
 			if (httpCode == 0) {
-				Debug.LogError("httpCode = 0, misc errors. errorReason:" + errorReason);
 				var troubleMessage = errorReason;
 				failed(connectionId, httpCode, troubleMessage, new AutoyaStatus());
 				return;

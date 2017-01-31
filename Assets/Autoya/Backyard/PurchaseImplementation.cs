@@ -20,6 +20,7 @@ namespace AutoyaFramework {
         
         private PurchaseFeatureState purchaseFeatureState = PurchaseFeatureState.None;
         
+        private int purchaseReadyRetryCount;
         private void ReloadPurchasability () {
             purchaseFeatureState = PurchaseFeatureState.Loading;
 
@@ -35,14 +36,19 @@ namespace AutoyaFramework {
                     return OnTicketResponse(ticketData);
                 },
                 () => {
+                    purchaseReadyRetryCount = 0;
                     purchaseFeatureState = PurchaseFeatureState.Ready;
                     OnPurchaseReady();
                 }, 
                 (err, reason, autoyaStatus) => {
                     purchaseFeatureState = PurchaseFeatureState.Reloading;
-                    OnPurchaseReadyFailed(err, reason, autoyaStatus);
                     
-                    // start reloading.
+                    if (purchaseReadyRetryCount == PurchaseSettings.PEADY_MAX_RETRY_COUNT) {
+                        purchaseReadyRetryCount = 0;
+                        OnPurchaseReadyFailed(err, reason, autoyaStatus);
+                        return;
+                    }
+
                     mainthreadDispatcher.Commit(ReloadPurchaseFeature());
                 },
                 httpRequestHeaderDelegate, 
@@ -51,11 +57,20 @@ namespace AutoyaFramework {
         }
 
         private IEnumerator ReloadPurchaseFeature () {
+            purchaseReadyRetryCount++;
+
+            // wait 2 ^ retryCount sec.
+            yield return new WaitForSeconds((float)Math.Pow(2, purchaseReadyRetryCount));
+
             ReloadPurchasability();
 
             while (_purchaseRouter.IsPurchaseReady()) {
                 yield return null;
             }
+        }
+
+        private void AttemptRetryPurchaseReady () {
+            mainthreadDispatcher.Commit(ReloadPurchaseFeature());
         }
 
 
@@ -97,6 +112,13 @@ namespace AutoyaFramework {
             return autoya._purchaseRouter.ProductInfos();
         }
 
+        /**
+            attempt ready purchase feature if ready purchase was failed.
+        */
+        public static void Purchase_AttemptReady () {
+            if (Purchase_IsReady()) return;
+            autoya.AttemptRetryPurchaseReady();
+        }
         
         
         /**
