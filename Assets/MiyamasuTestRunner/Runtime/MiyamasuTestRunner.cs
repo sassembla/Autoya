@@ -19,6 +19,8 @@ namespace Miyamasu {
 	public class MiyamasuTestRunner {
 
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] public static void RunTestsFromCode () {
+			var runnerSettings = Settings.LoadSettings();
+			if (!runnerSettings.runOnPlay) return;
 			
 			var go = new GameObject("MiyamasuTestMainThreadRunner");
 			go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
