@@ -16,7 +16,7 @@ namespace AutoyaFramework.Purchase {
     /**
         struct for product data.
     */
-    [Serializable] public struct ProductInfo {
+    [Serializable] public class ProductInfo {
         [SerializeField] public string productId;
         [SerializeField] public string platformProductId;
         [SerializeField] public bool isAvailableToThisPlayer;
