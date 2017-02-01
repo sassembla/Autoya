@@ -16,7 +16,7 @@ namespace AutoyaFramework.Purchase {
     /**
         struct for product data.
     */
-    [Serializable] public class ProductInfo {
+    [Serializable] public struct ProductInfo {
         [SerializeField] public string productId;
         [SerializeField] public string platformProductId;
         [SerializeField] public bool isAvailableToThisPlayer;
@@ -170,6 +170,7 @@ namespace AutoyaFramework.Purchase {
             }
 
             this.onTicketResponse = onTicketResponse;
+
             var cor = _Ready(onLoadProducts, onPurchaseReady, onPurchaseReadyFailed);
             enumExecutor(cor);
         }
@@ -221,7 +222,7 @@ namespace AutoyaFramework.Purchase {
             routerState = RouterState.LoadingStore;
 
             var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
-
+            
             foreach (var productInfo in productInfos) {
                 builder.AddProduct(
                     productInfo.productId, 
@@ -238,7 +239,7 @@ namespace AutoyaFramework.Purchase {
                 failedToReady(PurchaseError.Offline, "network is offline.", new AutoyaStatus());
                 return;
             }
-
+            
             UnityPurchasing.Initialize(this, builder);
         }
         private IStoreController controller;
