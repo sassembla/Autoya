@@ -30,6 +30,9 @@ using System.IO;
 
 
 	static Bundlizer () {
-		UnityPackage();
+		// create unitypackage if compiled.
+		if (!EditorApplication.isPlayingOrWillChangePlaymode) {
+			UnityPackage();
+		}
 	}
 }
