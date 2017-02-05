@@ -15,7 +15,7 @@ public class Information : MonoBehaviour {
 			"https://raw.githubusercontent.com/sassembla/Autoya/master/README.md",
 			(conId, code, respHeader, data) => {
 				Debug.Log("markdown:" + data);
-				Autoya.Info_ConstructMarkdownView(data, id => {});
+				Autoya.Info_ConstructMarkdownView(data, windowObj => {}, id => {});
 			},
 			(conId, code, reason, respHeader) => {
 				Debug.LogError("failed to dl, reason:" + reason);

@@ -1,7 +1,7 @@
 # Autoya
 ver 0.8.4
 
-![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true")
+![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
 
 small, thin framework for Unity.  
 which contains essential game features.
@@ -22,7 +22,8 @@ Unity already contains these feature's foundation, but actually we need more cod
 This framework can help that.
 
 ## License
-MIT.
+see below.  
+[LICENSE](./LICENSE)
 
 
 ## Progress
