@@ -167,16 +167,21 @@ hard break will appear without <br />.
 			/**
 				return generated game object.
 			*/
-			public GameObject Materialize (Tag tag, GameObject parent) {
-				Debug.LogError("Materialize tag:" + tag);
-				this._gameObject = new GameObject(tag.ToString());// オブジェクトプールがあるといいのでは的な。
-				this._gameObject.transform.SetParent(parent.transform);
+			public GameObject MaterializeRoot () {
+				return Materialize(null);
+			}
+			
+			private GameObject Materialize (GameObject parent=null) {
+				this._gameObject = new GameObject(tag.ToString());// このTokenizer用の要素に対してのオブジェクトプールがあるといいのでは的な。
+				if (parent != null) {
+					this._gameObject.transform.SetParent(parent.transform);
+				}
 
-				switch (tag) {
+				switch (this.tag) {
 					case Tag.ROOT: {
 						var childlen = this.transform.GetChildlen();
 						foreach (var child in childlen) {
-							child.Materialize(child.tag, this._gameObject);
+							child.Materialize(this._gameObject);
 						}
 						break;
 					}
@@ -187,9 +192,11 @@ hard break will appear without <br />.
 					case Tag.H3:
 					case Tag.H4:
 					case Tag.H5: {
+
+						// 一回だけ作ればOKなメジャー替わりのインスタンス。
+						// これを使っての計算を、事前にしておいて、posを取得して表示すれば良さそう。
 						{
 							GameObject tDummyObj = GameObject.Find("dummy");
-								
 							Text tDummy;
 							if (tDummyObj == null) {
 								tDummyObj = new GameObject("dummy");
@@ -207,16 +214,14 @@ hard break will appear without <br />.
 						}
 
 						// 親 -> 子、とだんだん幅を狭めていく感じでviewを実装。
-						// 高さは計算後に全部並べる感じか。結局遅延させられなさそう？
 						// 画面外になったら書かない、とかか。上下で超過した最大一個をdisableして、それ以降はskipとか。
-						// 仮でGameObjectを一つ持って、折り返しを計測するのに使える感じ。
 						this._gameObject.AddComponent<CanvasRenderer>();
 						var t = this._gameObject.AddComponent<Text>();
 						t.text = content;
 
 						var childlen = this.transform.GetChildlen();
 						foreach (var child in childlen) {
-							child.Materialize(child.tag, this._gameObject);
+							child.Materialize(this._gameObject);
 						}
 						break;
 					}
@@ -260,7 +265,8 @@ hard break will appear without <br />.
 		}
 
 		public GameObject Materialize () {
-			return rootObject.Materialize(Tag.ROOT, new GameObject("sample"));
+			// Rootタグのオブジェクトが作られればそれでいい感じがする。んで、そいつがスクロールを持っていれば。
+			return rootObject.MaterializeRoot();
 		}
 
 		private VirtualGameObject Tokenize (TagPoint p, string data) {
@@ -374,10 +380,6 @@ hard break will appear without <br />.
 				this.lineIndex = lineIndex;
 				this.tag = tag;
 				this.gameObject = new VirtualGameObject(tag);	
-			}
-
-			public GameObject Materialize (GameObject parent) {
-				return this.gameObject.Materialize(tag, parent);
 			}
 		}
 
