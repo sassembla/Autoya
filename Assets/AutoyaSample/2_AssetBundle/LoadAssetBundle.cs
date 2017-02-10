@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
 using UnityEngine;
@@ -13,8 +14,10 @@ public class LoadAssetBundle : MonoBehaviour {
 		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
 		#elif UNITY_ANDROID
 		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+		#else
+		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
 		#endif
-		
+
 	// Use this for initialization
 	IEnumerator Start () {
 		while (!Autoya.Auth_IsAuthenticated()) {
@@ -28,28 +31,32 @@ public class LoadAssetBundle : MonoBehaviour {
 					"bundlename", 
 					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"}, 
 					new string[0], 
-					621985162
+					621985162,
+					"578b73927bc11f6e80072caa17983776"
 				),
 				// 他のAssetBundleへの依存があるAssetBundle
 				new AssetBundleInfo(
 					"dependsbundlename", 
 					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"}, 
 					new string[]{"bundlename"}, 
-					2389728195
+					2389728195,
+					"1a3bdb638b301fd91fc5569e016604ad"
 				),
 				// もう一つ、他のAssetBundleへの依存があるAssetBundle
 				new AssetBundleInfo(
 					"dependsbundlename2", 
 					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"}, 
 					new string[]{"bundlename"}, 
-					1194278944
+					1194278944,
+					"b24db843879f6f82d9bee95e15559003"
 				),
 				// nestedprefab -> dependsbundlename -> bundlename
 				new AssetBundleInfo(
 					"nestedprefab", 
 					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"}, 
 					new string[]{"dependsbundlename"}, 
-					779842307
+					779842307,
+					"30b17595dd7be703c2b04a6e4c3830ff"
 				),
 				
 			}
