@@ -19,14 +19,11 @@ namespace AutoyaFramework {
 		}
 
 		private bool IsMaintenance (int httpCode, Dictionary<string, string> responseHeader) {
-            #if UNITY_EDITOR
-            {
-                if (forceMaintenance) {
-                    return true;
-                }
+            if (forceMaintenance) {
+                return true;
             }
-            #endif
-			return IsUnderMaintenance(httpCode, responseHeader);
+            
+            return IsUnderMaintenance(httpCode, responseHeader);
 		}
         
 

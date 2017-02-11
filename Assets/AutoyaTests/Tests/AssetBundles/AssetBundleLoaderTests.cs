@@ -120,8 +120,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					done = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -144,9 +144,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -167,9 +166,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -191,9 +189,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					done = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -229,9 +226,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -266,9 +262,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -297,18 +292,19 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	*/
 	[MTest] public void Load2Assets_1isDependsOnAnother_DependedFirst () {
 		// texture = depended asset.
+		Texture2D tex = null;
 		var textureLoadDone = false;
 		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
+					tex = texAsset;
 					textureLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					textureLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -326,15 +322,16 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
 		
 		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
+		Assert(tex, "tex is null.");
+		Assert(prefab, "prefab is null.");
 
 		if (prefab != null) {
 			RunOnMainThread(
@@ -358,6 +355,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
         GameObject prefab = null;
 		var prefabLoadDone = false;
 
+		// load async
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
@@ -366,33 +364,38 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
 
+		
         // texture = depended asset.
+		Texture2D tex = null;
 		var textureLoadDone = false;
 		
+		// load async
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
+					tex = texAsset;
 					textureLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					textureLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
+		
 
 		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
+		Assert(tex, "tex is null.");
+		Assert(prefab, "prefab is null.");
 
 		if (prefab != null) {
 			RunOnMainThread(
@@ -414,7 +417,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	[MTest] public void Load2AssetsWhichDependsOnSameAssetBundle () {
 		GameObject prefab1 = null;
 		var prefabLoadDone1 = false;
-
+		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
@@ -423,9 +426,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone1 = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone1 = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -442,15 +444,16 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone2 = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone2 = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
 
 		WaitUntil(() => prefabLoadDone1 && prefabLoadDone2, 10, "prefabs load failed.");
+		Assert(prefab1, "prefab1 is null.");
+		Assert(prefab2, "prefab2 is null.");
 
 		if (prefab1 != null && prefab2 != null) {
 			RunOnMainThread(
@@ -496,6 +499,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 
 		WaitUntil(() => prefabLoadDone, 10, "prefabs load failed.");
+		Assert(prefab, "prefab is null.");
 
 		if (prefab != null) {
 			RunOnMainThread(
@@ -568,7 +572,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			}
 		}
 
-		WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, 20, "failed to load all assets.");
+		WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, 10, "failed to load all assets.");
 		foreach (var loadedAssetAssetKey in loadedAssetAssets.Keys) {
 			var key = loadedAssetAssetKey;
 			var asset = loadedAssetAssets[key];
