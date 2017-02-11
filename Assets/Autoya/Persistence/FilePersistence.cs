@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 /**
 	features for control data storage.
@@ -59,34 +60,48 @@ namespace AutoyaFramework.Persistence.Files {
 			update data of domain/fileName file.
 		*/
 		public bool Update (string domain, string fileName, string data) {
+			try {
+			Debug.LogError("Update 1");
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
-
+				Debug.LogError("Update 2");
 				var filePath = Path.Combine(domainPath, fileName);
+				Debug.LogError("Update 3");
 				using (var sw = new StreamWriter(filePath, false))	{
+					Debug.LogError("Update 4");
 					sw.Write(data);
 				}
-				
+				Debug.LogError("Update 5");
 				return true;
 			} else {// no directory = domain exists.
+				Debug.LogError("Update 6　domainPath:" + domainPath);
 				var created = Directory.CreateDirectory(domainPath);
-				
+				Debug.LogError("Update 7");
 				if (created.Exists) {
-					
+					Debug.Log("Update 8");
 					#if UNITY_IOS
 					{
+						Debug.LogError("Update 9");
 						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
 					}
 					#endif
-
+					Debug.LogError("Update 10");
 					var filePath = Path.Combine(domainPath, fileName);
+					Debug.LogError("Update 11");
 					using (var sw = new StreamWriter(filePath, false)) {
+						Debug.LogError("Update 12");
 						sw.Write(data);
 					}
+					Debug.LogError("Update 13");
 					return true;
 				} 
 			}
+			Debug.LogError("Update 14");
 			return false;
+			} catch (Exception e) {
+				Debug.LogError("e:" + e);
+				return false;
+			}
 		}
 
 		/**

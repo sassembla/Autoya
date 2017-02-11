@@ -16,7 +16,8 @@ namespace Miyamasu {
         public static RunnerSettings staticSettings;
 
         public const string SETTING_DIRECTORY = "Assets/MiyamasuTestRunner/Runtime/Resources/";
-        public const string SETTING_FILE_PATH = SETTING_DIRECTORY + "MiyamasuSettings.txt";
+        public const string SETTING_FILE_NAME = "MiyamasuSettings";
+        public const string SETTING_FILE_PATH = SETTING_DIRECTORY + SETTING_FILE_NAME + ".txt";
         
         public static RunnerSettings LoadSettings () {
             #if UNITY_EDITOR
@@ -31,10 +32,9 @@ namespace Miyamasu {
             }
             #endif
 
-            var settingDataStr = string.Empty;
-            using (var sr = new StreamReader(SETTING_FILE_PATH)) {
-                settingDataStr = sr.ReadToEnd();
-            }
+            
+            var settingData = Resources.Load(SETTING_FILE_NAME) as TextAsset;
+            var settingDataStr = settingData.text;
 
             if (string.IsNullOrEmpty(settingDataStr)) {
                 #if UNITY_EDITOR
