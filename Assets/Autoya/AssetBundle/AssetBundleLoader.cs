@@ -358,7 +358,7 @@ namespace AutoyaFramework.AssetBundles {
 
             Action<string, object> succeeded = (conId, downloadedAssetBundle) => {
                 // set loaded assetBundle to on-memory cache.
-                assetBundleDict[bundleName] = downloadedAssetBundle as AssetBundle;
+                assetBundleDict[bundleName] = (AssetBundle)downloadedAssetBundle;
             };
 
             Action<string, int, string, AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
@@ -468,7 +468,6 @@ namespace AutoyaFramework.AssetBundles {
         private Dictionary<string, AssetBundle> assetBundleDict = new Dictionary<string, AssetBundle>();
         private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object {
             var assetBundle = assetBundleDict[bundleName];
-            
             var request = assetBundle.LoadAssetAsync<T>(assetName);            
             while (!request.isDone) {
                 yield return null;

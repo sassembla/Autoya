@@ -13,8 +13,9 @@ namespace AutoyaFramework.Settings.Auth {
             sample authentication persist settings.
         */
         public const string AUTH_STORED_FRAMEWORK_DOMAIN = "framework";
-		public const string AUTH_STORED_TOKEN_FILENAME = "token.autoya";
+        public const string AUTH_STORED_TOKEN_FILENAME = "token.autoya";
 
+        
 		public const int AUTH_FIRSTBOOT_MAX_RETRY_COUNT = 3;
 		public const int AUTH_TOKENREFRESH_MAX_RETRY_COUNT = 3;
 
@@ -25,5 +26,6 @@ namespace AutoyaFramework.Settings.Auth {
             sample authentication key.
         */
         public static readonly byte[] AUTH_BOOT = new byte[]{100, 101, 102};
+        
     }
 }

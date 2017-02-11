@@ -116,7 +116,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
-					Debug.LogError("assetName:" + assetName + " texAsset:" + texAsset);
 					tex = texAsset;
 					done = true;
 				},
