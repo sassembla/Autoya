@@ -10,7 +10,7 @@ using UnityEngine.Networking;
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundleLoader {
 
-        public const int CODE_NULL_ASSET_FOUND = 399;
+        public const int CODE_CRC_MISMATCH_OR_NULL_ASSET_FOUND = 399;
 
         public enum AssetBundleLoadError {
             Unauthorized,
@@ -366,8 +366,16 @@ namespace AutoyaFramework.AssetBundles {
 
             Action<string, int, string, AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
                 // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
-                // Debug.LogError("assetName:" + assetName + " err:" + AssetBundleLoadError.DownloadFailed + " failed to download AssetBundle. code:" + code + " reason:" + reason + " autoyaStatus/inMaintenance:" + autoyaStatus.inMaintenance + "  autoyaStatus/isAuthFailed:" + autoyaStatus.isAuthFailed);
-                failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason, autoyaStatus);
+                switch (code) {
+                    case CODE_CRC_MISMATCH_OR_NULL_ASSET_FOUND: {
+                        failed(assetName, AssetBundleLoadError.DownloadFailed, reason, autoyaStatus);
+                        break;
+                    }
+                    default: {
+                        failed(assetName, AssetBundleLoadError.DownloadFailed, "failed to download AssetBundle. code:" + code + " reason:" + reason, autoyaStatus);
+                        break;
+                    }
+                }
             };
 
             var reqHeader = requestHeader(url, new Dictionary<string, string>());
@@ -458,8 +466,8 @@ namespace AutoyaFramework.AssetBundles {
 				
 				var assetBundle = dataHandler.assetBundle;
                 if (assetBundle == null) {
-                    responseCode = CODE_NULL_ASSET_FOUND;
-					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + " is null.", responseHeaders);
+                    responseCode = CODE_CRC_MISMATCH_OR_NULL_ASSET_FOUND;
+					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + " is null or requested crc was not matched.", responseHeaders);
                     yield break;
 				}
                 
