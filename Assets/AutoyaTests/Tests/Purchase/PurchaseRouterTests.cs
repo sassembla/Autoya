@@ -74,8 +74,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
     }
 
     private IEnumerator WaitPurchaseFeatureOfAutoya () {
-        var dataPath = string.Empty;
-        Autoya.TestEntryPoint(dataPath);
+        Autoya.TestEntryPoint(Application.persistentDataPath);
+        	
         while (!Autoya.Purchase_IsReady()) {
             yield return null;
         }

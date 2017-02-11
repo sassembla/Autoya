@@ -9,6 +9,9 @@ using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundleLoader {
+
+        public const int CODE_NULL_ASSET_FOUND = 399;
+
         public enum AssetBundleLoadError {
             Unauthorized,
             NotContained,
@@ -439,10 +442,13 @@ namespace AutoyaFramework.AssetBundles {
 				}
 
                 if (alreadyStorageCached) {
+                    // set response code to 200 manually if already cached and succeeded to load from cache.
+                    // sadly, in this case, the code is not 200 by default.
                     responseCode = 200;
                 } else {
-                    if (200 <= responseCode && responseCode <= 299) {}
-                    else {
+                    if (200 <= responseCode && responseCode <= 299) {
+                        // do nothing.
+                    } else {
                         failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName, responseHeaders);
                         yield break;
                     }
@@ -452,6 +458,7 @@ namespace AutoyaFramework.AssetBundles {
 				
 				var assetBundle = dataHandler.assetBundle;
                 if (assetBundle == null) {
+                    responseCode = CODE_NULL_ASSET_FOUND;
 					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + " is null.", responseHeaders);
                     yield break;
 				}
