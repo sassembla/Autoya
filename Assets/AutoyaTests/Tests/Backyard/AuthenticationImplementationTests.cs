@@ -16,11 +16,13 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
-        DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-		
 		var authorized = false;
 		Action onMainThread = () => {
 			var dataPath = Application.persistentDataPath;
+
+			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+            DeleteAllData(fwPath);
+
 			Autoya.TestEntryPoint(dataPath);
 
 			Autoya.Auth_SetOnAuthenticated(

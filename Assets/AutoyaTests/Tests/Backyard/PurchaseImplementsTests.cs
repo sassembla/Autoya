@@ -24,9 +24,10 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 
         var authorized = false;
 		Action onMainThread = () => {
-            var dataPath = Application.dataPath;
+            var dataPath = Application.persistentDataPath;
 
-            DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+            var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+            DeleteAllData(fwPath);
 
 			Autoya.TestEntryPoint(dataPath);
 			
