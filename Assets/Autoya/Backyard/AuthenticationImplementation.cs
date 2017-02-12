@@ -754,14 +754,10 @@ namespace AutoyaFramework {
 		}
 
 		private bool IsAuthFailed (int httpCode, Dictionary<string, string> responseHeader) {
-			#if UNITY_EDITOR
-			{
-				if (forceFailAuthentication) {
-					return true;
-				}
+			if (forceFailAuthentication) {
+				return true;
 			}
-			#endif
-			
+				
 			return IsUnauthorized(httpCode, responseHeader);
 		}
 

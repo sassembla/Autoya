@@ -1,0 +1,48 @@
+{
+    "target": "Mac",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "bundlename",
+            "assetNames": [
+                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 621985162,
+            "hash": "578b73927bc11f6e80072caa17983776"
+        },
+        {
+            "bundleName": "dependsbundlename",
+            "assetNames": [
+                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 2389728195,
+            "hash": "1a3bdb638b301fd91fc5569e016604ad"
+        },
+        {
+            "bundleName": "dependsbundlename2",
+            "assetNames": [
+                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 1194278944,
+            "hash": "b24db843879f6f82d9bee95e15559003"
+        },
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "dependsbundlename"
+            ],
+            "crc": 779842307,
+            "hash": "30b17595dd7be703c2b04a6e4c3830ff"
+        }
+    ]
+}

@@ -172,9 +172,11 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			"https://httpbin.org/status/401", 
 			(string conId, string resultData) => {
 				// do nothing.
+				Debug.Log("HandleTokenRefreshFailed succeeded.");
 			},
 			(conId, code, reason, autoyaStatus) => {
 				// do nothing.
+				Debug.Log("HandleTokenRefreshFailed failed. code:" + code + " reason:" + reason + " autoyaStatus:" + autoyaStatus.isAuthFailed);
 			}
 		);
 
@@ -196,7 +198,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 				tokenRefreshFailed = true;
 			}
 		);
-
+		
 		// forcibly get 401 response.
 		Autoya.Http_Get(
 			"https://httpbin.org/status/401", 

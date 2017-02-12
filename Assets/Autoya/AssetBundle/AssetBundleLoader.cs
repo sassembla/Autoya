@@ -10,11 +10,12 @@ using UnityEngine.Networking;
 namespace AutoyaFramework.AssetBundles {
     public class AssetBundleLoader {
 
-        public const int CODE_CRC_MISMATCH_OR_NULL_ASSET_FOUND = 399;
+        public const int CODE_CRC_MISMATCHED = 399;
 
         public enum AssetBundleLoadError {
             Unauthorized,
             NotContained,
+            CrcMismatched,
             DownloadFailed,
             AssetLoadFailed,
             NullAssetFound,
@@ -367,8 +368,8 @@ namespace AutoyaFramework.AssetBundles {
             Action<string, int, string, AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
                 // 結局codeに依存しないエラーが出ちゃうのをどうしようかな、、、仕組みで避けきるしかないのか、、try-catchできないからな、、
                 switch (code) {
-                    case CODE_CRC_MISMATCH_OR_NULL_ASSET_FOUND: {
-                        failed(assetName, AssetBundleLoadError.DownloadFailed, reason, autoyaStatus);
+                    case CODE_CRC_MISMATCHED: {
+                        failed(assetName, AssetBundleLoadError.CrcMismatched, reason, autoyaStatus);
                         break;
                     }
                     default: {
@@ -432,7 +433,7 @@ namespace AutoyaFramework.AssetBundles {
 					// check timeout.
                     if (limitTick != 0 && limitTick < DateTime.UtcNow.Ticks) {
 						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "AssetBundleのダウンロードのタイムアウトのメッセージ", null);
+						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "timeout to download bundle:" + bundleName, new Dictionary<string, string>());
 						yield break;
 					}
 				}
@@ -457,7 +458,7 @@ namespace AutoyaFramework.AssetBundles {
                     if (200 <= responseCode && responseCode <= 299) {
                         // do nothing.
                     } else {
-                        failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName, responseHeaders);
+                        failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + " was not downloaded.", responseHeaders);
                         yield break;
                     }
                 }
@@ -466,8 +467,8 @@ namespace AutoyaFramework.AssetBundles {
 				
 				var assetBundle = dataHandler.assetBundle;
                 if (assetBundle == null) {
-                    responseCode = CODE_CRC_MISMATCH_OR_NULL_ASSET_FOUND;
-					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + " is null or requested crc was not matched.", responseHeaders);
+                    responseCode = CODE_CRC_MISMATCHED;
+					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + ", requested crc was not matched.", responseHeaders);
                     yield break;
 				}
                 
