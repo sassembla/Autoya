@@ -6,22 +6,22 @@ using System.IO;
 using UnityEngine;
 using System.Linq;
 using AutoyaFramework.AssetBundles;
-using UnityEditor;
 
 public class AssetBundleListMaker {
     // this list make feature expect that folder is exists on the top level of YOUR_PROJECT_FOLDER.
     const string PATH_ASSETBUNDLES_EXPORTED = "AssetBundles";// whole path is "YOUR_PROJECT_FOLDER/AssetBundles" by default.
 
-    [MenuItem("Window/Autoya/Update AssetBundleList")] public static void MakeList () {
-        // なんかウィンドウ出して、コンソールを流す、みたいなのやりたい。めんどくせーーけど一個作ると使いまわせそう。コードの実行ログも見たいし。ツールエグゼキュートウィンドウか。
+    public string version;
+    public string osStr;
+    public bool shouldOverwrite;
 
-        /*
-            これらの変数を変えて頑張ってくれ
-        */
-        var version = "1.0.0";
-        var osStr = "Mac";
-        var shouldOverwrite = false;
+    public AssetBundleListMaker () {
+        version = "1.0.0";
+        osStr = "Mac";
+        shouldOverwrite = false;
+    }
 
+    public void MakeList () {
         var assumedListFilePath = FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, osStr, "AssetBundles." + osStr + "_" + version.Replace(".", "_") + ".json");
         if (File.Exists(assumedListFilePath) && !shouldOverwrite) {
             Debug.LogError("same version file:" + assumedListFilePath + " is already exists.");

@@ -49,3 +49,5 @@ Assembly-CSharp-firstpass.csproj
 Assets/SignerLibs/*
 
 Assets/Autoya/Editor/Libs/YamlDotNet/*
+
+Assets/Plugins/YamlDotNet/*
