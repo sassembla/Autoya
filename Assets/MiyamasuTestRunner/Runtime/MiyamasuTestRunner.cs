@@ -191,7 +191,7 @@ namespace Miyamasu {
 			}
 
 			if (string.IsNullOrEmpty(subLocation)) TestLogger.Log("test FAILED by:" + e.InnerException.Message + " @ " + location, true);
-			else TestLogger.Log("test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
+			else TestLogger.LogError("test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
 		}
 		
 		/**
@@ -322,6 +322,20 @@ namespace Miyamasu {
 			
 			public static void Log (string message, bool writeSoon=false) {
 				if (outputLog) UnityEngine.Debug.Log("log:" + message);
+				_Log(message, writeSoon);
+			}
+
+			public static void LogWarning (string message, bool writeSoon=false) {
+				if (outputLog) UnityEngine.Debug.LogWarning("log:" + message);
+				_Log(message, writeSoon);
+			}
+
+			public static void LogError (string message, bool writeSoon=false) {
+				if (outputLog) UnityEngine.Debug.LogError("log:" + message);
+				_Log(message, writeSoon);
+			}
+
+			private static void _Log (string message, bool writeSoon) {
 				#if UNITY_EDITOR
 				{
 					lock (lockObject) {
