@@ -4,8 +4,7 @@ using System.IO;
 using AutoyaFramework;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
-
-
+using UnityEngine;
 
 /**
 	tests for Autoya Authenticated HTTP.
@@ -21,11 +20,13 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
-		DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-		
 		var authenticated = false;
 		Action onMainThread = () => {
-			var dataPath = string.Empty;
+			var dataPath = Application.persistentDataPath;
+
+            var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+            DeleteAllData(fwPath);
+			
 			Autoya.TestEntryPoint(dataPath);
 			
 			Autoya.Auth_SetOnAuthenticated(
@@ -122,9 +123,11 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			"https://httpbin.org/status/401", 
 			(string conId, string resultData) => {
 				// do nothing.
+				Debug.Log("Http_Get a resultData:" + resultData);
 			},
 			(conId, code, reason, autoyaStatus) => {
 				unauthorized = autoyaStatus.isAuthFailed;
+				Debug.Log("Http_Get b code:" + code + " reason:" + reason + " autoyaStatus:" + autoyaStatus.isAuthFailed);
 			}
 		);
 

@@ -4,6 +4,7 @@ using System.IO;
 using AutoyaFramework;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
+using UnityEngine;
 
 /**
 	test for purchase via Autoya.
@@ -21,11 +22,13 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
             return;
 		};
 
-        DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-
-		var authorized = false;
+        var authorized = false;
 		Action onMainThread = () => {
-			var dataPath = string.Empty;
+            var dataPath = Application.persistentDataPath;
+
+            var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+            DeleteAllData(fwPath);
+
 			Autoya.TestEntryPoint(dataPath);
 			
 			Autoya.Auth_SetOnAuthenticated(

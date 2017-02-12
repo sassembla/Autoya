@@ -4,8 +4,6 @@ using AutoyaFramework.AssetBundles;
 using Miyamasu;
 using UnityEngine;
 
-
-
 /**
 	tests for Autoya AssetBundle Read from cache.
 */
@@ -31,6 +29,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
 		#elif UNITY_ANDROID
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+		#else
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
 		#endif
 
 	private AssetBundleLoader loader;
@@ -40,45 +40,54 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			SkipCurrentTest("AssetBundle request should run on MainThread.");
 		};
 
-		/*
-			set dummy list of AssetBundleList.
-		*/
-		Debug.Log("このデータをjsonでどっかサーバに置いておきたい。ショートカットできないとテストがつらい。 json -> プラットフォームごと、データでいいか。");
-		dummyList = new AssetBundleList("1.0.0", 
-			new AssetBundleInfo[]{
-				// pngが一枚入ったAssetBundle
-				new AssetBundleInfo(
-					"bundlename", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"}, 
-					new string[0], 
-					621985162
-				),
-				// 他のAssetBundleへの依存があるAssetBundle
-				new AssetBundleInfo(
-					"dependsbundlename", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"}, 
-					new string[]{"bundlename"}, 
-					2389728195
-				),
-				// もう一つ、他のAssetBundleへの依存があるAssetBundle
-				new AssetBundleInfo(
-					"dependsbundlename2", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"}, 
-					new string[]{"bundlename"}, 
-					1194278944
-				),
-				// nestedprefab -> dependsbundlename -> bundlename
-				new AssetBundleInfo(
-					"nestedprefab", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"}, 
-					new string[]{"dependsbundlename"}, 
-					779842307
-				),
-				// このへんに、他のAssetから依存されてるけどサーバ上にないAsset
+		RunOnMainThread(
+			() => {
+				/*
+					set dummy list of AssetBundleList.
+				*/
+				dummyList = new AssetBundleList(// このリストはワンタイムで生成したいな〜とも思うのだけれど。そっか、わざと間違えればいいんだ。
+					"Mac",
+					"1.0.0", 
+					new AssetBundleInfo[]{
+						// pngが一枚入ったAssetBundle
+						new AssetBundleInfo(
+							"bundlename", 
+							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"}, 
+							new string[0], 
+							621985162,
+							"578b73927bc11f6e80072caa17983776"
+						),
+						// 他のAssetBundleへの依存があるAssetBundle
+						new AssetBundleInfo(
+							"dependsbundlename", 
+							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"}, 
+							new string[]{"bundlename"}, 
+							2389728195,
+							"1a3bdb638b301fd91fc5569e016604ad"
+						),
+						// もう一つ、他のAssetBundleへの依存があるAssetBundle
+						new AssetBundleInfo(
+							"dependsbundlename2", 
+							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"}, 
+							new string[]{"bundlename"}, 
+							1194278944,
+							"b24db843879f6f82d9bee95e15559003"
+						),
+						// nestedprefab -> dependsbundlename -> bundlename
+						new AssetBundleInfo(
+							"nestedprefab", 
+							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"}, 
+							new string[]{"dependsbundlename"}, 
+							779842307,
+							"30b17595dd7be703c2b04a6e4c3830ff"
+						),
+						// このへんに、他のAssetから依存されてるけどサーバ上にないAsset
 
-				// このへんに、他のAssetに依存してるんだけどサーバ上にないAsset
+						// このへんに、他のAssetに依存してるんだけどサーバ上にないAsset
 
-				// 依存元も、自身もサーバ上にないAsset
+						// 依存元も、自身もサーバ上にないAsset
+					}
+				);
 			}
 		);
 
@@ -94,6 +103,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			Assert(false, "clean cache failed.");
 		}
 	}
+
 	[MTeardown] public void Teardown () {
 		if (loader != null) {
 			RunOnMainThread(() => loader.CleanCachedAssetBundles());
@@ -112,8 +122,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					done = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -136,9 +146,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -159,9 +168,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -183,9 +191,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					done = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					done = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -221,9 +228,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -258,9 +264,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						done = true;
 					},
 					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 						done = true;
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					}
 				),
 				false
@@ -289,18 +294,19 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	*/
 	[MTest] public void Load2Assets_1isDependsOnAnother_DependedFirst () {
 		// texture = depended asset.
+		Texture2D tex = null;
 		var textureLoadDone = false;
 		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
+					tex = texAsset;
 					textureLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					textureLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -318,15 +324,16 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
 		
 		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
+		Assert(tex, "tex is null.");
+		Assert(prefab, "prefab is null.");
 
 		if (prefab != null) {
 			RunOnMainThread(
@@ -350,6 +357,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
         GameObject prefab = null;
 		var prefabLoadDone = false;
 
+		// load async
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
@@ -358,33 +366,38 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
 
+		
         // texture = depended asset.
+		Texture2D tex = null;
 		var textureLoadDone = false;
 		
+		// load async
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
+					tex = texAsset;
 					textureLoadDone = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					textureLoadDone = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
+		
 
 		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
+		Assert(tex, "tex is null.");
+		Assert(prefab, "prefab is null.");
 
 		if (prefab != null) {
 			RunOnMainThread(
@@ -406,7 +419,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	[MTest] public void Load2AssetsWhichDependsOnSameAssetBundle () {
 		GameObject prefab1 = null;
 		var prefabLoadDone1 = false;
-
+		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
 				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
@@ -415,9 +428,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone1 = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone1 = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
@@ -434,15 +446,16 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 					prefabLoadDone2 = true;
 				},
 				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 					prefabLoadDone2 = true;
+					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			),
 			false
 		);
 
 		WaitUntil(() => prefabLoadDone1 && prefabLoadDone2, 10, "prefabs load failed.");
+		Assert(prefab1, "prefab1 is null.");
+		Assert(prefab2, "prefab2 is null.");
 
 		if (prefab1 != null && prefab2 != null) {
 			RunOnMainThread(
@@ -488,6 +501,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 
 		WaitUntil(() => prefabLoadDone, 10, "prefabs load failed.");
+		Assert(prefab, "prefab is null.");
 
 		if (prefab != null) {
 			RunOnMainThread(
@@ -560,7 +574,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			}
 		}
 
-		WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, 20, "failed to load all assets.");
+		WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, 10, "failed to load all assets.");
 		foreach (var loadedAssetAssetKey in loadedAssetAssets.Keys) {
 			var key = loadedAssetAssetKey;
 			var asset = loadedAssetAssets[key];

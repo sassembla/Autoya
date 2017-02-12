@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -61,28 +60,25 @@ namespace AutoyaFramework.Persistence.Files {
 		public bool Update (string domain, string fileName, string data) {
 			var domainPath = Path.Combine(basePath, domain);
 			if (Directory.Exists(domainPath)) {
-
 				var filePath = Path.Combine(domainPath, fileName);
 				using (var sw = new StreamWriter(filePath, false))	{
 					sw.Write(data);
 				}
-				
 				return true;
 			} else {// no directory = domain exists.
 				var created = Directory.CreateDirectory(domainPath);
-				
 				if (created.Exists) {
-					
 					#if UNITY_IOS
 					{
 						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
 					}
 					#endif
-
+			
 					var filePath = Path.Combine(domainPath, fileName);
 					using (var sw = new StreamWriter(filePath, false)) {
 						sw.Write(data);
 					}
+			
 					return true;
 				} 
 			}

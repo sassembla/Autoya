@@ -42,10 +42,28 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			SkipCurrentTest("Purchase feature should run on MainThread.");
 		};
 
+        var done = false;
+        
         // overwrite Autoya instance for test purchase feature.
         RunEnumeratorOnMainThread(
-            WaitPurchaseFeatureOfAutoya()
+            WaitPurchaseFeatureOfAutoya(
+                () => {
+                    done = true;
+                }
+            ),
+            false
         );
+
+        WaitUntil(
+            () => done,
+            5,
+            "failed to ready."
+        );
+
+        if (!done) {
+            SkipCurrentTest("Purchase feature test setup is failed to ready.");
+            return;
+        }
 
         // shutdown purchase feature for get valid result from Unity IAP.
         Autoya.Purchase_Shutdown();
@@ -73,12 +91,13 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
         WaitUntil(() => router.IsPurchaseReady(), 5, "failed to ready.");
     }
 
-    private IEnumerator WaitPurchaseFeatureOfAutoya () {
-        var dataPath = string.Empty;
-        Autoya.TestEntryPoint(dataPath);
+    private IEnumerator WaitPurchaseFeatureOfAutoya (Action done) {
+        Autoya.TestEntryPoint(Application.persistentDataPath);
+        
         while (!Autoya.Purchase_IsReady()) {
             yield return null;
         }
+        done();
     }
 
     [MTest] public void ShowProductInfos () {
