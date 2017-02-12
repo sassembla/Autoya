@@ -4,8 +4,6 @@ using AutoyaFramework.AssetBundles;
 using Miyamasu;
 using UnityEngine;
 
-
-
 /**
 	tests for Autoya AssetBundle Read from cache.
 */
@@ -31,6 +29,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
 		#elif UNITY_ANDROID
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+		#else
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
 		#endif
 
 	private AssetBundleLoader loader;
@@ -45,8 +45,9 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				/*
 					set dummy list of AssetBundleList.
 				*/
-				Debug.Log("このデータをjsonでどっかサーバに置いておきたい。ショートカットできないとテストがつらい。 json -> プラットフォームごと、データでいいか。");
-				dummyList = new AssetBundleList("1.0.0", 
+				dummyList = new AssetBundleList(// このリストはワンタイムで生成したいな〜とも思うのだけれど。そっか、わざと間違えればいいんだ。
+					"Mac",
+					"1.0.0", 
 					new AssetBundleInfo[]{
 						// pngが一枚入ったAssetBundle
 						new AssetBundleInfo(
@@ -102,6 +103,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			Assert(false, "clean cache failed.");
 		}
 	}
+
 	[MTeardown] public void Teardown () {
 		if (loader != null) {
 			RunOnMainThread(() => loader.CleanCachedAssetBundles());

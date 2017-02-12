@@ -24,7 +24,9 @@ public class LoadAssetBundle : MonoBehaviour {
 			yield return null;
 		}
 		
-		var dummyList = new AssetBundleList("1.0.0", 
+		var dummyList = new AssetBundleList(
+			"Mac",
+			"1.0.0", 
 			new AssetBundleInfo[]{
 				// pngが一枚入ったAssetBundle
 				new AssetBundleInfo(

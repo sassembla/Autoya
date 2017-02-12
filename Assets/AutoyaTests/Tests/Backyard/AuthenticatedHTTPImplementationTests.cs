@@ -123,9 +123,11 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			"https://httpbin.org/status/401", 
 			(string conId, string resultData) => {
 				// do nothing.
+				Debug.Log("Http_Get a resultData:" + resultData);
 			},
 			(conId, code, reason, autoyaStatus) => {
 				unauthorized = autoyaStatus.isAuthFailed;
+				Debug.Log("Http_Get b code:" + code + " reason:" + reason + " autoyaStatus:" + autoyaStatus.isAuthFailed);
 			}
 		);
 

@@ -6,9 +6,11 @@ using UnityEngine;
 namespace AutoyaFramework.AssetBundles {
     
     [Serializable] public struct AssetBundleList {
+        [SerializeField] public string target;
         [SerializeField] public string version;
         [SerializeField] public AssetBundleInfo[] assetBundles;
-        public AssetBundleList (string version, AssetBundleInfo[] assetBundles) {
+        public AssetBundleList (string target, string version, AssetBundleInfo[] assetBundles) {
+            this.target = target;
             this.version = version;
             this.assetBundles = assetBundles;
         }
