@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 779842307
+CRC: 723729652
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 30b17595dd7be703c2b04a6e4c3830ff
+    Hash: 7f0c21446f94c022d2641ac1cf387ffd
   TypeTreeHash:
     serializedVersion: 2
     Hash: 98b07c85b7a318c393839910dc7ebad2
@@ -18,6 +18,6 @@ ClassTypes:
 - Class: 115
   Script: {instanceID: 0}
 Assets:
-- Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab
 Dependencies:
-- /Users/choucho/Desktop/Autoya/AssetBundles/dependsbundlename
+- /Users/choucho/Desktop/Autoya/AssetBundles/Android/dependsbundlename

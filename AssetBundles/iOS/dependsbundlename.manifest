@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 3727507680
+CRC: 1720254707
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: d701473af26e1e225fbc7f60e6739741
+    Hash: aa1a6261b786372cac15b80b67bbee57
   TypeTreeHash:
     serializedVersion: 2
     Hash: 4e4037536d240f9eabed2a302c18815c
@@ -24,4 +24,4 @@ ClassTypes:
 Assets:
 - Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab
 Dependencies:
-- /Users/choucho/Desktop/Autoya/AssetBundles/bundlename
+- /Users/choucho/Desktop/Autoya/AssetBundles/iOS/bundlename

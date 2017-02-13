@@ -6,23 +6,39 @@ using System.IO;
 using UnityEngine;
 using System.Linq;
 using AutoyaFramework.AssetBundles;
+using UnityEditor;
 
 public class AssetBundleListMaker {
     // this list make feature expect that folder is exists on the top level of YOUR_PROJECT_FOLDER.
     const string PATH_ASSETBUNDLES_EXPORTED = "AssetBundles";// whole path is "YOUR_PROJECT_FOLDER/AssetBundles" by default.
 
     public string version;
-    public string osStr;
+    
+    public BuildTarget targetOS;
+
     public bool shouldOverwrite;
 
     public AssetBundleListMaker () {
         version = "1.0.0";
-        osStr = "Mac";
+        targetOS = EditorUserBuildSettings.activeBuildTarget;
         shouldOverwrite = false;
     }
-
+    
     public void MakeList () {
-        var assumedListFilePath = FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, osStr, "AssetBundles." + osStr + "_" + version.Replace(".", "_") + ".json");
+        var targetOSStr = targetOS.ToString();
+
+        if (!Directory.Exists(PATH_ASSETBUNDLES_EXPORTED)) {
+            Debug.LogError("no directory found:" + PATH_ASSETBUNDLES_EXPORTED);
+            return;
+        }
+
+        var platformPath = FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr);
+        if (!Directory.Exists(platformPath)) {
+            Debug.LogError("no platform folder found:" + platformPath);
+            return;
+        }
+
+        var assumedListFilePath = FileController.PathCombine(platformPath, "AssetBundles." + targetOSStr + "_" + version.Replace(".", "_") + ".json");
         if (File.Exists(assumedListFilePath) && !shouldOverwrite) {
             Debug.LogError("same version file:" + assumedListFilePath + " is already exists.");
             return;
@@ -34,7 +50,7 @@ public class AssetBundleListMaker {
             load root manifest file and get assetBundle names and dependencies.
         */
         
-        using (var sr = new StreamReader(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, osStr, "AssetBundles.manifest"))) {
+        using (var sr = new StreamReader(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetOSStr + ".manifest"))) {
             var rootManifest = sr.ReadToEnd();
             var deserializer = new DeserializerBuilder().Build();
             
@@ -101,7 +117,7 @@ public class AssetBundleListMaker {
             newAssetBundleInfo.bundleName = targetBundleName;
             newAssetBundleInfo.dependsBundleNames = bundleAndDependencie.dependsBundleNames;
             
-            using (var sr = new StreamReader(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, osStr, targetBundleName + ".manifest"))) {
+            using (var sr = new StreamReader(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName + ".manifest"))) {
                 var bundleManifest = sr.ReadToEnd();
 
                 var deserializer = new DeserializerBuilder().Build();
@@ -147,15 +163,17 @@ public class AssetBundleListMaker {
             }
         }
         
-        var assetBundleList = new AssetBundleList(osStr, version, assetBundleInfos.ToArray());
+        var assetBundleList = new AssetBundleList(targetOSStr, version, assetBundleInfos.ToArray());
         var str = JsonUtility.ToJson(assetBundleList, true);
 
+        var listExportPath = FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, "AssetBundles." + targetOSStr + "_" + version.Replace(".", "_") + ".json");
         /*
             write out to file.
                 "AssetBundles/OS/AssetBundles.OS_v_e_r.json".
         */
-        using (var sw = new StreamWriter(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, osStr, "AssetBundles." + osStr + "_" + version.Replace(".", "_") + ".json"))) {
+        using (var sw = new StreamWriter(listExportPath)) {
             sw.WriteLine(str);
         }
+        Debug.Log("list exported at:" + listExportPath);
     }
 }

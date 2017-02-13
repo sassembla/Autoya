@@ -6,7 +6,14 @@ using System.IO;
 
 [InitializeOnLoad] public class Bundlizer {
 	[MenuItem("Window/Autoya/Generate Test AssetBundles")] public static void BuildAssetBundles () {
-		BuildPipeline.BuildAssetBundles("AssetBundles", BuildAssetBundleOptions.None, BuildTarget.StandaloneOSXIntel64);
+		var currentPlatform = EditorUserBuildSettings.activeBuildTarget;
+
+		var currentPlatformStr = currentPlatform.ToString();
+		
+		var assetBundleExportPath = FileController.PathCombine("AssetBundles", currentPlatformStr);
+		Directory.CreateDirectory(assetBundleExportPath);
+
+		BuildPipeline.BuildAssetBundles(assetBundleExportPath, BuildAssetBundleOptions.None, currentPlatform);
 	}
 
 	[MenuItem("Window/Autoya/Clean Cached AssetBundles")] public static void CleanCache () {

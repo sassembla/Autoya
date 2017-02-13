@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 2624287464
+CRC: 2004707157
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: edfc40769f30cad546b35fdef505a7b9
+    Hash: 4a80ba4d5bae1932fab9c3d23d4f5cd7
   TypeTreeHash:
     serializedVersion: 2
     Hash: 98b07c85b7a318c393839910dc7ebad2
@@ -20,4 +20,4 @@ ClassTypes:
 Assets:
 - Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab
 Dependencies:
-- /Users/choucho/Desktop/Autoya/AssetBundles/iOS/dependsbundlename
+- /Users/choucho/Desktop/Autoya/AssetBundles/StandaloneOSXIntel64/dependsbundlename

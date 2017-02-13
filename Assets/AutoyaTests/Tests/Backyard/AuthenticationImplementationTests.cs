@@ -84,7 +84,6 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		var bootAuthFailHandled = false;
 		Autoya.Auth_SetOnBootAuthFailed(
 			(code, reason) => {
-				Debug.LogError("bootAuthFailed code:" + code + " reason:" + reason);
 				bootAuthFailHandled = true;
 			}
 		);

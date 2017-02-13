@@ -1,48 +1,48 @@
 {
-    "target": "Mac",
+    "target": "iOS",
     "version": "1.0.0",
     "assetBundles": [
         {
             "bundleName": "bundlename",
             "assetNames": [
-                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"
             ],
             "dependsBundleNames": [],
-            "crc": 621985162,
-            "hash": "578b73927bc11f6e80072caa17983776"
+            "crc": 1185682787,
+            "hash": "3812fe236999769a86e109e8547ab93f"
         },
         {
             "bundleName": "dependsbundlename",
             "assetNames": [
-                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"
             ],
             "dependsBundleNames": [
                 "bundlename"
             ],
-            "crc": 2389728195,
-            "hash": "1a3bdb638b301fd91fc5569e016604ad"
+            "crc": 1720254707,
+            "hash": "aa1a6261b786372cac15b80b67bbee57"
         },
         {
             "bundleName": "dependsbundlename2",
             "assetNames": [
-                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"
             ],
             "dependsBundleNames": [
                 "bundlename"
             ],
-            "crc": 1194278944,
-            "hash": "b24db843879f6f82d9bee95e15559003"
+            "crc": 3560736009,
+            "hash": "ed4fb0c25ab08630e946e1fc6a6ac301"
         },
         {
             "bundleName": "nestedprefab",
             "assetNames": [
-                "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"
             ],
             "dependsBundleNames": [
                 "dependsbundlename"
             ],
-            "crc": 779842307,
-            "hash": "30b17595dd7be703c2b04a6e4c3830ff"
+            "crc": 2624287464,
+            "hash": "edfc40769f30cad546b35fdef505a7b9"
         }
     ]
 }

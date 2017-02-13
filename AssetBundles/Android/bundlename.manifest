@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 621985162
+CRC: 578916386
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 578b73927bc11f6e80072caa17983776
+    Hash: 6fdc00e10d6c1394a26e667fe157ced8
   TypeTreeHash:
     serializedVersion: 2
     Hash: 4d24bf54f46935ed9e6cf78ac481bb9d
@@ -14,5 +14,5 @@ ClassTypes:
 - Class: 213
   Script: {instanceID: 0}
 Assets:
-- Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png
 Dependencies: []
