@@ -20,6 +20,8 @@ public class MaintenanceTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
+        Autoya.ResetAllForceSetting();
+        
         DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 		
 		var authorized = false;
@@ -49,7 +51,7 @@ public class MaintenanceTests : MiyamasuTestRunner {
         Autoya.forceMaintenance = true;
 	}
     [MTeardown] public void Teardown () {
-        Autoya.forceMaintenance = false;
+        Autoya.ResetAllForceSetting();
     }
 
 

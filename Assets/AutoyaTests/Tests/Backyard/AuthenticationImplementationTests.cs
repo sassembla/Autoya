@@ -16,6 +16,8 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
+		Autoya.ResetAllForceSetting();
+
 		var authorized = false;
 		Action onMainThread = () => {
 			var dataPath = Application.persistentDataPath;
@@ -47,8 +49,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 
     [MTeardown] public void Teardown () {
         RunOnMainThread(Autoya.Shutdown);
-		Autoya.forceFailFirstBoot = false;
-		Autoya.forceFailTokenRefresh = false;
+		Autoya.ResetAllForceSetting();
     }
 
 	
@@ -83,6 +84,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		var bootAuthFailHandled = false;
 		Autoya.Auth_SetOnBootAuthFailed(
 			(code, reason) => {
+				Debug.LogError("bootAuthFailed code:" + code + " reason:" + reason);
 				bootAuthFailHandled = true;
 			}
 		);
@@ -172,11 +174,9 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			"https://httpbin.org/status/401", 
 			(string conId, string resultData) => {
 				// do nothing.
-				Debug.Log("HandleTokenRefreshFailed succeeded.");
 			},
 			(conId, code, reason, autoyaStatus) => {
 				// do nothing.
-				Debug.Log("HandleTokenRefreshFailed failed. code:" + code + " reason:" + reason + " autoyaStatus:" + autoyaStatus.isAuthFailed);
 			}
 		);
 

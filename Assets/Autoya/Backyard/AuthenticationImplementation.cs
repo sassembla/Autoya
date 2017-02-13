@@ -212,7 +212,7 @@ namespace AutoyaFramework {
 			private void OnBootResult (string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, string resultData, string errorReason) {
 
 				if (forceFailFirstBoot) {
-					responseCode = 500;
+					responseCode = AuthSettings.FORCE_FAIL_FIRSTBOOT_CODE;
 					errorReason = "failed by forceFailFirstBoot = true.";
 				}
 
@@ -224,7 +224,7 @@ namespace AutoyaFramework {
 					errorReason,
 					(succeededConId, succeededData) => {
 						var tokenData = succeededData as string;
-						
+								
 						mainthreadDispatcher.Commit(OnBootSucceeded(responseHeader, tokenData));
 					},
 					(failedConId, failedCode, failedReason, autoyaStatus) => {
@@ -234,9 +234,9 @@ namespace AutoyaFramework {
 						if (autoyaStatus.inMaintenance || autoyaStatus.isAuthFailed) {
 							return;
 						}
-
+						
 						// other errors. 
-
+						
 						// reached to the max retry for boot access.
 						if (bootRetryCount == AuthSettings.AUTH_FIRSTBOOT_MAX_RETRY_COUNT) {
 							authState = AuthState.BootFailed;
@@ -287,7 +287,8 @@ namespace AutoyaFramework {
 				var bootRetryWait = Math.Pow(2, bootRetryCount);
 
 				if (forceFailFirstBoot) {
-					bootRetryWait = 1;
+					// set 0sec for shortcut.
+					bootRetryWait = 0;
 				}
 
 				var limitTick = DateTime.Now.Ticks + TimeSpan.FromSeconds(bootRetryWait).Ticks;
@@ -543,7 +544,8 @@ namespace AutoyaFramework {
 				var refreshTokenRetryWait = Math.Pow(2, tokenRefreshRetryCount);
 				
 				if (forceFailTokenRefresh) {
-					refreshTokenRetryWait = 1;
+					// set 0sec for shortcut.
+					refreshTokenRetryWait = 0;
 				}
 
 				var limitTick = DateTime.Now.Ticks + TimeSpan.FromSeconds(refreshTokenRetryWait).Ticks;

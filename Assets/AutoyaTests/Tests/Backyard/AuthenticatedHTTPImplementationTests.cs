@@ -239,8 +239,9 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		);
 
 		WaitUntil(
-			() => (resultCode != 0), 
-			5
+			() => (resultCode == 404), 
+			5,
+			"failed to detect 404."
 		);
 		
 		// result should be have reason,

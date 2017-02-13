@@ -26,6 +26,9 @@ namespace AutoyaFramework.Settings.Auth {
             sample authentication key.
         */
         public static readonly byte[] AUTH_BOOT = new byte[]{100, 101, 102};
+
+
+        public const int FORCE_FAIL_FIRSTBOOT_CODE = 499;
         
     }
 }
