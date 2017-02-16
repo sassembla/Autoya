@@ -195,14 +195,14 @@ namespace Suekko {
 				order method as button.
 			*/
 			GUILayout.Label("Methods", EditorStyles.boldLabel);
-			EditorGUI.indentLevel++;
-			foreach (var methodAction in methodActions) {
-				if (GUILayout.Button(methodAction.Key, GUILayout.Width(230))) {
-					var act = methodAction.Value;
-					act();
+			using (var ver = new GUILayout.VerticalScope(GUI.skin.box)) {
+				foreach (var methodAction in methodActions) {
+					if (GUILayout.Button(methodAction.Key)) {
+						var act = methodAction.Value;
+						act();
+					}
 				}
 			}
-			EditorGUI.indentLevel--;
 			
 			GUILayout.Space(10);
 
@@ -212,7 +212,9 @@ namespace Suekko {
 			*/
 			using (var hor = new GUILayout.HorizontalScope()) {
 				GUILayout.Label("Console", EditorStyles.boldLabel);
-				var cleared = GUILayout.Button("Clear");
+				var style = new GUIStyle("minibuttonmid");
+				// style.alignment = TextAnchor.MiddleCenter;
+				var cleared = GUILayout.Button("Clear", style, GUILayout.Width(80));
 				if (cleared) {
 					logs.Clear();
 				}
