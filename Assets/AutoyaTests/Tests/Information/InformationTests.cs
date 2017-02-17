@@ -30,67 +30,6 @@ which contains essential game features.
 * Notification(local/remote)
 * Information
 
-
-## Motivation
-Unity already contains these feature's foundation, but actually we need more codes for using it in app.
-
-This framework can help that.
-
-## License
-see below.  
-[LICENSE](./LICENSE)
-
-
-## Progress
-
-### automatic Authentication
-already implemented.
-
-###AssetBundle list/preload/load
-already implemented.
-
-###HTTP/TCP/UDP Connection feature
-| Protocol        | Progress     |
-| ------------- |:-------------:|
-| http/1 | done | 
-| http/2 | not yet | 
-| tcp      | not yet      | 
-| udp	| not yet      |  
-
-
-###app-version/asset-version/server-condition changed handles
-already implemented.
-
-###Purchase/IAP flow
-already implemented.
-
-###Notification(local/remote)
-in 2017 early.
-
-###Information
-in 2017 early.
-
-
-## Tests
-implementing.
-
-
-## Installation
-unitypackage is ready!
-
-1. use Autoya.unitypackage.
-2. add Purchase plugin via Unity Services.
-3. done!
-
-## Usage
-all example usage is in Assets/AutoyaSamples folder.
-
-yes,(2spaces linebreak)  
-2s break line will be expressed with <br />.
-
-then,(hard break)
-hard break will appear without <br />.
-
 		";
     
 
@@ -179,11 +118,11 @@ hard break will appear without <br />.
 				return generated game object.
 			*/
 			public GameObject MaterializeRoot () {
-				Materialize(null);
+				Materialize(new Rect(0, 0, 300, 100));// この値が最初のアンカー値になっちゃうのをとめたい。
 				return this._gameObject;
 			}
 
-			private Rect Materialize (GameObject parent=null, Rect rect=new Rect()) {
+			private Rect Materialize (Rect rect, GameObject parent=null) {
 				switch (this.tag) {
 					case Tag.ROOT: {
 						this._gameObject = new GameObject("ROOT");
@@ -191,6 +130,10 @@ hard break will appear without <br />.
 						rectTrans.anchorMin = Vector2.up;
 						rectTrans.anchorMax = Vector2.up;
 						rectTrans.pivot = Vector2.up;
+						rectTrans.position = rect.position;
+						rectTrans.sizeDelta = new Vector2(rect.width, rect.height);
+						
+						rect = rectTrans.rect;
 						break;
 					}
 					default: {
@@ -211,7 +154,7 @@ hard break will appear without <br />.
 				
 				var childlen = this.transform.GetChildlen();
 				foreach (var child in childlen) {
-					rect = child.Materialize(this._gameObject, rect);
+					rect = child.Materialize(rect, this._gameObject);
 				}
 
 				return rect;
@@ -376,7 +319,7 @@ hard break will appear without <br />.
 					break;
 				}
 			}
-			
+
 			/*
 				文字コンテンツならこんな感じになる。
 			*/
@@ -388,18 +331,21 @@ hard break will appear without <br />.
 
 				var obj = GameObject.Instantiate(prefab);
 
+				var rectTrans = obj.GetComponent<RectTransform>();
+				rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
+
 				// set text.
 				var textComponent = obj.GetComponent<Text>();
 				textComponent.text = tagPoint.gameObject.content;
 
+				// set content size.
 				var contentHeight = Populate(textComponent);
-				var rectTrans = obj.GetComponent<RectTransform>();
+				
 				rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);// サイズをぴったりにする
 				rectTrans.anchoredPosition = new Vector2(0, -endEdgeRect.yMax);// y位置をセットする
 				endEdgeRect.height += contentHeight;
 				return new UIAndPos(obj, endEdgeRect);
 			};
-
 		}
 
 		public enum Tag {
@@ -631,7 +577,86 @@ hard break will appear without <br />.
 	}
 
     [MTest] public void ParseLargeMarkdown () {
-        var largeMd = "";
+        var sampleMd = @"
+# Autoya
+ver 0.8.4
+
+![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
+
+small, thin framework for Unity.  
+which contains essential game features.
+
+## Features
+* Authentication handling
+* AssetBundle load/management
+* HTTP/TCP/UDP Connection feature
+* Maintenance changed handling
+* Purchase/IAP feature
+* Notification(local/remote)
+* Information
+
+
+## Motivation
+Unity already contains these feature's foundation, but actually we need more codes for using it in app.
+
+This framework can help that.
+
+## License
+see below.  
+[LICENSE](./LICENSE)
+
+
+## Progress
+
+### automatic Authentication
+already implemented.
+
+###AssetBundle list/preload/load
+already implemented.
+
+###HTTP/TCP/UDP Connection feature
+| Protocol        | Progress     |
+| ------------- |:-------------:|
+| http/1 | done | 
+| http/2 | not yet | 
+| tcp      | not yet      | 
+| udp	| not yet      |  
+
+
+###app-version/asset-version/server-condition changed handles
+already implemented.
+
+###Purchase/IAP flow
+already implemented.
+
+###Notification(local/remote)
+in 2017 early.
+
+###Information
+in 2017 early.
+
+
+## Tests
+implementing.
+
+
+## Installation
+unitypackage is ready!
+
+1. use Autoya.unitypackage.
+2. add Purchase plugin via Unity Services.
+3. done!
+
+## Usage
+all example usage is in Assets/AutoyaSamples folder.
+
+yes,(2spaces linebreak)  
+2s break line will be expressed with <br />.
+
+then,(hard break)
+hard break will appear without <br />.
+
+		";
 	}
 
 	[MTest] public void DrawParsedMarkdown () {
