@@ -143,6 +143,15 @@ hard break will appear without <br />.
 		parse hX, p, img, ul, ol, li, a tags then returns GameObject for GUI.
 	*/
 	public class Tokenizer {
+		public struct UIAndPos {
+			public readonly GameObject gameObject;
+			public readonly Rect rect;
+			public UIAndPos (GameObject gameObject, Rect rect) {
+				this.gameObject = gameObject;
+				this.rect = rect;
+			}
+		}
+		
 		public class VirtualGameObject {
 			public GameObject _gameObject;
 
@@ -159,6 +168,8 @@ hard break will appear without <br />.
 			public Dictionary<string, string> kv = new Dictionary<string, string>();
 			public string content = string.Empty;
 
+			public Func<string, Rect, UIAndPos> onMaterialize = null;
+			
 			public VirtualGameObject (Tag tag) {
 				this.tag = tag;
 				this._transform = new VirtualTransform(this);
@@ -168,72 +179,44 @@ hard break will appear without <br />.
 				return generated game object.
 			*/
 			public GameObject MaterializeRoot () {
-				return Materialize(null);
+				Materialize(null);
+				return this._gameObject;
 			}
-			
-			private GameObject Materialize (GameObject parent=null) {
-				this._gameObject = new GameObject(tag.ToString());// このTokenizer用の要素に対してのオブジェクトプールがあるといいのでは的な。
-				if (parent != null) {
-					this._gameObject.transform.SetParent(parent.transform);
-				}
 
+			private Rect Materialize (GameObject parent=null, Rect rect=new Rect()) {
 				switch (this.tag) {
 					case Tag.ROOT: {
-						var childlen = this.transform.GetChildlen();
-						foreach (var child in childlen) {
-							child.Materialize(this._gameObject);
-						}
-						break;
-					}
-
-					case Tag.P:
-					case Tag.H1:
-					case Tag.H2:
-					case Tag.H3:
-					case Tag.H4:
-					case Tag.H5: {
-
-						// 一回だけ作ればOKなメジャー替わりのインスタンス。
-						// これを使っての計算を、事前にしておいて、posを取得して表示すれば良さそう。
-						{
-							GameObject tDummyObj = GameObject.Find("dummy");
-							Text tDummy;
-							if (tDummyObj == null) {
-								tDummyObj = new GameObject("dummy");
-								tDummy = tDummyObj.AddComponent<Text>();
-							} else {
-								tDummy = tDummyObj.GetComponent<Text>();
-							}
-
-							var generator = new TextGenerator();
-							var v2 = tDummy.GetComponent<RectTransform>().sizeDelta;
-							generator.Populate(content, tDummy.GetGenerationSettings(v2));
-							foreach(var l in generator.lines){
-								Debug.Log("ch index:" + l.startCharIdx);
-							}
-						}
-
-						// 親 -> 子、とだんだん幅を狭めていく感じでviewを実装。
-						// 画面外になったら書かない、とかか。上下で超過した最大一個をdisableして、それ以降はskipとか。
-						this._gameObject.AddComponent<CanvasRenderer>();
-						var t = this._gameObject.AddComponent<Text>();
-						t.text = content;
-
-						var childlen = this.transform.GetChildlen();
-						foreach (var child in childlen) {
-							child.Materialize(this._gameObject);
-						}
+						this._gameObject = new GameObject("ROOT");
+						var rectTrans = this._gameObject.AddComponent<RectTransform>();
+						rectTrans.anchorMin = Vector2.up;
+						rectTrans.anchorMax = Vector2.up;
+						rectTrans.pivot = Vector2.up;
 						break;
 					}
 					default: {
-						// ここで、仮のUIパーツをいっぱい作って、いざ表示範囲指定の時に、型にあてていけばいいか。
-						// とりあえず組み上げ出してみよう。Pはなんかテキスト。中にリンク(a)が入ったりする。
+						if (onMaterialize != null) {
+							var gameObjectAndPos = onMaterialize(tag.ToString(), rect);
+							this._gameObject = gameObjectAndPos.gameObject;
+							rect = gameObjectAndPos.rect;
+						} else {
+							this._gameObject = new GameObject("not ready");
+						}
+						
+						if (parent != null) {
+							this._gameObject.transform.SetParent(parent.transform);
+						}
 						break;
 					}
 				}
+				
+				var childlen = this.transform.GetChildlen();
+				foreach (var child in childlen) {
+					rect = child.Materialize(this._gameObject, rect);
+				}
 
-				return this._gameObject;
+				return rect;
 			}
+			
 		}
 
 		public class VirtualTransform {
@@ -287,12 +270,12 @@ hard break will appear without <br />.
 
 				// Debug.LogError("readLine:" + readLine);
 				
-				var foundStartTagPointAndAttr = FindStartTag(lines, index);
+				var foundStartTagPointAndAttrAndOption = FindStartTag(lines, index);
 
 				/*
 					no <tag> found.
 				*/
-				if (foundStartTagPointAndAttr.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttr.tagPoint.tag == Tag.UNKNOWN) {
+				if (foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.UNKNOWN) {
 					// detect single closed tag. e,g, <tag something />.
 					var foundSingleTagPointWithAttr = FindSingleTag(lines, index);
 
@@ -309,6 +292,7 @@ hard break will appear without <br />.
 				}
 				
 				// tag opening found.
+				var attr = foundStartTagPointAndAttrAndOption.attrs;
 				
 				while (true) {
 					if (lines.Length <= index) {// 閉じタグが見つからなかったのでたぶんparseException.
@@ -318,10 +302,10 @@ hard break will appear without <br />.
 					readLine = lines[index];
 					
 					// find end of current tag.
-					var foundEndTagPointAndContent = FindEndTag(foundStartTagPointAndAttr.tagPoint, lines, index);
+					var foundEndTagPointAndContent = FindEndTag(foundStartTagPointAndAttrAndOption.tagPoint, foundStartTagPointAndAttrAndOption.option, lines, index);
 					if (foundEndTagPointAndContent.tagPoint.tag != Tag.NO_TAG_FOUND && foundEndTagPointAndContent.tagPoint.tag != Tag.UNKNOWN) {
 						// close tag found. set attr to this closed tag.
-						AddChildContentToParent(p, foundStartTagPointAndAttr.tagPoint, foundStartTagPointAndAttr.attrs);
+						AddChildContentToParent(p, foundEndTagPointAndContent.tagPoint, attr);
 
 						// content exists. parse recursively.
 						Tokenize(foundEndTagPointAndContent.tagPoint, foundEndTagPointAndContent.content);
@@ -338,26 +322,91 @@ hard break will appear without <br />.
 
 			return p.gameObject;
 		}
-
-		private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<string, string> kv) {
+		
+		private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<string, string> kvs) {
 			var parentObj = parent.gameObject;
 			child.gameObject.transform.SetParent(parentObj.transform);
-			child.gameObject.kv = kv;
+
+			// append attribute as kv.
+			foreach (var kv in kvs) {
+				child.gameObject.kv[kv.Key] = kv.Value;
+			}
+
+			SetupOnMaterializeAction(child);
 		}
 		
 		private void AddContentToParent (TagPoint p, string content) {
 			p.gameObject.content = content;
+			
+			SetupOnMaterializeAction(p);
+		}
+
+		private int Populate (Text text) {
+			GameObject tDummyObj = GameObject.Find("dummy");
+			
+			var generator = new TextGenerator();
+			var v2 = text.GetComponent<RectTransform>().sizeDelta;
+			generator.Populate(text.text, text.GetGenerationSettings(v2));
+
+			var height = 0;
+			foreach(var l in generator.lines){
+				// Debug.LogError("ch topY:" + l.topY);
+				// Debug.LogError("ch index:" + l.startCharIdx);
+				// Debug.LogError("ch height:" + l.height);
+				height += l.height;
+			}
+			return height;//generator.rectExtents;// 要素の全体が入る四角形。あーなるほど、オリジナルの数値を引っ張ってるな。
+		}
+
+		private void SetupOnMaterializeAction (TagPoint tagPoint) {
+			// set only once.
+			if (tagPoint.gameObject.onMaterialize != null) {
+				return;
+			}
+			
+			var prefabName = string.Empty;
+
+			switch (tagPoint.tag) {
+				case Tag.H: {
+					prefabName = "H" + tagPoint.gameObject.kv["headingNumber"];	
+					break;
+				}
+				default: {
+					prefabName = tagPoint.tag.ToString().ToUpper();
+					break;
+				}
+			}
+			
+			/*
+				文字コンテンツならこんな感じになる。
+			*/
+			tagPoint.gameObject.onMaterialize = (name, endEdgeRect) => {
+				var prefab = Resources.Load(prefabName) as GameObject;
+				if (prefab == null) {
+					return new UIAndPos(new GameObject("prefab " + prefabName + " is not found."), endEdgeRect);
+				}
+
+				var obj = GameObject.Instantiate(prefab);
+
+				// set text.
+				var textComponent = obj.GetComponent<Text>();
+				textComponent.text = tagPoint.gameObject.content;
+
+				var contentHeight = Populate(textComponent);
+				var rectTrans = obj.GetComponent<RectTransform>();
+				rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);// サイズをぴったりにする
+				rectTrans.anchoredPosition = new Vector2(0, -endEdgeRect.yMax);// y位置をセットする
+				endEdgeRect.height += contentHeight;
+				return new UIAndPos(obj, endEdgeRect);
+			};
+
 		}
 
 		public enum Tag {
 			NO_TAG_FOUND,
 			UNKNOWN,
 			ROOT,
-			H1, 
-			H2, 
-			H3, 
-			H4, 
-			H5, 
+			H, 
 			P, 
 			IMG, 
 			UL, 
@@ -367,6 +416,7 @@ hard break will appear without <br />.
 		}
 
 		public class TagPoint {
+			public readonly string id;
 			public readonly VirtualGameObject gameObject;
 
 			public readonly int lineIndex;
@@ -377,6 +427,8 @@ hard break will appear without <br />.
 					return;
 				}
 
+				this.id = Guid.NewGuid().ToString();
+
 				this.lineIndex = lineIndex;
 				this.tag = tag;
 				this.gameObject = new VirtualGameObject(tag);	
@@ -384,17 +436,24 @@ hard break will appear without <br />.
 		}
 
 
-		private struct TagPointAndAttr {
+		private struct TagPointAndAttrAndHeadingNumber {
 			public readonly TagPoint tagPoint;
 			public readonly Dictionary<string, string> attrs;
-			
-			public TagPointAndAttr (TagPoint tagPoint, Dictionary<string, string> attrs) {
+			public readonly int option;
+			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<string, string> attrs, int option) {
 				this.tagPoint = tagPoint;
 				this.attrs = attrs;
+				this.option = option;
 			}
-			public TagPointAndAttr (TagPoint tagPoint) {
+			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<string, string> attrs) {
+				this.tagPoint = tagPoint;
+				this.attrs = attrs;
+				this.option = 0;
+			}
+			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint) {
 				this.tagPoint = tagPoint;
 				this.attrs = new Dictionary<string, string>();
+				this.option = 0;
 			}
 		}
 
@@ -402,6 +461,11 @@ hard break will appear without <br />.
 			public readonly TagPoint tagPoint;
 			public readonly string content;
 			
+			public TagPointAndContent (TagPoint tagPoint, int headingNumber, string content) {
+				this.tagPoint = tagPoint;
+				this.tagPoint.gameObject.kv["headingNumber"] = headingNumber.ToString();
+				this.content = content;
+			}
 			public TagPointAndContent (TagPoint tagPoint, string content) {
 				this.tagPoint = tagPoint;
 				this.content = content;
@@ -416,7 +480,7 @@ hard break will appear without <br />.
 		/**
 			find tag if exists.
 		*/
-		private TagPointAndAttr FindStartTag (string[] lines, int lineIndex) {
+		private TagPointAndAttrAndHeadingNumber FindStartTag (string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
 
 			// find <X>something...
@@ -424,13 +488,13 @@ hard break will appear without <br />.
 				var closeIndex = line.IndexOf(">");
 
 				if (closeIndex == -1) {
-					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
 				// check found tag end has closed tag mark or not.
 				if (line[closeIndex-1] == '/') {
 					// closed tag detected.
-					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
 				var tagName = string.Empty;
@@ -457,18 +521,32 @@ hard break will appear without <br />.
 				} else {
 					tagName = line.Substring(1, closeIndex - 1);
 				}
+
+				
+				var numbers = string.Join(string.Empty, tagName.ToCharArray().Where(c => Char.IsDigit(c)).Select(t => t.ToString()).ToArray());
+				var headingNumber = 0;
+				
+				if (!string.IsNullOrEmpty(numbers) && tagName.EndsWith(numbers)) {
+					var index = tagName.IndexOf(numbers);
+					tagName = tagName.Substring(0, index);
+					
+					headingNumber = Convert.ToInt32(numbers);
+				}
 				
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-					return new TagPointAndAttr(new TagPoint(lineIndex, tagEnum), kvDict);
-				} catch (Exception e) {
-					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+					if (headingNumber != 0) {
+						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum), kvDict, headingNumber);	
+					}
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum), kvDict);
+				} catch {
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
 			}
-			return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+			return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 		}
 
-		private TagPointAndAttr FindSingleTag (string[] lines, int lineIndex) {
+		private TagPointAndAttrAndHeadingNumber FindSingleTag (string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
 
 			// find <X>something...
@@ -476,13 +554,13 @@ hard break will appear without <br />.
 				var closeIndex = line.IndexOf(" />");
 
 				if (closeIndex == -1) {
-					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
 				var contents = line.Substring(1, closeIndex - 1).Split(' ');
 
 				if (contents.Length == 0) {
-					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 				
 				var tagName = contents[0];
@@ -505,22 +583,28 @@ hard break will appear without <br />.
 				
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-					return new TagPointAndAttr(new TagPoint(lineIndex, tagEnum), kvDict);
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum), kvDict);
 				} catch (Exception e) {
-					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
 			}
-			return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+			return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 		}
 
-		private TagPointAndContent FindEndTag (TagPoint p, string[] lines, int lineIndex) {
+		private TagPointAndContent FindEndTag (TagPoint p, int headingNumber, string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
-			var endTag = "</" + p.tag.ToString().ToLower() + ">";
-
+			
+			var sizeStr = string.Empty;
+			if (headingNumber != 0) {
+				sizeStr = headingNumber.ToString();
+			}
+			var endTagStr = p.tag.ToString().ToLower() + sizeStr;
+			var endTag = "</" + endTagStr + ">";
+			
 			var endTagIndex = -1;
 			if (p.lineIndex == lineIndex) {
 				// check start from next point of close point of start tag.
-				endTagIndex = line.IndexOf(endTag, 1 + p.tag.ToString().Length + 1);
+				endTagIndex = line.IndexOf(endTag, 1 + endTagStr.Length + 1);
 			} else {
 				endTagIndex = line.IndexOf(endTag);
 			}
@@ -533,17 +617,17 @@ hard break will appear without <br />.
 			var contentsStrLines = lines.Where((i,l) => p.lineIndex <= l && l <= lineIndex).ToArray();
 			
 			// modify the line which contains start or end tag. exclude tag expression.
-			contentsStrLines[0] = contentsStrLines[0].Substring(1 + p.tag.ToString().Length + 1);
+			contentsStrLines[0] = contentsStrLines[0].Substring(1 + endTagStr.Length + 1);
 			contentsStrLines[contentsStrLines.Length-1] = contentsStrLines[contentsStrLines.Length-1].Substring(0, contentsStrLines[contentsStrLines.Length-1].Length - endTag.Length);
 			
 			var contentsStr = string.Join("\n", contentsStrLines);
 
+			if (headingNumber != 0) {
+				return new TagPointAndContent(p, headingNumber, contentsStr);
+			}
 			return new TagPointAndContent(p, contentsStr);
 		}
 
-		public GameObject Materialize (int index) {
-			return null;
-		}
 	}
 
     [MTest] public void ParseLargeMarkdown () {
