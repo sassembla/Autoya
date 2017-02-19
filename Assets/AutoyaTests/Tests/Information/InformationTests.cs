@@ -10,13 +10,29 @@ using System.Text;
 using System.Linq;
 using UnityEngine.UI;
 
+public enum Tag {
+	NO_TAG_FOUND,
+	UNKNOWN,
+	ROOT,
+	H, 
+	P, 
+	IMG, 
+	UL, 
+	OL,
+	LI, 
+	A
+}
+
+
 public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
         var sampleMd = @"
 # Autoya
 ver 0.8.4
 
-![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
+small, thin framework for Unity−1.  
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 small, thin framework for Unity.  
 which contains essential game features.
@@ -57,7 +73,7 @@ which contains essential game features.
 				var tokenizer = new Tokenizer(text);
 
 				// とりあえず全体を生成
-				tokenizer.Materialize();
+				tokenizer.Materialize();// これを、Rootが画面に乗った時にやったほうがいいのかも
 
 				// var childlen = obj.transform.GetChildlen();
 
@@ -94,31 +110,48 @@ which contains essential game features.
 		public class VirtualGameObject {
 			public GameObject _gameObject;
 
+			public InformationRootMonoBehaviour @class;
+
 			public readonly Tag tag;
 			
-			private VirtualTransform _transform;
+			private VirtualTransform vTransform;
+
+			public VirtualGameObject parent;
 			
 			public VirtualTransform transform {
                 get {
-					return _transform;
+					return vTransform;
 				}
             }
 
+			public VirtualGameObject GetRootGameObject () {
+				if (vTransform.Parent() != null) {
+					return vTransform.Parent().GetRootGameObject();
+				}
+
+				// no parent. return this vGameObject.
+				return this;
+			}
+
+			public void OnButtonTapped () {
+
+			}
+
 			public Dictionary<string, string> kv = new Dictionary<string, string>();
-			public string content = string.Empty;
+			public List<string> contents = new List<string>();
 
 			public Func<string, Rect, UIAndPos> onMaterialize = null;
 			
 			public VirtualGameObject (Tag tag) {
 				this.tag = tag;
-				this._transform = new VirtualTransform(this);
+				this.vTransform = new VirtualTransform(this);
 			}
 
 			/**
 				return generated game object.
 			*/
 			public GameObject MaterializeRoot () {
-				Materialize(new Rect(0, 0, 300, 100));// この値が最初のアンカー値になっちゃうのをとめたい。
+				Materialize(new Rect(0, 0, 300, 100));
 				return this._gameObject;
 			}
 
@@ -126,6 +159,9 @@ which contains essential game features.
 				switch (this.tag) {
 					case Tag.ROOT: {
 						this._gameObject = new GameObject("ROOT");
+
+						this.@class = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
+
 						var rectTrans = this._gameObject.AddComponent<RectTransform>();
 						rectTrans.anchorMin = Vector2.up;
 						rectTrans.anchorMax = Vector2.up;
@@ -163,19 +199,19 @@ which contains essential game features.
 		}
 
 		public class VirtualTransform {
-			/*
-				このへんに、posとかwidthとか持てば良さそう。
-				Rootにコンテンツ全体のサイズを0,0,totalW,totalH,という値を持つような感じで保持して、
-				それ以下のコンテンツは下の最大値を持つ、とかしとけばよさげ。二重リストも存在しないし。
-			*/
-			private readonly VirtualGameObject gameObject;
+			private readonly VirtualGameObject vGameObject;
 			private List<VirtualGameObject> _childlen = new List<VirtualGameObject>();
 			public VirtualTransform (VirtualGameObject gameObject) {
-				this.gameObject = gameObject;
+				this.vGameObject = gameObject;
 			}
 
 			public void SetParent (VirtualTransform t) {
-				t._childlen.Add(this.gameObject);
+				t._childlen.Add(this.vGameObject);
+				this.vGameObject.parent = t.vGameObject;
+			}
+			
+			public VirtualGameObject Parent () {
+				return this.vGameObject.parent;
 			}
 
 			public List<VirtualGameObject> GetChildlen () {
@@ -211,14 +247,12 @@ which contains essential game features.
 					continue;
 				}
 
-				// Debug.LogError("readLine:" + readLine);
-				
 				var foundStartTagPointAndAttrAndOption = FindStartTag(lines, index);
 
 				/*
 					no <tag> found.
 				*/
-				if (foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.UNKNOWN) {
+				if (foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.UNKNOWN) {					
 					// detect single closed tag. e,g, <tag something />.
 					var foundSingleTagPointWithAttr = FindSingleTag(lines, index);
 
@@ -259,27 +293,26 @@ which contains essential game features.
 					index++;
 				}
 
-				// p.tagContents.AddRange(foundStartTagPoint.tagContents);
 				index++;
 			}
 
-			return p.gameObject;
+			return p.vGameObject;
 		}
 		
 		private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<string, string> kvs) {
-			var parentObj = parent.gameObject;
-			child.gameObject.transform.SetParent(parentObj.transform);
+			var parentObj = parent.vGameObject;
+			child.vGameObject.transform.SetParent(parentObj.transform);
 
 			// append attribute as kv.
 			foreach (var kv in kvs) {
-				child.gameObject.kv[kv.Key] = kv.Value;
+				child.vGameObject.kv[kv.Key] = kv.Value;
 			}
 
 			SetupOnMaterializeAction(child);
 		}
 		
 		private void AddContentToParent (TagPoint p, string content) {
-			p.gameObject.content = content;
+			p.vGameObject.contents.Add(content);
 			
 			SetupOnMaterializeAction(p);
 		}
@@ -303,15 +336,16 @@ which contains essential game features.
 
 		private void SetupOnMaterializeAction (TagPoint tagPoint) {
 			// set only once.
-			if (tagPoint.gameObject.onMaterialize != null) {
+			if (tagPoint.vGameObject.onMaterialize != null) {
 				return;
 			}
 			
 			var prefabName = string.Empty;
 
+			// name
 			switch (tagPoint.tag) {
 				case Tag.H: {
-					prefabName = "H" + tagPoint.gameObject.kv["headingNumber"];	
+					prefabName = "H" + tagPoint.vGameObject.kv["headingNumber"];	
 					break;
 				}
 				default: {
@@ -321,49 +355,125 @@ which contains essential game features.
 			}
 
 			/*
-				文字コンテンツならこんな感じになる。
+				set on materialize function.
 			*/
-			tagPoint.gameObject.onMaterialize = (name, endEdgeRect) => {
+			tagPoint.vGameObject.onMaterialize = (name, endEdgeRect) => {
 				var prefab = Resources.Load(prefabName) as GameObject;
 				if (prefab == null) {
 					return new UIAndPos(new GameObject("prefab " + prefabName + " is not found."), endEdgeRect);
 				}
-
-				var obj = GameObject.Instantiate(prefab);
-
-				var rectTrans = obj.GetComponent<RectTransform>();
-				rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
-
-				// set text.
-				var textComponent = obj.GetComponent<Text>();
-				textComponent.text = tagPoint.gameObject.content;
-
-				// set content size.
-				var contentHeight = Populate(textComponent);
 				
-				rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);// サイズをぴったりにする
-				rectTrans.anchoredPosition = new Vector2(0, -endEdgeRect.yMax);// y位置をセットする
-				endEdgeRect.height += contentHeight;
+				var obj = GameObject.Instantiate(prefab);
+				var rectTrans = obj.GetComponent<RectTransform>();
+
+				// set y pos.
+				rectTrans.anchoredPosition = new Vector2(0, -endEdgeRect.yMax);
+
+				switch (tagPoint.tag) {
+					case Tag.IMG: {
+						
+						foreach (var kv in tagPoint.vGameObject.kv) {
+							var key = kv.Key;
+							
+							switch (key) {
+								case "width": {
+									var val = Convert.ToInt32(kv.Value);
+									rectTrans.sizeDelta = new Vector2(val, rectTrans.sizeDelta.y);
+									break;
+								}
+								case "height": {
+									var val = Convert.ToInt32(kv.Value);
+									rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, val);
+									break;
+								}
+								case "src": {
+									var src = kv.Value;
+									// add event component.
+									var button = obj.GetComponent<Button>();
+									if (button == null) {
+										button = obj.AddComponent<Button>();
+									}
+
+									var rootObject = tagPoint.vGameObject.GetRootGameObject();
+									var rootMBInstance = rootObject.@class;
+									
+									if (Application.isPlaying) {
+										/*
+											this code can set action to button. but it does not appear in editor inspector.
+										*/
+										button.onClick.AddListener(
+											() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+										);
+									} else {
+										
+										try {
+											button.onClick.AddListener(// エディタでは、Actionをセットすることができない。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
+												() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+											);
+											// UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(
+											// 	button.onClick,
+											// 	() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+											// );
+
+											// // 次の書き方で、固定の値をセットすることはできる。エディタにも値が入ってしまう。
+											// インスタンスを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
+											// UnityEngine.Events.UnityAction<String> callback = new UnityEngine.Events.UnityAction<String>(rootMBInstance.OnImageTapped);
+											// UnityEditor.Events.UnityEventTools.AddStringPersistentListener(
+											// 	button.onClick, 
+											// 	callback,
+											// 	src
+											// );
+										} catch (Exception e) {
+											Debug.LogError("e:" + e);
+										}
+										// UnityEditor.Events.UnityEventTools.AddObjectPersistentListener<GameObject> (
+										// 	button.onClick, 
+										// 	(s) => {
+										// 		rootMBInstance.OnImageTapped(tagPoint.tag, src);
+										// 	},
+										// 	rootMBInstance.gameObject
+										// );
+									}
+									
+									break;
+								}
+							}
+						}
+
+						endEdgeRect.height += rectTrans.rect.height;
+						break;
+					}
+					default: {
+						rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
+
+						// set text if exist.
+						var text = string.Join("\n", tagPoint.vGameObject.contents.ToArray());
+						var contentHeight = 0;
+
+						if (!string.IsNullOrEmpty(text)) {
+							var textComponent = obj.GetComponent<Text>();
+							textComponent.text = text;
+							
+							// set content size.
+							contentHeight = Populate(textComponent);// populate自体の返せるパラメータはもっといっぱいありそう。
+						}
+						
+						// adjust height to contents text height.
+						rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);
+
+						endEdgeRect.height += contentHeight;
+						break;
+					}
+				}
+
 				return new UIAndPos(obj, endEdgeRect);
 			};
 		}
 
-		public enum Tag {
-			NO_TAG_FOUND,
-			UNKNOWN,
-			ROOT,
-			H, 
-			P, 
-			IMG, 
-			UL, 
-			OL,
-			LI, 
-			A
-		}
-
+		
 		public class TagPoint {
 			public readonly string id;
-			public readonly VirtualGameObject gameObject;
+			public readonly VirtualGameObject vGameObject;
 
 			public readonly int lineIndex;
 			public readonly Tag tag;
@@ -377,7 +487,7 @@ which contains essential game features.
 
 				this.lineIndex = lineIndex;
 				this.tag = tag;
-				this.gameObject = new VirtualGameObject(tag);	
+				this.vGameObject = new VirtualGameObject(tag);	
 			}
 		}
 
@@ -409,7 +519,7 @@ which contains essential game features.
 			
 			public TagPointAndContent (TagPoint tagPoint, int headingNumber, string content) {
 				this.tagPoint = tagPoint;
-				this.tagPoint.gameObject.kv["headingNumber"] = headingNumber.ToString();
+				this.tagPoint.vGameObject.kv["headingNumber"] = headingNumber.ToString();
 				this.content = content;
 			}
 			public TagPointAndContent (TagPoint tagPoint, string content) {
