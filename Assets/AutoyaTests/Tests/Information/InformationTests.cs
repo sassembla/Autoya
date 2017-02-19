@@ -13,6 +13,7 @@ using UnityEngine.UI;
 public enum Tag {
 	NO_TAG_FOUND,
 	UNKNOWN,
+	_CONTENT,
 	ROOT,
 	H, 
 	P, 
@@ -138,9 +139,8 @@ which contains essential game features.
 			}
 
 			public Dictionary<string, string> kv = new Dictionary<string, string>();
-			public List<string> contents = new List<string>();
 
-			public Func<string, Rect, UIAndPos> onMaterialize = null;
+			public Func<Rect, UIAndPos> onMaterialize = null;
 			
 			public VirtualGameObject (Tag tag) {
 				this.tag = tag;
@@ -174,7 +174,7 @@ which contains essential game features.
 					}
 					default: {
 						if (onMaterialize != null) {
-							var gameObjectAndPos = onMaterialize(tag.ToString(), rect);
+							var gameObjectAndPos = onMaterialize(rect);
 							this._gameObject = gameObjectAndPos.gameObject;
 							rect = gameObjectAndPos.rect;
 						} else {
@@ -222,7 +222,7 @@ which contains essential game features.
 		private readonly VirtualGameObject rootObject;
 
 		public Tokenizer (string source) {
-			var root = new TagPoint(0, Tag.ROOT);
+			var root = new TagPoint(0, Tag.ROOT, string.Empty);
 			rootObject = Tokenize(root, source);
 		}
 
@@ -312,8 +312,16 @@ which contains essential game features.
 		}
 		
 		private void AddContentToParent (TagPoint p, string content) {
-			p.vGameObject.contents.Add(content);
+			var	parentObj = p.vGameObject;
 			
+			var child = new TagPoint(p.lineIndex, Tag._CONTENT, Tag._CONTENT.ToString());
+			child.vGameObject.transform.SetParent(parentObj.transform);
+			child.vGameObject.kv["content"] = content;
+			child.vGameObject.kv["parentTag"] = p.originalTagName;
+
+			SetupOnMaterializeAction(child);
+			// ここで、PとAの
+
 			SetupOnMaterializeAction(p);
 		}
 
@@ -340,38 +348,53 @@ which contains essential game features.
 				return;
 			}
 			
-			var prefabName = string.Empty;
-
-			// name
-			switch (tagPoint.tag) {
-				case Tag.H: {
-					prefabName = "H" + tagPoint.vGameObject.kv["headingNumber"];	
-					break;
-				}
-				default: {
-					prefabName = tagPoint.tag.ToString().ToUpper();
-					break;
-				}
-			}
-
 			/*
 				set on materialize function.
 			*/
-			tagPoint.vGameObject.onMaterialize = (name, endEdgeRect) => {
+			tagPoint.vGameObject.onMaterialize = (endEdgeRect) => {
+				var prefabName = string.Empty;
+
+				// name
+				switch (tagPoint.tag) {
+					// case Tag.H: {
+					// 	prefabName = tagPoint.originalTagName.ToUpper();
+					// 	break;
+					// }
+					case Tag._CONTENT: {
+						prefabName = tagPoint.vGameObject.kv["parentTag"];// かなり邪道、親のタグを使う。
+						break;
+					}
+
+					case Tag.H:
+					case Tag.P:
+					case Tag.UL:
+					case Tag.LI: {// コンテナなので、適当な要素があれば良い感じで。サイズも持たないので、CONTAINER prefabを使う。
+						prefabName = "CONTAINER";
+						break;
+					}
+
+					// それ以外は用意してあるものを使う。
+					default: {
+						prefabName = tagPoint.tag.ToString().ToUpper();
+						break;
+					}
+				}
+				
 				var prefab = Resources.Load(prefabName) as GameObject;
 				if (prefab == null) {
 					return new UIAndPos(new GameObject("prefab " + prefabName + " is not found."), endEdgeRect);
 				}
 				
 				var obj = GameObject.Instantiate(prefab);
+				obj.name = tagPoint.originalTagName;
+
 				var rectTrans = obj.GetComponent<RectTransform>();
 
 				// set y pos.
 				rectTrans.anchoredPosition = new Vector2(0, -endEdgeRect.yMax);
 
 				switch (tagPoint.tag) {
-					case Tag.IMG: {
-						
+					case Tag.IMG: {					
 						foreach (var kv in tagPoint.vGameObject.kv) {
 							var key = kv.Key;
 							
@@ -446,16 +469,19 @@ which contains essential game features.
 					default: {
 						rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
 
-						// set text if exist.
-						var text = string.Join("\n", tagPoint.vGameObject.contents.ToArray());
 						var contentHeight = 0;
 
-						if (!string.IsNullOrEmpty(text)) {
-							var textComponent = obj.GetComponent<Text>();
-							textComponent.text = text;
-							
-							// set content size.
-							contentHeight = Populate(textComponent);// populate自体の返せるパラメータはもっといっぱいありそう。
+						// set text if exist.
+						if (tagPoint.vGameObject.kv.ContainsKey("content")) {
+							var text = tagPoint.vGameObject.kv["content"];
+						
+							if (!string.IsNullOrEmpty(text)) {
+								var textComponent = obj.GetComponent<Text>();
+								textComponent.text = text;
+								
+								// set content size.
+								contentHeight = Populate(textComponent);// populate自体の返せるパラメータはもっといっぱいありそう。
+							}
 						}
 						
 						// adjust height to contents text height.
@@ -477,8 +503,10 @@ which contains essential game features.
 
 			public readonly int lineIndex;
 			public readonly Tag tag;
+
+			public readonly string originalTagName;
 			
-			public TagPoint (int lineIndex, Tag tag) {
+			public TagPoint (int lineIndex, Tag tag, string originalTagName="empty.") {
 				if (tag == Tag.NO_TAG_FOUND || tag == Tag.UNKNOWN) {
 					return;
 				}
@@ -487,6 +515,7 @@ which contains essential game features.
 
 				this.lineIndex = lineIndex;
 				this.tag = tag;
+				this.originalTagName = originalTagName;
 				this.vGameObject = new VirtualGameObject(tag);	
 			}
 		}
@@ -517,11 +546,6 @@ which contains essential game features.
 			public readonly TagPoint tagPoint;
 			public readonly string content;
 			
-			public TagPointAndContent (TagPoint tagPoint, int headingNumber, string content) {
-				this.tagPoint = tagPoint;
-				this.tagPoint.vGameObject.kv["headingNumber"] = headingNumber.ToString();
-				this.content = content;
-			}
 			public TagPointAndContent (TagPoint tagPoint, string content) {
 				this.tagPoint = tagPoint;
 				this.content = content;
@@ -553,13 +577,13 @@ which contains essential game features.
 					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
-				var tagName = string.Empty;
+				var originalTagName = string.Empty;
 				var kvDict = new Dictionary<string, string>();
 
 				// not closed tag. contains attr or not.
 				if (line[closeIndex-1] == '"') {// <tag something="else">
 					var contents = line.Substring(1, closeIndex - 1).Split(' ');
-					tagName = contents[0];
+					originalTagName = contents[0];
 					for (var i = 1; i < contents.Length; i++) {
 						var kv = contents[i].Split(new char[]{'='}, 2);
 						
@@ -575,11 +599,11 @@ which contains essential game features.
 					// var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
 					// Debug.LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
 				} else {
-					tagName = line.Substring(1, closeIndex - 1);
+					originalTagName = line.Substring(1, closeIndex - 1);
 				}
 
-				
-				var numbers = string.Join(string.Empty, tagName.ToCharArray().Where(c => Char.IsDigit(c)).Select(t => t.ToString()).ToArray());
+				var tagName = originalTagName;
+				var numbers = string.Join(string.Empty, originalTagName.ToCharArray().Where(c => Char.IsDigit(c)).Select(t => t.ToString()).ToArray());
 				var headingNumber = 0;
 				
 				if (!string.IsNullOrEmpty(numbers) && tagName.EndsWith(numbers)) {
@@ -592,9 +616,9 @@ which contains essential game features.
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
 					if (headingNumber != 0) {
-						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum), kvDict, headingNumber);	
+						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, originalTagName), kvDict, headingNumber);	
 					}
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum), kvDict);
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, originalTagName), kvDict);
 				} catch {
 					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
@@ -639,7 +663,7 @@ which contains essential game features.
 				
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum), kvDict);
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, tagName), kvDict);
 				} catch (Exception e) {
 					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
@@ -678,9 +702,6 @@ which contains essential game features.
 			
 			var contentsStr = string.Join("\n", contentsStrLines);
 
-			if (headingNumber != 0) {
-				return new TagPointAndContent(p, headingNumber, contentsStr);
-			}
 			return new TagPointAndContent(p, contentsStr);
 		}
 
