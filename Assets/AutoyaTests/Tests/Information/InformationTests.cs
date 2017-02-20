@@ -1,12 +1,8 @@
 using Miyamasu;
 using MarkdownSharp;
 using UnityEngine;
-using System.Xml;
 using System.Collections.Generic;
 using System;
-using System.Xml.Linq;
-using System.IO;
-using System.Text;
 using System.Linq;
 using UnityEngine.UI;
 
@@ -134,11 +130,7 @@ which contains essential game features.
 				return this;
 			}
 
-			public void OnButtonTapped () {
-
-			}
-
-			public Dictionary<string, string> kv = new Dictionary<string, string>();
+			public Dictionary<KV_KEY, string> kv = new Dictionary<KV_KEY, string>();
 
 			public Func<Rect, UIAndPos> onMaterialize = null;
 			
@@ -299,7 +291,7 @@ which contains essential game features.
 			return p.vGameObject;
 		}
 		
-		private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<string, string> kvs) {
+		private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<KV_KEY, string> kvs) {
 			var parentObj = parent.vGameObject;
 			child.vGameObject.transform.SetParent(parentObj.transform);
 
@@ -314,13 +306,12 @@ which contains essential game features.
 		private void AddContentToParent (TagPoint p, string content) {
 			var	parentObj = p.vGameObject;
 			
-			var child = new TagPoint(p.lineIndex, Tag._CONTENT, Tag._CONTENT.ToString());
+			var child = new TagPoint(p.lineIndex, Tag._CONTENT, p.originalTagName + " Content");
 			child.vGameObject.transform.SetParent(parentObj.transform);
-			child.vGameObject.kv["content"] = content;
-			child.vGameObject.kv["parentTag"] = p.originalTagName;
+			child.vGameObject.kv[KV_KEY.CONTENT] = content;
+			child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
 
 			SetupOnMaterializeAction(child);
-			// ここで、PとAの
 
 			SetupOnMaterializeAction(p);
 		}
@@ -356,26 +347,26 @@ which contains essential game features.
 
 				// name
 				switch (tagPoint.tag) {
-					// case Tag.H: {
-					// 	prefabName = tagPoint.originalTagName.ToUpper();
-					// 	break;
-					// }
 					case Tag._CONTENT: {
-						prefabName = tagPoint.vGameObject.kv["parentTag"];// かなり邪道、親のタグを使う。
+						prefabName = tagPoint.vGameObject.kv[KV_KEY.PARENTTAG];
+						// これ、親のオブジェクトがH,A,LIだったら、それぞれ単体の値しか持たないので、そのデータを親に付け加えればいいのでは？
+						// それらのタグは、そのままダイレクトに要素を生成して良さそう。
+						// っつーてもあんまり削減にならないな、、やらない。
+
+						// Aタグはさらに、その親のPの文字サイズを使う、っていう制約を持たせてしまいたい。
 						break;
 					}
 
 					case Tag.H:
 					case Tag.P:
-					case Tag.UL:
-					case Tag.LI: {// コンテナなので、適当な要素があれば良い感じで。サイズも持たないので、CONTAINER prefabを使う。
-						prefabName = "CONTAINER";
+					case Tag.UL: {// these are container.
+						prefabName = tagPoint.originalTagName.ToUpper() + "Container";
 						break;
 					}
 
 					// それ以外は用意してあるものを使う。
 					default: {
-						prefabName = tagPoint.tag.ToString().ToUpper();
+						prefabName = tagPoint.originalTagName.ToUpper();
 						break;
 					}
 				}
@@ -386,115 +377,168 @@ which contains essential game features.
 				}
 				
 				var obj = GameObject.Instantiate(prefab);
-				obj.name = tagPoint.originalTagName;
 
-				var rectTrans = obj.GetComponent<RectTransform>();
-
-				// set y pos.
-				rectTrans.anchoredPosition = new Vector2(0, -endEdgeRect.yMax);
-
-				switch (tagPoint.tag) {
-					case Tag.IMG: {					
-						foreach (var kv in tagPoint.vGameObject.kv) {
-							var key = kv.Key;
-							
-							switch (key) {
-								case "width": {
-									var val = Convert.ToInt32(kv.Value);
-									rectTrans.sizeDelta = new Vector2(val, rectTrans.sizeDelta.y);
-									break;
-								}
-								case "height": {
-									var val = Convert.ToInt32(kv.Value);
-									rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, val);
-									break;
-								}
-								case "src": {
-									var src = kv.Value;
-									// add event component.
-									var button = obj.GetComponent<Button>();
-									if (button == null) {
-										button = obj.AddComponent<Button>();
-									}
-
-									var rootObject = tagPoint.vGameObject.GetRootGameObject();
-									var rootMBInstance = rootObject.@class;
-									
-									if (Application.isPlaying) {
-										/*
-											this code can set action to button. but it does not appear in editor inspector.
-										*/
-										button.onClick.AddListener(
-											() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
-										);
-									} else {
-										
-										try {
-											button.onClick.AddListener(// エディタでは、Actionをセットすることができない。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
-												() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
-											);
-											// UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(
-											// 	button.onClick,
-											// 	() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
-											// );
-
-											// // 次の書き方で、固定の値をセットすることはできる。エディタにも値が入ってしまう。
-											// インスタンスを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
-											// UnityEngine.Events.UnityAction<String> callback = new UnityEngine.Events.UnityAction<String>(rootMBInstance.OnImageTapped);
-											// UnityEditor.Events.UnityEventTools.AddStringPersistentListener(
-											// 	button.onClick, 
-											// 	callback,
-											// 	src
-											// );
-										} catch (Exception e) {
-											Debug.LogError("e:" + e);
-										}
-										// UnityEditor.Events.UnityEventTools.AddObjectPersistentListener<GameObject> (
-										// 	button.onClick, 
-										// 	(s) => {
-										// 		rootMBInstance.OnImageTapped(tagPoint.tag, src);
-										// 	},
-										// 	rootMBInstance.gameObject
-										// );
-									}
-									
-									break;
-								}
-							}
-						}
-
-						endEdgeRect.height += rectTrans.rect.height;
-						break;
-					}
-					default: {
-						rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
-
-						var contentHeight = 0;
-
-						// set text if exist.
-						if (tagPoint.vGameObject.kv.ContainsKey("content")) {
-							var text = tagPoint.vGameObject.kv["content"];
-						
-							if (!string.IsNullOrEmpty(text)) {
-								var textComponent = obj.GetComponent<Text>();
-								textComponent.text = text;
-								
-								// set content size.
-								contentHeight = Populate(textComponent);// populate自体の返せるパラメータはもっといっぱいありそう。
-							}
-						}
-						
-						// adjust height to contents text height.
-						rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);
-
-						endEdgeRect.height += contentHeight;
-						break;
-					}
-				}
+				endEdgeRect = SetupTagContent(obj, tagPoint, endEdgeRect);
 
 				return new UIAndPos(obj, endEdgeRect);
 			};
 		}
+
+		public enum KV_KEY {
+			CONTENT,
+			PARENTTAG,
+
+			WIDTH,
+			HEIGHT,
+			SRC,
+		};
+
+		/**
+			setup contents of tag.
+			ready resource size. width and height.
+			in order to implement arounding of contents in P tag, endEdgeRect will be changed flexibly.
+		*/
+		private Rect SetupTagContent (GameObject obj, TagPoint tagPoint, Rect endEdgeRect) {
+			var rectTrans = obj.GetComponent<RectTransform>();
+
+			// set y start pos.
+			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -endEdgeRect.yMax);// 直前の横位置を表すために、適当に増減するパラメータがもう一個あったほうがいいのかも。あ、要素ごとにリセットすれば良いのか。
+
+			switch (tagPoint.tag) {
+				/*
+					child tags.
+						回り込みがある。
+				*/
+				case Tag.IMG: {					
+					foreach (var kv in tagPoint.vGameObject.kv) {
+						var key = kv.Key;
+						
+						switch (key) {
+							case KV_KEY.WIDTH: {
+								var val = Convert.ToInt32(kv.Value);
+								rectTrans.sizeDelta = new Vector2(val, rectTrans.sizeDelta.y);
+								break;
+							}
+							case KV_KEY.HEIGHT: {
+								var val = Convert.ToInt32(kv.Value);
+								rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, val);
+								break;
+							}
+							case KV_KEY.SRC: {
+								var src = kv.Value;
+								// add event component.
+								var button = obj.GetComponent<Button>();
+								if (button == null) {
+									button = obj.AddComponent<Button>();
+								}
+
+								var rootObject = tagPoint.vGameObject.GetRootGameObject();
+								var rootMBInstance = rootObject.@class;
+								
+								if (Application.isPlaying) {
+									/*
+										this code can set action to button. but it does not appear in editor inspector.
+									*/
+									button.onClick.AddListener(
+										() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+									);
+								} else {
+									
+									try {
+										button.onClick.AddListener(// エディタでは、Actionをセットすることができない。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
+											() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+										);
+										// UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(
+										// 	button.onClick,
+										// 	() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+										// );
+
+										// // 次の書き方で、固定の値をセットすることはできる。エディタにも値が入ってしまう。
+										// インスタンスを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
+										// UnityEngine.Events.UnityAction<String> callback = new UnityEngine.Events.UnityAction<String>(rootMBInstance.OnImageTapped);
+										// UnityEditor.Events.UnityEventTools.AddStringPersistentListener(
+										// 	button.onClick, 
+										// 	callback,
+										// 	src
+										// );
+									} catch (Exception e) {
+										Debug.LogError("e:" + e);
+									}
+								}
+								
+								break;
+							}
+						}
+					}
+
+					endEdgeRect.height += rectTrans.rect.height;// 横並びになる可能性のあるタグは、高さを+するのが遅れる。まずは幅を足す、という動作で良いはず。
+					break;
+				}
+
+				/*
+					parent tags.
+						回り込みはないが、indentがあり、位置情報が面白くなる。
+				*/
+				case Tag.P: {
+					// 開始と終了を挟んで、インデントみたいな処理をかけるようにしたい。
+					// endEdgeRect.height += contentHeight;
+					break;
+				}
+				
+				case Tag._CONTENT: {
+					/*
+						文字サイズの計算をするために、まず最大のサイズをとる。回り込み処理がまだ考えれてない適当な箇所で、特に高さを最大にしてるのがヤバそう。
+
+						回り込み処理が入る場合、widthが変わるはず。でもこれmdの回り込みは1行限定がついてる気がする。うむ。ついてる。
+						画像も回り込む予定。スゲーー。 インデントが入るとこれ大変だな〜。高さはまあ良いんだけど、横幅は致命傷になりそう。
+						となると、親のPとかH、ULあたりで、親ごと右にずらす = 原点いじったうえで、endEdgeRectをいじる、とかすると良さそう。
+						
+						あとは、P、H、UL終わった時に、そのXのリセットが必要なんだな。あ、これは値を持った方がいいな。
+
+						・インデントとしてのXズレ
+						・インデントとしてのYズレ
+						あたりを指定しておいて、親要素としてのPとかだけずらすか。
+
+						んで、子要素の処理に入る前に、endEdgeRectをずらしておく。
+
+						PContentとか、コンテンツとP要素(インデント指定用の箱)を分けるか。そのほうが作りやすそう。
+						
+						がんばって整理しよう、、
+						・インデントをx,y値として持つことができそう。その元として、TagContainerみたいな概念のPrefabがあると良さそう。
+						・中身はTagContentみたいな概念で作ると良さそう。といってもIMGとかはそのままでいいのかな。
+						・
+					*/
+					rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
+
+					var contentHeight = 0;
+
+					// set text if exist.
+					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
+						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
+					
+						if (!string.IsNullOrEmpty(text)) {
+							var textComponent = obj.GetComponent<Text>();
+							if (textComponent != null) { 
+								textComponent.text = text;
+								
+								// set content size.
+								contentHeight = Populate(textComponent);// populate自体の返すべきパラメータはもっといっぱいありそう。折り返しがあるからな〜〜うーーーん、、、
+							}
+						}
+					}
+					
+					// adjust height to contents text height.
+					rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);
+
+					高さを足す これだけ独立した値のほうが良さそう。
+
+					endEdgeRect.height += contentHeight;
+					break;
+				}
+			}
+
+			return endEdgeRect;
+		} 
 
 		
 		public class TagPoint {
@@ -523,21 +567,21 @@ which contains essential game features.
 
 		private struct TagPointAndAttrAndHeadingNumber {
 			public readonly TagPoint tagPoint;
-			public readonly Dictionary<string, string> attrs;
+			public readonly Dictionary<KV_KEY, string> attrs;
 			public readonly int option;
-			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<string, string> attrs, int option) {
+			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<KV_KEY, string> attrs, int option) {
 				this.tagPoint = tagPoint;
 				this.attrs = attrs;
 				this.option = option;
 			}
-			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<string, string> attrs) {
+			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<KV_KEY, string> attrs) {
 				this.tagPoint = tagPoint;
 				this.attrs = attrs;
 				this.option = 0;
 			}
 			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint) {
 				this.tagPoint = tagPoint;
-				this.attrs = new Dictionary<string, string>();
+				this.attrs = new Dictionary<KV_KEY, string>();
 				this.option = 0;
 			}
 		}
@@ -578,7 +622,7 @@ which contains essential game features.
 				}
 
 				var originalTagName = string.Empty;
-				var kvDict = new Dictionary<string, string>();
+				var kvDict = new Dictionary<KV_KEY, string>();
 
 				// not closed tag. contains attr or not.
 				if (line[closeIndex-1] == '"') {// <tag something="else">
@@ -591,10 +635,16 @@ which contains essential game features.
 							continue;
 						}
 
-						var key = kv[0];
-						var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
+						var keyStr = kv[0];
+						try {
+							var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
+							var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
 
-						kvDict[key] = val;
+							kvDict[key] = val;
+						} catch (Exception e) {
+							Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
+							return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+						}
 					}
 					// var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
 					// Debug.LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
@@ -645,7 +695,7 @@ which contains essential game features.
 				
 				var tagName = contents[0];
 				
-				var kvDict = new Dictionary<string, string>();
+				var kvDict = new Dictionary<KV_KEY, string>();
 				for (var i = 1; i < contents.Length; i++) {
 					var kv = contents[i].Split(new char[]{'='}, 2);
 					
@@ -653,10 +703,17 @@ which contains essential game features.
 						continue;
 					}
 
-					var key = kv[0];
-					var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
+					var keyStr = kv[0];
+					try {
+						var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
+							
+						var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
 
-					kvDict[key] = val;
+						kvDict[key] = val;
+					} catch (Exception e) {
+						Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
+						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+					}
 				}
 				// var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
 				// Debug.LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
