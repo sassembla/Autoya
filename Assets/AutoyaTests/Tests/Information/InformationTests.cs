@@ -53,7 +53,6 @@ which contains essential game features.
         string text = mark.Transform(sampleMd);
         Debug.LogError("text:" + text);
 
-		// 取れそうな戦略：
 		/*
 			次のようなhtmlが手に入るので、
 			hX, p, img, ul, li, aとかのタグを見て、それぞれを「行単位の要素」に変形、uGUIの要素に変形できれば良さそう。
@@ -95,15 +94,6 @@ which contains essential game features.
 		parse hX, p, img, ul, ol, li, a tags then returns GameObject for GUI.
 	*/
 	public class Tokenizer {
-		public struct UIAndPos {
-			public readonly GameObject gameObject;
-			public readonly Rect rect;
-			public UIAndPos (GameObject gameObject, Rect rect) {
-				this.gameObject = gameObject;
-				this.rect = rect;
-			}
-		}
-		
 		public class VirtualGameObject {
 			public GameObject _gameObject;
 
@@ -132,7 +122,7 @@ which contains essential game features.
 
 			public Dictionary<KV_KEY, string> kv = new Dictionary<KV_KEY, string>();
 
-			public Func<Rect, UIAndPos> onMaterialize = null;
+			public Func<Rect, Rect> onMaterialize = null;
 			
 			public VirtualGameObject (Tag tag) {
 				this.tag = tag;
@@ -167,8 +157,7 @@ which contains essential game features.
 					default: {
 						if (onMaterialize != null) {
 							var gameObjectAndPos = onMaterialize(rect);
-							this._gameObject = gameObjectAndPos.gameObject;
-							rect = gameObjectAndPos.rect;
+							rect = gameObjectAndPos;
 						} else {
 							this._gameObject = new GameObject("not ready");
 						}
@@ -342,18 +331,20 @@ which contains essential game features.
 			/*
 				set on materialize function.
 			*/
-			tagPoint.vGameObject.onMaterialize = (endEdgeRect) => {
+			tagPoint.vGameObject.onMaterialize = (positionData) => {
 				var prefabName = string.Empty;
 
-				// name
+				/*
+					set name of required prefab.
+						content -> parent's tag name.
+
+						parent tag -> tag + container name.
+
+						single tag -> tag name.
+				*/
 				switch (tagPoint.tag) {
 					case Tag._CONTENT: {
 						prefabName = tagPoint.vGameObject.kv[KV_KEY.PARENTTAG];
-						// これ、親のオブジェクトがH,A,LIだったら、それぞれ単体の値しか持たないので、そのデータを親に付け加えればいいのでは？
-						// それらのタグは、そのままダイレクトに要素を生成して良さそう。
-						// っつーてもあんまり削減にならないな、、やらない。
-
-						// Aタグはさらに、その親のPの文字サイズを使う、っていう制約を持たせてしまいたい。
 						break;
 					}
 
@@ -363,8 +354,7 @@ which contains essential game features.
 						prefabName = tagPoint.originalTagName.ToUpper() + "Container";
 						break;
 					}
-
-					// それ以外は用意してあるものを使う。
+					
 					default: {
 						prefabName = tagPoint.originalTagName.ToUpper();
 						break;
@@ -373,14 +363,13 @@ which contains essential game features.
 				
 				var prefab = Resources.Load(prefabName) as GameObject;
 				if (prefab == null) {
-					return new UIAndPos(new GameObject("prefab " + prefabName + " is not found."), endEdgeRect);
+					Debug.LogError("missing prefab:" + prefabName);
+					return positionData;
 				}
 				
-				var obj = GameObject.Instantiate(prefab);
+				tagPoint.vGameObject._gameObject = GameObject.Instantiate(prefab);
 
-				endEdgeRect = SetupTagContent(obj, tagPoint, endEdgeRect);
-
-				return new UIAndPos(obj, endEdgeRect);
+				return SetupTagContent(tagPoint.vGameObject._gameObject, tagPoint, positionData);
 			};
 		}
 
@@ -530,8 +519,13 @@ which contains essential game features.
 					// adjust height to contents text height.
 					rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);
 
-					高さを足す これだけ独立した値のほうが良さそう。
+					// 現在のコンテンツを描画しきった場合の高さを足す これだけ独立した値のほうが良さそう。高さ = 結構複雑な値のはず。
+					// どんな数値が存在するのか出してみるか。そのstructを引き回す感じにしたい。
 
+					// 描画高さ
+					// 回り込み x位置
+					// 回り込み y位置
+					// 
 					endEdgeRect.height += contentHeight;
 					break;
 				}
