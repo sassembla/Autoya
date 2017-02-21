@@ -354,7 +354,7 @@ which contains essential game features.
 						prefabName = tagPoint.originalTagName.ToUpper() + "Container";
 						break;
 					}
-					
+
 					default: {
 						prefabName = tagPoint.originalTagName.ToUpper();
 						break;
@@ -463,14 +463,11 @@ which contains essential game features.
 					endEdgeRect.height += rectTrans.rect.height;// 横並びになる可能性のあるタグは、高さを+するのが遅れる。まずは幅を足す、という動作で良いはず。
 					break;
 				}
-
+				
 				/*
 					parent tags.
-						回り込みはないが、indentがあり、位置情報が面白くなる。
 				*/
 				case Tag.P: {
-					// 開始と終了を挟んで、インデントみたいな処理をかけるようにしたい。
-					// endEdgeRect.height += contentHeight;
 					break;
 				}
 				
