@@ -122,7 +122,7 @@ which contains essential game features.
 
 			public Dictionary<KV_KEY, string> kv = new Dictionary<KV_KEY, string>();
 
-			public Func<Rect, Rect> onMaterialize = null;
+			public Func<HandlePoint, HandlePoint> onMaterialize = null;
 			
 			public VirtualGameObject (Tag tag) {
 				this.tag = tag;
@@ -133,11 +133,11 @@ which contains essential game features.
 				return generated game object.
 			*/
 			public GameObject MaterializeRoot () {
-				Materialize(new Rect(0, 0, 300, 100));
+				Materialize(new HandlePoint(0,0,300,300));// サイズ指定がない。
 				return this._gameObject;
 			}
 
-			private Rect Materialize (Rect rect, GameObject parent=null) {
+			private HandlePoint Materialize (HandlePoint rect, GameObject parent=null) {
 				switch (this.tag) {
 					case Tag.ROOT: {
 						this._gameObject = new GameObject("ROOT");
@@ -148,10 +148,9 @@ which contains essential game features.
 						rectTrans.anchorMin = Vector2.up;
 						rectTrans.anchorMax = Vector2.up;
 						rectTrans.pivot = Vector2.up;
-						rectTrans.position = rect.position;
-						rectTrans.sizeDelta = new Vector2(rect.width, rect.height);
+						rectTrans.position = rect.Position();
+						rectTrans.sizeDelta = rect.Size();
 						
-						rect = rectTrans.rect;
 						break;
 					}
 					default: {
@@ -203,7 +202,7 @@ which contains essential game features.
 		private readonly VirtualGameObject rootObject;
 
 		public Tokenizer (string source) {
-			var root = new TagPoint(0, Tag.ROOT, string.Empty);
+			var root = new TagPoint(0, Tag.ROOT, new Tag[0], string.Empty);
 			rootObject = Tokenize(root, source);
 		}
 
@@ -228,14 +227,14 @@ which contains essential game features.
 					continue;
 				}
 
-				var foundStartTagPointAndAttrAndOption = FindStartTag(lines, index);
+				var foundStartTagPointAndAttrAndOption = FindStartTag(p.depth, lines, index);
 
 				/*
 					no <tag> found.
 				*/
 				if (foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.UNKNOWN) {					
 					// detect single closed tag. e,g, <tag something />.
-					var foundSingleTagPointWithAttr = FindSingleTag(lines, index);
+					var foundSingleTagPointWithAttr = FindSingleTag(p.depth, lines, index);
 
 					if (foundSingleTagPointWithAttr.tagPoint.tag != Tag.NO_TAG_FOUND && foundSingleTagPointWithAttr.tagPoint.tag != Tag.UNKNOWN) {
 						// closed <tag /> found. add this new closed tag to parent tag.
@@ -295,7 +294,7 @@ which contains essential game features.
 		private void AddContentToParent (TagPoint p, string content) {
 			var	parentObj = p.vGameObject;
 			
-			var child = new TagPoint(p.lineIndex, Tag._CONTENT, p.originalTagName + " Content");
+			var child = new TagPoint(p.lineIndex, Tag._CONTENT, p.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), p.originalTagName + " Content");
 			child.vGameObject.transform.SetParent(parentObj.transform);
 			child.vGameObject.kv[KV_KEY.CONTENT] = content;
 			child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
@@ -331,7 +330,7 @@ which contains essential game features.
 			/*
 				set on materialize function.
 			*/
-			tagPoint.vGameObject.onMaterialize = (positionData) => {
+			tagPoint.vGameObject.onMaterialize = positionData => {
 				var prefabName = string.Empty;
 
 				/*
@@ -367,9 +366,10 @@ which contains essential game features.
 					return positionData;
 				}
 				
+				// instantiage gameObject. ここを後々、プールからの取得に変える。同じ種類のオブジェクトがあればそれで良さそう。それか設定をアレコレできればいいのか。
 				tagPoint.vGameObject._gameObject = GameObject.Instantiate(prefab);
 
-				return SetupTagContent(tagPoint.vGameObject._gameObject, tagPoint, positionData);
+				return MaterializeTagContent(tagPoint.vGameObject._gameObject, tagPoint, positionData);
 			};
 		}
 
@@ -382,22 +382,54 @@ which contains essential game features.
 			SRC,
 		};
 
+		public struct Padding {
+			public float up, right, down, left;
+		}
+
+		public struct HandlePoint {
+			public float nextLeftHandle;
+			public float nextTopHandle;
+
+			public float width;
+			public float height;
+
+			public HandlePoint (float nextLeftHandle, float nextTopHandle, float width, float height) {
+				this.nextLeftHandle = nextLeftHandle;
+				this.nextTopHandle = nextTopHandle;
+				this.width = width;
+				this.height = height;
+			}
+
+			public Vector2 Position () {
+				return new Vector2(nextLeftHandle, nextTopHandle);
+			}
+
+			public Vector2 Size () {
+				return new Vector2(width, height);
+			}
+		}
+
 		/**
-			setup contents of tag.
+			materialize contents of tag.
 			ready resource size. width and height.
-			in order to implement arounding of contents in P tag, endEdgeRect will be changed flexibly.
+			in order to implement arounding of contents in P tag, HandlePoint will be changed flexibly.
 		*/
-		private Rect SetupTagContent (GameObject obj, TagPoint tagPoint, Rect endEdgeRect) {
+		private HandlePoint MaterializeTagContent (GameObject obj, TagPoint tagPoint, HandlePoint contentHandlePoint) {
+
+			/*
+				この時点で、paddingを適応できる下地が整った感じ。
+				対象のx,yも制御できればいいのか。
+			*/
+			var padding = new Padding();
+			OnMaterialize(obj, tagPoint.tag, tagPoint.depth, contentHandlePoint, padding, tagPoint.vGameObject.kv);
+
+
 			var rectTrans = obj.GetComponent<RectTransform>();
 
 			// set y start pos.
-			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -endEdgeRect.yMax);// 直前の横位置を表すために、適当に増減するパラメータがもう一個あったほうがいいのかも。あ、要素ごとにリセットすれば良いのか。
+			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -contentHandlePoint.nextTopHandle);
 
 			switch (tagPoint.tag) {
-				/*
-					child tags.
-						回り込みがある。
-				*/
 				case Tag.IMG: {					
 					foreach (var kv in tagPoint.vGameObject.kv) {
 						var key = kv.Key;
@@ -460,41 +492,12 @@ which contains essential game features.
 						}
 					}
 
-					endEdgeRect.height += rectTrans.rect.height;// 横並びになる可能性のあるタグは、高さを+するのが遅れる。まずは幅を足す、という動作で良いはず。
-					break;
-				}
-				
-				/*
-					parent tags.
-				*/
-				case Tag.P: {
+					contentHandlePoint.nextTopHandle += rectTrans.rect.height;
 					break;
 				}
 				
 				case Tag._CONTENT: {
-					/*
-						文字サイズの計算をするために、まず最大のサイズをとる。回り込み処理がまだ考えれてない適当な箇所で、特に高さを最大にしてるのがヤバそう。
-
-						回り込み処理が入る場合、widthが変わるはず。でもこれmdの回り込みは1行限定がついてる気がする。うむ。ついてる。
-						画像も回り込む予定。スゲーー。 インデントが入るとこれ大変だな〜。高さはまあ良いんだけど、横幅は致命傷になりそう。
-						となると、親のPとかH、ULあたりで、親ごと右にずらす = 原点いじったうえで、endEdgeRectをいじる、とかすると良さそう。
-						
-						あとは、P、H、UL終わった時に、そのXのリセットが必要なんだな。あ、これは値を持った方がいいな。
-
-						・インデントとしてのXズレ
-						・インデントとしてのYズレ
-						あたりを指定しておいて、親要素としてのPとかだけずらすか。
-
-						んで、子要素の処理に入る前に、endEdgeRectをずらしておく。
-
-						PContentとか、コンテンツとP要素(インデント指定用の箱)を分けるか。そのほうが作りやすそう。
-						
-						がんばって整理しよう、、
-						・インデントをx,y値として持つことができそう。その元として、TagContainerみたいな概念のPrefabがあると良さそう。
-						・中身はTagContentみたいな概念で作ると良さそう。といってもIMGとかはそのままでいいのかな。
-						・
-					*/
-					rectTrans.sizeDelta = new Vector2(endEdgeRect.width, endEdgeRect.height);
+					rectTrans.sizeDelta = new Vector2(contentHandlePoint.width, contentHandlePoint.height);
 
 					var contentHeight = 0;
 
@@ -519,17 +522,24 @@ which contains essential game features.
 					// 現在のコンテンツを描画しきった場合の高さを足す これだけ独立した値のほうが良さそう。高さ = 結構複雑な値のはず。
 					// どんな数値が存在するのか出してみるか。そのstructを引き回す感じにしたい。
 
-					// 描画高さ
-					// 回り込み x位置
-					// 回り込み y位置
-					// 
-					endEdgeRect.height += contentHeight;
+					// 継続的な描画ハンドルポイント、閉じタグ位置でXが0に戻る、とかがしたい。
+					contentHandlePoint.nextTopHandle += contentHeight;// これで、確実に改行が起きるようになってる。x位置が一切動いてないことも関連してる。
+					break;
+				}
+
+				default: {
+					// do nothing.
 					break;
 				}
 			}
 
-			return endEdgeRect;
-		} 
+			
+			return contentHandlePoint;
+		}
+
+		public void OnMaterialize (GameObject obj, Tag tag, Tag[] depth, HandlePoint contentHandlePoint, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue) {
+			// ここで、各要素の編集を行う。
+		}
 
 		
 		public class TagPoint {
@@ -538,10 +548,11 @@ which contains essential game features.
 
 			public readonly int lineIndex;
 			public readonly Tag tag;
+			public readonly Tag[] depth;
 
 			public readonly string originalTagName;
 			
-			public TagPoint (int lineIndex, Tag tag, string originalTagName="empty.") {
+			public TagPoint (int lineIndex, Tag tag, Tag[] depth=null, string originalTagName="empty.") {
 				if (tag == Tag.NO_TAG_FOUND || tag == Tag.UNKNOWN) {
 					return;
 				}
@@ -550,6 +561,7 @@ which contains essential game features.
 
 				this.lineIndex = lineIndex;
 				this.tag = tag;
+				this.depth = depth;
 				this.originalTagName = originalTagName;
 				this.vGameObject = new VirtualGameObject(tag);	
 			}
@@ -595,7 +607,7 @@ which contains essential game features.
 		/**
 			find tag if exists.
 		*/
-		private TagPointAndAttrAndHeadingNumber FindStartTag (string[] lines, int lineIndex) {
+		private TagPointAndAttrAndHeadingNumber FindStartTag (Tag[] parentDepth, string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
 
 			// find <X>something...
@@ -657,9 +669,9 @@ which contains essential game features.
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
 					if (headingNumber != 0) {
-						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, originalTagName), kvDict, headingNumber);	
+						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict, headingNumber);	
 					}
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, originalTagName), kvDict);
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict);
 				} catch {
 					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
@@ -667,7 +679,7 @@ which contains essential game features.
 			return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 		}
 
-		private TagPointAndAttrAndHeadingNumber FindSingleTag (string[] lines, int lineIndex) {
+		private TagPointAndAttrAndHeadingNumber FindSingleTag (Tag[] parentDepth, string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
 
 			// find <X>something...
@@ -711,8 +723,8 @@ which contains essential game features.
 				
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, tagName), kvDict);
-				} catch (Exception e) {
+					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), tagName), kvDict);
+				} catch {
 					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
 			}
