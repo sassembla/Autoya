@@ -1,3 +1,35 @@
+## [1.10.0] - 2017-01-23
+### Added
+- Samsung Galaxy Apps - In-App Purchase SDK v4. Simplifies flow for first-time payment users. See [Samsung Developer IAP Documentation](http://developer.samsung.com/iap) for more.
+- Tizen Store - Add support for subscriptions
+- StandardPurchasingModule - Add `bool useFakeStoreAlways` property to override native stores with the local debug FakeStore for rapid prototyping. Will not connect to any App Store when enabled.
+
+```csharp
+// Enable the FakeStore for all IAP activity
+var module = StandardPurchasingModule.Instance();
+module.useFakeStoreAlways = true;
+```
+
+* Editor Updater - Notify the developer when updates to Unity IAP are available with an actionable dialog. Periodically check the Asset Store version and prompt with an upgrade dialog capable of downloading the latest plugin.
+* Editor Installer - Simplify integration of Unity IAP into a Project, avoiding unexpected breakage of the scripting build environment after package installation. Detect and warn if Unity IAP Core Service is "Off" during installation.
+
+### Removed
+- Samsung Galaxy Apps - remove In-App Purchase SDK v3 and replaced with v4, above.
+
+### Fixed
+- GooglePlay - Fix a problem that occurred when suspending the application during a successful transaction. Previously a consumable product could get stuck in a state where it could not be purchased again until the Google Play cache was cleared.
+
+## [1.9.3] - 2017-01-03
+### Added
+- Windows Store - support for UWP apps running while logged-out of Windows Store. Now fetches app's product metadata if logged out, and requests user sign in to make purchase or to fetch user's purchase history.
+- Editor - diagnostic log at build-time when IAP Service disabled: "Unity IAP plugin is installed, but Unity IAP is not enabled. Please enable Unity IAP in the Services window." Fewer redundant errors.
+
+### Fixed
+- Editor - checkmarks refresh for Targeted Android Store after Editor Play/Stop
+- Editor - hides spurious Component MenuItems
+- Linux Editor - BillingMode.json path case-sensitivity 
+- IAP Catalog - clearer text for Export button: "App Store Export"
+
 ## [1.9.2] - 2016-11-29
 ### Fixed
 - GooglePlay - addresses warning about usage of WebViewClient.onReceivedSslError if CloudMoolah.aar is included

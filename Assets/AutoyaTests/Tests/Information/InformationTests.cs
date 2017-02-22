@@ -69,7 +69,13 @@ which contains essential game features.
 				var tokenizer = new Tokenizer(text);
 
 				// とりあえず全体を生成
-				tokenizer.Materialize();// これを、Rootが画面に乗った時にやったほうがいいのかも
+				tokenizer.Materialize(
+					new Rect(0, 0, 300, 400),
+					(go, tag, depth, handlePoint, padding, kv) => {
+						padding.left += 10;
+					}
+				);
+				
 
 				// var childlen = obj.transform.GetChildlen();
 
@@ -100,6 +106,8 @@ which contains essential game features.
 			public InformationRootMonoBehaviour @class;
 
 			public readonly Tag tag;
+			public readonly Tag[] depth;
+			public Padding padding;
 			
 			private VirtualTransform vTransform;
 
@@ -110,6 +118,15 @@ which contains essential game features.
 					return vTransform;
 				}
             }
+
+			public OnMaterializeDelegate onMaterialize;
+
+			public VirtualGameObject (Tag tag, Tag[] depth) {
+				this.tag = tag;
+				this.depth = depth;
+				this.padding = new Padding();
+				this.vTransform = new VirtualTransform(this);
+			}
 
 			public VirtualGameObject GetRootGameObject () {
 				if (vTransform.Parent() != null) {
@@ -122,41 +139,43 @@ which contains essential game features.
 
 			public Dictionary<KV_KEY, string> kv = new Dictionary<KV_KEY, string>();
 
-			public Func<HandlePoint, HandlePoint> onMaterialize = null;
+			public Func<HandlePoint, HandlePoint> materializeContents = null;
 			
-			public VirtualGameObject (Tag tag) {
-				this.tag = tag;
-				this.vTransform = new VirtualTransform(this);
-			}
-
+			
 			/**
 				return generated game object.
 			*/
-			public GameObject MaterializeRoot () {
-				Materialize(new HandlePoint(0,0,300,300));// サイズ指定がない。
+			public GameObject MaterializeRoot (Vector2 viewPort, OnMaterializeDelegate onMaterialize) {
+				var rootHandlePoint = new HandlePoint(0, 0, viewPort.x, viewPort.y);
+
+				this._gameObject = new GameObject(Tag.ROOT.ToString());
+				
+				this.@class = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
+				var rectTrans = this._gameObject.AddComponent<RectTransform>();
+				rectTrans.anchorMin = Vector2.up;
+				rectTrans.anchorMax = Vector2.up;
+				rectTrans.pivot = Vector2.up;
+				rectTrans.position = rootHandlePoint.Position();
+				rectTrans.sizeDelta = rootHandlePoint.Size();
+						
+				// set limit size.
+				Materialize(rootHandlePoint, onMaterialize, this._gameObject);
+
 				return this._gameObject;
 			}
+			
+			private HandlePoint Materialize (HandlePoint handlePoint, OnMaterializeDelegate onMaterialize, GameObject parent) {
+				// update materialize delegate.
+				this.onMaterialize = onMaterialize;
 
-			private HandlePoint Materialize (HandlePoint rect, GameObject parent=null) {
 				switch (this.tag) {
 					case Tag.ROOT: {
-						this._gameObject = new GameObject("ROOT");
-
-						this.@class = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
-
-						var rectTrans = this._gameObject.AddComponent<RectTransform>();
-						rectTrans.anchorMin = Vector2.up;
-						rectTrans.anchorMax = Vector2.up;
-						rectTrans.pivot = Vector2.up;
-						rectTrans.position = rect.Position();
-						rectTrans.sizeDelta = rect.Size();
-						
+						// do nothing.
 						break;
 					}
 					default: {
-						if (onMaterialize != null) {
-							var gameObjectAndPos = onMaterialize(rect);
-							rect = gameObjectAndPos;
+						if (materializeContents != null) {
+							handlePoint = materializeContents(handlePoint);;
 						} else {
 							this._gameObject = new GameObject("not ready");
 						}
@@ -170,13 +189,28 @@ which contains essential game features.
 				
 				var childlen = this.transform.GetChildlen();
 				foreach (var child in childlen) {
-					rect = child.Materialize(rect, this._gameObject);
+					handlePoint = child.Materialize(handlePoint, onMaterialize, this._gameObject);
+					// handlePointのy値によってはキャンセルするとかが可能。
 				}
 
-				return rect;
+				// 子供の要素のMaterializeが終わったらここに来る。
+				/*
+					この時点で、paddingを適応できる下地が整った感じ。
+					対象のx,yも制御できればいいのか。
+				*/
+
+				// this.padding// を、どこかに保存されている設定値から取得する。top,bottom,right,left
+				onMaterialize(this._gameObject, this.tag, this.depth, handlePoint, this.padding, this.kv);
+
+
+				// このタイミングで、paddingぶん位置を動かす。toggleとかの値を反映させる。
+				Debug.LogError("padding:" + padding.left);
+
+				return handlePoint;
 			}
-			
 		}
+
+		public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, HandlePoint contentHandlePoint, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue);
 
 		public class VirtualTransform {
 			private readonly VirtualGameObject vGameObject;
@@ -206,9 +240,10 @@ which contains essential game features.
 			rootObject = Tokenize(root, source);
 		}
 
-		public GameObject Materialize () {
-			// Rootタグのオブジェクトが作られればそれでいい感じがする。んで、そいつがスクロールを持っていれば。
-			return rootObject.MaterializeRoot();
+		public GameObject Materialize (Rect viewport, OnMaterializeDelegate del) {
+			var rootObj = rootObject.MaterializeRoot(viewport.size, del);
+			rootObj.transform.position = viewport.position;
+			return rootObj;
 		}
 
 		private VirtualGameObject Tokenize (TagPoint p, string data) {
@@ -288,7 +323,7 @@ which contains essential game features.
 				child.vGameObject.kv[kv.Key] = kv.Value;
 			}
 
-			SetupOnMaterializeAction(child);
+			SetupMaterializeAction(child);
 		}
 		
 		private void AddContentToParent (TagPoint p, string content) {
@@ -299,9 +334,9 @@ which contains essential game features.
 			child.vGameObject.kv[KV_KEY.CONTENT] = content;
 			child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
 
-			SetupOnMaterializeAction(child);
+			SetupMaterializeAction(child);
 
-			SetupOnMaterializeAction(p);
+			SetupMaterializeAction(p);
 		}
 
 		private int Populate (Text text) {
@@ -321,16 +356,16 @@ which contains essential game features.
 			return height;//generator.rectExtents;// 要素の全体が入る四角形。あーなるほど、オリジナルの数値を引っ張ってるな。
 		}
 
-		private void SetupOnMaterializeAction (TagPoint tagPoint) {
+		private void SetupMaterializeAction (TagPoint tagPoint) {
 			// set only once.
-			if (tagPoint.vGameObject.onMaterialize != null) {
+			if (tagPoint.vGameObject.materializeContents != null) {
 				return;
 			}
 			
 			/*
 				set on materialize function.
 			*/
-			tagPoint.vGameObject.onMaterialize = positionData => {
+			tagPoint.vGameObject.materializeContents = positionData => {
 				var prefabName = string.Empty;
 
 				/*
@@ -382,8 +417,11 @@ which contains essential game features.
 			SRC,
 		};
 
-		public struct Padding {
-			public float up, right, down, left;
+		public class Padding {
+			public float top;
+			public float right;
+			public float bottom; 
+			public float left;
 		}
 
 		public struct HandlePoint {
@@ -415,20 +453,12 @@ which contains essential game features.
 			in order to implement arounding of contents in P tag, HandlePoint will be changed flexibly.
 		*/
 		private HandlePoint MaterializeTagContent (GameObject obj, TagPoint tagPoint, HandlePoint contentHandlePoint) {
-
-			/*
-				この時点で、paddingを適応できる下地が整った感じ。
-				対象のx,yも制御できればいいのか。
-			*/
-			var padding = new Padding();
-			OnMaterialize(obj, tagPoint.tag, tagPoint.depth, contentHandlePoint, padding, tagPoint.vGameObject.kv);
-
-
 			var rectTrans = obj.GetComponent<RectTransform>();
 
 			// set y start pos.
 			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -contentHandlePoint.nextTopHandle);
 
+			// 値のセットと高さの取得、とかが行われる。
 			switch (tagPoint.tag) {
 				case Tag.IMG: {					
 					foreach (var kv in tagPoint.vGameObject.kv) {
@@ -533,12 +563,7 @@ which contains essential game features.
 				}
 			}
 
-			
 			return contentHandlePoint;
-		}
-
-		public void OnMaterialize (GameObject obj, Tag tag, Tag[] depth, HandlePoint contentHandlePoint, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue) {
-			// ここで、各要素の編集を行う。
 		}
 
 		
@@ -563,7 +588,7 @@ which contains essential game features.
 				this.tag = tag;
 				this.depth = depth;
 				this.originalTagName = originalTagName;
-				this.vGameObject = new VirtualGameObject(tag);	
+				this.vGameObject = new VirtualGameObject(tag, depth);	
 			}
 		}
 

@@ -28,6 +28,7 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 	private IAppleExtensions m_AppleExtensions;
 	private IMoolahExtension m_MoolahExtensions;
 	private ISamsungAppsExtensions m_SamsungExtensions;
+	private IMicrosoftExtensions m_MicrosoftExtensions;
 
 	#pragma warning disable 0414
 	private bool m_IsGooglePlayStoreSelected;
@@ -57,6 +58,7 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		m_AppleExtensions = extensions.GetExtension<IAppleExtensions> ();
 		m_SamsungExtensions = extensions.GetExtension<ISamsungAppsExtensions> ();
 		m_MoolahExtensions = extensions.GetExtension<IMoolahExtension> ();
+		m_MicrosoftExtensions = extensions.GetExtension<IMicrosoftExtensions> ();
 
 		InitUI(controller.products.all);
 
@@ -104,6 +106,8 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 
 		// Now that I have real products, begin showing product purchase history
 		UpdateHistoryUI();
+
+		LogProductDefinitions();
 	}
 
 	/// <summary>
@@ -125,7 +129,8 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		// Local validation is available for GooglePlay and Apple stores
 		if (m_IsGooglePlayStoreSelected ||
 			Application.platform == RuntimePlatform.IPhonePlayer ||
-			Application.platform == RuntimePlatform.OSXPlayer) {
+			Application.platform == RuntimePlatform.OSXPlayer ||
+			Application.platform == RuntimePlatform.tvOS) {
 			try {
 				var result = validator.Validate(e.purchasedProduct.receipt);
 				Debug.Log("Receipt is valid. Contents:");
@@ -292,7 +297,7 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		// displays a blocking Android Activity, so: 
 		// A) Unity IAP does not automatically restore purchases on Samsung Galaxy Apps
 		// B) IAPDemo (this) displays the "Restore" GUI button for Samsung Galaxy Apps
-		m_IsSamsungAppsStoreSelected = module.androidStore == AndroidStore.SamsungApps;
+		m_IsSamsungAppsStoreSelected = Application.platform == RuntimePlatform.Android && module.androidStore == AndroidStore.SamsungApps;
 
 
 		// This selects the GroupId that was created in the Tizen Store for this set of products
@@ -337,9 +342,13 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		// See also UpdateInteractable()
 		m_InteractableSelectable = GetDropdown(); // References any one of the disabled components
 
-		// Show Restore button on Apple platforms
-		if (! (Application.platform == RuntimePlatform.IPhonePlayer || 
+		// Show Restore button on supported platforms
+		if (! (Application.platform == RuntimePlatform.IPhonePlayer ||
 			   Application.platform == RuntimePlatform.OSXPlayer ||
+			   Application.platform == RuntimePlatform.tvOS || 
+			   Application.platform == RuntimePlatform.WSAPlayerX86 ||
+			   Application.platform == RuntimePlatform.WSAPlayerX64 ||
+			   Application.platform == RuntimePlatform.WSAPlayerARM ||
 			m_IsSamsungAppsStoreSelected  || m_IsCloudMoolahStoreSelected) )
 		{
 			GetRestoreButton().gameObject.SetActive(false);
@@ -411,6 +420,12 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 				else if (m_IsSamsungAppsStoreSelected)
 				{
 					m_SamsungExtensions.RestoreTransactions(OnTransactionsRestored);
+				}
+				else if (Application.platform == RuntimePlatform.WSAPlayerX86 ||
+						 Application.platform == RuntimePlatform.WSAPlayerX64 ||
+						 Application.platform == RuntimePlatform.WSAPlayerARM)
+				{
+					m_MicrosoftExtensions.RestoreTransactions();
 				}
 				else
 				{
@@ -585,5 +600,17 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 	{
 		var which = right ? "TextR" : "TextL";
 		return GameObject.Find(which).GetComponent<Text>();
+	}
+
+	private void LogProductDefinitions()
+	{
+		var products = m_Controller.products.all;
+		foreach (var product in products) {
+#if UNITY_5_6_OR_NEWER
+			Debug.Log(string.Format("id: {0}\nstore-specific id: {1}\ntype: {2}\nenabled: {3}\n", product.definition.id, product.definition.storeSpecificId, product.definition.type.ToString(), product.definition.enabled ? "enabled" : "disabled"));
+#else
+			Debug.Log(string.Format("id: {0}\nstore-specific id: {1}\ntype: {2}\n", product.definition.id, product.definition.storeSpecificId, product.definition.type.ToString()));
+#endif
+		}
 	}
 }

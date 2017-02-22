@@ -2,6 +2,7 @@
 
 namespace UnityEngine.Purchasing
 {
+	[AddComponentMenu("")]
 	public class DemoInventory : MonoBehaviour
 	{
 		public void Fulfill (string productId)
