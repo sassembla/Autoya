@@ -47,7 +47,7 @@ namespace AutoyaFramework {
 			if (isPlayer) ReloadPurchasability();
 			
 			var isFirstBoot = IsFirstBoot();
-
+			
 			/*
 				start authentication.
 			*/
