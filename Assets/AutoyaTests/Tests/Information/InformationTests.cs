@@ -71,8 +71,12 @@ which contains essential game features.
 				// とりあえず全体を生成
 				tokenizer.Materialize(
 					new Rect(0, 0, 300, 400),
-					(go, tag, depth, handlePoint, padding, kv) => {
-						padding.left += 10;
+					/*
+						干渉ポイント。paddingを変更できる。
+					*/
+					(go, tag, depth, padding, kv) => {
+						// padding.left += 10;
+						// padding.top += 10;
 					}
 				);
 				
@@ -190,27 +194,31 @@ which contains essential game features.
 				var childlen = this.transform.GetChildlen();
 				foreach (var child in childlen) {
 					handlePoint = child.Materialize(handlePoint, onMaterialize, this._gameObject);
-					// handlePointのy値によってはキャンセルするとかが可能。
+					// ここで、handlePointのy値によってはキャンセルするとかが可能。
 				}
-
-				// 子供の要素のMaterializeが終わったらここに来る。
+				
 				/*
-					この時点で、paddingを適応できる下地が整った感じ。
-					対象のx,yも制御できればいいのか。
+					set padding if need.
+					default padding is 0.
 				*/
+				onMaterialize(this._gameObject, this.tag, this.depth, this.padding, new Dictionary<KV_KEY, string>(this.kv));
 
-				// this.padding// を、どこかに保存されている設定値から取得する。top,bottom,right,left
-				onMaterialize(this._gameObject, this.tag, this.depth, handlePoint, this.padding, this.kv);
+				/*
+					adopt padding.
+				*/
+				{
+					var rectTrans = this._gameObject.GetComponent<RectTransform>();
+					rectTrans.anchoredPosition += padding.Position();
 
-
-				// このタイミングで、paddingぶん位置を動かす。toggleとかの値を反映させる。
-				Debug.LogError("padding:" + padding.left);
-
+					handlePoint.nextLeftHandle += padding.PaddingWidth();
+					handlePoint.nextTopHandle += padding.PaddingHeight();
+				}
+				
 				return handlePoint;
 			}
 		}
 
-		public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, HandlePoint contentHandlePoint, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue);
+		public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue);
 
 		public class VirtualTransform {
 			private readonly VirtualGameObject vGameObject;
@@ -382,9 +390,11 @@ which contains essential game features.
 						break;
 					}
 
+
 					case Tag.H:
 					case Tag.P:
-					case Tag.UL: {// these are container.
+					case Tag.UL:
+					case Tag.LI: {// these are container.
 						prefabName = tagPoint.originalTagName.ToUpper() + "Container";
 						break;
 					}
@@ -422,6 +432,17 @@ which contains essential game features.
 			public float right;
 			public float bottom; 
 			public float left;
+
+			public Vector2 Position () {
+				return new Vector2(left, -top);
+			}
+
+			public float PaddingWidth () {
+				return left + right;
+			}
+			public float PaddingHeight () {
+				return top + bottom;
+			}
 		}
 
 		public struct HandlePoint {
@@ -458,7 +479,7 @@ which contains essential game features.
 			// set y start pos.
 			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -contentHandlePoint.nextTopHandle);
 
-			// 値のセットと高さの取得、とかが行われる。
+			// set kv.
 			switch (tagPoint.tag) {
 				case Tag.IMG: {					
 					foreach (var kv in tagPoint.vGameObject.kv) {
