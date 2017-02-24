@@ -20,7 +20,6 @@ public enum Tag {
 	A
 }
 
-
 public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
         var sampleMd = @"
@@ -254,30 +253,14 @@ hard break will appear without <br />.
 					}
 				}
 
-				// ここで、機転のyは設定できている。
-				// 高さを測るために0にする。
-				handlePoint.contentHeight = 0;
-				var contentHeight = 0f;
-
-
+				// 改行にあたる処理。描画位置を左下に持っていく。
+				handlePoint.nextTopHandle += handlePoint.contentHeight;
+				
 				var childlen = this.transform.GetChildlen();
 				foreach (var child in childlen) {
 					handlePoint = child.Materialize(handlePoint, onMaterialize, this._gameObject);
-					// コンテンツの高さが個別にゲットできる。幅とかもか。
-					// contentHeight += handlePoint.contentHeight;
-					
-					// handlePoint.nextTopHandle += handlePoint.contentHeight;
-					// handlePoint.contentHeight = 0;
-					
-					// xについてもここで処理すれば良さそう。回り込めるかどうか、か。
-					// ここで、handlePointのy値によってはキャンセルするとかが可能。
 				}
-
-				// ここで、全子供の合計の高さサイズが取得できてる。
-				Debug.LogError("contentHeight:" + contentHeight);
-
-				// 自分自身の高さに指定する。
-
+				
 				/*
 					set padding if need.
 					default padding is 0.
@@ -294,6 +277,8 @@ hard break will appear without <br />.
 					handlePoint.nextLeftHandle += padding.PaddingWidth();
 					handlePoint.nextTopHandle += padding.PaddingHeight();
 				}
+
+				// ここで、子要素とpaddingを含めた高さが取得できる。
 				
 				return handlePoint;
 			}
@@ -325,7 +310,7 @@ hard break will appear without <br />.
 		private readonly VirtualGameObject rootObject;
 
 		public Tokenizer (string source) {
-			var root = new TagPoint(0, Tag.ROOT, new Tag[0], string.Empty);
+			var root = new TagPoint(0, 0, Tag.ROOT, new Tag[0], string.Empty);
 			rootObject = Tokenize(root, source);
 		}
 
@@ -375,6 +360,8 @@ hard break will appear without <br />.
 				// tag opening found.
 				var attr = foundStartTagPointAndAttrAndOption.attrs;
 				
+
+				// find end tag.
 				while (true) {
 					if (lines.Length <= index) {// 閉じタグが見つからなかったのでたぶんparseException.
 						break;
@@ -383,7 +370,7 @@ hard break will appear without <br />.
 					readLine = lines[index];
 					
 					// find end of current tag.
-					var foundEndTagPointAndContent = FindEndTag(foundStartTagPointAndAttrAndOption.tagPoint, foundStartTagPointAndAttrAndOption.option, lines, index);
+					var foundEndTagPointAndContent = FindEndTag(foundStartTagPointAndAttrAndOption.tagPoint, lines, index);
 					if (foundEndTagPointAndContent.tagPoint.tag != Tag.NO_TAG_FOUND && foundEndTagPointAndContent.tagPoint.tag != Tag.UNKNOWN) {
 						// close tag found. set attr to this closed tag.
 						AddChildContentToParent(p, foundEndTagPointAndContent.tagPoint, attr);
@@ -418,7 +405,7 @@ hard break will appear without <br />.
 		private void AddContentToParent (TagPoint p, string content) {
 			var	parentObj = p.vGameObject;
 			
-			var child = new TagPoint(p.lineIndex, Tag._CONTENT, p.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), p.originalTagName + " Content");
+			var child = new TagPoint(p.lineIndex, p.tagEndPoint, Tag._CONTENT, p.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), p.originalTagName + " Content");
 			child.vGameObject.transform.SetParent(parentObj.transform);
 			child.vGameObject.kv[KV_KEY.CONTENT] = content;
 			child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
@@ -555,6 +542,7 @@ hard break will appear without <br />.
 			public float width;
 			public float height;
 
+			public float contentWidth;
 			public float contentHeight;
 
 			public HandlePoint (float nextLeftHandle, float nextTopHandle, float width, float height) {
@@ -562,6 +550,7 @@ hard break will appear without <br />.
 				this.nextTopHandle = nextTopHandle;
 				this.width = width;
 				this.height = height;
+				this.contentWidth = 0;
 				this.contentHeight = 0;
 			}
 
@@ -573,8 +562,12 @@ hard break will appear without <br />.
 				return new Vector2(width, height);
 			}
 
-			public void AddContentHeight (float height) {
-				contentHeight += height;
+			public void SetContentWidth (float contentWidth) {
+				this.contentWidth = contentWidth;
+			}
+
+			public void SetContentHeight (float contentHeight) {
+				this.contentHeight = contentHeight;
 			}
 		}
 
@@ -590,8 +583,27 @@ hard break will appear without <br />.
 			// set y start pos.
 			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -contentHandlePoint.nextTopHandle);
 
+			var contentWidth = 0f;
+			var contentHeight = 0f;
 			// set kv.
 			switch (tagPoint.tag) {
+				case Tag.A: {
+					foreach (var kvs in tagPoint.vGameObject.kv) {
+						var key = kvs.Key;
+						switch (key) {
+							case KV_KEY.HREF: {
+								Debug.LogError("v:" + kvs.Value);
+								break;
+							}
+							default: {
+								Debug.LogError("unhandled. key:" + key);
+								break;
+							}
+						}
+					}
+
+					break;
+				}
 				case Tag.IMG: {					
 					foreach (var kv in tagPoint.vGameObject.kv) {
 						var key = kv.Key;
@@ -651,19 +663,24 @@ hard break will appear without <br />.
 								
 								break;
 							}
+							case KV_KEY.ALT: {
+								break;
+							}
+							default: {
+								Debug.LogError("unhandled key:" + key);
+								break;
+							}
 						}
 					}
 
-					contentHandlePoint.nextTopHandle += rectTrans.rect.height;
+					contentWidth = rectTrans.rect.width;
+					contentHeight = rectTrans.rect.height;
 					break;
 				}
 				
 				case Tag._CONTENT: {
 					rectTrans.sizeDelta = new Vector2(contentHandlePoint.width, contentHandlePoint.height);
-
-					var contentWidth = 0f;
-					var contentHeight = 0;
-
+					
 					// set text if exist.
 					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
 						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
@@ -690,18 +707,20 @@ hard break will appear without <br />.
 					
 					// adjust height to contents text height.
 					rectTrans.sizeDelta = new Vector2(contentWidth, contentHeight);
-
-					contentHandlePoint.AddContentHeight(contentHeight);
-					contentHandlePoint.nextTopHandle += contentHeight;
 					break;
 				}
 
+				
 				default: {
 					// do nothing.
 					break;
 				}
 			}
 
+			// hold content width and height.
+			contentHandlePoint.SetContentWidth(contentWidth);
+			contentHandlePoint.SetContentHeight(contentHeight);
+			
 			return contentHandlePoint;
 		}
 
@@ -711,45 +730,43 @@ hard break will appear without <br />.
 			public readonly VirtualGameObject vGameObject;
 
 			public readonly int lineIndex;
+			public readonly int tagEndPoint;
+
 			public readonly Tag tag;
 			public readonly Tag[] depth;
 
 			public readonly string originalTagName;
 			
-			public TagPoint (int lineIndex, Tag tag, Tag[] depth=null, string originalTagName="empty.") {
-				if (tag == Tag.NO_TAG_FOUND || tag == Tag.UNKNOWN) {
-					return;
-				}
-
+			public TagPoint (int lineIndex, int tagEndPoint, Tag tag, Tag[] depth, string originalTagName) {
 				this.id = Guid.NewGuid().ToString();
 
 				this.lineIndex = lineIndex;
+				this.tagEndPoint = tagEndPoint;
+
 				this.tag = tag;
 				this.depth = depth;
 				this.originalTagName = originalTagName;
 				this.vGameObject = new VirtualGameObject(tag, depth);	
 			}
+			public TagPoint (int lineIndex, Tag tag) {
+				this.id = Guid.NewGuid().ToString();
+				this.lineIndex = lineIndex;
+				this.tag = tag;
+			}
 		}
 
 
-		private struct TagPointAndAttrAndHeadingNumber {
+		private struct TagPointAndAttr {
 			public readonly TagPoint tagPoint;
 			public readonly Dictionary<KV_KEY, string> attrs;
-			public readonly int option;
-			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<KV_KEY, string> attrs, int option) {
+			public TagPointAndAttr (TagPoint tagPoint, Dictionary<KV_KEY, string> attrs) {
 				this.tagPoint = tagPoint;
 				this.attrs = attrs;
-				this.option = option;
 			}
-			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint, Dictionary<KV_KEY, string> attrs) {
-				this.tagPoint = tagPoint;
-				this.attrs = attrs;
-				this.option = 0;
-			}
-			public TagPointAndAttrAndHeadingNumber (TagPoint tagPoint) {
+			
+			public TagPointAndAttr (TagPoint tagPoint) {
 				this.tagPoint = tagPoint;
 				this.attrs = new Dictionary<KV_KEY, string>();
-				this.option = 0;
 			}
 		}
 
@@ -771,7 +788,7 @@ hard break will appear without <br />.
 		/**
 			find tag if exists.
 		*/
-		private TagPointAndAttrAndHeadingNumber FindStartTag (Tag[] parentDepth, string[] lines, int lineIndex) {
+		private TagPointAndAttr FindStartTag (Tag[] parentDepth, string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
 
 			// find <X>something...
@@ -779,17 +796,18 @@ hard break will appear without <br />.
 				var closeIndex = line.IndexOf(">");
 
 				if (closeIndex == -1) {
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
 				// check found tag end has closed tag mark or not.
 				if (line[closeIndex-1] == '/') {
 					// closed tag detected.
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
 				var originalTagName = string.Empty;
 				var kvDict = new Dictionary<KV_KEY, string>();
+				var tagEndPoint = closeIndex;
 
 				// not closed tag. contains attr or not.
 				if (line[closeIndex-1] == '"') {// <tag something="else">
@@ -810,40 +828,34 @@ hard break will appear without <br />.
 							kvDict[key] = val;
 						} catch (Exception e) {
 							Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
-							return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+							return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 						}
 					}
 					// var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
-					// Debug.LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
+					// Debug.LogError("originalTagName:" + originalTagName + " contains kv:" + string.Join(", ", kvs));
 				} else {
 					originalTagName = line.Substring(1, closeIndex - 1);
 				}
 
 				var tagName = originalTagName;
 				var numbers = string.Join(string.Empty, originalTagName.ToCharArray().Where(c => Char.IsDigit(c)).Select(t => t.ToString()).ToArray());
-				var headingNumber = 0;
 				
 				if (!string.IsNullOrEmpty(numbers) && tagName.EndsWith(numbers)) {
 					var index = tagName.IndexOf(numbers);
 					tagName = tagName.Substring(0, index);
-					
-					headingNumber = Convert.ToInt32(numbers);
 				}
 				
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-					if (headingNumber != 0) {
-						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict, headingNumber);	
-					}
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict);
+					return new TagPointAndAttr(new TagPoint(lineIndex, tagEndPoint, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict);
 				} catch {
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
 			}
-			return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+			return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 		}
 
-		private TagPointAndAttrAndHeadingNumber FindSingleTag (Tag[] parentDepth, string[] lines, int lineIndex) {
+		private TagPointAndAttr FindSingleTag (Tag[] parentDepth, string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
 
 			// find <X>something...
@@ -851,13 +863,13 @@ hard break will appear without <br />.
 				var closeIndex = line.IndexOf(" />");
 
 				if (closeIndex == -1) {
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 
 				var contents = line.Substring(1, closeIndex - 1).Split(' ');
 
 				if (contents.Length == 0) {
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 				}
 				
 				var tagName = contents[0];
@@ -879,7 +891,7 @@ hard break will appear without <br />.
 						kvDict[key] = val;
 					} catch (Exception e) {
 						Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
-						return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+						return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 					}
 				}
 				// var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
@@ -887,27 +899,23 @@ hard break will appear without <br />.
 				
 				try {
 					var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), tagName), kvDict);
+					return new TagPointAndAttr(new TagPoint(lineIndex, -1, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), tagName), kvDict);
 				} catch {
-					return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+					return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
 				}
 			}
-			return new TagPointAndAttrAndHeadingNumber(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+			return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 		}
 
-		private TagPointAndContent FindEndTag (TagPoint p, int headingNumber, string[] lines, int lineIndex) {
+		private TagPointAndContent FindEndTag (TagPoint p, string[] lines, int lineIndex) {
 			var line = lines[lineIndex];
-			
-			var sizeStr = string.Empty;
-			if (headingNumber != 0) {
-				sizeStr = headingNumber.ToString();
-			}
-			var endTagStr = p.tag.ToString().ToLower() + sizeStr;
+
+			var endTagStr = p.originalTagName;
 			var endTag = "</" + endTagStr + ">";
-			
+
 			var endTagIndex = -1;
 			if (p.lineIndex == lineIndex) {
-				// check start from next point of close point of start tag.
+				// check from next point to end of start tag.
 				endTagIndex = line.IndexOf(endTag, 1 + endTagStr.Length + 1);
 			} else {
 				endTagIndex = line.IndexOf(endTag);
@@ -918,14 +926,18 @@ hard break will appear without <br />.
 				return new TagPointAndContent(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
 			}
 			
+
+			// end tag was found!. get tagged contents from lines.
+
 			var contentsStrLines = lines.Where((i,l) => p.lineIndex <= l && l <= lineIndex).ToArray();
 			
-			// modify the line which contains start or end tag. exclude tag expression.
-			contentsStrLines[0] = contentsStrLines[0].Substring(1 + endTagStr.Length + 1);
+			// remove start tag from start line.
+			contentsStrLines[0] = contentsStrLines[0].Substring(p.tagEndPoint+1);
+			
+			// remove found end-tag from last line.
 			contentsStrLines[contentsStrLines.Length-1] = contentsStrLines[contentsStrLines.Length-1].Substring(0, contentsStrLines[contentsStrLines.Length-1].Length - endTag.Length);
 			
 			var contentsStr = string.Join("\n", contentsStrLines);
-
 			return new TagPointAndContent(p, contentsStr);
 		}
 
