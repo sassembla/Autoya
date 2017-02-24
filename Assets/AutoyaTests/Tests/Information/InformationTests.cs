@@ -27,6 +27,8 @@ public class InformationTests : MiyamasuTestRunner {
 # Autoya
 ver 0.8.4
 
+![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
+
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
 small, thin framework for Unity−1.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
@@ -42,6 +44,67 @@ which contains essential game features.
 * Purchase/IAP feature
 * Notification(local/remote)
 * Information
+
+
+## Motivation
+Unity already contains these feature's foundation, but actually we need more codes for using it in app.
+
+This framework can help that.
+
+## License
+see below.  
+[LICENSE](./LICENSE)
+
+
+## Progress
+
+### automatic Authentication
+already implemented.
+
+###AssetBundle list/preload/load
+already implemented.
+
+###HTTP/TCP/UDP Connection feature
+| Protocol        | Progress     |
+| ------------- |:-------------:|
+| http/1 | done | 
+| http/2 | not yet | 
+| tcp      | not yet      | 
+| udp	| not yet      |  
+
+
+###app-version/asset-version/server-condition changed handles
+already implemented.
+
+###Purchase/IAP flow
+already implemented.
+
+###Notification(local/remote)
+in 2017 early.
+
+###Information
+in 2017 early.
+
+
+## Tests
+implementing.
+
+
+## Installation
+unitypackage is ready!
+
+1. use Autoya.unitypackage.
+2. add Purchase plugin via Unity Services.
+3. done!
+
+## Usage
+all example usage is in Assets/AutoyaSamples folder.
+
+yes,(2spaces linebreak)  
+2s break line will be expressed with <br />.
+
+then,(hard break)
+hard break will appear without <br />.
 
 		";
     
@@ -72,7 +135,7 @@ which contains essential game features.
 				tokenizer.Materialize(
 					new Rect(0, 0, 300, 400),
 					/*
-						干渉ポイント。paddingを変更できる。
+						干渉ポイント。go自体へのコンポーネント追加や、paddingを変更できる。
 					*/
 					(go, tag, depth, padding, kv) => {
 						// padding.left += 10;
@@ -190,13 +253,31 @@ which contains essential game features.
 						break;
 					}
 				}
-				
+
+				// ここで、機転のyは設定できている。
+				// 高さを測るために0にする。
+				handlePoint.contentHeight = 0;
+				var contentHeight = 0f;
+
+
 				var childlen = this.transform.GetChildlen();
 				foreach (var child in childlen) {
 					handlePoint = child.Materialize(handlePoint, onMaterialize, this._gameObject);
+					// コンテンツの高さが個別にゲットできる。幅とかもか。
+					// contentHeight += handlePoint.contentHeight;
+					
+					// handlePoint.nextTopHandle += handlePoint.contentHeight;
+					// handlePoint.contentHeight = 0;
+					
+					// xについてもここで処理すれば良さそう。回り込めるかどうか、か。
 					// ここで、handlePointのy値によってはキャンセルするとかが可能。
 				}
-				
+
+				// ここで、全子供の合計の高さサイズが取得できてる。
+				Debug.LogError("contentHeight:" + contentHeight);
+
+				// 自分自身の高さに指定する。
+
 				/*
 					set padding if need.
 					default padding is 0.
@@ -347,12 +428,33 @@ which contains essential game features.
 			SetupMaterializeAction(p);
 		}
 
-		private int Populate (Text text) {
-			GameObject tDummyObj = GameObject.Find("dummy");
-			
+		public struct LineCountAndHeight {
+			public int lineCount;
+			public int totalHeight;
+			public LineCountAndHeight (int lineCount, int totalHeight) {
+				this.lineCount = lineCount;
+				this.totalHeight = totalHeight;
+			}
+		}
+
+		private static GameObject tDummyObj;
+		
+		/*
+			こいつは、ある限界幅に対して文字列がどのように折り返されるか、を返してきてるので、折り返しがある = 幅コンテンツが限界になってる、という感じで、
+			heightだけだと折り返されてるかどうかは判断できない。
+
+			手順をまとめると、
+			・規定幅が与えられる
+			・幅に対して文字列(フォント、サイズ付き)を渡す
+			・改行位置、コンポーネントの高さが求められる
+			・
+		*/
+		private LineCountAndHeight Populate (Text textComponent) {
+			if (tDummyObj == null) tDummyObj = GameObject.Find("dummy");
+			var v2 = textComponent.GetComponent<RectTransform>().sizeDelta;
+
 			var generator = new TextGenerator();
-			var v2 = text.GetComponent<RectTransform>().sizeDelta;
-			generator.Populate(text.text, text.GetGenerationSettings(v2));
+			generator.Populate(textComponent.text, textComponent.GetGenerationSettings(v2));
 
 			var height = 0;
 			foreach(var l in generator.lines){
@@ -361,7 +463,7 @@ which contains essential game features.
 				// Debug.LogError("ch height:" + l.height);
 				height += l.height;
 			}
-			return height;//generator.rectExtents;// 要素の全体が入る四角形。あーなるほど、オリジナルの数値を引っ張ってるな。
+			return new LineCountAndHeight(generator.lines.Count, height);//generator.rectExtents;// 要素の全体が入る四角形。あーなるほど、オリジナルの数値を引っ張ってるな。
 		}
 
 		private void SetupMaterializeAction (TagPoint tagPoint) {
@@ -370,51 +472,50 @@ which contains essential game features.
 				return;
 			}
 			
+			var prefabName = string.Empty;
+
+			/*
+				set name of required prefab.
+					content -> parent's tag name.
+
+					parent tag -> tag + container name.
+
+					single tag -> tag name.
+			*/
+			switch (tagPoint.tag) {
+				case Tag._CONTENT: {
+					prefabName = tagPoint.vGameObject.kv[KV_KEY.PARENTTAG];
+					break;
+				}
+				
+				case Tag.H:
+				case Tag.P:
+				case Tag.UL:
+				case Tag.LI: {// these are container.
+					prefabName = tagPoint.originalTagName.ToUpper() + "Container";
+					break;
+				}
+
+				default: {
+					prefabName = tagPoint.originalTagName.ToUpper();
+					break;
+				}
+			}
+			
 			/*
 				set on materialize function.
 			*/
 			tagPoint.vGameObject.materializeContents = positionData => {
-				var prefabName = string.Empty;
-
-				/*
-					set name of required prefab.
-						content -> parent's tag name.
-
-						parent tag -> tag + container name.
-
-						single tag -> tag name.
-				*/
-				switch (tagPoint.tag) {
-					case Tag._CONTENT: {
-						prefabName = tagPoint.vGameObject.kv[KV_KEY.PARENTTAG];
-						break;
-					}
-
-
-					case Tag.H:
-					case Tag.P:
-					case Tag.UL:
-					case Tag.LI: {// these are container.
-						prefabName = tagPoint.originalTagName.ToUpper() + "Container";
-						break;
-					}
-
-					default: {
-						prefabName = tagPoint.originalTagName.ToUpper();
-						break;
-					}
-				}
-				
 				var prefab = Resources.Load(prefabName) as GameObject;
 				if (prefab == null) {
 					Debug.LogError("missing prefab:" + prefabName);
 					return positionData;
 				}
-				
+
 				// instantiage gameObject. ここを後々、プールからの取得に変える。同じ種類のオブジェクトがあればそれで良さそう。それか設定をアレコレできればいいのか。
 				tagPoint.vGameObject._gameObject = GameObject.Instantiate(prefab);
 
-				return MaterializeTagContent(tagPoint.vGameObject._gameObject, tagPoint, positionData);
+				return MaterializeTagContent(tagPoint, positionData);
 			};
 		}
 
@@ -425,6 +526,8 @@ which contains essential game features.
 			WIDTH,
 			HEIGHT,
 			SRC,
+			ALT,
+			HREF,
 		};
 
 		public class Padding {
@@ -452,11 +555,14 @@ which contains essential game features.
 			public float width;
 			public float height;
 
+			public float contentHeight;
+
 			public HandlePoint (float nextLeftHandle, float nextTopHandle, float width, float height) {
 				this.nextLeftHandle = nextLeftHandle;
 				this.nextTopHandle = nextTopHandle;
 				this.width = width;
 				this.height = height;
+				this.contentHeight = 0;
 			}
 
 			public Vector2 Position () {
@@ -466,6 +572,10 @@ which contains essential game features.
 			public Vector2 Size () {
 				return new Vector2(width, height);
 			}
+
+			public void AddContentHeight (float height) {
+				contentHeight += height;
+			}
 		}
 
 		/**
@@ -473,7 +583,8 @@ which contains essential game features.
 			ready resource size. width and height.
 			in order to implement arounding of contents in P tag, HandlePoint will be changed flexibly.
 		*/
-		private HandlePoint MaterializeTagContent (GameObject obj, TagPoint tagPoint, HandlePoint contentHandlePoint) {
+		private HandlePoint MaterializeTagContent (TagPoint tagPoint, HandlePoint contentHandlePoint) {
+			var obj = tagPoint.vGameObject._gameObject;
 			var rectTrans = obj.GetComponent<RectTransform>();
 
 			// set y start pos.
@@ -550,31 +661,38 @@ which contains essential game features.
 				case Tag._CONTENT: {
 					rectTrans.sizeDelta = new Vector2(contentHandlePoint.width, contentHandlePoint.height);
 
+					var contentWidth = 0f;
 					var contentHeight = 0;
 
 					// set text if exist.
 					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
 						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
-					
+						
 						if (!string.IsNullOrEmpty(text)) {
 							var textComponent = obj.GetComponent<Text>();
 							if (textComponent != null) { 
 								textComponent.text = text;
 								
-								// set content size.
-								contentHeight = Populate(textComponent);// populate自体の返すべきパラメータはもっといっぱいありそう。折り返しがあるからな〜〜うーーーん、、、
+								// set content height.
+								var contentLineCountAndHeight = Populate(textComponent);
+								contentHeight = contentLineCountAndHeight.totalHeight;
+
+								// set content width.
+								var lineCount = contentLineCountAndHeight.lineCount;
+								if (1 < lineCount) {// content has multiple lines. content width is equal to window width.
+									contentWidth = contentHandlePoint.width;
+								} else {
+									contentWidth = textComponent.preferredWidth;
+								}
 							}
 						}
 					}
 					
 					// adjust height to contents text height.
-					rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, contentHeight);
+					rectTrans.sizeDelta = new Vector2(contentWidth, contentHeight);
 
-					// 現在のコンテンツを描画しきった場合の高さを足す これだけ独立した値のほうが良さそう。高さ = 結構複雑な値のはず。
-					// どんな数値が存在するのか出してみるか。そのstructを引き回す感じにしたい。
-
-					// 継続的な描画ハンドルポイント、閉じタグ位置でXが0に戻る、とかがしたい。
-					contentHandlePoint.nextTopHandle += contentHeight;// これで、確実に改行が起きるようになってる。x位置が一切動いてないことも関連してる。
+					contentHandlePoint.AddContentHeight(contentHeight);
+					contentHandlePoint.nextTopHandle += contentHeight;
 					break;
 				}
 

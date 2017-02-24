@@ -40,7 +40,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 
         WaitUntil(() => done, 2, "not yet done.");
     }
-
+    
     // [MTest] public void GetPreloadListButWholeABListIsChanged () {
         // なにかしらエラーが出せればいいと思うんだけど、エラーを出すコンテキストを集めておこう。まだ実装できない。
     //     Debug.LogError("特定のpreloadListを取得、書かれているAssetBundleを全て取得する、、、の開始時処理中で、リストそのものが書き換わったことを検知したので、停止する?");
