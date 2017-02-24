@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public enum Tag {
 	NO_TAG_FOUND,
@@ -585,6 +586,7 @@ hard break will appear without <br />.
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
+			
 			// set kv.
 			switch (tagPoint.tag) {
 				case Tag.A: {
@@ -592,7 +594,13 @@ hard break will appear without <br />.
 						var key = kvs.Key;
 						switch (key) {
 							case KV_KEY.HREF: {
-								Debug.LogError("v:" + kvs.Value);
+								var href = kvs.Value;
+
+								// add button component.
+								var rootObject = tagPoint.vGameObject.GetRootGameObject();
+								var rootMBInstance = rootObject.@class;
+			
+								AddButton(obj, tagPoint, () => rootMBInstance.OnLinkTapped(tagPoint.tag, href));
 								break;
 							}
 							default: {
@@ -601,7 +609,6 @@ hard break will appear without <br />.
 							}
 						}
 					}
-
 					break;
 				}
 				case Tag.IMG: {					
@@ -621,46 +628,12 @@ hard break will appear without <br />.
 							}
 							case KV_KEY.SRC: {
 								var src = kv.Value;
-								// add event component.
-								var button = obj.GetComponent<Button>();
-								if (button == null) {
-									button = obj.AddComponent<Button>();
-								}
-
+								
+								// add button component.
 								var rootObject = tagPoint.vGameObject.GetRootGameObject();
 								var rootMBInstance = rootObject.@class;
-								
-								if (Application.isPlaying) {
-									/*
-										this code can set action to button. but it does not appear in editor inspector.
-									*/
-									button.onClick.AddListener(
-										() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
-									);
-								} else {
-									
-									try {
-										button.onClick.AddListener(// エディタでは、Actionをセットすることができない。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
-											() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
-										);
-										// UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(
-										// 	button.onClick,
-										// 	() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
-										// );
-
-										// // 次の書き方で、固定の値をセットすることはできる。エディタにも値が入ってしまう。
-										// インスタンスを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
-										// UnityEngine.Events.UnityAction<String> callback = new UnityEngine.Events.UnityAction<String>(rootMBInstance.OnImageTapped);
-										// UnityEditor.Events.UnityEventTools.AddStringPersistentListener(
-										// 	button.onClick, 
-										// 	callback,
-										// 	src
-										// );
-									} catch (Exception e) {
-										Debug.LogError("e:" + e);
-									}
-								}
-								
+			
+								AddButton(obj, tagPoint, () => rootMBInstance.OnImageTapped(tagPoint.tag, src));
 								break;
 							}
 							case KV_KEY.ALT: {
@@ -689,7 +662,8 @@ hard break will appear without <br />.
 							var textComponent = obj.GetComponent<Text>();
 							if (textComponent != null) { 
 								textComponent.text = text;
-								
+								Debug.LogError("text:" + text);
+
 								// set content height.
 								var contentLineCountAndHeight = Populate(textComponent);
 								contentHeight = contentLineCountAndHeight.totalHeight;
@@ -724,6 +698,43 @@ hard break will appear without <br />.
 			return contentHandlePoint;
 		}
 
+		private void AddButton (GameObject obj, TagPoint tagPoint, UnityAction param) {
+			var button = obj.GetComponent<Button>();
+			if (button == null) {
+				button = obj.AddComponent<Button>();
+			}
+
+			if (Application.isPlaying) {
+				/*
+					this code can set action to button. but it does not appear in editor inspector.
+				*/
+				button.onClick.AddListener(
+					param
+				);
+			} else {
+				
+				try {
+					button.onClick.AddListener(// 現状、エディタでは、Actionをセットする方法がわからん。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
+						param
+					);
+					// UnityEditor.Events.UnityEventTools.AddVoidPersistentListener(
+					// 	button.onClick,
+					// 	() => rootMBInstance.OnImageTapped(tagPoint.tag, src)
+					// );
+
+					// // 次の書き方で、固定の値をセットすることはできる。エディタにも値が入ってしまう。
+					// インスタンスを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
+					// UnityEngine.Events.UnityAction<String> callback = new UnityEngine.Events.UnityAction<String>(rootMBInstance.OnImageTapped);
+					// UnityEditor.Events.UnityEventTools.AddStringPersistentListener(
+					// 	button.onClick, 
+					// 	callback,
+					// 	src
+					// );
+				} catch (Exception e) {
+					Debug.LogError("e:" + e);
+				}
+			}
+		}
 		
 		public class TagPoint {
 			public readonly string id;
