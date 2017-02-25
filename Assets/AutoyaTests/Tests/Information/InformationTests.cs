@@ -30,6 +30,8 @@ ver 0.8.4
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
 
+string padding  
+
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
 small, thin framework for Unity−1.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
@@ -135,12 +137,16 @@ hard break will appear without <br />.
 				tokenizer.Materialize(
 					new Rect(0, 0, 300, 400),
 					/*
-						干渉ポイント。go自体へのコンポーネント追加や、paddingを変更できる。
+						要素ごとにpaddingを変更できる。
 					*/
 					(tag, depth, padding, kv) => {
 						// padding.left += 10;
-						// padding.top += 10;
+						// padding.top += 41;
+						// padding.bottom += 31;
 					},
+					/*
+						要素ごとに表示に使われているgameObjectへの干渉ができる。
+					 */
 					(go, tag, depth, kv) => {
 						
 					}
@@ -245,6 +251,15 @@ hard break will appear without <br />.
 				各コンテンツ位置の事前計算を行う。
 			 */
 			private HandlePoint Layout (VirtualGameObject parent, HandlePoint handlePoint, OnLayoutDelegate onLayoutDel) {
+				// reset x position for linebreak.
+				switch (tag) {
+					case Tag.P:
+					case Tag.H:
+					case Tag.UL:
+						handlePoint.nextLeftHandle = 0;
+						break;
+				}
+
 				switch (this.tag) {
 					case Tag.ROOT: {
 						// do nothing.
@@ -257,12 +272,32 @@ hard break will appear without <br />.
 						break;
 					}
 				}
-
-				// 改行にあたる処理。描画位置を左下に持っていく。
-				handlePoint.nextTopHandle += handlePoint.contentHeight;
 				
-				foreach (var child in this.transform.GetChildlen()) {
-					handlePoint = child.Layout(this, handlePoint, onLayoutDel);
+				// 下押し処理
+				handlePoint.nextTopHandle += this.rectTransform.sizeDelta.y;
+
+				// 回り込みするかどうかは、paddingを込めた前の値と、次に置くコンテンツの位置によるのか。
+				// 回り込みはここで判別できないのではないか疑惑。
+				
+				var childlen = this.transform.GetChildlen();
+				if (0 < childlen.Count) {
+					var rightBottomPoint = Vector2.zero;
+
+					foreach (var child in childlen) {
+						handlePoint = child.Layout(this, handlePoint, onLayoutDel);
+						var paddedRightBottomPoint = child.rectTransform.paddedRightBottomPoint;
+						if (rightBottomPoint.x < paddedRightBottomPoint.x) {
+							rightBottomPoint.x = paddedRightBottomPoint.x;
+						}
+						if (rightBottomPoint.y < paddedRightBottomPoint.y) {
+							rightBottomPoint.y = paddedRightBottomPoint.y;
+						}
+					}
+
+					// fit size to content.
+					rectTransform.sizeDelta = rightBottomPoint - rectTransform.anchoredPosition;
+				} else {
+					// do nothing.
 				}
 				
 				/*
@@ -275,15 +310,18 @@ hard break will appear without <br />.
 					adopt padding.
 				*/
 				{
-					var rectTrans = this.rectTransform;
-					rectTrans.anchoredPosition += padding.Position();
+					// 移動前の原点と、size、paddingを足した位置を持つ。
+					rectTransform.paddedRightBottomPoint = rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PaddedWidth(), padding.PaddedHeight());
 
-					handlePoint.nextLeftHandle += padding.PaddingWidth();
-					handlePoint.nextTopHandle += padding.PaddingHeight();
+					// x,yをずらす。子供の生成後なので、子供もろともズレる。
+					rectTransform.anchoredPosition += padding.LeftTopPosition();
+					
+					// 単純にpaddingぶんだけ次の要素のカーソルが移動する。
+					// 回り込ませたくない場合、次の要素の初頭でnextLeftHandleだけをリセットすればいいのか。
+					handlePoint.nextLeftHandle += padding.PaddedWidth();
+					handlePoint.nextTopHandle += padding.PaddedHeight();
 				}
 
-				// ここで、子要素とpaddingを含めた高さが取得できる。
-				
 				return handlePoint;
 			}
 
@@ -336,9 +374,9 @@ hard break will appear without <br />.
 		}
 
 		public class VirtualRectTransform {
-			public Rect rect = Rect.zero;
 			public Vector2 anchoredPosition = Vector2.zero;
 			public Vector2 sizeDelta = Vector2.zero;
+			public Vector2 paddedRightBottomPoint = Vector2.zero;
 		}
 
 		private readonly VirtualGameObject rootObject;
@@ -354,7 +392,7 @@ hard break will appear without <br />.
 			return rootObj;
 		}
 
-		private VirtualGameObject Tokenize (TagPoint p, string data) {
+		private VirtualGameObject Tokenize (TagPoint parentTagPoint, string data) {
 			var lines = data.Split('\n');
 			
 			var index = 0;
@@ -370,21 +408,21 @@ hard break will appear without <br />.
 					continue;
 				}
 
-				var foundStartTagPointAndAttrAndOption = FindStartTag(p.depth, lines, index);
+				var foundStartTagPointAndAttrAndOption = FindStartTag(parentTagPoint.depth, lines, index);
 
 				/*
 					no <tag> found.
 				*/
 				if (foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.UNKNOWN) {					
 					// detect single closed tag. e,g, <tag something />.
-					var foundSingleTagPointWithAttr = FindSingleTag(p.depth, lines, index);
+					var foundSingleTagPointWithAttr = FindSingleTag(parentTagPoint.depth, lines, index);
 
 					if (foundSingleTagPointWithAttr.tagPoint.tag != Tag.NO_TAG_FOUND && foundSingleTagPointWithAttr.tagPoint.tag != Tag.UNKNOWN) {
 						// closed <tag /> found. add this new closed tag to parent tag.
-						AddChildContentToParent(p, foundSingleTagPointWithAttr.tagPoint, foundSingleTagPointWithAttr.attrs);
+						AddChildContentToParent(parentTagPoint, foundSingleTagPointWithAttr.tagPoint, foundSingleTagPointWithAttr.attrs);
 					} else {
 						// not tag contained in this line. this line is just contents of parent tag.
-						AddContentToParent(p, readLine);
+						AddContentToParent(parentTagPoint, readLine);
 					}
 					
 					index++;
@@ -407,7 +445,7 @@ hard break will appear without <br />.
 					var foundEndTagPointAndContent = FindEndTag(foundStartTagPointAndAttrAndOption.tagPoint, lines, index);
 					if (foundEndTagPointAndContent.tagPoint.tag != Tag.NO_TAG_FOUND && foundEndTagPointAndContent.tagPoint.tag != Tag.UNKNOWN) {
 						// close tag found. set attr to this closed tag.
-						AddChildContentToParent(p, foundEndTagPointAndContent.tagPoint, attr);
+						AddChildContentToParent(parentTagPoint, foundEndTagPointAndContent.tagPoint, attr);
 
 						// content exists. parse recursively.
 						Tokenize(foundEndTagPointAndContent.tagPoint, foundEndTagPointAndContent.content);
@@ -421,7 +459,7 @@ hard break will appear without <br />.
 				index++;
 			}
 
-			return p.vGameObject;
+			return parentTagPoint.vGameObject;
 		}
 		
 		private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<KV_KEY, string> kvs) {
@@ -461,16 +499,8 @@ hard break will appear without <br />.
 			}
 		}
 
-		/*
-			こいつは、ある限界幅に対して文字列がどのように折り返されるか、を返してきてるので、折り返しがある = 幅コンテンツが限界になってる、という感じで、
-			heightだけだと折り返されてるかどうかは判断できない。
-
-			手順をまとめると、
-			・規定幅が与えられる
-			・幅に対して文字列(フォント、サイズ付き)を渡す
-			・改行位置、コンポーネントの高さが求められる
-		*/
-		private LineCountAndHeight Populate (Text text, Vector2 sizeDelta) {
+		
+		private LineCountAndHeight CalculateTextContent (Text text, Vector2 sizeDelta) {
 			var generator = new TextGenerator();
 			generator.Populate(text.text, text.GetGenerationSettings(sizeDelta));
 
@@ -552,14 +582,14 @@ hard break will appear without <br />.
 			public float bottom; 
 			public float left;
 
-			public Vector2 Position () {
-				return new Vector2(left, -top);
+			public Vector2 LeftTopPosition () {
+				return new Vector2(left, top);
 			}
 
-			public float PaddingWidth () {
+			public float PaddedWidth () {
 				return left + right;
 			}
-			public float PaddingHeight () {
+			public float PaddedHeight () {
 				return top + bottom;
 			}
 		}
@@ -568,19 +598,14 @@ hard break will appear without <br />.
 			public float nextLeftHandle;
 			public float nextTopHandle;
 
-			public float width;
-			public float height;
-
-			public float contentWidth;
-			public float contentHeight;
+			public float viewWidth;
+			public float viewHeight;
 
 			public HandlePoint (float nextLeftHandle, float nextTopHandle, float width, float height) {
 				this.nextLeftHandle = nextLeftHandle;
 				this.nextTopHandle = nextTopHandle;
-				this.width = width;
-				this.height = height;
-				this.contentWidth = 0;
-				this.contentHeight = 0;
+				this.viewWidth = width;
+				this.viewHeight = height;
 			}
 
 			public Vector2 Position () {
@@ -588,15 +613,7 @@ hard break will appear without <br />.
 			}
 
 			public Vector2 Size () {
-				return new Vector2(width, height);
-			}
-
-			public void SetContentWidth (float contentWidth) {
-				this.contentWidth = contentWidth;
-			}
-
-			public void SetContentHeight (float contentHeight) {
-				this.contentHeight = contentHeight;
+				return new Vector2(viewWidth, viewHeight);
 			}
 		}
 
@@ -607,7 +624,7 @@ hard break will appear without <br />.
 			var rectTrans = tagPoint.vGameObject.rectTransform;
 
 			// set y start pos.
-			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -contentHandlePoint.nextTopHandle);
+			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y + contentHandlePoint.nextTopHandle);
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -619,14 +636,7 @@ hard break will appear without <br />.
 						var key = kvs.Key;
 						switch (key) {
 							case KV_KEY.HREF: {
-								var href = kvs.Value;
-
-								// add button component.
-								var rootObject = tagPoint.vGameObject.GetRootGameObject();
-								var rootMBInstance = rootObject.@class;
-								
-								// 実際に表示する瞬間まで無視できるのでは。このアクションを持っておけばいいのでは。
-								// AddButton(obj, tagPoint, () => rootMBInstance.OnLinkTapped(tagPoint.tag, href));
+								// ignore on layout.
 								break;
 							}
 							default: {
@@ -660,14 +670,7 @@ hard break will appear without <br />.
 								break;
 							}
 							case KV_KEY.SRC: {
-								var src = kv.Value;
-								
-								// add button component.
-								var rootObject = tagPoint.vGameObject.GetRootGameObject();
-								var rootMBInstance = rootObject.@class;
-								
-								// 実際に表示する瞬間まで無視できるのでは。このアクションを持っておけばいいのでは。
-								// AddButton(obj, tagPoint, () => rootMBInstance.OnImageTapped(tagPoint.tag, src));
+								// ignore on layout.
 								break;
 							}
 							case KV_KEY.ALT: {
@@ -685,15 +688,14 @@ hard break will appear without <br />.
 				
 				case Tag._CONTENT: {
 					// set to maximum viewPoint size.
-					contentWidth = contentHandlePoint.width;
-					contentHeight = contentHandlePoint.height;
+					contentWidth = contentHandlePoint.viewWidth;
+					contentHeight = contentHandlePoint.viewHeight;
 					
 					// set text if exist.
 					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
 						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
 						
 						if (!string.IsNullOrEmpty(text)) {
-							// prefabからComponentは得られないよな〜〜? と思ったが行けそうな気が。いける。Instantiateいらない。なので、この辺を裏で同期的にロードするような機構を作れればいい。
 							// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
 							/*
 								・Resourcesに置ける
@@ -704,13 +706,13 @@ hard break will appear without <br />.
 							textComponent.text = text;
 
 							// set content height.
-							var contentLineCountAndHeight = Populate(textComponent, new Vector2(contentWidth, contentHeight));
+							var contentLineCountAndHeight = CalculateTextContent(textComponent, new Vector2(contentWidth, contentHeight));
 							contentHeight = contentLineCountAndHeight.totalHeight;
 
 							// set content width.
 							var lineCount = contentLineCountAndHeight.lineCount;
 							if (1 < lineCount) {// content has multiple lines. content width is equal to window width.
-								contentWidth = contentHandlePoint.width;
+								contentWidth = contentHandlePoint.viewWidth;
 							} else {
 								contentWidth = textComponent.preferredWidth;
 							}
@@ -728,12 +730,6 @@ hard break will appear without <br />.
 
 			// set content size.
 			rectTrans.sizeDelta = new Vector2(contentWidth, contentHeight);
-			Debug.LogError("set rectTrans.sizeDelta:" + rectTrans.sizeDelta);
-
-			// hold content width and height. これ仮想化できてるんで不要かもしれない。
-			contentHandlePoint.SetContentWidth(contentWidth);
-			contentHandlePoint.SetContentHeight(contentHeight);
-			
 			return contentHandlePoint;
 		}
 
@@ -750,8 +746,8 @@ hard break will appear without <br />.
 
 			var rectTrans = obj.GetComponent<RectTransform>();
 
-			// set position.
-			rectTrans.anchoredPosition = vRectTrans.anchoredPosition;
+			// set position. convert layout position to uGUI position system.
+			rectTrans.anchoredPosition = new Vector2(vRectTrans.anchoredPosition.x, -vRectTrans.anchoredPosition.y);
 			rectTrans.sizeDelta = vRectTrans.sizeDelta;
 
 			// set parameters.
@@ -825,13 +821,13 @@ hard break will appear without <br />.
 		}
 
 
-
 		private GameObject LoadPrefab (string prefabName) {
+			Debug.LogWarning("辞書にできる");
 			return Resources.Load(prefabName) as GameObject;
 		}
 
 		private GameObject LoadGameObject (GameObject prefab) {
-			//  ここを後々、プールからの取得に変える。同じ種類のオブジェクトがプールにあればそれで良さそう。
+			Debug.LogWarning("ここを後々、プールからの取得に変える。タグ単位でGameObjectのプールを作るか。");
 			return GameObject.Instantiate(prefab);
 		}
 
