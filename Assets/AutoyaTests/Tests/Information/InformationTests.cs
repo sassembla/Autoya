@@ -23,13 +23,14 @@ public enum Tag {
 
 public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
+
         var sampleMd = @"
 # Autoya
 ver 0.8.4
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
-";
-var s = @"<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
+
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
 small, thin framework for Unity−1.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
@@ -44,7 +45,6 @@ which contains essential game features.
 * Purchase/IAP feature
 * Notification(local/remote)
 * Information
-
 
 ## Motivation
 Unity already contains these feature's foundation, but actually we need more codes for using it in app.
@@ -529,28 +529,11 @@ hard break will appear without <br />.
 			};
 
 			tagPoint.vGameObject.materialize = () => {
-				var prefab = Resources.Load(prefabName) as GameObject;
-				if (prefab == null) {
-					Debug.LogError("missing prefab:" + prefabName);
-					return new GameObject("missing prefab:" + prefabName);
-				}
-
-				// instantiate gameObject. ここを後々、プールからの取得に変える。同じ種類のオブジェクトがあればそれで良さそう。それか設定をアレコレできればいいのか。
-				var go = GameObject.Instantiate(prefab);
-
-				var vRectTrans = tagPoint.vGameObject.rectTransform;
-
-				var rectTrans = go.GetComponent<RectTransform>();
-
-				rectTrans.anchoredPosition = vRectTrans.anchoredPosition;
-				rectTrans.sizeDelta = vRectTrans.sizeDelta;
-				
-				Debug.LogError("rectTrans.sizeDelta:" + rectTrans.sizeDelta);
-				
-
-				return go;
+				return MaterializeTagContent(tagPoint, prefabName);
 			};
 		}
+
+		
 
 		public enum KV_KEY {
 			CONTENT,
@@ -717,11 +700,11 @@ hard break will appear without <br />.
 								・AssetBundle化できる
 							 */
 							var prefab = LoadPrefab(prefabName);
-							var txt = prefab.GetComponent<Text>();
-							txt.text = text;
+							var textComponent = prefab.GetComponent<Text>();
+							textComponent.text = text;
 
 							// set content height.
-							var contentLineCountAndHeight = Populate(txt, new Vector2(contentWidth, contentHeight));
+							var contentLineCountAndHeight = Populate(textComponent, new Vector2(contentWidth, contentHeight));
 							contentHeight = contentLineCountAndHeight.totalHeight;
 
 							// set content width.
@@ -729,7 +712,7 @@ hard break will appear without <br />.
 							if (1 < lineCount) {// content has multiple lines. content width is equal to window width.
 								contentWidth = contentHandlePoint.width;
 							} else {
-								contentWidth = txt.preferredWidth;
+								contentWidth = textComponent.preferredWidth;
 							}
 						}
 					}
@@ -754,8 +737,102 @@ hard break will appear without <br />.
 			return contentHandlePoint;
 		}
 
+		private GameObject MaterializeTagContent (TagPoint tagPoint, string prefabName) {
+			var prefab = LoadPrefab(prefabName);
+			if (prefab == null) {
+				Debug.LogError("missing prefab:" + prefabName);
+				return new GameObject("missing prefab:" + prefabName);
+			}
+
+			var obj = LoadGameObject(prefab);
+
+			var vRectTrans = tagPoint.vGameObject.rectTransform;
+
+			var rectTrans = obj.GetComponent<RectTransform>();
+
+			// set position.
+			rectTrans.anchoredPosition = vRectTrans.anchoredPosition;
+			rectTrans.sizeDelta = vRectTrans.sizeDelta;
+
+			// set parameters.
+			switch (tagPoint.tag) {
+				case Tag.A: {
+					foreach (var kvs in tagPoint.vGameObject.kv) {
+						var key = kvs.Key;
+						switch (key) {
+							case KV_KEY.HREF: {
+								var href = kvs.Value;
+
+								// add button component.
+								var rootObject = tagPoint.vGameObject.GetRootGameObject();
+								var rootMBInstance = rootObject.@class;
+								
+								AddButton(obj, tagPoint, () => rootMBInstance.OnLinkTapped(tagPoint.tag, href));
+								break;
+							}
+							default: {
+								// do nothing.
+								break;
+							}
+						}
+					}
+					break;
+				}
+				case Tag.IMG: {
+					foreach (var kv in tagPoint.vGameObject.kv) {
+						var key = kv.Key;
+						switch (key) {
+							case KV_KEY.SRC: {
+								var src = kv.Value;
+								
+								// add button component.
+								var rootObject = tagPoint.vGameObject.GetRootGameObject();
+								var rootMBInstance = rootObject.@class;
+								
+								AddButton(obj, tagPoint, () => rootMBInstance.OnImageTapped(tagPoint.tag, src));
+								break;
+							}
+							default: {
+								// do nothing.
+								break;
+							}
+						}
+					}
+					break;
+				}
+				
+				case Tag._CONTENT: {
+					// set text if exist.
+					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
+						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
+						
+						if (!string.IsNullOrEmpty(text)) {
+							var textComponent = obj.GetComponent<Text>();
+							textComponent.text = text;
+						}
+					}
+					
+					break;
+				}
+				
+				default: {
+					// do nothing.
+					break;
+				}
+			}
+
+			return obj;
+		}
+
+
+
 		private GameObject LoadPrefab (string prefabName) {
 			return Resources.Load(prefabName) as GameObject;
+		}
+
+		private GameObject LoadGameObject (GameObject prefab) {
+			//  ここを後々、プールからの取得に変える。同じ種類のオブジェクトがプールにあればそれで良さそう。
+			return GameObject.Instantiate(prefab);
 		}
 
 		private void AddButton (GameObject obj, TagPoint tagPoint, UnityAction param) {
