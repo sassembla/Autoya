@@ -28,8 +28,8 @@ public class InformationTests : MiyamasuTestRunner {
 ver 0.8.4
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
-
-<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
+";
+var s = @"<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
 small, thin framework for Unity−1.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
@@ -137,9 +137,12 @@ hard break will appear without <br />.
 					/*
 						干渉ポイント。go自体へのコンポーネント追加や、paddingを変更できる。
 					*/
-					(go, tag, depth, padding, kv) => {
+					(tag, depth, padding, kv) => {
 						// padding.left += 10;
 						// padding.top += 10;
+					},
+					(go, tag, depth, kv) => {
+						
 					}
 				);
 				
@@ -168,6 +171,8 @@ hard break will appear without <br />.
 	*/
 	public class Tokenizer {
 		public class VirtualGameObject {
+			public readonly string id;
+
 			public GameObject _gameObject;
 
 			public InformationRootMonoBehaviour @class;
@@ -177,6 +182,8 @@ hard break will appear without <br />.
 			public Padding padding;
 			
 			private VirtualTransform vTransform;
+			
+			public VirtualRectTransform rectTransform = new VirtualRectTransform();
 
 			public VirtualGameObject parent;
 			
@@ -185,10 +192,9 @@ hard break will appear without <br />.
 					return vTransform;
 				}
             }
-
-			public OnMaterializeDelegate onMaterialize;
-
 			public VirtualGameObject (Tag tag, Tag[] depth) {
+				this.id = Guid.NewGuid().ToString();
+
 				this.tag = tag;
 				this.depth = depth;
 				this.padding = new Padding();
@@ -206,16 +212,17 @@ hard break will appear without <br />.
 
 			public Dictionary<KV_KEY, string> kv = new Dictionary<KV_KEY, string>();
 
-			public Func<HandlePoint, HandlePoint> materializeContents = null;
+			public Func<HandlePoint, HandlePoint> layoutContents = null;
 			
+			public Func<GameObject> materialize;
 			
 			/**
 				return generated game object.
 			*/
-			public GameObject MaterializeRoot (Vector2 viewPort, OnMaterializeDelegate onMaterialize) {
+			public GameObject MaterializeRoot (string viewName, Vector2 viewPort, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
 				var rootHandlePoint = new HandlePoint(0, 0, viewPort.x, viewPort.y);
 
-				this._gameObject = new GameObject(Tag.ROOT.ToString());
+				this._gameObject = new GameObject(viewName + Tag.ROOT.ToString());
 				
 				this.@class = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
 				var rectTrans = this._gameObject.AddComponent<RectTransform>();
@@ -224,31 +231,28 @@ hard break will appear without <br />.
 				rectTrans.pivot = Vector2.up;
 				rectTrans.position = rootHandlePoint.Position();
 				rectTrans.sizeDelta = rootHandlePoint.Size();
-						
-				// set limit size.
-				Materialize(rootHandlePoint, onMaterialize, this._gameObject);
+				
+				// 事前計算、コンストラクト時に持っといていい気がする。ここを軽くするのは大事っぽい。
+				Layout(this, rootHandlePoint, onLayoutDel);
+
+				// 範囲指定してGOを充てる、ということがしたい。
+				Materialize(this, onMaterializeDel);
 
 				return this._gameObject;
 			}
 			
-			private HandlePoint Materialize (HandlePoint handlePoint, OnMaterializeDelegate onMaterialize, GameObject parent) {
-				// update materialize delegate.
-				this.onMaterialize = onMaterialize;
-
+			/**
+				各コンテンツ位置の事前計算を行う。
+			 */
+			private HandlePoint Layout (VirtualGameObject parent, HandlePoint handlePoint, OnLayoutDelegate onLayoutDel) {
 				switch (this.tag) {
 					case Tag.ROOT: {
 						// do nothing.
 						break;
 					}
 					default: {
-						if (materializeContents != null) {
-							handlePoint = materializeContents(handlePoint);;
-						} else {
-							this._gameObject = new GameObject("not ready");
-						}
-						
-						if (parent != null) {
-							this._gameObject.transform.SetParent(parent.transform);
+						if (layoutContents != null) {
+							handlePoint = layoutContents(handlePoint);
 						}
 						break;
 					}
@@ -257,22 +261,21 @@ hard break will appear without <br />.
 				// 改行にあたる処理。描画位置を左下に持っていく。
 				handlePoint.nextTopHandle += handlePoint.contentHeight;
 				
-				var childlen = this.transform.GetChildlen();
-				foreach (var child in childlen) {
-					handlePoint = child.Materialize(handlePoint, onMaterialize, this._gameObject);
+				foreach (var child in this.transform.GetChildlen()) {
+					handlePoint = child.Layout(this, handlePoint, onLayoutDel);
 				}
 				
 				/*
 					set padding if need.
 					default padding is 0.
 				*/
-				onMaterialize(this._gameObject, this.tag, this.depth, this.padding, new Dictionary<KV_KEY, string>(this.kv));
+				onLayoutDel(this.tag, this.depth, this.padding, new Dictionary<KV_KEY, string>(this.kv));
 
 				/*
 					adopt padding.
 				*/
 				{
-					var rectTrans = this._gameObject.GetComponent<RectTransform>();
+					var rectTrans = this.rectTransform;
 					rectTrans.anchoredPosition += padding.Position();
 
 					handlePoint.nextLeftHandle += padding.PaddingWidth();
@@ -283,9 +286,33 @@ hard break will appear without <br />.
 				
 				return handlePoint;
 			}
+
+			private void Materialize (VirtualGameObject parent, OnMaterializeDelegate onMaterializeDel) {
+				switch (this.tag) {
+					case Tag.ROOT: {
+						// do nothing.
+						break;
+					}
+					default: {
+						if (materialize != null) {
+							this._gameObject = materialize();
+						}
+						
+						this._gameObject.transform.SetParent(parent._gameObject.transform);
+						break;
+					}
+				}
+				
+				foreach (var child in this.transform.GetChildlen()) {
+					child.Materialize(this, onMaterializeDel);
+				}
+				
+				onMaterializeDel(this._gameObject, this.tag, this.depth, new Dictionary<KV_KEY, string>(this.kv));
+			}
 		}
 
-		public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue);
+		public delegate void OnLayoutDelegate (Tag tag, Tag[] depth, Padding padding, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue);
+		public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, Dictionary<InformationTests.Tokenizer.KV_KEY, string> keyValue);
 
 		public class VirtualTransform {
 			private readonly VirtualGameObject vGameObject;
@@ -308,6 +335,12 @@ hard break will appear without <br />.
 			}
 		}
 
+		public class VirtualRectTransform {
+			public Rect rect = Rect.zero;
+			public Vector2 anchoredPosition = Vector2.zero;
+			public Vector2 sizeDelta = Vector2.zero;
+		}
+
 		private readonly VirtualGameObject rootObject;
 
 		public Tokenizer (string source) {
@@ -315,8 +348,8 @@ hard break will appear without <br />.
 			rootObject = Tokenize(root, source);
 		}
 
-		public GameObject Materialize (Rect viewport, OnMaterializeDelegate del) {
-			var rootObj = rootObject.MaterializeRoot(viewport.size, del);
+		public GameObject Materialize (Rect viewport, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
+			var rootObj = rootObject.MaterializeRoot("test", viewport.size, onLayoutDel, onMaterializeDel);
 			rootObj.transform.position = viewport.position;
 			return rootObj;
 		}
@@ -406,12 +439,15 @@ hard break will appear without <br />.
 		private void AddContentToParent (TagPoint p, string content) {
 			var	parentObj = p.vGameObject;
 			
-			var child = new TagPoint(p.lineIndex, p.tagEndPoint, Tag._CONTENT, p.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), p.originalTagName + " Content");
-			child.vGameObject.transform.SetParent(parentObj.transform);
-			child.vGameObject.kv[KV_KEY.CONTENT] = content;
-			child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
+			// add content to parent as child.
+			{
+				var child = new TagPoint(p.lineIndex, p.tagEndPoint, Tag._CONTENT, p.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), p.originalTagName + " Content");
+				child.vGameObject.transform.SetParent(parentObj.transform);
+				child.vGameObject.kv[KV_KEY.CONTENT] = content;
+				child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
 
-			SetupMaterializeAction(child);
+				SetupMaterializeAction(child);
+			}
 
 			SetupMaterializeAction(p);
 		}
@@ -425,8 +461,6 @@ hard break will appear without <br />.
 			}
 		}
 
-		private static GameObject tDummyObj;
-		
 		/*
 			こいつは、ある限界幅に対して文字列がどのように折り返されるか、を返してきてるので、折り返しがある = 幅コンテンツが限界になってる、という感じで、
 			heightだけだと折り返されてるかどうかは判断できない。
@@ -435,14 +469,10 @@ hard break will appear without <br />.
 			・規定幅が与えられる
 			・幅に対して文字列(フォント、サイズ付き)を渡す
 			・改行位置、コンポーネントの高さが求められる
-			・
 		*/
-		private LineCountAndHeight Populate (Text textComponent) {
-			if (tDummyObj == null) tDummyObj = GameObject.Find("dummy");
-			var v2 = textComponent.GetComponent<RectTransform>().sizeDelta;
-
+		private LineCountAndHeight Populate (Text text, Vector2 sizeDelta) {
 			var generator = new TextGenerator();
-			generator.Populate(textComponent.text, textComponent.GetGenerationSettings(v2));
+			generator.Populate(text.text, text.GetGenerationSettings(sizeDelta));
 
 			var height = 0;
 			foreach(var l in generator.lines){
@@ -451,12 +481,13 @@ hard break will appear without <br />.
 				// Debug.LogError("ch height:" + l.height);
 				height += l.height;
 			}
-			return new LineCountAndHeight(generator.lines.Count, height);//generator.rectExtents;// 要素の全体が入る四角形。あーなるほど、オリジナルの数値を引っ張ってるな。
+			
+			return new LineCountAndHeight(generator.lines.Count, height);
 		}
 
 		private void SetupMaterializeAction (TagPoint tagPoint) {
 			// set only once.
-			if (tagPoint.vGameObject.materializeContents != null) {
+			if (tagPoint.vGameObject.layoutContents != null) {
 				return;
 			}
 			
@@ -491,19 +522,33 @@ hard break will appear without <br />.
 			}
 			
 			/*
-				set on materialize function.
+				set on calcurate function.
 			*/
-			tagPoint.vGameObject.materializeContents = positionData => {
+			tagPoint.vGameObject.layoutContents = positionData => {
+				return LayoutTagContent(tagPoint, positionData, prefabName);
+			};
+
+			tagPoint.vGameObject.materialize = () => {
 				var prefab = Resources.Load(prefabName) as GameObject;
 				if (prefab == null) {
 					Debug.LogError("missing prefab:" + prefabName);
-					return positionData;
+					return new GameObject("missing prefab:" + prefabName);
 				}
 
-				// instantiage gameObject. ここを後々、プールからの取得に変える。同じ種類のオブジェクトがあればそれで良さそう。それか設定をアレコレできればいいのか。
-				tagPoint.vGameObject._gameObject = GameObject.Instantiate(prefab);
+				// instantiate gameObject. ここを後々、プールからの取得に変える。同じ種類のオブジェクトがあればそれで良さそう。それか設定をアレコレできればいいのか。
+				var go = GameObject.Instantiate(prefab);
 
-				return MaterializeTagContent(tagPoint, positionData);
+				var vRectTrans = tagPoint.vGameObject.rectTransform;
+
+				var rectTrans = go.GetComponent<RectTransform>();
+
+				rectTrans.anchoredPosition = vRectTrans.anchoredPosition;
+				rectTrans.sizeDelta = vRectTrans.sizeDelta;
+				
+				Debug.LogError("rectTrans.sizeDelta:" + rectTrans.sizeDelta);
+				
+
+				return go;
 			};
 		}
 
@@ -574,19 +619,16 @@ hard break will appear without <br />.
 
 		/**
 			materialize contents of tag.
-			ready resource size. width and height.
-			in order to implement arounding of contents in P tag, HandlePoint will be changed flexibly.
 		*/
-		private HandlePoint MaterializeTagContent (TagPoint tagPoint, HandlePoint contentHandlePoint) {
-			var obj = tagPoint.vGameObject._gameObject;
-			var rectTrans = obj.GetComponent<RectTransform>();
+		private HandlePoint LayoutTagContent (TagPoint tagPoint, HandlePoint contentHandlePoint, string prefabName) {
+			var rectTrans = tagPoint.vGameObject.rectTransform;
 
 			// set y start pos.
 			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y -contentHandlePoint.nextTopHandle);
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
-			
+
 			// set kv.
 			switch (tagPoint.tag) {
 				case Tag.A: {
@@ -599,31 +641,39 @@ hard break will appear without <br />.
 								// add button component.
 								var rootObject = tagPoint.vGameObject.GetRootGameObject();
 								var rootMBInstance = rootObject.@class;
-			
-								AddButton(obj, tagPoint, () => rootMBInstance.OnLinkTapped(tagPoint.tag, href));
+								
+								// 実際に表示する瞬間まで無視できるのでは。このアクションを持っておけばいいのでは。
+								// AddButton(obj, tagPoint, () => rootMBInstance.OnLinkTapped(tagPoint.tag, href));
 								break;
 							}
 							default: {
-								Debug.LogError("unhandled. key:" + key);
+								Debug.LogError("A tag, unhandled. key:" + key);
 								break;
 							}
 						}
 					}
 					break;
 				}
-				case Tag.IMG: {					
+				case Tag.IMG: {
+					// set basic size from prefab.
+					var prefab = LoadPrefab(prefabName);
+					if (prefab != null) {
+						var rectTransform = prefab.GetComponent<RectTransform>();
+						contentWidth = rectTransform.sizeDelta.x;
+						contentHeight = rectTransform.sizeDelta.y;
+					}
+
 					foreach (var kv in tagPoint.vGameObject.kv) {
 						var key = kv.Key;
-						
 						switch (key) {
 							case KV_KEY.WIDTH: {
-								var val = Convert.ToInt32(kv.Value);
-								rectTrans.sizeDelta = new Vector2(val, rectTrans.sizeDelta.y);
+								var width = Convert.ToInt32(kv.Value);;
+								contentWidth = width;
 								break;
 							}
 							case KV_KEY.HEIGHT: {
-								var val = Convert.ToInt32(kv.Value);
-								rectTrans.sizeDelta = new Vector2(rectTrans.sizeDelta.x, val);
+								var height = Convert.ToInt32(kv.Value);
+								contentHeight = height;
 								break;
 							}
 							case KV_KEY.SRC: {
@@ -632,58 +682,60 @@ hard break will appear without <br />.
 								// add button component.
 								var rootObject = tagPoint.vGameObject.GetRootGameObject();
 								var rootMBInstance = rootObject.@class;
-			
-								AddButton(obj, tagPoint, () => rootMBInstance.OnImageTapped(tagPoint.tag, src));
+								
+								// 実際に表示する瞬間まで無視できるのでは。このアクションを持っておけばいいのでは。
+								// AddButton(obj, tagPoint, () => rootMBInstance.OnImageTapped(tagPoint.tag, src));
 								break;
 							}
 							case KV_KEY.ALT: {
+								// do nothing yet.
 								break;
 							}
 							default: {
-								Debug.LogError("unhandled key:" + key);
+								Debug.LogError("IMG tag, unhandled. key:" + key);
 								break;
 							}
 						}
 					}
-
-					contentWidth = rectTrans.rect.width;
-					contentHeight = rectTrans.rect.height;
 					break;
 				}
 				
 				case Tag._CONTENT: {
-					rectTrans.sizeDelta = new Vector2(contentHandlePoint.width, contentHandlePoint.height);
+					// set to maximum viewPoint size.
+					contentWidth = contentHandlePoint.width;
+					contentHeight = contentHandlePoint.height;
 					
 					// set text if exist.
 					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
 						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
 						
 						if (!string.IsNullOrEmpty(text)) {
-							var textComponent = obj.GetComponent<Text>();
-							if (textComponent != null) { 
-								textComponent.text = text;
-								Debug.LogError("text:" + text);
+							// prefabからComponentは得られないよな〜〜? と思ったが行けそうな気が。いける。Instantiateいらない。なので、この辺を裏で同期的にロードするような機構を作れればいい。
+							// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
+							/*
+								・Resourcesに置ける
+								・AssetBundle化できる
+							 */
+							var prefab = LoadPrefab(prefabName);
+							var txt = prefab.GetComponent<Text>();
+							txt.text = text;
 
-								// set content height.
-								var contentLineCountAndHeight = Populate(textComponent);
-								contentHeight = contentLineCountAndHeight.totalHeight;
+							// set content height.
+							var contentLineCountAndHeight = Populate(txt, new Vector2(contentWidth, contentHeight));
+							contentHeight = contentLineCountAndHeight.totalHeight;
 
-								// set content width.
-								var lineCount = contentLineCountAndHeight.lineCount;
-								if (1 < lineCount) {// content has multiple lines. content width is equal to window width.
-									contentWidth = contentHandlePoint.width;
-								} else {
-									contentWidth = textComponent.preferredWidth;
-								}
+							// set content width.
+							var lineCount = contentLineCountAndHeight.lineCount;
+							if (1 < lineCount) {// content has multiple lines. content width is equal to window width.
+								contentWidth = contentHandlePoint.width;
+							} else {
+								contentWidth = txt.preferredWidth;
 							}
 						}
 					}
 					
-					// adjust height to contents text height.
-					rectTrans.sizeDelta = new Vector2(contentWidth, contentHeight);
 					break;
 				}
-
 				
 				default: {
 					// do nothing.
@@ -691,11 +743,19 @@ hard break will appear without <br />.
 				}
 			}
 
-			// hold content width and height.
+			// set content size.
+			rectTrans.sizeDelta = new Vector2(contentWidth, contentHeight);
+			Debug.LogError("set rectTrans.sizeDelta:" + rectTrans.sizeDelta);
+
+			// hold content width and height. これ仮想化できてるんで不要かもしれない。
 			contentHandlePoint.SetContentWidth(contentWidth);
 			contentHandlePoint.SetContentHeight(contentHeight);
 			
 			return contentHandlePoint;
+		}
+
+		private GameObject LoadPrefab (string prefabName) {
+			return Resources.Load(prefabName) as GameObject;
 		}
 
 		private void AddButton (GameObject obj, TagPoint tagPoint, UnityAction param) {
@@ -712,7 +772,6 @@ hard break will appear without <br />.
 					param
 				);
 			} else {
-				
 				try {
 					button.onClick.AddListener(// 現状、エディタでは、Actionをセットする方法がわからん。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
 						param
@@ -723,7 +782,7 @@ hard break will appear without <br />.
 					// );
 
 					// // 次の書き方で、固定の値をセットすることはできる。エディタにも値が入ってしまう。
-					// インスタンスを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
+					// インスタンスというか、Prefabを作りまくればいいのか。このパーツのインスタンスを用意して、そこに値オブジェクトを入れて、それが着火する、みたいな。
 					// UnityEngine.Events.UnityAction<String> callback = new UnityEngine.Events.UnityAction<String>(rootMBInstance.OnImageTapped);
 					// UnityEditor.Events.UnityEventTools.AddStringPersistentListener(
 					// 	button.onClick, 
