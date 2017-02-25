@@ -474,35 +474,37 @@ hard break will appear without <br />.
 			SetupMaterializeAction(child);
 		}
 		
-		private void AddContentToParent (TagPoint p, string content) {
-			var	parentObj = p.vGameObject;
+		private void AddContentToParent (TagPoint parentPoint, string content) {
+			var	parentObj = parentPoint.vGameObject;
 			
 			// add content to parent as child.
 			{
-				var child = new TagPoint(p.lineIndex, p.tagEndPoint, Tag._CONTENT, p.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), p.originalTagName + " Content");
+				var child = new TagPoint(parentPoint.lineIndex, parentPoint.tagEndPoint, Tag._CONTENT, parentPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), parentPoint.originalTagName + " Content");
 				child.vGameObject.transform.SetParent(parentObj.transform);
 				child.vGameObject.kv[KV_KEY.CONTENT] = content;
-				child.vGameObject.kv[KV_KEY.PARENTTAG] = p.originalTagName;
+				child.vGameObject.kv[KV_KEY.PARENTTAG] = parentPoint.originalTagName;
 
 				SetupMaterializeAction(child);
 			}
 
-			SetupMaterializeAction(p);
+			SetupMaterializeAction(parentPoint);
 		}
 
-		public struct LineCountAndHeight {
-			public int lineCount;
+		public struct ContentWidthAndHeight {
+			public float width;
 			public int totalHeight;
-			public LineCountAndHeight (int lineCount, int totalHeight) {
-				this.lineCount = lineCount;
+			public ContentWidthAndHeight (float width, int totalHeight) {
+				this.width = width;
 				this.totalHeight = totalHeight;
 			}
 		}
 
 		
-		private LineCountAndHeight CalculateTextContent (Text text, Vector2 sizeDelta) {
+		private ContentWidthAndHeight CalculateTextContent (Text textComponent, string text, Vector2 sizeDelta) {
+			textComponent.text = text;
+
 			var generator = new TextGenerator();
-			generator.Populate(text.text, text.GetGenerationSettings(sizeDelta));
+			generator.Populate(textComponent.text, textComponent.GetGenerationSettings(sizeDelta));
 
 			var height = 0;
 			foreach(var l in generator.lines){
@@ -512,7 +514,16 @@ hard break will appear without <br />.
 				height += l.height;
 			}
 			
-			return new LineCountAndHeight(generator.lines.Count, height);
+			var width = textComponent.preferredWidth;
+
+			if (1 < generator.lines.Count) {
+				width = sizeDelta.x;
+			}
+
+			// reset.
+			textComponent.text = string.Empty;
+
+			return new ContentWidthAndHeight(width, height);
 		}
 
 		private void SetupMaterializeAction (TagPoint tagPoint) {
@@ -539,6 +550,7 @@ hard break will appear without <br />.
 				
 				case Tag.H:
 				case Tag.P:
+				case Tag.A:
 				case Tag.UL:
 				case Tag.LI: {// these are container.
 					prefabName = tagPoint.originalTagName.ToUpper() + "Container";
@@ -624,7 +636,7 @@ hard break will appear without <br />.
 			var rectTrans = tagPoint.vGameObject.rectTransform;
 
 			// set y start pos.
-			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x, rectTrans.anchoredPosition.y + contentHandlePoint.nextTopHandle);
+			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTrans.anchoredPosition.y + contentHandlePoint.nextTopHandle);
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -632,19 +644,7 @@ hard break will appear without <br />.
 			// set kv.
 			switch (tagPoint.tag) {
 				case Tag.A: {
-					foreach (var kvs in tagPoint.vGameObject.kv) {
-						var key = kvs.Key;
-						switch (key) {
-							case KV_KEY.HREF: {
-								// ignore on layout.
-								break;
-							}
-							default: {
-								Debug.LogError("A tag, unhandled. key:" + key);
-								break;
-							}
-						}
-					}
+					// do nothing.
 					break;
 				}
 				case Tag.IMG: {
@@ -687,34 +687,22 @@ hard break will appear without <br />.
 				}
 				
 				case Tag._CONTENT: {
-					// set to maximum viewPoint size.
-					contentWidth = contentHandlePoint.viewWidth;
-					contentHeight = contentHandlePoint.viewHeight;
-					
 					// set text if exist.
-					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
-						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
+					foreach (var kvs in tagPoint.vGameObject.kv) {
+						var key = kvs.Key;
+						switch (key) {
+							case KV_KEY.CONTENT: {
+								var text = kvs.Value;
 						
-						if (!string.IsNullOrEmpty(text)) {
-							// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
-							/*
-								・Resourcesに置ける
-								・AssetBundle化できる
-							 */
-							var prefab = LoadPrefab(prefabName);
-							var textComponent = prefab.GetComponent<Text>();
-							textComponent.text = text;
+								var contentWidthAndHeight = GetContentWidthAndHeight(prefabName, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
 
-							// set content height.
-							var contentLineCountAndHeight = CalculateTextContent(textComponent, new Vector2(contentWidth, contentHeight));
-							contentHeight = contentLineCountAndHeight.totalHeight;
-
-							// set content width.
-							var lineCount = contentLineCountAndHeight.lineCount;
-							if (1 < lineCount) {// content has multiple lines. content width is equal to window width.
-								contentWidth = contentHandlePoint.viewWidth;
-							} else {
-								contentWidth = textComponent.preferredWidth;
+								contentWidth = contentWidthAndHeight.width;
+								contentHeight = contentWidthAndHeight.totalHeight;
+								break;
+							}
+							default: {
+								// ignore.
+								break;
 							}
 						}
 					}
@@ -733,6 +721,19 @@ hard break will appear without <br />.
 			return contentHandlePoint;
 		}
 
+		private ContentWidthAndHeight GetContentWidthAndHeight (string prefabName, string text, float contentWidth, float contentHeight) {
+			// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
+			/*
+				・Resourcesに置ける
+				・AssetBundle化できる
+			*/
+			var prefab = LoadPrefab(prefabName);
+			var textComponent = prefab.GetComponent<Text>();
+			Debug.LogError("prefabName:" + prefabName);
+			// set content height.
+			return CalculateTextContent(textComponent, text, new Vector2(contentWidth, contentHeight));
+		}
+		
 		private GameObject MaterializeTagContent (TagPoint tagPoint, string prefabName) {
 			var prefab = LoadPrefab(prefabName);
 			if (prefab == null) {
@@ -798,13 +799,23 @@ hard break will appear without <br />.
 				}
 				
 				case Tag._CONTENT: {
-					// set text if exist.
-					if (tagPoint.vGameObject.kv.ContainsKey(KV_KEY.CONTENT)) {
-						var text = tagPoint.vGameObject.kv[KV_KEY.CONTENT];
-						
-						if (!string.IsNullOrEmpty(text)) {
-							var textComponent = obj.GetComponent<Text>();
-							textComponent.text = text;
+					foreach (var kvs in tagPoint.vGameObject.kv) {
+						switch (kvs.Key) {
+							case KV_KEY.CONTENT:{
+								var text = kvs.Value;
+								if (!string.IsNullOrEmpty(text)) {
+									var textComponent = obj.GetComponent<Text>();
+									textComponent.text = text;
+								}
+								break;
+							}
+							case KV_KEY.PARENTTAG: {
+								break;
+							}
+							default: {
+								// ignore.
+								break;
+							}
 						}
 					}
 					
