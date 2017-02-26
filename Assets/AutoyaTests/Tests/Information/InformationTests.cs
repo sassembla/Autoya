@@ -18,7 +18,8 @@ public enum Tag {
 	UL, 
 	OL,
 	LI, 
-	A
+	A,
+	BR
 }
 
 public class InformationTests : MiyamasuTestRunner {
@@ -56,9 +57,9 @@ This framework can help that.
 ## License
 see below.  
 [LICENSE](./LICENSE)
+";
 
-
-## Progress
+var s = @"## Progress
 
 ### automatic Authentication
 already implemented.
@@ -251,15 +252,6 @@ hard break will appear without <br />.
 				各コンテンツ位置の事前計算を行う。
 			 */
 			private HandlePoint Layout (VirtualGameObject parent, HandlePoint handlePoint, OnLayoutDelegate onLayoutDel) {
-				// reset x position for linebreak.
-				switch (tag) {
-					case Tag.P:
-					case Tag.H:
-					case Tag.UL:
-						handlePoint.nextLeftHandle = 0;
-						break;
-				}
-
 				switch (this.tag) {
 					case Tag.ROOT: {
 						// do nothing.
@@ -272,13 +264,7 @@ hard break will appear without <br />.
 						break;
 					}
 				}
-				
-				// 下押し処理
-				handlePoint.nextTopHandle += this.rectTransform.sizeDelta.y;
 
-				// 回り込みするかどうかは、paddingを込めた前の値と、次に置くコンテンツの位置によるのか。
-				// 回り込みはここで判別できないのではないか疑惑。
-				
 				var childlen = this.transform.GetChildlen();
 				if (0 < childlen.Count) {
 					var rightBottomPoint = Vector2.zero;
@@ -294,7 +280,7 @@ hard break will appear without <br />.
 						}
 					}
 
-					// fit size to content.
+					// fit size to wrap all child contents.
 					rectTransform.sizeDelta = rightBottomPoint - rectTransform.anchoredPosition;
 				} else {
 					// do nothing.
@@ -313,13 +299,39 @@ hard break will appear without <br />.
 					// 移動前の原点と、size、paddingを足した位置を持つ。
 					rectTransform.paddedRightBottomPoint = rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PaddedWidth(), padding.PaddedHeight());
 
-					// x,yをずらす。子供の生成後なので、子供もろともズレる。
+					// x,yをずらす。子供の生成後なので、子供もろともズレてくれる。
 					rectTransform.anchoredPosition += padding.LeftTopPosition();
 					
 					// 単純にpaddingぶんだけ次の要素のカーソルが移動する。
 					// 回り込ませたくない場合、次の要素の初頭でnextLeftHandleだけをリセットすればいいのか。
 					handlePoint.nextLeftHandle += padding.PaddedWidth();
 					handlePoint.nextTopHandle += padding.PaddedHeight();
+				}
+
+				/*
+					set next left-top point by this tag && the parent tag kind.
+				 */
+				switch (parent.tag) {
+					case Tag.H:
+					case Tag.P: {
+						if (this.tag == Tag._CONTENT && kv.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
+							// CRLF
+							handlePoint.nextLeftHandle = 0;
+							handlePoint.nextTopHandle = this.rectTransform.paddedRightBottomPoint.y;
+						} else {
+							// next content is planned to layout next of this content.
+							handlePoint.nextLeftHandle += this.rectTransform.sizeDelta.x;
+						}
+						break;
+					}
+					case Tag.UL:
+					case Tag.OL:
+					case Tag.ROOT: {
+						// CRLF
+						handlePoint.nextLeftHandle = 0;
+						handlePoint.nextTopHandle = this.rectTransform.paddedRightBottomPoint.y;
+						break;
+					}
 				}
 
 				return handlePoint;
@@ -473,21 +485,32 @@ hard break will appear without <br />.
 
 			SetupMaterializeAction(child);
 		}
-		
-		private void AddContentToParent (TagPoint parentPoint, string content) {
-			var	parentObj = parentPoint.vGameObject;
-			
-			// add content to parent as child.
-			{
-				var child = new TagPoint(parentPoint.lineIndex, parentPoint.tagEndPoint, Tag._CONTENT, parentPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), parentPoint.originalTagName + " Content");
-				child.vGameObject.transform.SetParent(parentObj.transform);
-				child.vGameObject.kv[KV_KEY.CONTENT] = content;
-				child.vGameObject.kv[KV_KEY.PARENTTAG] = parentPoint.originalTagName;
 
-				SetupMaterializeAction(child);
+		private const string BRTagStr = "<br />";
+		
+		private void AddContentToParent (TagPoint parentPoint, string contentOriginal) {
+			if (contentOriginal.EndsWith(BRTagStr)) {
+				var content = contentOriginal.Substring(0, contentOriginal.Length - BRTagStr.Length);
+				AddChildContentWithBR(parentPoint, content, true);
+			} else {
+				AddChildContentWithBR(parentPoint, contentOriginal);
 			}
 
 			SetupMaterializeAction(parentPoint);
+		}
+
+		private void AddChildContentWithBR (TagPoint parentPoint, string content, bool endsWithBR=false) {
+			var	parentObj = parentPoint.vGameObject;
+			
+			var child = new TagPoint(parentPoint.lineIndex, parentPoint.tagEndPoint, Tag._CONTENT, parentPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), parentPoint.originalTagName + " Content");
+			child.vGameObject.transform.SetParent(parentObj.transform);
+			child.vGameObject.kv[KV_KEY.CONTENT] = content;
+			child.vGameObject.kv[KV_KEY.PARENTTAG] = parentPoint.originalTagName;
+			if (endsWithBR) {
+				child.vGameObject.kv[KV_KEY.ENDS_WITH_BR] = "true";
+			}
+
+			SetupMaterializeAction(child);
 		}
 
 		public struct ContentWidthAndHeight {
@@ -586,6 +609,7 @@ hard break will appear without <br />.
 			SRC,
 			ALT,
 			HREF,
+			ENDS_WITH_BR
 		};
 
 		public class Padding {
@@ -729,7 +753,7 @@ hard break will appear without <br />.
 			*/
 			var prefab = LoadPrefab(prefabName);
 			var textComponent = prefab.GetComponent<Text>();
-			Debug.LogError("prefabName:" + prefabName);
+			
 			// set content height.
 			return CalculateTextContent(textComponent, text, new Vector2(contentWidth, contentHeight));
 		}
