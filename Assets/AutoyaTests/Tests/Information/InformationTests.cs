@@ -40,7 +40,7 @@ small, thin framework for Unit1.
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
-small, thin framework for Unit2.  
+smal<Br>Unit2.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
@@ -213,12 +213,6 @@ hard break will appear without <br />.
 				}
             }
 
-			public float PaddedRightPoint () {
-				return rectTransform.anchoredPosition.x + rectTransform.sizeDelta.x + padding.PadWidth();
-			}
-			public float PaddedBottomPoint () {
-				return rectTransform.anchoredPosition.y + rectTransform.sizeDelta.y + padding.PadHeight();
-			}
 			public Vector2 PaddedRightBottomPoint () {
 				return rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
 			}
@@ -289,82 +283,74 @@ hard break will appear without <br />.
 					}
 				}
 
-				// 親のレイアウト後、padding前。
-
+				// parent layout is done. will be resize by child, then padding.
 
 				var childlen = this.transform.GetChildlen();
 				
-				// pタグであれば、childを列単位に分けながら回り込み処理をかけていく。
+				// layout -> resize -> padding of childlen.
 				if (0 < childlen.Count) {
-					var rightBottomPoint = Vector2.zero;
 					var layoutLine = new List<VirtualGameObject>();
 
-					// brの扱いが難しい、、、
-					var brNext = false;
 					foreach (var child in childlen) {
 						handlePoint = child.Layout(this, handlePoint, onLayoutDel);
 						
-						// p tagの要素の場合のみ、回り込みが起きる。
-						if (this.tag == Tag.P) {
-							if (!brNext) {
-								// brが前の要素に入って入れば、強制的に改行を発生させる。んだけど、この機構が難しいな。
-								// あーー要素をまたぐケースか。ってことはTokenizerで状態保つのがいいのか。
-								if (child.kv.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
-									brNext = true;
-								}
-
-								if (handlePoint.nextLeftHandle <= 300) {
-									layoutLine.Add(child);
-									continue;
-								}
-							}
-
-							// reset br flag.
-							brNext = false;
-
+						// width over.
+						if (handlePoint.viewWidth < handlePoint.nextLeftHandle) {
 							if (0 < layoutLine.Count) {
 								handlePoint = SortByLayoutLine(layoutLine, handlePoint);
 
 								// forget current line.
 								layoutLine.Clear();
-								
 
 								// move current child content to next line head.
 								child.rectTransform.anchoredPosition = new Vector2(handlePoint.nextLeftHandle + child.padding.left, handlePoint.nextTopHandle + child.padding.top);
 
-								// set next line head.
-								layoutLine.Add(child);							
-
 								// set next handle.
 								handlePoint.nextLeftHandle = handlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
-							} else {// 0件できてる場合、1つだけで超えてるので、何もしないでいい。
-
 							}
 						}
+
+						// in viewpoint width.
+						layoutLine.Add(child);
+
+						// br contained.
+						if (child.kv.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
+							handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+
+							// forget current line.
+							layoutLine.Clear();
+
+							// set next line.
+							handlePoint.nextLeftHandle = 0;
+							handlePoint.nextTopHandle = child.PaddedRightBottomPoint().y;
+						}
 					}
 
-					if (this.tag == Tag.P) {
+					// if layoutLine content is exist, put all in 1 line.
+					if (0 < layoutLine.Count) {
 						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
 					}
+					
+					// set parent size to wrapping childlen.
+					{
+						var rightBottomPoint = Vector2.zero;
+						// fit most large bottom-right point. largest point of width and y.
+						foreach (var child in childlen) {
+							var paddedRightBottomPoint = child.PaddedRightBottomPoint();
+							if (rightBottomPoint.x < paddedRightBottomPoint.x) {
+								rightBottomPoint.x = paddedRightBottomPoint.x;
+							}
+							if (rightBottomPoint.y < paddedRightBottomPoint.y) {
+								rightBottomPoint.y = paddedRightBottomPoint.y;
+							}
+						}
 
-					// fit most large bottom-right point. largest point of width and y.
-					foreach (var child in childlen) {
-						var paddedRightBottomPoint = child.PaddedRightBottomPoint();
-						if (rightBottomPoint.x < paddedRightBottomPoint.x) {
-							rightBottomPoint.x = paddedRightBottomPoint.x;
-						}
-						if (rightBottomPoint.y < paddedRightBottomPoint.y) {
-							rightBottomPoint.y = paddedRightBottomPoint.y;
-						}
+						// fit size to wrap all child contents.
+						rectTransform.sizeDelta = rightBottomPoint - rectTransform.anchoredPosition;
 					}
 
-					// fit size to wrap all child contents.
-					rectTransform.sizeDelta = rightBottomPoint - rectTransform.anchoredPosition;
-				} else {
-					// do nothing.
+					// layout and padding and orientation of child tags are done.
 				}
-				
-				// 子のlayout, padding後
 
 				/*
 					set padding if need.
@@ -376,7 +362,7 @@ hard break will appear without <br />.
 					adopt padding to this content.
 				*/
 				{
-					// x,yをずらす。子供の生成後なので、子供もろともズレてくれる。
+					// translate anchor position of content.(child follows parent.)
 					rectTransform.anchoredPosition += padding.LeftTopPoint();
 					
 					handlePoint.nextLeftHandle += padding.PadWidth();
@@ -398,7 +384,7 @@ hard break will appear without <br />.
 					case Tag.ROOT: {
 						// CRLF
 						handlePoint.nextLeftHandle = 0;
-						handlePoint.nextTopHandle = this.PaddedBottomPoint();
+						handlePoint.nextTopHandle = this.rectTransform.anchoredPosition.y + this.rectTransform.sizeDelta.y + this.padding.PadHeight();
 						break;
 					}
 				}
@@ -407,21 +393,23 @@ hard break will appear without <br />.
 			}
 
 			private HandlePoint SortByLayoutLine (List<VirtualGameObject> layoutLine, HandlePoint handlePoint) {
-				// で、現状ここまでの一列に対して一番背が高い要素がそのまま、それ以外の要素が下一列になるようにyを調整する。
+				// find tallest content in layoutLine.
 				var targetHeightObjArray = layoutLine.OrderByDescending(c => c.rectTransform.sizeDelta.y + c.padding.PadHeight()).ToArray();
+				
 				if (0 < targetHeightObjArray.Length) {
 					var tallestContent = targetHeightObjArray[0];
 					
-					// この要素内では、相対位置になってるんで、一番高い要素の下のとこに下端があえば良さそう。
-					var paddedHighestHeightInLine = tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();// highest padded height.
+					// get tallest padded height. this will be this layoutLine's bottom line.
+					var paddedHighestHeightInLine = tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
 					
+					// other child content will be moved.
 					foreach (var childInLine in layoutLine) {
-						if (childInLine == tallestContent) {
+						if (childInLine == tallestContent) {// ignore tallest content itself.
 							continue;
 						}
 
-						var paddedHeight = childInLine.PaddedBottomPoint() - childInLine.rectTransform.anchoredPosition.y;
-						var heightDiff = paddedHighestHeightInLine - paddedHeight;
+						var childPaddedHeight = childInLine.rectTransform.sizeDelta.y + childInLine.padding.PadHeight();
+						var heightDiff = paddedHighestHeightInLine - childPaddedHeight;
 						childInLine.rectTransform.anchoredPosition += new Vector2(0, heightDiff);
 					}
 
@@ -429,6 +417,7 @@ hard break will appear without <br />.
 					handlePoint.nextLeftHandle = 0;
 					handlePoint.nextTopHandle += paddedHighestHeightInLine;
 				}
+
 				return handlePoint;
 			}
 
@@ -440,10 +429,7 @@ hard break will appear without <br />.
 						break;
 					}
 					default: {
-						if (materialize != null) {
-							this._gameObject = materialize();
-						}
-						
+						this._gameObject = materialize();
 						this._gameObject.transform.SetParent(parent._gameObject.transform);
 						break;
 					}
@@ -681,6 +667,8 @@ hard break will appear without <br />.
 				}
 			}
 			
+			// this.prefabName = prefabName;
+
 			/*
 				set on calcurate function.
 			*/
@@ -717,9 +705,16 @@ hard break will appear without <br />.
 				return new Vector2(left, top);
 			}
 
+			/**
+				width of padding.
+			 */
 			public float PadWidth () {
 				return left + right;
 			}
+
+			/**
+				hight of padding.
+			 */
 			public float PadHeight () {
 				return top + bottom;
 			}
