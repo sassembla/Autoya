@@ -31,11 +31,23 @@ ver 0.8.4
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
 
-string padding  
+まずは4連になるケース(部分改行を無視する)
+あ
+い
+ううう
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
+small, thin framework for Unit1.
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
-small, thin framework for Unity−1.  
+small, thin framework for Unit2.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
+
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
+
+test
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
+test2
 
 small, thin framework for Unity.  
 which contains essential game features.
@@ -55,10 +67,11 @@ Unity already contains these feature's foundation, but actually we need more cod
 This framework can help that.
 
 ## License
+
+
 see below.  
 [LICENSE](./LICENSE)
 ";
-
 var s = @"## Progress
 
 ### automatic Authentication
@@ -199,6 +212,17 @@ hard break will appear without <br />.
 					return vTransform;
 				}
             }
+
+			public float PaddedRightPoint () {
+				return rectTransform.anchoredPosition.x + rectTransform.sizeDelta.x + padding.PadWidth();
+			}
+			public float PaddedBottomPoint () {
+				return rectTransform.anchoredPosition.y + rectTransform.sizeDelta.y + padding.PadHeight();
+			}
+			public Vector2 PaddedRightBottomPoint () {
+				return rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
+			}
+
 			public VirtualGameObject (Tag tag, Tag[] depth) {
 				this.id = Guid.NewGuid().ToString();
 
@@ -265,13 +289,67 @@ hard break will appear without <br />.
 					}
 				}
 
+				// 親のレイアウト後、padding前。
+
+
 				var childlen = this.transform.GetChildlen();
+				
+				// pタグであれば、childを列単位に分けながら回り込み処理をかけていく。
 				if (0 < childlen.Count) {
 					var rightBottomPoint = Vector2.zero;
+					var layoutLine = new List<VirtualGameObject>();
 
+					// brの扱いが難しい、、、
+					var brNext = false;
 					foreach (var child in childlen) {
 						handlePoint = child.Layout(this, handlePoint, onLayoutDel);
-						var paddedRightBottomPoint = child.rectTransform.paddedRightBottomPoint;
+						
+						// p tagの要素の場合のみ、回り込みが起きる。
+						if (this.tag == Tag.P) {
+							if (!brNext) {
+								// brが前の要素に入って入れば、強制的に改行を発生させる。んだけど、この機構が難しいな。
+								// あーー要素をまたぐケースか。ってことはTokenizerで状態保つのがいいのか。
+								if (child.kv.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
+									brNext = true;
+								}
+
+								if (handlePoint.nextLeftHandle <= 300) {
+									layoutLine.Add(child);
+									continue;
+								}
+							}
+
+							// reset br flag.
+							brNext = false;
+
+							if (0 < layoutLine.Count) {
+								handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+
+								// forget current line.
+								layoutLine.Clear();
+								
+
+								// move current child content to next line head.
+								child.rectTransform.anchoredPosition = new Vector2(handlePoint.nextLeftHandle + child.padding.left, handlePoint.nextTopHandle + child.padding.top);
+
+								// set next line head.
+								layoutLine.Add(child);							
+
+								// set next handle.
+								handlePoint.nextLeftHandle = handlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
+							} else {// 0件できてる場合、1つだけで超えてるので、何もしないでいい。
+
+							}
+						}
+					}
+
+					if (this.tag == Tag.P) {
+						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+					}
+
+					// fit most large bottom-right point. largest point of width and y.
+					foreach (var child in childlen) {
+						var paddedRightBottomPoint = child.PaddedRightBottomPoint();
 						if (rightBottomPoint.x < paddedRightBottomPoint.x) {
 							rightBottomPoint.x = paddedRightBottomPoint.x;
 						}
@@ -286,6 +364,8 @@ hard break will appear without <br />.
 					// do nothing.
 				}
 				
+				// 子のlayout, padding後
+
 				/*
 					set padding if need.
 					default padding is 0.
@@ -293,19 +373,14 @@ hard break will appear without <br />.
 				onLayoutDel(this.tag, this.depth, this.padding, new Dictionary<KV_KEY, string>(this.kv));
 
 				/*
-					adopt padding.
+					adopt padding to this content.
 				*/
 				{
-					// 移動前の原点と、size、paddingを足した位置を持つ。
-					rectTransform.paddedRightBottomPoint = rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PaddedWidth(), padding.PaddedHeight());
-
 					// x,yをずらす。子供の生成後なので、子供もろともズレてくれる。
-					rectTransform.anchoredPosition += padding.LeftTopPosition();
+					rectTransform.anchoredPosition += padding.LeftTopPoint();
 					
-					// 単純にpaddingぶんだけ次の要素のカーソルが移動する。
-					// 回り込ませたくない場合、次の要素の初頭でnextLeftHandleだけをリセットすればいいのか。
-					handlePoint.nextLeftHandle += padding.PaddedWidth();
-					handlePoint.nextTopHandle += padding.PaddedHeight();
+					handlePoint.nextLeftHandle += padding.PadWidth();
+					handlePoint.nextTopHandle += padding.PadHeight();
 				}
 
 				/*
@@ -314,14 +389,8 @@ hard break will appear without <br />.
 				switch (parent.tag) {
 					case Tag.H:
 					case Tag.P: {
-						if (this.tag == Tag._CONTENT && kv.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
-							// CRLF
-							handlePoint.nextLeftHandle = 0;
-							handlePoint.nextTopHandle = this.rectTransform.paddedRightBottomPoint.y;
-						} else {
-							// next content is planned to layout next of this content.
-							handlePoint.nextLeftHandle += this.rectTransform.sizeDelta.x;
-						}
+						// next content is planned to layout to the next of this content.
+						handlePoint.nextLeftHandle += this.rectTransform.sizeDelta.x + this.padding.PadWidth();
 						break;
 					}
 					case Tag.UL:
@@ -329,13 +398,40 @@ hard break will appear without <br />.
 					case Tag.ROOT: {
 						// CRLF
 						handlePoint.nextLeftHandle = 0;
-						handlePoint.nextTopHandle = this.rectTransform.paddedRightBottomPoint.y;
+						handlePoint.nextTopHandle = this.PaddedBottomPoint();
 						break;
 					}
 				}
 
 				return handlePoint;
 			}
+
+			private HandlePoint SortByLayoutLine (List<VirtualGameObject> layoutLine, HandlePoint handlePoint) {
+				// で、現状ここまでの一列に対して一番背が高い要素がそのまま、それ以外の要素が下一列になるようにyを調整する。
+				var targetHeightObjArray = layoutLine.OrderByDescending(c => c.rectTransform.sizeDelta.y + c.padding.PadHeight()).ToArray();
+				if (0 < targetHeightObjArray.Length) {
+					var tallestContent = targetHeightObjArray[0];
+					
+					// この要素内では、相対位置になってるんで、一番高い要素の下のとこに下端があえば良さそう。
+					var paddedHighestHeightInLine = tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();// highest padded height.
+					
+					foreach (var childInLine in layoutLine) {
+						if (childInLine == tallestContent) {
+							continue;
+						}
+
+						var paddedHeight = childInLine.PaddedBottomPoint() - childInLine.rectTransform.anchoredPosition.y;
+						var heightDiff = paddedHighestHeightInLine - paddedHeight;
+						childInLine.rectTransform.anchoredPosition += new Vector2(0, heightDiff);
+					}
+
+					// set next line head.
+					handlePoint.nextLeftHandle = 0;
+					handlePoint.nextTopHandle += paddedHighestHeightInLine;
+				}
+				return handlePoint;
+			}
+
 
 			private void Materialize (VirtualGameObject parent, OnMaterializeDelegate onMaterializeDel) {
 				switch (this.tag) {
@@ -388,7 +484,6 @@ hard break will appear without <br />.
 		public class VirtualRectTransform {
 			public Vector2 anchoredPosition = Vector2.zero;
 			public Vector2 sizeDelta = Vector2.zero;
-			public Vector2 paddedRightBottomPoint = Vector2.zero;
 		}
 
 		private readonly VirtualGameObject rootObject;
@@ -486,7 +581,7 @@ hard break will appear without <br />.
 			SetupMaterializeAction(child);
 		}
 
-		private const string BRTagStr = "<br />";
+		private string BRTagStr = "<br />";
 		
 		private void AddContentToParent (TagPoint parentPoint, string contentOriginal) {
 			if (contentOriginal.EndsWith(BRTagStr)) {
@@ -618,14 +713,14 @@ hard break will appear without <br />.
 			public float bottom; 
 			public float left;
 
-			public Vector2 LeftTopPosition () {
+			public Vector2 LeftTopPoint () {
 				return new Vector2(left, top);
 			}
 
-			public float PaddedWidth () {
+			public float PadWidth () {
 				return left + right;
 			}
-			public float PaddedHeight () {
+			public float PadHeight () {
 				return top + bottom;
 			}
 		}
