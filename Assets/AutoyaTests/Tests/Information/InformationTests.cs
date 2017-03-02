@@ -8,21 +8,6 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using AutoyaFramework.Information;
 
-public enum Tag {
-	NO_TAG_FOUND,
-	UNKNOWN,
-	_CONTENT,
-	ROOT,
-	H, 
-	P, 
-	IMG, 
-	UL, 
-	OL,
-	LI, 
-	A,
-	BR
-}
-
 public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
 
