@@ -56,6 +56,7 @@ which contains essential game features.
 ## Features
 * Authentication handling
 * AssetBundle load/management
+
 * HTTP/TCP/UDP Connection feature
 * Maintenance changed handling
 * Purchase/IAP feature
@@ -72,8 +73,8 @@ This framework can help that.
 
 see below.  
 [LICENSE](./LICENSE)
-";
-var s = @"## Progress
+
+## Progress
 
 ### automatic Authentication
 already implemented.
@@ -125,6 +126,7 @@ hard break will appear without <br />.
 
 		";
     
+	
 
         // Create new markdown instance
         Markdown mark = new Markdown();
@@ -143,13 +145,16 @@ hard break will appear without <br />.
 			・生成したコンポーネントを配置、描画
 			
 			で、これらの機能は、「N行目から」みたいな指定で描画できるようにしたい。
+
+			描画範囲に対する生成が未完成。
 		*/
 		RunOnMainThread(
 			() => {
 				var tokenizer = new Tokenizer(text);
 
-				// とりあえず全体を生成
-				tokenizer.Materialize(
+				// 全体を生成
+				var root = tokenizer.Materialize(
+					"test",
 					new Rect(0, 0, 300, 400),
 					/*
 						要素ごとにpaddingを変更できる。
@@ -167,6 +172,8 @@ hard break will appear without <br />.
 					}
 				);
 				
+				var canvas = GameObject.Find("Canvas");
+				root.transform.SetParent(canvas.transform);
 
 				// var childlen = obj.transform.GetChildlen();
 

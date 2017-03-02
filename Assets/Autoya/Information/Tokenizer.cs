@@ -120,12 +120,10 @@ namespace AutoyaFramework.Information {
     }
 
     public class VirtualGameObject {
-        public readonly string id;
-
         public GameObject _gameObject;
         public string prefabName;
 
-        public InformationRootMonoBehaviour @class;
+        public InformationRootMonoBehaviour rootInstance;
 
         public readonly Tag tag;
         public readonly Tag[] depth;
@@ -148,8 +146,6 @@ namespace AutoyaFramework.Information {
         }
 
         public VirtualGameObject (Tag tag, Tag[] depth) {
-            this.id = Guid.NewGuid().ToString();
-
             this.tag = tag;
             this.depth = depth;
             this.padding = new Padding();
@@ -188,9 +184,9 @@ namespace AutoyaFramework.Information {
 
             var height = 0;
             foreach(var l in generator.lines){
-                // Debug.LogError("ch topY:" + l.topY);
-                // Debug.LogError("ch index:" + l.startCharIdx);
-                // Debug.LogError("ch height:" + l.height);
+                // LogError("ch topY:" + l.topY);
+                // LogError("ch index:" + l.startCharIdx);
+                // LogError("ch height:" + l.height);
                 height += l.height;
             }
             
@@ -211,7 +207,7 @@ namespace AutoyaFramework.Information {
 
             // set y start pos.
             rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTrans.anchoredPosition.y + contentHandlePoint.nextTopHandle);
-
+            
             var contentWidth = 0f;
             var contentHeight = 0f;
 
@@ -252,7 +248,6 @@ namespace AutoyaFramework.Information {
                                 break;
                             }
                             default: {
-                                Debug.LogError("IMG tag, unhandled. key:" + key);
                                 break;
                             }
                         }
@@ -301,19 +296,20 @@ namespace AutoyaFramework.Information {
         public GameObject MaterializeRoot (string viewName, Vector2 viewPort, Tokenizer.OnLayoutDelegate onLayoutDel, Tokenizer.OnMaterializeDelegate onMaterializeDel) {
             var rootHandlePoint = new HandlePoint(0, 0, viewPort.x, viewPort.y);
 
+            // 事前計算、ここでコンテンツの一覧を返すようにすればいいかな。要素単位で。
+            Layout(this, rootHandlePoint, onLayoutDel);
+
+
             this._gameObject = new GameObject(viewName + Tag.ROOT.ToString());
             
-            this.@class = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
+            this.rootInstance = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
             var rectTrans = this._gameObject.AddComponent<RectTransform>();
             rectTrans.anchorMin = Vector2.up;
             rectTrans.anchorMax = Vector2.up;
             rectTrans.pivot = Vector2.up;
-            rectTrans.position = rootHandlePoint.Position();
-            rectTrans.sizeDelta = rootHandlePoint.Size();
+            rectTrans.position = Vector2.zero;
+            rectTrans.sizeDelta = viewPort;
             
-            // 事前計算、コンストラクト時に持っといていい気がする。ここを軽くするのは大事っぽい。
-            Layout(this, rootHandlePoint, onLayoutDel);
-
             // 範囲指定してGOを充てる、ということがしたい。
             Materialize(this, onMaterializeDel);
 
@@ -346,6 +342,23 @@ namespace AutoyaFramework.Information {
                 foreach (var child in childlen) {
                     handlePoint = child.Layout(this, handlePoint, onLayoutDel);
                     
+                    // 子のタグによって、layoutLineに加えなくてもいい、という感じ。現在のtagがPで、子供が_Contentな場合のみ、という。
+                    if (this.tag == Tag.P) {
+                        switch (child.tag) {
+                            case Tag.IMG:
+                            case Tag._CONTENT: {
+                                // pass.
+                                break;
+                            }
+                            default: {
+                                Debug.LogError("あーーここにLIとかが。 child.tag:" + child.tag);
+                                break;
+                            }
+                        }
+                    } else {
+                        continue;
+                    }
+
                     // width over.
                     if (handlePoint.viewWidth < handlePoint.nextLeftHandle) {
                         if (0 < layoutLine.Count) {
@@ -356,16 +369,17 @@ namespace AutoyaFramework.Information {
 
                             // move current child content to next line head.
                             child.rectTransform.anchoredPosition = new Vector2(handlePoint.nextLeftHandle + child.padding.left, handlePoint.nextTopHandle + child.padding.top);
-
+                    
                             // set next handle.
                             handlePoint.nextLeftHandle = handlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
                         }
                     }
 
                     // in viewpoint width.
+
                     layoutLine.Add(child);
 
-                    // br contained.
+                    // if <br /> is contained.
                     if (child.keyValueStore.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
                         handlePoint = SortByLayoutLine(layoutLine, handlePoint);
 
@@ -389,6 +403,7 @@ namespace AutoyaFramework.Information {
                     // fit most large bottom-right point. largest point of width and y.
                     foreach (var child in childlen) {
                         var paddedRightBottomPoint = child.PaddedRightBottomPoint();
+
                         if (rightBottomPoint.x < paddedRightBottomPoint.x) {
                             rightBottomPoint.x = paddedRightBottomPoint.x;
                         }
@@ -403,7 +418,7 @@ namespace AutoyaFramework.Information {
 
                 // layout and padding and orientation of child tags are done.
             }
-
+            
             /*
                 set padding if need.
                 default padding is 0.
@@ -423,7 +438,7 @@ namespace AutoyaFramework.Information {
 
             /*
                 set next left-top point by this tag && the parent tag kind.
-                */
+            */
             switch (parent.tag) {
                 case Tag.H:
                 case Tag.P: {
@@ -440,7 +455,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
             }
-
+            
             return handlePoint;
         }
 
@@ -456,7 +471,7 @@ namespace AutoyaFramework.Information {
                 
                 // get tallest padded height. this will be this layoutLine's bottom line.
                 var paddedHighestHeightInLine = tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
-                
+            
                 // other child content will be moved.
                 foreach (var childInLine in layoutLine) {
                     if (childInLine == tallestContent) {// ignore tallest content itself.
@@ -476,7 +491,7 @@ namespace AutoyaFramework.Information {
             return handlePoint;
         }
 
-        
+
         private void Materialize (VirtualGameObject parent, Tokenizer.OnMaterializeDelegate onMaterializeDel) {
             switch (this.tag) {
                 case Tag.ROOT: {
@@ -500,7 +515,6 @@ namespace AutoyaFramework.Information {
         private GameObject MaterializeTagContent (string prefabName, Tag tag) {
             var prefab = LoadPrefab(prefabName);
             if (prefab == null) {
-                Debug.LogError("missing prefab:" + prefabName);
                 return new GameObject("missing prefab:" + prefabName);
             }
 
@@ -525,7 +539,7 @@ namespace AutoyaFramework.Information {
 
                                 // add button component.
                                 var rootObject = GetRootGameObject();
-                                var rootMBInstance = rootObject.@class;
+                                var rootMBInstance = rootObject.rootInstance;
                                 
                                 AddButton(obj, () => rootMBInstance.OnLinkTapped(tag, href));
                                 break;
@@ -547,7 +561,7 @@ namespace AutoyaFramework.Information {
                                 
                                 // add button component.
                                 var rootObject = GetRootGameObject();
-                                var rootMBInstance = rootObject.@class;
+                                var rootMBInstance = rootObject.rootInstance;
                                 
                                 AddButton(obj, () => rootMBInstance.OnImageTapped(tag, src));
                                 break;
@@ -681,8 +695,8 @@ namespace AutoyaFramework.Information {
             rootObject = Tokenize(root, source);
         }
 
-        public GameObject Materialize (Rect viewport, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
-            var rootObj = rootObject.MaterializeRoot("test", viewport.size, onLayoutDel, onMaterializeDel);
+        public GameObject Materialize (string viewName, Rect viewport, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
+            var rootObj = rootObject.MaterializeRoot(viewName, viewport.size, onLayoutDel, onMaterializeDel);
             rootObj.transform.position = viewport.position;
             return rootObj;
         }
@@ -898,7 +912,7 @@ namespace AutoyaFramework.Information {
                         }
                     }
                     // var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
-                    // Debug.LogError("originalTagName:" + originalTagName + " contains kv:" + string.Join(", ", kvs));
+                    // LogError("originalTagName:" + originalTagName + " contains kv:" + string.Join(", ", kvs));
                 } else {
                     originalTagName = line.Substring(1, closeIndex - 1);
                 }
@@ -961,7 +975,7 @@ namespace AutoyaFramework.Information {
                     }
                 }
                 // var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
-                // Debug.LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
+                // LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
                 
                 try {
                     var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
