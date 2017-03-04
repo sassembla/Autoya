@@ -47,7 +47,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
     // }
 
     [MTest] public void GetPreloadListThenLoadByListName () {
-        Debug.LogError("特定のpreloadListを取得、書かれているAssetBundleを全て取得する。キャッシュが終わったことを確認");
+        Debug.LogWarning("特定のpreloadListを取得、書かれているAssetBundleを全て取得する。キャッシュが終わったことを確認");
     }
 
 }
