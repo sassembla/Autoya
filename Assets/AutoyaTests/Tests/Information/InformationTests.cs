@@ -158,6 +158,7 @@ hard break will appear without <br />.
 				);
 				
 				var canvas = GameObject.Find("Canvas");
+				if (canvas == null) return;
 				root.transform.SetParent(canvas.transform);
 
 				// var childlen = obj.transform.GetChildlen();
@@ -175,7 +176,7 @@ hard break will appear without <br />.
 				// 	// これがuGUIのコンポーネントになってる
 				// }
 
-				// GameObject.DestroyImmediate(obj);// とりあえず消す
+				GameObject.DestroyImmediate(root);
 			}
 		);
 	}

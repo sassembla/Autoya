@@ -231,17 +231,7 @@ namespace AutoyaFramework.Information {
                     
                     // 子のタグによって、layoutLineに加えなくてもいい、という感じ。現在のtagがPで、子供が_Contentな場合のみ、という。
                     if (this.tag == Tag.P) {
-                        switch (child.tag) {
-                            case Tag.IMG:
-                            case Tag._CONTENT: {
-                                // pass.
-                                break;
-                            }
-                            default: {
-                                Debug.LogError("あーーここにLIとかが。 child.tag:" + child.tag);
-                                break;
-                            }
-                        }
+                        // pass.
                     } else {
                         continue;
                     }
