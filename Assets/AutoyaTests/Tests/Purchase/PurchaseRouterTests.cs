@@ -134,12 +134,12 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
     }
 
     [MTest] public void PurchaseCancell () {
-        Debug.LogError("購入キャンセルのテストがしたい");
+        Debug.LogWarning("購入キャンセルのテストがしたい");
     }
 
 
     [MTest] public void Offline () {
-        Debug.LogError("多段階時のオフラインのテストがしたい");
+        Debug.LogWarning("多段階時のオフラインのテストがしたい");
     }
     
     /*

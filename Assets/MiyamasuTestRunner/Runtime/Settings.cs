@@ -32,7 +32,6 @@ namespace Miyamasu {
             }
             #endif
 
-            
             var settingData = Resources.Load(SETTING_FILE_NAME) as TextAsset;
             var settingDataStr = settingData.text;
 
@@ -45,6 +44,7 @@ namespace Miyamasu {
                 staticSettings = new RunnerSettings();
                 return staticSettings;
             }
+
             staticSettings = JsonUtility.FromJson<RunnerSettings>(settingDataStr);
             return staticSettings;
         }
