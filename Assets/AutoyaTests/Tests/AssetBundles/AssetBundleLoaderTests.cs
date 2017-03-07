@@ -45,41 +45,41 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				/*
 					set dummy list of AssetBundleList.
 				*/
-				dummyList = new AssetBundleList(// このリストはワンタイムで生成したいな〜とも思うのだけれど。そっか、わざと間違えればいいんだ。
+				dummyList = new AssetBundleList(
 					"Mac",
 					"1.0.0", 
 					new AssetBundleInfo[]{
 						// pngが一枚入ったAssetBundle
 						new AssetBundleInfo(
 							"bundlename", 
-							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"}, 
+							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
 							new string[0], 
-							621985162,
-							"578b73927bc11f6e80072caa17983776"
+							3536144294,
+							"b33aea16372df3c97feab14af81de043"
 						),
 						// 他のAssetBundleへの依存があるAssetBundle
 						new AssetBundleInfo(
 							"dependsbundlename", 
-							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"}, 
+							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"}, 
 							new string[]{"bundlename"}, 
-							2389728195,
-							"1a3bdb638b301fd91fc5569e016604ad"
+							3727507680,
+							"d701473af26e1e225fbc7f60e6739741"
 						),
 						// もう一つ、他のAssetBundleへの依存があるAssetBundle
 						new AssetBundleInfo(
 							"dependsbundlename2", 
-							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"}, 
+							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"}, 
 							new string[]{"bundlename"}, 
-							1194278944,
-							"b24db843879f6f82d9bee95e15559003"
+							1346003095,
+							"5e31732f24ec239c5c53460adb3eb4ea"
 						),
 						// nestedprefab -> dependsbundlename -> bundlename
 						new AssetBundleInfo(
 							"nestedprefab", 
-							new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"}, 
+							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"}, 
 							new string[]{"dependsbundlename"}, 
-							779842307,
-							"30b17595dd7be703c2b04a6e4c3830ff"
+							2004707157,
+							"4a80ba4d5bae1932fab9c3d23d4f5cd7"
 						),
 						// このへんに、他のAssetから依存されてるけどサーバ上にないAsset
 
@@ -116,7 +116,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
 					tex = texAsset;
 					done = true;
@@ -140,7 +140,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			
 			RunEnumeratorOnMainThread(
 				loader.LoadAsset(
-					"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
 					(string assetName, Texture2D texAsset) => {
 						tex = texAsset;
 						done = true;
@@ -162,7 +162,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			
 			RunEnumeratorOnMainThread(
 				loader.LoadAsset(
-					"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
 					(string assetName, Texture2D texAsset) => {
 						tex = texAsset;
 						done = true;
@@ -185,7 +185,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab = prefabAsset;
 					done = true;
@@ -222,7 +222,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 			RunEnumeratorOnMainThread(
 				loader.LoadAsset(
-					"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 					(string assetName, GameObject prefabAsset) => {
 						prefab = prefabAsset;
 						done = true;
@@ -258,7 +258,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 			RunEnumeratorOnMainThread(
 				loader.LoadAsset(
-					"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 					(string assetName, GameObject prefabAsset) => {
 						prefab = prefabAsset;
 						done = true;
@@ -299,7 +299,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
 					tex = texAsset;
 					textureLoadDone = true;
@@ -318,7 +318,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab = prefabAsset;
 					prefabLoadDone = true;
@@ -360,7 +360,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		// load async
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab = prefabAsset;
 					prefabLoadDone = true;
@@ -381,7 +381,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		// load async
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
 					tex = texAsset;
 					textureLoadDone = true;
@@ -422,7 +422,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab1 = prefabAsset;
 					prefabLoadDone1 = true;
@@ -440,7 +440,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab2 = prefabAsset;
 					prefabLoadDone2 = true;
@@ -486,7 +486,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		RunEnumeratorOnMainThread(
 			loader.LoadAsset(
-				"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab", 
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab = prefabAsset;
 					prefabLoadDone = true;
@@ -523,8 +523,95 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		}
 	}
 
-    [MTest] public void LoadHashMismatchedBundle () {
-        Debug.LogWarning("指定したAssetBundleをDLしたんだけどhashが食い違った場合のテスト");
+    [MTest] public void LoadCrcMismatchedBundle () {
+		dummyList = new AssetBundleList(
+			"Mac",
+			"1.0.0", 
+			new AssetBundleInfo[]{
+				// pngが一枚入ったAssetBundle
+				new AssetBundleInfo(
+					"bundlename", 
+					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
+					new string[0], 
+					3536144294 + 1,// wrong crc.
+					"b33aea16372df3c97feab14af81de043"
+				)
+			}
+		);
+
+		loader = new AssetBundleLoader(basePath, dummyList, null);
+
+		// intentional fail.
+		{
+			var done = false;
+			
+			RunEnumeratorOnMainThread(
+				loader.LoadAsset(
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+					(string assetName, Texture2D texAsset) => {
+						// do nothing.
+					},
+					(assetName, failEnum, reason, status) => {
+						Assert(failEnum == AssetBundleLoader.AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
+						done = true;
+					}
+				),
+				false
+			);
+
+			WaitUntil(
+				() => done,
+				5,
+				"failed to wait crc mismatch."
+			);
+		}
+
+		dummyList = new AssetBundleList(
+			"Mac",
+			"1.0.0", 
+			new AssetBundleInfo[]{
+				// pngが一枚入ったAssetBundle
+				new AssetBundleInfo(
+					"bundlename", 
+					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
+					new string[0], 
+					3536144294,// valid crc.
+					"b33aea16372df3c97feab14af81de043"
+				)
+			}
+		);
+
+		loader = new AssetBundleLoader(basePath, dummyList, null);
+
+		// retry.
+		{
+			Texture2D tex = null;
+			var done = false;
+			
+			RunEnumeratorOnMainThread(
+				loader.LoadAsset(
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+					(string assetName, Texture2D texAsset) => {
+						tex = texAsset;
+						done = true;
+					},
+					(assetName, failEnum, reason, status) => {
+						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
+						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
+						done = true;
+					}
+				),
+				false
+			);
+
+			WaitUntil(
+				() => done,
+				5,
+				"failed to wait crc mismatch."
+			);
+
+			Assert(tex != null, "tex is null.");
+		}
     }
 
 	[MTest] public void LoadMissingBundle () {
@@ -544,7 +631,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		foreach (var loadingAssetName in assetNames) {
 			switch (loadingAssetName) {
-				case "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png": {
+				case "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png": {
 					RunEnumeratorOnMainThread(
 						loader.LoadAsset<Texture2D>(
 							loadingAssetName, 
@@ -622,7 +709,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void GetContainedAssetBundleName () {
-		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
 		RunEnumeratorOnMainThread(
@@ -645,7 +732,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void UnloadAssetBundle () {
-		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
 		RunEnumeratorOnMainThread(
@@ -668,7 +755,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
     }
 
 	[MTest] public void IsBundleCachedOnStorage () {
-		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
 		RunEnumeratorOnMainThread(
@@ -694,7 +781,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void IsBundleCachedOnMemory () {
-		var assetName = "Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png";
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
 		RunEnumeratorOnMainThread(
