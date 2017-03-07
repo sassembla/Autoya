@@ -330,7 +330,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			),
 			false
 		);
-		
+
 		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
 		Assert(tex, "tex is null.");
 		Assert(prefab, "prefab is null.");
@@ -617,6 +617,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	[MTest] public void LoadMissingBundle () {
 		Debug.LogWarning("指定したassetを含むbundleがDLできない場合のテスト");
 	}
+
 	[MTest] public void LoadMissingDependentBundle () {
 		Debug.LogWarning("依存したassetが依存しているbundleが存在しなかったり、エラーを出すので、そのエラーがちゃんと出るか試す場合のテスト");
 	}

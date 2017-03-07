@@ -155,15 +155,16 @@ namespace AutoyaFramework.AssetBundles {
             long timeoutTick, 
             bool isDependency=false
         ) where T : UnityEngine.Object {
+            while (!Caching.ready) {
+                yield return null;
+            }
+
             var dependentBundleNames = list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault().dependsBundleNames;
             var assetBundleInfo = list.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
             
             if (assetBundleInfo.Length == 0) {
                 // no assetBundleInfo found.
                 loadFailed(assetName, AssetBundleLoadError.NoAssetBundleFoundInList, "no assetBundle found:" + bundleName + " in list.", new AutoyaStatus());
-                
-                // unbind.
-                loadingAssetBundleNames.Remove(bundleName);
                 yield break;
             }
             
@@ -224,10 +225,6 @@ namespace AutoyaFramework.AssetBundles {
                                 if (coroutine == null) continue;
 
                                 if (!coroutine.MoveNext()) {
-                                    if (loadingAssetBundleNames.Contains(loadingAssetBundleName)) {
-                                        loadingAssetBundleNames.Remove(loadingAssetBundleName);
-                                    }
-
                                     coroutines[loadingAssetBundleName] = null;
                                 }
                             }
@@ -244,11 +241,6 @@ namespace AutoyaFramework.AssetBundles {
                 yield return null;
             }
 
-            while (!Caching.ready) {
-                yield return null;
-            }
-
-            
             var url = GetAssetBundleDownloadUrl(bundleName);
             
             // check cached or not.
@@ -283,13 +275,8 @@ namespace AutoyaFramework.AssetBundles {
                 assetBundle is not on memory yet. start downloading.
             */
             
-            // start binding by bundle name. this bundle is now loading.
-            if (!loadingAssetBundleNames.Contains(bundleName)) {
-                loadingAssetBundleNames.Add(bundleName);
-            }
-
-            // binded block. should unbind if break.
-            {
+            // binded block.
+            using (var loadingConstraint = new AssetBundleLoadingConstraint(bundleName, loadingAssetBundleNames)) {
                 /*
                     download bundle or load donwloaded bundle from cache.
                     load to memory.
@@ -302,9 +289,6 @@ namespace AutoyaFramework.AssetBundles {
 
                     if (!assetBundleDict.ContainsKey(bundleName)) {
                         // error is already fired in above.
-
-                        // unbind.
-                        loadingAssetBundleNames.Remove(bundleName);
                         yield break;
                     }
                     
@@ -329,8 +313,6 @@ namespace AutoyaFramework.AssetBundles {
                             }
                             loadFailed(assetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString(), new AutoyaStatus());
                             
-                            // unbind.
-                            loadingAssetBundleNames.Remove(bundleName);
                             yield break;
                         }
 
@@ -344,9 +326,33 @@ namespace AutoyaFramework.AssetBundles {
                     }
                 }
             }
+        }
 
-            // unbind.
-            loadingAssetBundleNames.Remove(bundleName);
+        private class AssetBundleLoadingConstraint : IDisposable {
+            private string target;
+            private List<string> list;
+            
+            public AssetBundleLoadingConstraint (string target, List<string> list) {
+                this.target = target;
+                this.list = list;
+
+                this.list.Add(this.target);
+            }
+
+            private bool disposedValue = false;
+
+            protected virtual void Dispose (bool disposing) {
+                if (!disposedValue) {
+                    if (disposing) {
+                        list.Remove(target);
+                    }
+                    disposedValue = true;
+                }
+            }
+
+            void IDisposable.Dispose () {
+                Dispose(true);
+            }
         }
 
         private IEnumerator DownloadAssetThenCacheAndLoadToMemory (
