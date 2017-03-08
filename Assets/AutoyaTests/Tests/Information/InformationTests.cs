@@ -11,8 +11,7 @@ using AutoyaFramework.Information;
 public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
 
-        var sampleMd = @"
-# Autoya
+		var sampleMd = @"# Autoya
 ver 0.8.4
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
@@ -110,15 +109,13 @@ then,(hard break)
 hard break will appear without <br />.
 
 		";
-    
 	
+		// Create new markdown instance
+		Markdown mark = new Markdown();
 
-        // Create new markdown instance
-        Markdown mark = new Markdown();
-
-        // Run parser
-        string text = mark.Transform(sampleMd);
-        Debug.LogError("text:" + text);
+		// Run parser
+		string text = mark.Transform(sampleMd);
+		Debug.LogError("text:" + text);
 
 		/*
 			次のようなhtmlが手に入るので、
@@ -140,7 +137,7 @@ hard break will appear without <br />.
 				// 全体を生成
 				var root = tokenizer.Materialize(
 					"test",
-					new Rect(0, 0, 300, 400),
+					new Rect(0, 0, 1024, 400),
 					/*
 						要素ごとにpaddingを変更できる。
 					*/
@@ -158,8 +155,9 @@ hard break will appear without <br />.
 				);
 				
 				var canvas = GameObject.Find("Canvas");
-				if (canvas == null) return;
-				root.transform.SetParent(canvas.transform);
+				if (canvas != null) {
+					root.transform.SetParent(canvas.transform);
+				}
 
 				// var childlen = obj.transform.GetChildlen();
 
@@ -181,8 +179,8 @@ hard break will appear without <br />.
 		);
 	}
 
-    [MTest] public void ParseLargeMarkdown () {
-        var sampleMd = @"
+	[MTest] public void ParseLargeMarkdown () {
+		var sampleMd = @"
 # Autoya
 ver 0.8.4
 

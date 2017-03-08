@@ -2,7 +2,7 @@ using AutoyaFramework.Persistence.Files;
 using UnityEngine;
 
 namespace AutoyaFramework {
-    public partial class Autoya {
+	public partial class Autoya {
 		/*
 			persistence.
 				privides  sync/async persistent operation.

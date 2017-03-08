@@ -5,7 +5,7 @@
 	This method will be called from Unity when the App starts running.
 */
 namespace AutoyaFramework {
-    public partial class Autoya {
+	public partial class Autoya {
 		private static Autoya autoya;
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)] private static void EntryPoint () {
 			autoya = new Autoya(Application.persistentDataPath);

@@ -19,7 +19,7 @@ namespace AutoyaFramework {
 	/**
 		authenticated http feature.
 	*/
-    public partial class Autoya {
+	public partial class Autoya {
 		private HTTPConnection _autoyaHttp;
 		
 		/*
@@ -80,8 +80,8 @@ namespace AutoyaFramework {
 				)
 			);
 			
-            return connectionId;
-        }
+			return connectionId;
+		}
 
 		public static string Http_Post (
 			string url, 
@@ -139,8 +139,8 @@ namespace AutoyaFramework {
 				)
 			);
 
-            return connectionId;
-        }
+			return connectionId;
+		}
 
 		public static string Http_Put (
 			string url, 
@@ -198,8 +198,8 @@ namespace AutoyaFramework {
 				)
 			);
 
-            return connectionId;
-        }
+			return connectionId;
+		}
 
 		public static string Http_Delete (
 			string url, 
@@ -256,8 +256,8 @@ namespace AutoyaFramework {
 				)
 			);
 
-            return connectionId;
-        }
+			return connectionId;
+		}
 
 		private class ConnectionErrorInstance {
 			private readonly string connectionId;
@@ -277,5 +277,5 @@ namespace AutoyaFramework {
 				failed(connectionId, code, reason, status);
 			}
 		}
-    }
+	}
 }

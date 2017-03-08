@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace AutoyaFramework.Encrypt.AES256 {
-    public class AES256 {
+	public class AES256 {
 		private readonly UTF8Encoding utf8Enc;
 
 		private readonly byte[] keyBytes, IVBytes;

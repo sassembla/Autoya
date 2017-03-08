@@ -29,7 +29,7 @@ namespace AutoyaFramework {
 		}
 	}
 
-    public partial class Autoya {
+	public partial class Autoya {
 		private AuthRouter _autoyaAuthRouter;
 
 		private Action onAuthenticated = () => {};

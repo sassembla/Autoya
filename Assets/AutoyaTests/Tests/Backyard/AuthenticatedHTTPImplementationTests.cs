@@ -24,8 +24,8 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Action onMainThread = () => {
 			var dataPath = Application.persistentDataPath;
 
-            var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-            DeleteAllData(fwPath);
+			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+			DeleteAllData(fwPath);
 			
 			Autoya.TestEntryPoint(dataPath);
 			

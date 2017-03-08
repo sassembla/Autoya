@@ -7,7 +7,7 @@ using System.IO;
 	do not use severe data without encryption.
 */
 namespace AutoyaFramework.Persistence.Files {
-    public class FilePersistence {
+	public class FilePersistence {
 		private readonly string basePath;
 
 		public FilePersistence (string basePathSource) {
@@ -179,7 +179,7 @@ namespace AutoyaFramework.Persistence.Files {
 
 					#if UNITY_IOS
 					{
-                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
 					}
 					#endif
 
@@ -210,7 +210,7 @@ namespace AutoyaFramework.Persistence.Files {
 
 		// 			#if UNITY_IOS
 		// 			{
-        //                 UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+		//                 UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
 		// 			}
 		// 			#endif
 

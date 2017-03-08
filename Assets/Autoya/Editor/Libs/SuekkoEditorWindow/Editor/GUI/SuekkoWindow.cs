@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace Suekko {
-    public class SuekkoWindow : EditorWindow {
+	public class SuekkoWindow : EditorWindow {
 		/*
 			target type instance.
 		*/
@@ -21,11 +21,11 @@ namespace Suekko {
 		/*
 			reload if focused.
 		*/
-        public void OnFocus() {
+		public void OnFocus() {
 			if (fieldActions == null) {
 				Setup(targetType);
 			}
-        }
+		}
 
 		private Dictionary<NameAndType, Action<object>> fieldActions;
 		private object[] param;

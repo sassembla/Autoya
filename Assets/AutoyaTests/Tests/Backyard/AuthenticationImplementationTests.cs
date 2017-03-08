@@ -23,7 +23,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			var dataPath = Application.persistentDataPath;
 
 			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-            DeleteAllData(fwPath);
+			DeleteAllData(fwPath);
 
 			Autoya.TestEntryPoint(dataPath);
 
@@ -47,10 +47,10 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
 	}
 
-    [MTeardown] public void Teardown () {
-        RunOnMainThread(Autoya.Shutdown);
+	[MTeardown] public void Teardown () {
+		RunOnMainThread(Autoya.Shutdown);
 		Autoya.ResetAllForceSetting();
-    }
+	}
 
 	
 	[MTest] public void WaitDefaultAuthenticate () {

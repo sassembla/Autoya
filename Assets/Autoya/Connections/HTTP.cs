@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 */
 namespace AutoyaFramework.Connections.HTTP {
 
-    public class HTTPConnection {
+	public class HTTPConnection {
 		
 		public IEnumerator Get (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;

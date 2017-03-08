@@ -20,9 +20,9 @@ public class MaintenanceTests : MiyamasuTestRunner {
 	}
 	
 	[MSetup] public void Setup () {
-        Autoya.ResetAllForceSetting();
-        
-        DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+		Autoya.ResetAllForceSetting();
+		
+		DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 		
 		var authorized = false;
 		Action onMainThread = () => {
@@ -47,62 +47,62 @@ public class MaintenanceTests : MiyamasuTestRunner {
 		);
 
 		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
-        
-        Autoya.forceMaintenance = true;
+		
+		Autoya.forceMaintenance = true;
 	}
-    [MTeardown] public void Teardown () {
-        Autoya.ResetAllForceSetting();
-    }
+	[MTeardown] public void Teardown () {
+		Autoya.ResetAllForceSetting();
+	}
 
 
 	[MTest] public void Maintenance () {
 		var isUnderMaintenance = false;
 
-        // start connection -> Maintenance mode notification will return.
-        Autoya.Http_Get(
-            "https://github.com",
-            (conId, data) => {
-                // do nothing.
-            },
-            (conId, code, reason, autoyaStatus) => {
-                isUnderMaintenance = autoyaStatus.inMaintenance;
-            }
-        );
+		// start connection -> Maintenance mode notification will return.
+		Autoya.Http_Get(
+			"https://github.com",
+			(conId, data) => {
+				// do nothing.
+			},
+			(conId, code, reason, autoyaStatus) => {
+				isUnderMaintenance = autoyaStatus.inMaintenance;
+			}
+		);
 
-        WaitUntil(() => isUnderMaintenance, 5, "not in maintenance.");
+		WaitUntil(() => isUnderMaintenance, 5, "not in maintenance.");
 	}
 
 
 
-    private bool onMaintenanceCalled = false;
-    [MTest] public void SetOnMaintenance () {
-         /*
-            ready for handle maintenance mode.
-            you can set the method which will be called on maintenance.
-        */
-        Autoya.Maintenance_SetOnMaintenance(
-            MyOnMaintenance
-        );
+	private bool onMaintenanceCalled = false;
+	[MTest] public void SetOnMaintenance () {
+		 /*
+			ready for handle maintenance mode.
+			you can set the method which will be called on maintenance.
+		*/
+		Autoya.Maintenance_SetOnMaintenance(
+			MyOnMaintenance
+		);
 
-        // start connection -> Maintenance mode notification will return.
-        Autoya.Http_Get(
-            "https://github.com",
-            (conId, data) => {
-                // do nothing.
-            },
-            (conId, code, reason, autoyaStatus) => {
-                // do nothing.
-            }
-        );
+		// start connection -> Maintenance mode notification will return.
+		Autoya.Http_Get(
+			"https://github.com",
+			(conId, data) => {
+				// do nothing.
+			},
+			(conId, code, reason, autoyaStatus) => {
+				// do nothing.
+			}
+		);
 
-        WaitUntil(() => onMaintenanceCalled, 5, "onMaintenanceCalled does not be called.");
-    }
+		WaitUntil(() => onMaintenanceCalled, 5, "onMaintenanceCalled does not be called.");
+	}
 
 
 
-    private IEnumerator MyOnMaintenance () {
-        onMaintenanceCalled = true;
-        yield break;
-    }
-    
+	private IEnumerator MyOnMaintenance () {
+		onMaintenanceCalled = true;
+		yield break;
+	}
+	
 }

@@ -131,7 +131,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 		WaitUntil(() => done, 10, "timeout to load AssetBundle.");
 		Assert(tex != null, "tex is null");
-    }
+	}
 
 	[MTest] public void LoadSameAssetByAssetName () {
 		{// 1
@@ -177,7 +177,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			WaitUntil(() => done, 10, "timeout to load AssetBundle.");
 			Assert(tex != null, "tex is null");
 		}
-    }
+	}
 
 	[MTest] public void LoadAssetWithDependency () {
 		GameObject prefab = null;
@@ -213,10 +213,10 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				}
 			);
 		}
-    }
+	}
 
 	[MTest] public void LoadSameAssetWithDependsOnOneAssetBundle () {
-        {// 1
+		{// 1
 			GameObject prefab = null;
 			var done = false;
 
@@ -287,7 +287,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				);
 			}
 		}
-    }
+	}
 
 	/*
 		1 <- 2
@@ -313,7 +313,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 
 		// prefab = depending asset.
-        GameObject prefab = null;
+		GameObject prefab = null;
 		var prefabLoadDone = false;
 
 		RunEnumeratorOnMainThread(
@@ -347,14 +347,14 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				}
 			);
 		}
-    }
+	}
 
 	/*
 		1 -> 2
 	*/
 	[MTest] public void Load2Assets_1isDependsOnAnother_DependingFirst () {
 		// prefab = depending asset.
-        GameObject prefab = null;
+		GameObject prefab = null;
 		var prefabLoadDone = false;
 
 		// load async
@@ -374,7 +374,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		);
 
 		
-        // texture = depended asset.
+		// texture = depended asset.
 		Texture2D tex = null;
 		var textureLoadDone = false;
 		
@@ -411,7 +411,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				}
 			);
 		}
-    }
+	}
 
 	/*
 		A -> B <- C
@@ -475,7 +475,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				}
 			);
 		}
-    }
+	}
 
 	/*
 		A -> B -> C
@@ -523,7 +523,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		}
 	}
 
-    [MTest] public void LoadCrcMismatchedBundle () {
+	[MTest] public void LoadCrcMismatchedBundle () {
 		dummyList = new AssetBundleList(
 			"Mac",
 			"1.0.0", 
@@ -612,7 +612,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 			Assert(tex != null, "tex is null.");
 		}
-    }
+	}
 
 	[MTest] public void LoadMissingBundle () {
 		Debug.LogWarning("指定したassetを含むbundleがDLできない場合のテスト");
@@ -671,7 +671,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			var asset = loadedAssetAssets[key];
 			Assert(asset != null, "loaded asset:" + key + " is null.");
 		}
-    }
+	}
 
 	[MTest] public void OnMemoryAssetNames () {
 		/*
@@ -707,7 +707,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			10, 
 			"failed to unload all assets."
 		);
-    }
+	}
 
 	[MTest] public void GetContainedAssetBundleName () {
 		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
@@ -753,7 +753,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		RunOnMainThread(() => loader.UnloadAssetBundle(bundleName));
 
 		Assert(!loader.OnMemoryAssetNames().Any(), "not unloaded.");
-    }
+	}
 
 	[MTest] public void IsBundleCachedOnStorage () {
 		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";

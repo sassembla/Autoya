@@ -11,8 +11,8 @@ using UnityEngine;
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	[MTest] public void GetAssetBundleList () {
-        
-    }
+		
+	}
 
 	[MTest] public void ListUpdated () {
 		Debug.LogWarning("リストがアップデートされた際、AssetBundles系の内容を更新する必要がある。");

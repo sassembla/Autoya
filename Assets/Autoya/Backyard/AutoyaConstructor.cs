@@ -8,7 +8,7 @@ using AutoyaFramework.Purchase;
 	constructor implementation of Autoya.
 */
 namespace AutoyaFramework {
-    public partial class Autoya {
+	public partial class Autoya {
 
 		private ICoroutineUpdater mainthreadDispatcher;
 		
@@ -53,7 +53,7 @@ namespace AutoyaFramework {
 			*/
 			Authenticate(isFirstBoot);
 		}
-        
+		
 
 		public static int BuildNumber () {
 			return -1;
@@ -62,5 +62,5 @@ namespace AutoyaFramework {
 		public static void Shutdown () {
 			autoya.mainthreadDispatcher.Destroy();
 		}
-    }
+	}
 }

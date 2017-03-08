@@ -13,7 +13,7 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 
 	[MSetup] public void Setup () {
 		var loginDone = false;
-        
+		
 		RunOnMainThread(
 			() => {
 				var dataPath = Application.persistentDataPath;

@@ -10,24 +10,24 @@ using UnityEngine;
 	test for purchase via Autoya.
 */
 public class PurchaseImplementationTests : MiyamasuTestRunner {
-    private void DeleteAllData (string path) {
+	private void DeleteAllData (string path) {
 		if (Directory.Exists(path)) {
 			Directory.Delete(path, true);
 		}
 	}
 	
-    [MSetup] public void Setup () {
+	[MSetup] public void Setup () {
 		if (!IsTestRunningInPlayingMode()) {
 			SkipCurrentTest("Purchase feature should run on MainThread.");
-            return;
+			return;
 		};
 
-        var authorized = false;
+		var authorized = false;
 		Action onMainThread = () => {
-            var dataPath = Application.persistentDataPath;
+			var dataPath = Application.persistentDataPath;
 
-            var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-            DeleteAllData(fwPath);
+			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+			DeleteAllData(fwPath);
 
 			Autoya.TestEntryPoint(dataPath);
 			
@@ -46,40 +46,40 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 			5, 
 			"failed to auth or failed to ready purchase."
 		);
-    }
+	}
 
-    [MTest] public void GetProductInfos () {
-        var products = Autoya.Purchase_ProductInfos();
-        Assert(products.Length == 3, "not match.");
-    }
+	[MTest] public void GetProductInfos () {
+		var products = Autoya.Purchase_ProductInfos();
+		Assert(products.Length == 3, "not match.");
+	}
 
-    [MTest] public void PurchaseViaAutoya () {
-        var succeeded = false;
-        var done = false;
-        RunOnMainThread(
-            () => {
-                var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
-        
-                Autoya.Purchase(
-                    purchaseId, 
-                    "1000_gold_coins",
-                    pId => {
-                        done = true;
-                        succeeded = true;
-                    }, 
-                    (pId, err, reason, autoyaStatus) => {
-                        done = true;
-                        succeeded = false;
-                    }
-                );
-            }
-        );
+	[MTest] public void PurchaseViaAutoya () {
+		var succeeded = false;
+		var done = false;
+		RunOnMainThread(
+			() => {
+				var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
+		
+				Autoya.Purchase(
+					purchaseId, 
+					"1000_gold_coins",
+					pId => {
+						done = true;
+						succeeded = true;
+					}, 
+					(pId, err, reason, autoyaStatus) => {
+						done = true;
+						succeeded = false;
+					}
+				);
+			}
+		);
 
-        WaitUntil(
-            () => done, 
-            10,
-            "failed to purchase."
-        );
-        Assert(succeeded, "not successed.");
-    }
+		WaitUntil(
+			() => done, 
+			10,
+			"failed to purchase."
+		);
+		Assert(succeeded, "not successed.");
+	}
 }

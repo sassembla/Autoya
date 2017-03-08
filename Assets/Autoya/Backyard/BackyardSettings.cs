@@ -1,5 +1,5 @@
 namespace AutoyaFramework {
-    public class BackyardSettings {
+	public class BackyardSettings {
 		/*
 			maintenance settings.
 		*/
@@ -12,6 +12,6 @@ namespace AutoyaFramework {
 		public const int HTTP_TIMEOUT_CODE = 408;
 
 		public const string HTTP_CODE_ERROR_SUFFIX = "httpResponseCodeError:";
-        public const string HTTP_TIMEOUT_MESSAGE = "timeout. sec:";
-    }
+		public const string HTTP_TIMEOUT_MESSAGE = "timeout. sec:";
+	}
 }
