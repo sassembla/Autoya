@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AutoyaFramework.AssetBundles;
+using AutoyaFramework.Connections.HTTP;
 using Miyamasu;
 using UnityEngine;
 
@@ -20,17 +21,31 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
 		
 	*/
-	private const string basePath = 
+	private const string baseUrl = 
 		#if UNITY_EDITOR_OSX
-			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
 		#elif UNITY_EDITOR_WIN
-			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/";
 		#elif UNITY_IOS
-			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/";
 		#elif UNITY_ANDROID
-			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/";
 		#else
-			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
+			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
+		#endif
+
+	private const string basePath = baseUrl + "AssetBundles/";
+	private const string listPath = baseUrl + 
+		#if UNITY_EDITOR_OSX
+			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+		#elif UNITY_EDITOR_WIN
+			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+		#elif UNITY_IOS
+			"AssetBundles.iOS_1_0_0.json";
+		#elif UNITY_ANDROID
+			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+		#else
+			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
 		#endif
 
 	private AssetBundleLoader loader;
@@ -40,56 +55,74 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			SkipCurrentTest("AssetBundle request should run on MainThread.");
 		};
 
-		RunOnMainThread(
-			() => {
-				/*
-					set dummy list of AssetBundleList.
-				*/
-				dummyList = new AssetBundleList(
-					"Mac",
-					"1.0.0", 
-					new AssetBundleInfo[]{
-						// pngが一枚入ったAssetBundle
-						new AssetBundleInfo(
-							"bundlename", 
-							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
-							new string[0], 
-							3536144294,
-							"b33aea16372df3c97feab14af81de043"
-						),
-						// 他のAssetBundleへの依存があるAssetBundle
-						new AssetBundleInfo(
-							"dependsbundlename", 
-							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"}, 
-							new string[]{"bundlename"}, 
-							3727507680,
-							"d701473af26e1e225fbc7f60e6739741"
-						),
-						// もう一つ、他のAssetBundleへの依存があるAssetBundle
-						new AssetBundleInfo(
-							"dependsbundlename2", 
-							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"}, 
-							new string[]{"bundlename"}, 
-							1346003095,
-							"5e31732f24ec239c5c53460adb3eb4ea"
-						),
-						// nestedprefab -> dependsbundlename -> bundlename
-						new AssetBundleInfo(
-							"nestedprefab", 
-							new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"}, 
-							new string[]{"dependsbundlename"}, 
-							2004707157,
-							"4a80ba4d5bae1932fab9c3d23d4f5cd7"
-						),
-						// このへんに、他のAssetから依存されてるけどサーバ上にないAsset
-
-						// このへんに、他のAssetに依存してるんだけどサーバ上にないAsset
-
-						// 依存元も、自身もサーバ上にないAsset
-					}
-				);
-			}
+		var downloaded = false;
+		var downloader = new HTTPConnection();
+		RunEnumeratorOnMainThread(
+			downloader.Get(
+				"loadListFromWeb",
+				null,
+				listPath,
+				(a,vv,s,d) => {
+					downloaded = true;
+					dummyList = JsonUtility.FromJson<AssetBundleList>(d);
+				},
+				(a,vv,sbyt,c) => {}
+			)
 		);
+
+		WaitUntil(
+			() => downloaded,
+			5,
+			"failed to download list."
+		);
+
+		// RunOnMainThread(
+		// 	() => {
+				
+
+		// 		/*
+		// 			load dummy list of AssetBundleList.
+		// 		*/
+		// 		dummyList = new AssetBundleList(
+		// 			"Mac",
+		// 			"1.0.0", 
+		// 			new AssetBundleInfo[]{
+		// 				// pngが一枚入ったAssetBundle
+		// 				new AssetBundleInfo(
+		// 					"bundlename", 
+		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
+		// 					new string[0], 
+		// 					3536144294,
+		// 					"b33aea16372df3c97feab14af81de043"
+		// 				),
+		// 				// 他のAssetBundleへの依存があるAssetBundle
+		// 				new AssetBundleInfo(
+		// 					"dependsbundlename", 
+		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"}, 
+		// 					new string[]{"bundlename"}, 
+		// 					3727507680,
+		// 					"d701473af26e1e225fbc7f60e6739741"
+		// 				),
+		// 				// もう一つ、他のAssetBundleへの依存があるAssetBundle
+		// 				new AssetBundleInfo(
+		// 					"dependsbundlename2", 
+		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"}, 
+		// 					new string[]{"bundlename"}, 
+		// 					1346003095,
+		// 					"5e31732f24ec239c5c53460adb3eb4ea"
+		// 				),
+		// 				// nestedprefab -> dependsbundlename -> bundlename
+		// 				new AssetBundleInfo(
+		// 					"nestedprefab", 
+		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"}, 
+		// 					new string[]{"dependsbundlename"}, 
+		// 					2004707157,
+		// 					"4a80ba4d5bae1932fab9c3d23d4f5cd7"
+		// 				),
+		// 			}
+		// 		);
+		// 	}
+		// );
 
 		loader = new AssetBundleLoader(basePath, dummyList, null);
 
@@ -524,22 +557,10 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void LoadCrcMismatchedBundle () {
-		dummyList = new AssetBundleList(
-			"Mac",
-			"1.0.0", 
-			new AssetBundleInfo[]{
-				// pngが一枚入ったAssetBundle
-				new AssetBundleInfo(
-					"bundlename", 
-					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
-					new string[0], 
-					3536144294 + 1,// wrong crc.
-					"b33aea16372df3c97feab14af81de043"
-				)
-			}
-		);
+		var modifiedDummyList = new AssetBundleList(dummyList);
+		modifiedDummyList.assetBundles[0].crc = 1;// set wrong crc.
 
-		loader = new AssetBundleLoader(basePath, dummyList, null);
+		loader = new AssetBundleLoader(basePath, modifiedDummyList, null);
 
 		// intentional fail.
 		{
@@ -565,22 +586,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				"failed to wait crc mismatch."
 			);
 		}
-
-		dummyList = new AssetBundleList(
-			"Mac",
-			"1.0.0", 
-			new AssetBundleInfo[]{
-				// pngが一枚入ったAssetBundle
-				new AssetBundleInfo(
-					"bundlename", 
-					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
-					new string[0], 
-					3536144294,// valid crc.
-					"b33aea16372df3c97feab14af81de043"
-				)
-			}
-		);
-
+		
+		modifiedDummyList = new AssetBundleList(dummyList);// use valid crc.
 		loader = new AssetBundleLoader(basePath, dummyList, null);
 
 		// retry.

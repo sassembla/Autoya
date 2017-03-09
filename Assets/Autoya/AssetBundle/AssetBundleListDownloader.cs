@@ -14,6 +14,15 @@ namespace AutoyaFramework.AssetBundles {
 			this.version = version;
 			this.assetBundles = assetBundles;
 		}
+
+		public AssetBundleList (AssetBundleList baseList) {
+			this.target = baseList.target;
+			this.version = baseList.version;
+			this.assetBundles = new AssetBundleInfo[baseList.assetBundles.Length];
+			for (var i = 0; i < assetBundles.Length; i++) {
+				assetBundles[i] = new AssetBundleInfo(baseList.assetBundles[i]);
+			}
+		}
 	}
 
 	[Serializable] public struct AssetBundleInfo {
@@ -28,6 +37,22 @@ namespace AutoyaFramework.AssetBundles {
 			this.dependsBundleNames = dependsBundleNames;
 			this.crc = crc;
 			this.hash = hash;
+		}
+
+		public AssetBundleInfo (AssetBundleInfo baseAssetBundleInfo) {
+			this.bundleName = baseAssetBundleInfo.bundleName;
+			this.assetNames = new string[baseAssetBundleInfo.assetNames.Length];
+			for (var i = 0; i < assetNames.Length; i++) {
+				assetNames[i] = baseAssetBundleInfo.assetNames[i];
+			}
+
+			this.dependsBundleNames = new string[baseAssetBundleInfo.dependsBundleNames.Length];
+			for (var i = 0; i < dependsBundleNames.Length; i++) {
+				dependsBundleNames[i] = baseAssetBundleInfo.dependsBundleNames[i];
+			}
+
+			this.crc = baseAssetBundleInfo.crc;
+			this.hash = baseAssetBundleInfo.hash;
 		}
 	}
 	
