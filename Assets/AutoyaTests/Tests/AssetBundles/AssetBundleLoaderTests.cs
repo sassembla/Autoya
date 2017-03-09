@@ -34,7 +34,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
 		#endif
 
-	private const string basePath = baseUrl + "AssetBundles/";
+	private const string assetBundlesBasePath = baseUrl + "AssetBundles/";
+
 	private const string listPath = baseUrl + 
 		#if UNITY_EDITOR_OSX
 			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
@@ -62,11 +63,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				"loadListFromWeb",
 				null,
 				listPath,
-				(a,vv,s,d) => {
+				(conId, code, respHeaders, data) => {
 					downloaded = true;
-					dummyList = JsonUtility.FromJson<AssetBundleList>(d);
+					dummyList = JsonUtility.FromJson<AssetBundleList>(data);
 				},
-				(a,vv,sbyt,c) => {}
+				(conId, code, reason, respHeaders) => {
+					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+				}
 			)
 		);
 
@@ -76,55 +79,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"failed to download list."
 		);
 
-		// RunOnMainThread(
-		// 	() => {
-				
-
-		// 		/*
-		// 			load dummy list of AssetBundleList.
-		// 		*/
-		// 		dummyList = new AssetBundleList(
-		// 			"Mac",
-		// 			"1.0.0", 
-		// 			new AssetBundleInfo[]{
-		// 				// pngが一枚入ったAssetBundle
-		// 				new AssetBundleInfo(
-		// 					"bundlename", 
-		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"}, 
-		// 					new string[0], 
-		// 					3536144294,
-		// 					"b33aea16372df3c97feab14af81de043"
-		// 				),
-		// 				// 他のAssetBundleへの依存があるAssetBundle
-		// 				new AssetBundleInfo(
-		// 					"dependsbundlename", 
-		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"}, 
-		// 					new string[]{"bundlename"}, 
-		// 					3727507680,
-		// 					"d701473af26e1e225fbc7f60e6739741"
-		// 				),
-		// 				// もう一つ、他のAssetBundleへの依存があるAssetBundle
-		// 				new AssetBundleInfo(
-		// 					"dependsbundlename2", 
-		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"}, 
-		// 					new string[]{"bundlename"}, 
-		// 					1346003095,
-		// 					"5e31732f24ec239c5c53460adb3eb4ea"
-		// 				),
-		// 				// nestedprefab -> dependsbundlename -> bundlename
-		// 				new AssetBundleInfo(
-		// 					"nestedprefab", 
-		// 					new string[]{"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"}, 
-		// 					new string[]{"dependsbundlename"}, 
-		// 					2004707157,
-		// 					"4a80ba4d5bae1932fab9c3d23d4f5cd7"
-		// 				),
-		// 			}
-		// 		);
-		// 	}
-		// );
-
-		loader = new AssetBundleLoader(basePath, dummyList, null);
+		loader = new AssetBundleLoader(assetBundlesBasePath, dummyList, null);
 
 		var cleaned = false;
 		RunOnMainThread(
@@ -560,7 +515,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var modifiedDummyList = new AssetBundleList(dummyList);
 		modifiedDummyList.assetBundles[0].crc = 1;// set wrong crc.
 
-		loader = new AssetBundleLoader(basePath, modifiedDummyList, null);
+		loader = new AssetBundleLoader(assetBundlesBasePath, modifiedDummyList, null);
 
 		// intentional fail.
 		{
@@ -588,7 +543,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		}
 		
 		modifiedDummyList = new AssetBundleList(dummyList);// use valid crc.
-		loader = new AssetBundleLoader(basePath, dummyList, null);
+		loader = new AssetBundleLoader(assetBundlesBasePath, dummyList, null);
 
 		// retry.
 		{
