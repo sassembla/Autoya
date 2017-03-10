@@ -38,15 +38,15 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 	private const string listPath = baseUrl + 
 		#if UNITY_EDITOR_OSX
-			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+			"AssetBundles.Mac_1_0_0.json";
 		#elif UNITY_EDITOR_WIN
-			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+			"AssetBundles.Windows_1_0_0.json";
 		#elif UNITY_IOS
 			"AssetBundles.iOS_1_0_0.json";
 		#elif UNITY_ANDROID
 			"AssetBundles.Android_1_0_0.json";
 		#else
-			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+			"AssetBundles.Mac_1_0_0.json";
 		#endif
 
 	private AssetBundleLoader loader;
