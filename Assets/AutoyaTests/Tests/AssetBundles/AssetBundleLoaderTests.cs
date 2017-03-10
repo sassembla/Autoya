@@ -44,7 +44,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		#elif UNITY_IOS
 			"AssetBundles.iOS_1_0_0.json";
 		#elif UNITY_ANDROID
-			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+			"AssetBundles.Android_1_0_0.json";
 		#else
 			"AssetBundles.StandaloneOSXIntel64_1_0_0.json";
 		#endif
