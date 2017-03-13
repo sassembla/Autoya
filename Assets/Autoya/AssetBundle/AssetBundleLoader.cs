@@ -23,8 +23,8 @@ namespace AutoyaFramework.AssetBundles {
 			FailedToLoadDependentBundles
 		}
 
-		private readonly string assetDownloadBasePath;
-		private readonly AssetBundleList list;
+		private string assetDownloadBasePath;
+		private AssetBundleList list;
 
 		private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
@@ -69,6 +69,48 @@ namespace AutoyaFramework.AssetBundles {
 					assetNamesAndAssetBundleNamesDict[assetName] = bundleName;
 				}
 			}
+		}
+
+		/**
+			update assetbundle list and basePath.
+		 */
+		public void UpdateList (string basePath, AssetBundleList newList, Action<string[], string> updatedOnMemoryAssetNameAndBundleName) {
+			this.assetDownloadBasePath = basePath;
+			
+			/*
+				check updated asset -> notify with asset names.
+			 */
+			var loadedBundleNames = assetBundleDict.Keys.ToArray();
+			if (loadedBundleNames.Any()) {
+				// current.
+				var bundleNameHashDict = this.list.assetBundles
+					.Where(b => loadedBundleNames.Contains(b.bundleName))
+					.ToDictionary(i => i.bundleName, i => i.hash);
+
+				// new.
+				var newBundleNameHashDict = newList.assetBundles
+					.Where(b => loadedBundleNames.Contains(b.bundleName))
+					.ToDictionary(i => i.bundleName, i => i.hash);
+				
+				foreach (var loadedBundleName in loadedBundleNames) {
+					if (!newBundleNameHashDict.ContainsKey(loadedBundleName)) {
+						continue;
+					}
+
+					var currentHash = bundleNameHashDict[loadedBundleName];
+					var newHash = newBundleNameHashDict[loadedBundleName];
+
+					// if hash is not matched between current and new, this "on memory assetBundle" is updated.
+					// notify to user.
+					if (currentHash != newHash) {
+						var updatedAssetNames = assetBundleDict[loadedBundleName].GetAllAssetNames();
+						updatedOnMemoryAssetNameAndBundleName(updatedAssetNames, loadedBundleName);
+					}
+				}
+			}
+			
+			// update list.
+			this.list = newList;
 		}
 
 		/*
@@ -243,30 +285,19 @@ namespace AutoyaFramework.AssetBundles {
 
 			var url = GetAssetBundleDownloadUrl(bundleName);
 			
-			// check cached or not.
-			if (Caching.IsVersionCached(url, hash)) {
-				/*
-					assetBundle is..
-						already cached.
-						allocated on memory or not.
-				*/
-
-				// assetBundle is already allocated on memory. load that.
-				if (assetBundleDict.ContainsKey(bundleName)) {
-					if (isDependency) {
-						yield break;
-					}
-
-					var loadOnMemoryCachedAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
-					while (loadOnMemoryCachedAssetCoroutine.MoveNext()) {
-						yield return null;
-					}
+			// assetBundle is already allocated on memory. load that.
+			if (assetBundleDict.ContainsKey(bundleName)) {
+				if (isDependency) {
 					yield break;
 				}
-				
-				// if assetBundle is cached but not on memory yet, continue loading.
+
+				var loadOnMemoryCachedAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
+				while (loadOnMemoryCachedAssetCoroutine.MoveNext()) {
+					yield return null;
+				}
+				yield break;
 			}
-			
+
 			/*
 				assetBundle is..
 					not yet cached (or) already cached.
@@ -472,6 +503,7 @@ namespace AutoyaFramework.AssetBundles {
 				var dataHandler = (DownloadHandlerAssetBundle)request.downloadHandler;
 				
 				var assetBundle = dataHandler.assetBundle;
+
 				if (assetBundle == null) {
 					responseCode = CODE_CRC_MISMATCHED;
 					failed(connectionId, responseCode, "failed to load assetBundle. downloaded bundle:" + bundleName + ", requested crc was not matched.", responseHeaders);
