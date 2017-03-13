@@ -53,10 +53,9 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	private string BundlePath (string version) {
 		return baseUrl + version + "/";
 	}
+
 	private string ListPath (string version) {
-		var d = baseUrl + version + "/" + listNameSuffix + "_" + version.Replace(".", "_") + listNamePostfix;
-		Debug.LogError("d:" + d);
-		return d;
+		return baseUrl + version + "/" + listNameSuffix + "_" + version.Replace(".", "_") + listNamePostfix;
 	}
 
 
@@ -587,58 +586,84 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		}
 	}
 
-	// [MTest] public void ReloadByRenewList () {
-	// 	var done = false;
-	// 	// load assets.
-	// 	RunEnumeratorOnMainThread(
-	// 		loader.LoadAsset(
-	// 			dummyList.assetBundles[0].assetNames[0],
-	// 			(string assetName, Texture2D t) => {
-	// 				done = true;
-	// 			},
-	// 			(assetName, e, reason, status) => {
+	[MTest] public void ReloadByUpdateList () {
+		{
+			var done = false;
+			// load assets.
+			RunEnumeratorOnMainThread(
+				loader.LoadAsset(
+					dummyList.assetBundles[0].assetNames[0],
+					(string assetName, Texture2D t) => {
+						done = true;
+					},
+					(assetName, e, reason, status) => {
 
-	// 			}
-	// 		)
-	// 	);
+					}
+				)
+			);
 
-	// 	WaitUntil(
-	// 		() => done,
-	// 		5,
-	// 		"failed to get asset."
-	// 	);
+			WaitUntil(
+				() => done,
+				5,
+				"failed to get asset."
+			);
+		}
+		
+		// assume that: list is updated.
+		// 1.0.0 -> 1.0.1
 
-	// 	// ここで、AssetのListのバージョンが上がって、同じAssetの新versionが取得できる、ということを引き起こす。
-	// 	// えーーっと、面倒くさいぞ、、でも必要か。
+		var lostDownloader = new HTTPConnection();
+		var downloaded = false;
+		
+		// renew list.
+		RunEnumeratorOnMainThread(
+			lostDownloader.Get(
+				"loadListFromWeb",
+				null,
+				ListPath("1.0.1"),
+				(conId, code, respHeaders, data) => {
+					downloaded = true;
+					var newList = JsonUtility.FromJson<AssetBundleList>(data);
 
-	// 	var downloader = new HTTPConnection();
-	// 	var downloaded = false;
-	// 	// renew list.
-	// 	RunEnumeratorOnMainThread(
-	// 		downloader.Get(
-	// 			"loadListFromWeb",
-	// 			null,
-	// 			ListPath("1.0.1"),
-	// 			(conId, code, respHeaders, data) => {
-	// 				downloaded = true;
-	// 				dummyList = JsonUtility.FromJson<AssetBundleList>(data);
-	// 			},
-	// 			(conId, code, reason, respHeaders) => {
-	// 				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
-	// 			}
-	// 		)
-	// 	);
+					// renew loader.(not correct op.)
+					loader = new AssetBundleLoader(BundlePath("1.0.1"), newList, null);
+				},
+				(conId, code, reason, respHeaders) => {
+					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+				}
+			)
+		);
 
-	// 	WaitUntil(
-	// 		() => downloaded,
-	// 		5,
-	// 		"failed to download list."
-	// 	);
+		WaitUntil(
+			() => downloaded,
+			5,
+			"failed to download list."
+		);
 
+		// new list is downloaded and loader is updated.
 
+		{
+			var done = false;
+			// load assets.
+			RunEnumeratorOnMainThread(
+				loader.LoadAsset(
+					dummyList.assetBundles[0].assetNames[0],
+					(string assetName, Texture2D t) => {
+						done = true;
+					},
+					(assetName, e, reason, status) => {
 
-	// 	// download.
-	// }
+					}
+				)
+			);
+
+			WaitUntil(
+				() => done,
+				5,
+				"failed to get asset."
+			);
+		}
+	}
 
 	[MTest] public void LoadMissingBundle () {
 		Debug.LogWarning("指定したassetを含むbundleがDLできない場合のテスト");
