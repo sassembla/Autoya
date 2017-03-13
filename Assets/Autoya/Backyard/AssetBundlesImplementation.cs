@@ -65,7 +65,7 @@ namespace AutoyaFramework {
 			if (autoya._assetBundleLoader == null) {
 				autoya._assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, new AssetBundleList()/*このへんで、リストを読み出す? もっといい仕組みがある気がする。*/, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
 			}
-			autoya._assetBundleLoader.UnloadAllAssetBundles();
+			autoya._assetBundleLoader.UnloadOnMemoryAssetBundles();
 		}
 
 		private class AssetBundleLoadErrorInstance {

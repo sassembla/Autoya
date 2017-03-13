@@ -838,7 +838,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						(updatedAssetNames, bundleName) => {
 							// update & on memory assets are detected.
 							// unload it from memory.
-							loader.UnloadAssetBundle(bundleName);
+							loader.UnloadOnMemoryAssetBundle(bundleName);
 						}
 					);
 				},
@@ -945,6 +945,18 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		}
 	}
 
+	[MTest] public void OnMemoryBundleNames () {
+		/*
+			load all assets.
+		*/
+		LoadAllAssetsOnce();
+
+		var totalBundleCount = dummyList.assetBundles.Length;
+
+		var onMemoryBundleNames = loader.OnMemoryBundleNames();
+		Assert(onMemoryBundleNames.Length == totalBundleCount, "unmatched.");
+	}
+	
 	[MTest] public void OnMemoryAssetNames () {
 		/*
 			load all assets.
@@ -966,7 +978,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		/*
 			unload all.
 		*/
-		RunOnMainThread(() => loader.UnloadAllAssetBundles());
+		RunOnMainThread(() => loader.UnloadOnMemoryAssetBundles());
 
 		WaitUntil(
 			() => {
@@ -1022,7 +1034,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		WaitUntil(() => done, 10, "failed to load asset in time.");
 
 		var bundleName = loader.GetContainedAssetBundleName(assetName);
-		RunOnMainThread(() => loader.UnloadAssetBundle(bundleName));
+		RunOnMainThread(() => loader.UnloadOnMemoryAssetBundle(bundleName));
 
 		Assert(!loader.OnMemoryAssetNames().Any(), "not unloaded.");
 	}

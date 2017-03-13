@@ -120,7 +120,7 @@ namespace AutoyaFramework.AssetBundles {
 			/*
 				clean all loaded assets.
 			*/
-			UnloadAllAssetBundles();
+			UnloadOnMemoryAssetBundles();
 			
 			return Caching.CleanCache();
 		}
@@ -519,6 +519,9 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
+		/*
+			core dictionary of on memory cache.
+		 */
 		private Dictionary<string, AssetBundle> assetBundleDict = new Dictionary<string, AssetBundle>();
 		private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object {
 			var assetBundle = assetBundleDict[bundleName];
@@ -548,6 +551,11 @@ namespace AutoyaFramework.AssetBundles {
 			return assetDownloadBasePath + bundleName;
 		}
 
+		public string[] OnMemoryBundleNames () {
+			var loadedAssetBundleNames = assetBundleDict.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
+			return loadedAssetBundleNames;
+		}
+
 		public string[] OnMemoryAssetNames () {
 			var loadedAssetBundleNames = assetBundleDict.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
 			return list.assetBundles.Where(ab => loadedAssetBundleNames.Contains(ab.bundleName)).SelectMany(ab => ab.assetNames).ToArray();
@@ -561,8 +569,13 @@ namespace AutoyaFramework.AssetBundles {
 		}
 
 		public bool IsAssetBundleCachedOnMemory (string bundleName) {
-			var assetBundleNames = assetBundleDict.Keys.ToArray();
-			return assetBundleNames.Contains(bundleName);
+			if (assetBundleDict.ContainsKey(bundleName)) {
+				if (assetBundleDict[bundleName] != null) {
+					return true;
+				}
+			}
+			
+			return false;
 		}
 
 		public bool IsAssetBundleCachedOnStorage (string bundleName) {
@@ -576,7 +589,7 @@ namespace AutoyaFramework.AssetBundles {
 			return Caching.IsVersionCached(url, hash);
 		}
 
-		public void UnloadAllAssetBundles () {
+		public void UnloadOnMemoryAssetBundles () {
 			var assetBundleNames = assetBundleDict.Keys.ToArray();
 
 			foreach (var assetBundleName in assetBundleNames) {
@@ -589,7 +602,7 @@ namespace AutoyaFramework.AssetBundles {
 			assetBundleDict.Clear();
 		}
 
-		public void UnloadAssetBundle (string bundleName) {
+		public void UnloadOnMemoryAssetBundle (string bundleName) {
 			if (assetBundleDict.ContainsKey(bundleName)) {
 				var asset = assetBundleDict[bundleName];
 				if (asset != null) {
