@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 1986692927
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 80c9f92bdec3c5223aed00b60650a837
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 60590083ab52d7770e06d52fd0174892
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/updatableTex.prefab
+Dependencies:
+- /Users/choucho/Desktop/Autoya/AssetBundles/StandaloneOSXIntel64/bundlename

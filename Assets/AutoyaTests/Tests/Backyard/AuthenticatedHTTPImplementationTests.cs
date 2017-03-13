@@ -127,7 +127,6 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			},
 			(conId, code, reason, autoyaStatus) => {
 				unauthorized = autoyaStatus.isAuthFailed;
-				Debug.Log("Http_Get b code:" + code + " reason:" + reason + " autoyaStatus:" + autoyaStatus.isAuthFailed);
 			}
 		);
 

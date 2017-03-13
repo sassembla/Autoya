@@ -43,6 +43,17 @@
             ],
             "crc": 2004707157,
             "hash": "4a80ba4d5bae1932fab9c3d23d4f5cd7"
+        },
+        {
+            "bundleName": "updatable",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 3092246861,
+            "hash": "b102553bb75338774fedd463495ce2fd"
         }
     ]
 }

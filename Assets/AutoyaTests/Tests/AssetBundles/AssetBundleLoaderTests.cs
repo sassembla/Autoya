@@ -34,20 +34,31 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
 		#endif
 
-	private const string assetBundlesBasePath = baseUrl + "AssetBundles/";
-
-	private const string listPath = baseUrl + 
+	private const string listNameSuffix =  
 		#if UNITY_EDITOR_OSX
-			"AssetBundles.Mac_1_0_0.json";
+			"AssetBundles.StandaloneOSXIntel64";
 		#elif UNITY_EDITOR_WIN
-			"AssetBundles.Windows_1_0_0.json";
+			"AssetBundles.Windows";
 		#elif UNITY_IOS
-			"AssetBundles.iOS_1_0_0.json";
+			"AssetBundles.iOS";
 		#elif UNITY_ANDROID
-			"AssetBundles.Android_1_0_0.json";
+			"AssetBundles.Android";
 		#else
-			"AssetBundles.Mac_1_0_0.json";
+			"AssetBundles.Mac";
 		#endif
+
+	private const string listNamePostfix = ".json";
+
+
+	private string BundlePath (string version) {
+		return baseUrl + version + "/";
+	}
+	private string ListPath (string version) {
+		var d = baseUrl + version + "/" + listNameSuffix + "_" + version.Replace(".", "_") + listNamePostfix;
+		Debug.LogError("d:" + d);
+		return d;
+	}
+
 
 	private AssetBundleLoader loader;
 	private AssetBundleList dummyList;
@@ -62,7 +73,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			downloader.Get(
 				"loadListFromWeb",
 				null,
-				listPath,
+				ListPath("1.0.0"),
 				(conId, code, respHeaders, data) => {
 					downloaded = true;
 					dummyList = JsonUtility.FromJson<AssetBundleList>(data);
@@ -79,7 +90,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"failed to download list."
 		);
 
-		loader = new AssetBundleLoader(assetBundlesBasePath, dummyList, null);
+		loader = new AssetBundleLoader(BundlePath("1.0.0"), dummyList, null);
 
 		var cleaned = false;
 		RunOnMainThread(
@@ -515,7 +526,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var modifiedDummyList = new AssetBundleList(dummyList);
 		modifiedDummyList.assetBundles[0].crc = 1;// set wrong crc.
 
-		loader = new AssetBundleLoader(assetBundlesBasePath, modifiedDummyList, null);
+		loader = new AssetBundleLoader(BundlePath("1.0.0"), modifiedDummyList, null);
 
 		// intentional fail.
 		{
@@ -543,7 +554,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		}
 		
 		modifiedDummyList = new AssetBundleList(dummyList);// use valid crc.
-		loader = new AssetBundleLoader(assetBundlesBasePath, dummyList, null);
+		loader = new AssetBundleLoader(BundlePath("1.0.0"), dummyList, null);
 
 		// retry.
 		{
@@ -575,6 +586,59 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			Assert(tex != null, "tex is null.");
 		}
 	}
+
+	// [MTest] public void ReloadByRenewList () {
+	// 	var done = false;
+	// 	// load assets.
+	// 	RunEnumeratorOnMainThread(
+	// 		loader.LoadAsset(
+	// 			dummyList.assetBundles[0].assetNames[0],
+	// 			(string assetName, Texture2D t) => {
+	// 				done = true;
+	// 			},
+	// 			(assetName, e, reason, status) => {
+
+	// 			}
+	// 		)
+	// 	);
+
+	// 	WaitUntil(
+	// 		() => done,
+	// 		5,
+	// 		"failed to get asset."
+	// 	);
+
+	// 	// ここで、AssetのListのバージョンが上がって、同じAssetの新versionが取得できる、ということを引き起こす。
+	// 	// えーーっと、面倒くさいぞ、、でも必要か。
+
+	// 	var downloader = new HTTPConnection();
+	// 	var downloaded = false;
+	// 	// renew list.
+	// 	RunEnumeratorOnMainThread(
+	// 		downloader.Get(
+	// 			"loadListFromWeb",
+	// 			null,
+	// 			ListPath("1.0.1"),
+	// 			(conId, code, respHeaders, data) => {
+	// 				downloaded = true;
+	// 				dummyList = JsonUtility.FromJson<AssetBundleList>(data);
+	// 			},
+	// 			(conId, code, reason, respHeaders) => {
+	// 				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+	// 			}
+	// 		)
+	// 	);
+
+	// 	WaitUntil(
+	// 		() => downloaded,
+	// 		5,
+	// 		"failed to download list."
+	// 	);
+
+
+
+	// 	// download.
+	// }
 
 	[MTest] public void LoadMissingBundle () {
 		Debug.LogWarning("指定したassetを含むbundleがDLできない場合のテスト");
