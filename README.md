@@ -1,5 +1,5 @@
 # Autoya
-ver 0.8.5
+ver 0.8.6
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
 
@@ -57,7 +57,7 @@ in 2017 early.
 
 
 ## Tests
-implementing.
+implementing with Miyamasu test tool.
 
 
 ## Installation
