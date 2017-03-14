@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 1246681603
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 8530e2571814d5edbdb13acdba5a68b1
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 9f9da7361bd242c472af68f0e3051895
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 54
+  Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab
+Dependencies:
+- /Users/choucho/Desktop/Autoya/AssetBundles/Android/bundlename

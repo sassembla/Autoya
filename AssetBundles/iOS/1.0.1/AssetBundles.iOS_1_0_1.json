@@ -1,0 +1,59 @@
+{
+    "target": "iOS",
+    "version": "1.0.1",
+    "assetBundles": [
+        {
+            "bundleName": "bundlename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3500361842,
+            "hash": "ce98c8cea7ce735c41ff42d30d853011"
+        },
+        {
+            "bundleName": "dependsbundlename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 396648803,
+            "hash": "a3a3a6e84ffea60bb5e330cbdf3b5a0a"
+        },
+        {
+            "bundleName": "dependsbundlename2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 3250839953,
+            "hash": "361aefb52ec1957f26205359f69167e5"
+        },
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "dependsbundlename"
+            ],
+            "crc": 1276257063,
+            "hash": "a8c8bc5b1ab9e41f96173725323309c5"
+        },
+        {
+            "bundleName": "updatable",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 1459762411,
+            "hash": "667a059f2a7af3f51b40c1b73e3b842f"
+        }
+    ]
+}

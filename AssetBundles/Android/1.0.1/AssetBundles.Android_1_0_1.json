@@ -1,0 +1,59 @@
+{
+    "target": "Android",
+    "version": "1.0.1",
+    "assetBundles": [
+        {
+            "bundleName": "bundlename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3291409700,
+            "hash": "38e2cfb4b0e0f81e926e2651efa4f7c8"
+        },
+        {
+            "bundleName": "dependsbundlename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 1183325651,
+            "hash": "979b120fadb6b272e8d1487514441cc1"
+        },
+        {
+            "bundleName": "dependsbundlename2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 1246681603,
+            "hash": "8530e2571814d5edbdb13acdba5a68b1"
+        },
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "dependsbundlename"
+            ],
+            "crc": 3584201962,
+            "hash": "e3e9b097d4b82acfe3f6f08d78a30d83"
+        },
+        {
+            "bundleName": "updatable",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "bundlename"
+            ],
+            "crc": 2437298734,
+            "hash": "2d7c9e1d84d98a0469835cb00a11a32f"
+        }
+    ]
+}
