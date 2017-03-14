@@ -32,22 +32,79 @@ list - target // target platform name.
 実際の型定義はこちら。
 [AssetBundleList.cs](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundleList.cs#L1)
 
+
 #### 状態について
 各AssetBundleについて、Loader内部で3段階の状態を持っている。
 
 ```
-NotCached -> CachedOnStorage <-> CachedOnMemory(AssetBundleLoaded)
+NotCached -> OnStorage <-> OnMemory(AssetBundleLoaded)
 ```
 
-Assetを取得する場合、Assetを含んでいるAssetBundleの状態が変わり、最終的にAssetが生成される。
-基本的に、AssetBundleLoaderの内部のAssetBundleの状態を気にする必要はない。
+Assetを取得する場合、Assetを含んでいるAssetBundleの状態が変わり、最終的にOnMemory状態になったAssetBundleからAssetが生成される。
+基本的に、AssetBundleLoaderの内部のAssetBundleの状態を気にする必要はないが、知っておくとメモリ状態を気にすることができるので、楽だと思う。
 
 現在ロードされているAssetBundleやAssetの情報については、[AssetBundleLoader#OnMemoryBundleNames](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundleLoader.cs#L554)
 、[AssetBundleLoader#OnMemoryAssetNames](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundleLoader.cs#L559)
 を使って取得できる。
 
+#### Loadについて
+次のコードでAssetBundleに含まれるAssetのロードができる。
+ロードされたAssetが含まれるAssetBundleは、OnMemory状態になりメモリ上にキャッシュされている。
 
-#### Assetを取得する際のフロー
+```
+loader.LoadAsset(
+	"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+	(string assetName, Texture2D texAsset) => {
+		tex = texAsset;
+		done = true;
+	},
+	(assetName, failEnum, reason, status) => {
+		done = true;
+		Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
+	}
+)
+```
+
+型の指定については、こう書くこともできる。
+
+```
+loader.LoadAsset<Texture2D>(
+	"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+	(assetName, texAsset) => {
+		tex = texAsset;
+		done = true;
+	},
+	(assetName, failEnum, reason, status) => {
+		done = true;
+		Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
+	}
+)
+```
+
+型情報はListには収録していないが、頑張ってくれ。というか使いたいデータの型なんだしわかるだろうきっと。
+
+サンプルコードは[こちら](https://github.com/sassembla/Autoya/blob/master/Assets/AutoyaTests/Tests/AssetBundles/AssetBundleLoaderTests.cs#L111)。
+
+#### Unloadについて
+次のコードで、OnMemoryにロード済みのAssetBundleの解放ができる。
+
+```
+loader.UnloadOnMemoryAssetBundle(bundleName)
+```
+
+メモリ上にあるAssetBundleを破棄し、現在使用されているこのAssetBundle由来のAssetもすべて破棄される。
+
+
+サンプルコードは[こちら](https://github.com/sassembla/Autoya/blob/master/Assets/AutoyaTests/Tests/AssetBundles/AssetBundleLoaderTests.cs#L1019)。
+
+
+Asset名からそのAssetを含むAssetBundle名を知りたい場合、[AssetBundleLoader#GetContainedAssetBundleName](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundleLoader.cs#L564)を使用するといい。
+
+ちなみにUnload時にAssetBundleに由来するAssetを残す方法は提供していない。
+
+
+#### Assetを取得する際の内部フロー
+次のようなフローで動作している。
 
 * Assetを指定した段階で、該当するAssetを含むAssetBundleがOnMemoryにロード済みであれば、そのAssetBundleからAssetを取得
 * ロード済みでない場合はFileCacheを探索し、あればOnMemoryにロードし、そのAssetBundleからAssetを取得
