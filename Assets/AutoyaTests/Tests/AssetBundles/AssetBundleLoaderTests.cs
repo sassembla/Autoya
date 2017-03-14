@@ -817,13 +817,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		// assume that: list is updated.
 		// 1.0.0 -> 1.0.1
 
-		var lostDownloader = new HTTPConnection();
+		var listDownloader = new HTTPConnection();
 		var downloaded = false;
 		
 		// renew list.
 		var newVersionStr = "1.0.1";
 		RunEnumeratorOnMainThread(
-			lostDownloader.Get(
+			listDownloader.Get(
 				"loadListFromWeb",
 				null,
 				ListPath(newVersionStr),
@@ -836,8 +836,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						BundlePath(newVersionStr), 
 						newList, 
 						(updatedAssetNames, bundleName) => {
-							// update & on memory assets are detected.
-							// unload it from memory.
+							// updated && on memory loaded assets are detected.
+							// unload it from memory then get again later.
 							loader.UnloadOnMemoryAssetBundle(bundleName);
 						}
 					);
@@ -854,7 +854,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"failed to download list."
 		);
 
-		// new list is downloaded and loader is updated.
+		// new list is downloaded and loader list is updated.
 
 		// get new asset from server.
 		{
@@ -956,7 +956,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var onMemoryBundleNames = loader.OnMemoryBundleNames();
 		Assert(onMemoryBundleNames.Length == totalBundleCount, "unmatched.");
 	}
-	
+
 	[MTest] public void OnMemoryAssetNames () {
 		/*
 			load all assets.
