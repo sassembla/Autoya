@@ -14,6 +14,8 @@ namespace AutoyaFramework.Information {
 
         public readonly Tag tag;
         public readonly Tag[] depth;
+        public readonly Dictionary<KV_KEY, string> keyValueStore;
+
         public Padding padding;
         
         private VirtualTransform vTransform;
@@ -32,11 +34,12 @@ namespace AutoyaFramework.Information {
             return rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
         }
 
-        public VirtualGameObject (Tag tag, Tag[] depth) {
+        public VirtualGameObject (Tag tag, Tag[] depth, Dictionary<KV_KEY, string> kv) {
             this.tag = tag;
             this.depth = depth;
             this.padding = new Padding();
             this.vTransform = new VirtualTransform(this);
+            this.keyValueStore = kv;
         }
 
         public VirtualGameObject GetRootGameObject () {
@@ -47,8 +50,6 @@ namespace AutoyaFramework.Information {
             // no parent. return this vGameObject.
             return this;
         }
-
-        public Dictionary<KV_KEY, string> keyValueStore = new Dictionary<KV_KEY, string>();
 
         private ContentWidthAndHeight GetContentWidthAndHeight (string prefabName, string text, float contentWidth, float contentHeight) {
             // このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
@@ -229,24 +230,15 @@ namespace AutoyaFramework.Information {
                 foreach (var child in childlen) {
                     handlePoint = child.Layout(this, handlePoint, onLayoutDel);
                     
-                    // 子のタグによって、layoutLineに加えなくてもいい、という感じ。現在のtagがPで、子供が_Contentな場合のみ、という。
-                    if (this.tag == Tag.P) {
-                        switch (child.tag) {
-                            case Tag.IMG:
-                            case Tag._CONTENT: {
-                                // pass.
-                                break;
-                            }
-                            default: {
-                                Debug.LogError("あーーここにLIとかが。 child.tag:" + child.tag);
-                                break;
-                            }
-                        }
-                    } else {
+                    if (this.tag != Tag.P) {
                         continue;
                     }
 
-                    // width over.
+                    /*
+                        tag is P.
+                     */
+
+                    // check width over.
                     if (handlePoint.viewWidth < handlePoint.nextLeftHandle) {
                         if (0 < layoutLine.Count) {
                             handlePoint = SortByLayoutLine(layoutLine, handlePoint);
@@ -262,7 +254,7 @@ namespace AutoyaFramework.Information {
                         }
                     }
 
-                    // in viewpoint width.
+                    // content is under viewpoint width.
 
                     layoutLine.Add(child);
 

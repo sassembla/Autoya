@@ -7,7 +7,6 @@ namespace AutoyaFramework.Information
 {
     public enum Tag {
         NO_TAG_FOUND,
-        UNKNOWN,
         _CONTENT,
         ROOT,
         H, 
@@ -29,45 +28,45 @@ namespace AutoyaFramework.Information
         }
     }
     
-    public class TagPoint {
-        public readonly VirtualGameObject vGameObject;
+    // public class TagPoint {
+    //     // public readonly VirtualGameObject vGameObject;
 
-        public readonly int lineIndex;
-        public readonly int tagEndPoint;
+    //     // public readonly int lineIndex;
+    //     // public readonly int tagEndPoint;
 
-        public readonly Tag tag;
-        public readonly Tag[] depth;
+    //     // public readonly Tag tag;
+    //     // public readonly Tag[] depth;
 
-        public readonly string originalTagName;
+    //     // public readonly string originalTagName;
         
-        public TagPoint (int lineIndex, int tagEndPoint, Tag tag, Tag[] depth, string originalTagName) {
-            this.lineIndex = lineIndex;
-            this.tagEndPoint = tagEndPoint;
+    //     // public TagPoint (int lineIndex, int tagEndPoint, Tag tag, Tag[] depth, string originalTagName) {
+    //     //     this.lineIndex = lineIndex;
+    //     //     this.tagEndPoint = tagEndPoint;
 
-            this.tag = tag;
-            this.depth = depth;
-            this.originalTagName = originalTagName;
-            this.vGameObject = new VirtualGameObject(tag, depth);	
-        }
-        public TagPoint (int lineIndex, Tag tag) {
-            this.lineIndex = lineIndex;
-            this.tag = tag;
-        }
-    }
+    //     //     this.tag = tag;
+    //     //     this.depth = depth;
+    //     //     this.originalTagName = originalTagName;
+    //     //     this.vGameObject = new VirtualGameObject(tag, depth);	
+    //     // }
+    //     // public TagPoint (int lineIndex, Tag tag) {
+    //     //     this.lineIndex = lineIndex;
+    //     //     this.tag = tag;
+    //     // }
+    // }
 
-    public struct TagPointAndContent {
-        public readonly TagPoint tagPoint;
-        public readonly string content;
+    // public struct TagPointAndContent {
+    //     public readonly TagPoint tagPoint;
+    //     public readonly string content;
         
-        public TagPointAndContent (TagPoint tagPoint, string content) {
-            this.tagPoint = tagPoint;
-            this.content = content;
-        }
-        public TagPointAndContent (TagPoint tagPoint) {
-            this.tagPoint = tagPoint;
-            this.content = string.Empty;
-        }
-    }
+    //     public TagPointAndContent (TagPoint tagPoint, string content) {
+    //         this.tagPoint = tagPoint;
+    //         this.content = content;
+    //     }
+    //     public TagPointAndContent (TagPoint tagPoint) {
+    //         this.tagPoint = tagPoint;
+    //         this.content = string.Empty;
+    //     }
+    // }
 
     public enum KV_KEY {
         CONTENT,
@@ -114,7 +113,7 @@ namespace AutoyaFramework.Information
         private readonly VirtualGameObject rootObject;
 
         public Tokenizer (string source) {
-            var root = new TagPoint(0, 0, Tag.ROOT, new Tag[0], string.Empty);
+            var root = new TagPoint2(Tag.ROOT, string.Empty, new Tag[0], new Dictionary<KV_KEY, string>(), string.Empty);
             rootObject = Tokenize(root, source);
         }
 
@@ -124,123 +123,256 @@ namespace AutoyaFramework.Information
             return rootObj;
         }
 
-        private VirtualGameObject Tokenize (TagPoint parentTagPoint, string data) {
-            var lines = data.Split('\n');
-            
-            var index = 0;
+        private VirtualGameObject Tokenize (TagPoint2 parentTagPoint, string data) {
+			var charIndex = 0;
+            /*
+				どんな法則が必要なのか、本当にざっくりやりたい。正規表現は使わず。
+				<tag attr>content</tag>
+				<tag attr/>
+				あたりがあって、
 
+				<TAG>content<tag/></TAG> とかがある。
+				包含関係があるっていう感じ。
+
+				で、今回は、特に行数で制御できてる節はある。まあそれも怪しいのだけれど。
+				・tagを見つける
+				・attrを見つける
+				・contentsを見つけてtokenizeにかける
+				という流れの連鎖でいけるのはわかっている。
+			 */
+			
+			var tag = Tag.NO_TAG_FOUND;
+			var readPoint = 0;
+			
             while (true) {
-                if (lines.Length <= index) {
-                    break;
-                }
+				
+				// consumed.
+				if (data.Length <= charIndex) {
+					break;
+				}
 
-                var readLine = lines[index];
-                if (string.IsNullOrEmpty(readLine)) {
-                    index++;
-                    continue;
-                }
+				var chr = data[charIndex];
+				
+				if (tag == Tag.NO_TAG_FOUND) {
+					if (chr == '<') {
+						// ここでコンテンツとtagをendまでみる、っていうことができれば、いい。
+						var current = charIndex;
+						var foundTag = IsTag(data, ref charIndex);
 
-                var foundStartTagPointAndAttrAndOption = FindStartTag(parentTagPoint.depth, lines, index);
+						if (foundTag == Tag.NO_TAG_FOUND) {
+							continue;
+						}
 
-                /*
-                    no <tag> found.
-                */
-                if (foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.NO_TAG_FOUND || foundStartTagPointAndAttrAndOption.tagPoint.tag == Tag.UNKNOWN) {					
-                    // detect single closed tag. e,g, <tag something />.
-                    var foundSingleTagPointWithAttr = FindSingleTag(parentTagPoint.depth, lines, index);
+						// ここまでのstrがあれば、それを親のコンテンツとして持つ。
+						// まだ適当。
+						if (readPoint < current) {
+							var str = data.Substring(readPoint, current - readPoint);
+							
+							var strRe = str.Replace("\n", string.Empty);
 
-                    if (foundSingleTagPointWithAttr.tagPoint.tag != Tag.NO_TAG_FOUND && foundSingleTagPointWithAttr.tagPoint.tag != Tag.UNKNOWN) {
-                        // closed <tag /> found. add this new closed tag to parent tag.
-                        AddChildContentToParent(parentTagPoint, foundSingleTagPointWithAttr.tagPoint, foundSingleTagPointWithAttr.attrs);
-                    } else {
-                        // not tag contained in this line. this line is just contents of parent tag.
-                        AddContentToParent(parentTagPoint, readLine);
-                    }
-                    
-                    index++;
-                    continue;
-                }
-                
-                // tag opening found.
-                var attr = foundStartTagPointAndAttrAndOption.attrs;
-                
+							if (!string.IsNullOrEmpty(strRe)) {
+								Debug.LogError("str:" + str);
+								var contentTagPoint = new TagPoint2(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
+								contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
+								contentTagPoint.vGameObject.keyValueStore[KV_KEY.CONTENT] = strRe;
+								SetPrefabName(contentTagPoint, parentTagPoint.originalTagName);
+							}
+						}
 
-                // find end tag.
-                while (true) {
-                    if (lines.Length <= index) {// 閉じタグが見つからなかったのでたぶんparseException.
-                        break;
-                    }
+						var rawTagName = foundTag.ToString();
+						if (foundTag == Tag.H) {
+							// HなんとかなのでrawTagNameとして補填する
+							rawTagName = rawTagName + data[charIndex].ToString();
+							
+							// indexを数字1文字ぶん進める
+							charIndex = charIndex + 1;
+						}
+						
 
-                    readLine = lines[index];
-                    
-                    // find end of current tag.
-                    var foundEndTagPointAndContent = FindEndTag(foundStartTagPointAndAttrAndOption.tagPoint, lines, index);
-                    if (foundEndTagPointAndContent.tagPoint.tag != Tag.NO_TAG_FOUND && foundEndTagPointAndContent.tagPoint.tag != Tag.UNKNOWN) {
-                        // close tag found. set attr to this closed tag.
-                        AddChildContentToParent(parentTagPoint, foundEndTagPointAndContent.tagPoint, attr);
+						tag = foundTag;
 
-                        // content exists. parse recursively.
-                        Tokenize(foundEndTagPointAndContent.tagPoint, foundEndTagPointAndContent.content);
-                        break;
-                    }
+						// collect attr and find start-tag end.
+						
+						var tagClosed = false;
+						var kv = new Dictionary<KV_KEY, string>();
+						{
+							// Debug.LogError("tag:" + tag);
+							switch (data[charIndex]) {
+								case ' ': {// <tag [attr]/>
+									var tagEndIndex = data.IndexOf(">", charIndex);
+									
+									var attrStr = data.Substring(charIndex + 1, tagEndIndex - charIndex - 1);
+									// Debug.LogError("attrStr:" + attrStr);
+									kv = GetAttr(attrStr);
 
-                    // end tag is not contained in current line.
-                    index++;
-                }
+									// Debug.LogError("data[tagEndIndex - 1]:" + data[tagEndIndex - 1]);
+									if (data[tagEndIndex - 1] == '/') {// <tag [attr]/>
+										tagClosed = true;
+									}
 
-                index++;
+									charIndex = tagEndIndex + 1;
+									break;
+								}
+								case '>': {// <tag> start tag is closed.
+									// set to next char.
+									charIndex = charIndex + 1;
+									break;
+								}
+								default: {
+									Debug.LogError("パースエラー扱い、charIndex:" + charIndex);
+									break;
+								}
+							}
+						}
+						
+						if (tagClosed) {
+							// 閉じタグが見つかっていて、すでにcharIndexがセットできてる
+							var tagPoint = new TagPoint2(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
+							tagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
+							SetPrefabName(tagPoint, parentTagPoint.originalTagName);
+						} else {
+							// Debug.LogError("end tag is not closed yet:" + tag);
+							// charIndexから、endTagまでがcontents。
+							var endTag = "</" + rawTagName.ToLower() + ">";
+							var endTagIndex = data.IndexOf(endTag, charIndex);
+							// Debug.LogError("endTagIndex:" + endTagIndex + " endTag:" + endTag);
+
+							if (endTagIndex == -1) {
+								Debug.LogError("parse error. endTag:" + endTag + " not found.");
+								break;
+							}
+							
+							var contents = data.Substring(charIndex, endTagIndex - charIndex);
+							// Debug.LogError("contents:" + contents);
+
+							var tagPoint = new TagPoint2(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
+							tagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
+							SetPrefabName(tagPoint, parentTagPoint.originalTagName);
+
+							// Debug.LogError("contents:" + contents);
+							Tokenize(tagPoint, contents);
+							
+							charIndex = endTagIndex + endTag.Length;
+						}
+						
+						// Debug.LogError("charIndex:" + charIndex + " vs len:" + data.Length);
+						
+						// reset.
+						tag = Tag.NO_TAG_FOUND;
+
+
+						// update readpoint.
+						readPoint = charIndex + 1;
+					}
+				}
+				charIndex++;
             }
 
             return parentTagPoint.vGameObject;
         }
         
-        private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<KV_KEY, string> kvs) {
-            var parentObj = parent.vGameObject;
-            child.vGameObject.transform.SetParent(parentObj.transform);
+		private Dictionary<KV_KEY, string> GetAttr (string source) {
+			var kvDict = new Dictionary<KV_KEY, string>();
+			
+			// [ src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' /]
+			var attrs = source.Split(' ');
+			
+            for (var i = 1; i < attrs.Length; i++) {
+                var kv = attrs[i].Split(new char[]{'='}, 2);
+                
+                if (kv.Length < 2) {
+                    continue;
+                }
 
-            // append attribute as kv.
-            foreach (var kv in kvs) {
-                child.vGameObject.keyValueStore[kv.Key] = kv.Value;
+                var keyStr = kv[0];
+                try {
+                    var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
+                        
+                    var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
+
+                    kvDict[key] = val;
+                } catch (Exception e) {
+                    Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
+                    return new Dictionary<KV_KEY, string>();
+                }
             }
+			return kvDict;
+		}
 
-            SetupMaterializeAction(child);
-        }
+		private class TagPoint2 {
+			public readonly VirtualGameObject vGameObject;
+			public readonly Tag tag;
+			public readonly string parentRawTag;
+			public readonly Tag[] depth;
+			public readonly string originalTagName;
+			public TagPoint2 (Tag tag, string parentRawTag, Tag[] depth, Dictionary<KV_KEY, string> kv, string originalTagName) {
+				this.vGameObject = new VirtualGameObject(tag, depth, kv);
+				this.tag = tag;
+				this.parentRawTag = parentRawTag;
+				this.depth = depth;
+				this.originalTagName = originalTagName;
+			}
+		}
 
-        private const string BRTagStr = "<br />";
-        
-        private void AddContentToParent (TagPoint parentPoint, string contentOriginal) {
-            if (contentOriginal.EndsWith(BRTagStr)) {
-                var content = contentOriginal.Substring(0, contentOriginal.Length - BRTagStr.Length);
-                AddChildContentWithBR(parentPoint, content, true);
-            } else {
-                AddChildContentWithBR(parentPoint, contentOriginal);
-            }
+		private Tag IsTag (string data, ref int index) {
+			foreach (var tag in Enum.GetValues(typeof(Tag))) {
+				var tagStr = "<" + tag.ToString();
 
-            SetupMaterializeAction(parentPoint);
-        }
+				if (data.Length <= index + tagStr.Length) {
+					continue;
+				}
 
-        private void AddChildContentWithBR (TagPoint parentPoint, string content, bool endsWithBR=false) {
-            var	parentObj = parentPoint.vGameObject;
+				if (data.Substring(index, tagStr.Length).ToUpper() == tagStr) {
+					index = index + tagStr.ToString().Length;
+					return (Tag)tag;
+				}
+			}
+
+			// no tag found.
+			index = index + 1;
+			return Tag.NO_TAG_FOUND;
+		}
+
+
+        // private void AddChildContentToParent (TagPoint parent, TagPoint child, Dictionary<KV_KEY, string> kvs) {
+        //     var parentObj = parent.vGameObject;
+        //     child.vGameObject.transform.SetParent(parentObj.transform);
+
+        //     // append attribute as kv.
+        //     foreach (var kv in kvs) {
+        //         child.vGameObject.keyValueStore[kv.Key] = kv.Value;
+        //     }
+
+        //     SetPrefabName(child);
+        // }
+
+        // private void AddContentToParent (TagPoint parentPoint, string contentOriginal) {
+        //     if (contentOriginal.EndsWith(BRTagStr)) {
+        //         var content = contentOriginal.Substring(0, contentOriginal.Length - BRTagStr.Length);
+        //         AddChildContentWithBR(parentPoint, content, true);
+        //     } else {
+        //         AddChildContentWithBR(parentPoint, contentOriginal, false);
+        //     }
+
+        //     SetPrefabName(parentPoint);
+        // }
+
+        // private void AddChildContentWithBR (TagPoint parentPoint, string content, bool endsWithBR) {
+        //     var	parentObj = parentPoint.vGameObject;
             
-            var child = new TagPoint(parentPoint.lineIndex, parentPoint.tagEndPoint, Tag._CONTENT, parentPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), parentPoint.originalTagName + " Content");
-            child.vGameObject.transform.SetParent(parentObj.transform);
-            child.vGameObject.keyValueStore[KV_KEY.CONTENT] = content;
-            child.vGameObject.keyValueStore[KV_KEY.PARENTTAG] = parentPoint.originalTagName;
-            if (endsWithBR) {
-                child.vGameObject.keyValueStore[KV_KEY.ENDS_WITH_BR] = "true";
-            }
+        //     var child = new TagPoint2(parentPoint.lineIndex, parentPoint.tagEndPoint, Tag._CONTENT, parentPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), parentPoint.originalTagName + " Content");
+        //     child.vGameObject.transform.SetParent(parentObj.transform);
+        //     child.vGameObject.keyValueStore[KV_KEY.CONTENT] = content;
+        //     child.vGameObject.keyValueStore[KV_KEY.PARENTTAG] = parentPoint.originalTagName;
+        //     if (endsWithBR) {
+        //         child.vGameObject.keyValueStore[KV_KEY.ENDS_WITH_BR] = "true";
+        //     }
 
-            SetupMaterializeAction(child);
-        }
+        //     SetPrefabName(child);
+        // }
 
-        private void SetupMaterializeAction (TagPoint tagPoint) {
-            // set only once.
-            if (!string.IsNullOrEmpty(tagPoint.vGameObject.prefabName)) {
-                return;
-            }
-            
-            var prefabNameCandidate = string.Empty;
-
+        private void SetPrefabName (TagPoint2 tagPoint, string parentOriginalTagName) {
+			Debug.LogWarning("綺麗なコードではないので後で書き直す。");
             /*
                 set name of required prefab.
                     content -> parent's tag name.
@@ -251,8 +383,8 @@ namespace AutoyaFramework.Information
             */
             switch (tagPoint.tag) {
                 case Tag._CONTENT: {
-                    prefabNameCandidate = tagPoint.vGameObject.keyValueStore[KV_KEY.PARENTTAG];
-                    break;
+                    tagPoint.vGameObject.prefabName = parentOriginalTagName;
+					break;
                 }
                 
                 case Tag.H:
@@ -260,30 +392,14 @@ namespace AutoyaFramework.Information
                 case Tag.A:
                 case Tag.UL:
                 case Tag.LI: {// these are container.
-                    prefabNameCandidate = tagPoint.originalTagName.ToUpper() + "Container";
-                    break;
+                    tagPoint.vGameObject.prefabName = tagPoint.originalTagName.ToUpper() + "Container";
+					break;
                 }
 
                 default: {
-                    prefabNameCandidate = tagPoint.originalTagName.ToUpper();
-                    break;
+                    tagPoint.vGameObject.prefabName = tagPoint.originalTagName.ToUpper();
+					break;
                 }
-            }
-            
-            tagPoint.vGameObject.prefabName = prefabNameCandidate;
-        }
-        
-        private struct TagPointAndAttr {
-            public readonly TagPoint tagPoint;
-            public readonly Dictionary<KV_KEY, string> attrs;
-            public TagPointAndAttr (TagPoint tagPoint, Dictionary<KV_KEY, string> attrs) {
-                this.tagPoint = tagPoint;
-                this.attrs = attrs;
-            }
-            
-            public TagPointAndAttr (TagPoint tagPoint) {
-                this.tagPoint = tagPoint;
-                this.attrs = new Dictionary<KV_KEY, string>();
             }
         }
 
@@ -291,158 +407,132 @@ namespace AutoyaFramework.Information
         /**
             find tag if exists.
         */
-        private TagPointAndAttr FindStartTag (Tag[] parentDepth, string[] lines, int lineIndex) {
-            var line = lines[lineIndex];
+        // private TagPointAndAttr FindStartTag (Tag[] parentDepth, string line, int lineIndex) {
+        //     // find <X>something...
+        //     if (line.StartsWith("<")) {
+        //         var closeIndex = line.IndexOf(">");
 
-            // find <X>something...
-            if (line.StartsWith("<")) {
-                var closeIndex = line.IndexOf(">");
+        //         if (closeIndex == -1) {
+        //             return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+        //         }
 
-                if (closeIndex == -1) {
-                    return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-                }
+        //         // check found tag end has closed tag mark or not.
+        //         if (line[closeIndex-1] == '/') {
+        //             // closed tag detected.
+        //             return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+        //         }
 
-                // check found tag end has closed tag mark or not.
-                if (line[closeIndex-1] == '/') {
-                    // closed tag detected.
-                    return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-                }
+        //         var originalTagName = string.Empty;
+        //         var kvDict = new Dictionary<KV_KEY, string>();
+        //         var tagEndPoint = closeIndex;
 
-                var originalTagName = string.Empty;
-                var kvDict = new Dictionary<KV_KEY, string>();
-                var tagEndPoint = closeIndex;
+        //         // not closed tag. contains attr or not.
+        //         if (line[closeIndex-1] == '"') {// <tag something="else">
+        //             var tagNameAndAttr = ParseAttribute(line, closeIndex);
 
-                // not closed tag. contains attr or not.
-                if (line[closeIndex-1] == '"') {// <tag something="else">
-                    var contents = line.Substring(1, closeIndex - 1).Split(' ');
-                    originalTagName = contents[0];
-                    for (var i = 1; i < contents.Length; i++) {
-                        var kv = contents[i].Split(new char[]{'='}, 2);
+        //             originalTagName = tagNameAndAttr.tag;
+        //             kvDict = tagNameAndAttr.attr;
+        //             // var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
+        //             // LogError("originalTagName:" + originalTagName + " contains kv:" + string.Join(", ", kvs));
+        //         } else {
+        //             originalTagName = line.Substring(1, closeIndex - 1);
+        //         }
+
+        //         var tagName = originalTagName;
+        //         var numbers = string.Join(string.Empty, originalTagName.ToCharArray().Where(c => Char.IsDigit(c)).Select(t => t.ToString()).ToArray());
+                
+        //         if (!string.IsNullOrEmpty(numbers) && tagName.EndsWith(numbers)) {
+        //             var index = tagName.IndexOf(numbers);
+        //             tagName = tagName.Substring(0, index);
+        //         }
+                
+        //         try {
+        //             var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
+        //             return new TagPointAndAttr(new TagPoint(lineIndex, tagEndPoint, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict);
+        //         } catch {
+        //             return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+        //         }
+        //     }
+        //     return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+        // }
+
+
+
+        // private TagNameAndAttr ParseAttribute (string line, int tagCloseCharIndex) {
+        //     var tagContent = line.Substring(1, tagCloseCharIndex - 1).Split(' ');
+
+        //     if (tagContent.Length == 0) {
+        //         Debug.LogError("なんかやばそう");
+        //     }
+            
+        //     var tagName = tagContent[0];
+            
+        //     var kvDict = new Dictionary<KV_KEY, string>();
+        //     for (var i = 1; i < tagContent.Length; i++) {
+        //         var kv = tagContent[i].Split(new char[]{'='}, 2);
+                
+        //         if (kv.Length < 2) {
+        //             continue;
+        //         }
+
+        //         var keyStr = kv[0];
+        //         try {
+        //             var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
                         
-                        if (kv.Length < 2) {
-                            continue;
-                        }
+        //             var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
 
-                        var keyStr = kv[0];
-                        try {
-                            var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
-                            var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
+        //             kvDict[key] = val;
+        //         } catch (Exception e) {
+        //             Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
+        //             // return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
+        //         }
+        //     }
+        //     return new TagNameAndAttr(tagName, kvDict);
+        // }
 
-                            kvDict[key] = val;
-                        } catch (Exception e) {
-                            Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
-                            return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
-                        }
-                    }
-                    // var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
-                    // LogError("originalTagName:" + originalTagName + " contains kv:" + string.Join(", ", kvs));
-                } else {
-                    originalTagName = line.Substring(1, closeIndex - 1);
-                }
 
-                var tagName = originalTagName;
-                var numbers = string.Join(string.Empty, originalTagName.ToCharArray().Where(c => Char.IsDigit(c)).Select(t => t.ToString()).ToArray());
-                
-                if (!string.IsNullOrEmpty(numbers) && tagName.EndsWith(numbers)) {
-                    var index = tagName.IndexOf(numbers);
-                    tagName = tagName.Substring(0, index);
-                }
-                
-                try {
-                    var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-                    return new TagPointAndAttr(new TagPoint(lineIndex, tagEndPoint, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), originalTagName), kvDict);
-                } catch {
-                    return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
-                }
-            }
-            return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-        }
+        // private struct TagNameAndAttr {
+        //     public string tag;
+        //     public Dictionary<KV_KEY, string> attr;
+        //     public TagNameAndAttr (string tag, Dictionary<KV_KEY, string> attr) {
+        //         this.tag = tag;
+        //         this.attr = attr;
+        //     }
+        // }
 
-        private TagPointAndAttr FindSingleTag (Tag[] parentDepth, string[] lines, int lineIndex) {
-            var line = lines[lineIndex];
+        // private TagPointAndContent FindEndTag (TagPoint p, string[] lines, int lineIndex) {
+        //     var line = lines[lineIndex];
 
-            // find <X>something...
-            if (line.StartsWith("<")) {
-                var closeIndex = line.IndexOf(" />");
+        //     var endTagStr = p.originalTagName;
+        //     var endTag = "</" + endTagStr + ">";
 
-                if (closeIndex == -1) {
-                    return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-                }
-
-                var contents = line.Substring(1, closeIndex - 1).Split(' ');
-
-                if (contents.Length == 0) {
-                    return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-                }
-                
-                var tagName = contents[0];
-                
-                var kvDict = new Dictionary<KV_KEY, string>();
-                for (var i = 1; i < contents.Length; i++) {
-                    var kv = contents[i].Split(new char[]{'='}, 2);
-                    
-                    if (kv.Length < 2) {
-                        continue;
-                    }
-
-                    var keyStr = kv[0];
-                    try {
-                        var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
-                            
-                        var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
-
-                        kvDict[key] = val;
-                    } catch (Exception e) {
-                        Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
-                        return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
-                    }
-                }
-                // var kvs = kvDict.Select(i => i.Key + " " + i.Value).ToArray();
-                // LogError("tag:" + tagName + " contains kv:" + string.Join(", ", kvs));
-                
-                try {
-                    var tagEnum = (Tag)Enum.Parse(typeof(Tag), tagName, true);
-                    return new TagPointAndAttr(new TagPoint(lineIndex, -1, tagEnum, parentDepth.Concat(new Tag[]{tagEnum}).ToArray(), tagName), kvDict);
-                } catch {
-                    return new TagPointAndAttr(new TagPoint(lineIndex, Tag.UNKNOWN), kvDict);
-                }
-            }
-            return new TagPointAndAttr(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-        }
-
-        private TagPointAndContent FindEndTag (TagPoint p, string[] lines, int lineIndex) {
-            var line = lines[lineIndex];
-
-            var endTagStr = p.originalTagName;
-            var endTag = "</" + endTagStr + ">";
-
-            var endTagIndex = -1;
-            if (p.lineIndex == lineIndex) {
-                // check from next point to end of start tag.
-                endTagIndex = line.IndexOf(endTag, 1 + endTagStr.Length + 1);
-            } else {
-                endTagIndex = line.IndexOf(endTag);
-            }
+        //     var endTagIndex = -1;
+        //     if (p.lineIndex == lineIndex) {
+        //         // check from next point to end of start tag.
+        //         endTagIndex = line.IndexOf(endTag, 1 + endTagStr.Length + 1);
+        //     } else {
+        //         endTagIndex = line.IndexOf(endTag);
+        //     }
             
-            if (endTagIndex == -1) {
-                // no end tag contained.
-                return new TagPointAndContent(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
-            }
+        //     if (endTagIndex == -1) {
+        //         // no end tag contained.
+        //         return new TagPointAndContent(new TagPoint(lineIndex, Tag.NO_TAG_FOUND));
+        //     }
             
 
-            // end tag was found!. get tagged contents from lines.
+        //     // end tag was found!. get tagged contents from lines.
 
-            var contentsStrLines = lines.Where((i,l) => p.lineIndex <= l && l <= lineIndex).ToArray();
+        //     var contentsStrLines = lines.Where((i,l) => p.lineIndex <= l && l <= lineIndex).ToArray();
             
-            // remove start tag from start line.
-            contentsStrLines[0] = contentsStrLines[0].Substring(p.tagEndPoint+1);
+        //     // remove start tag from start line.
+        //     contentsStrLines[0] = contentsStrLines[0].Substring(p.tagEndPoint+1);
             
-            // remove found end-tag from last line.
-            contentsStrLines[contentsStrLines.Length-1] = contentsStrLines[contentsStrLines.Length-1].Substring(0, contentsStrLines[contentsStrLines.Length-1].Length - endTag.Length);
+        //     // remove found end-tag from last line.
+        //     contentsStrLines[contentsStrLines.Length-1] = contentsStrLines[contentsStrLines.Length-1].Substring(0, contentsStrLines[contentsStrLines.Length-1].Length - endTag.Length);
             
-            var contentsStr = string.Join("\n", contentsStrLines);
-            return new TagPointAndContent(p, contentsStr);
-        }
+        //     var contentsStr = string.Join("\n", contentsStrLines);
+        //     return new TagPointAndContent(p, contentsStr);
+        // }
 
     }
 }

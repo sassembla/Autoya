@@ -12,7 +12,14 @@ public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
 
         var sampleMd = @"
+straight link [LICENSE](./LICENSE)
+
+
 # Autoya
+
+small, thin framework for Unity.  
+which contains essential game features.
+
 ver 0.8.4
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
@@ -26,7 +33,7 @@ small, thin framework for Unit1.
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
-smal<Br>Unit2.  
+smal<Br Unit2.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
@@ -35,13 +42,11 @@ test
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
 test2
 
-small, thin framework for Unity.  
-which contains essential game features.
+
 
 ## Features
 * Authentication handling
 * AssetBundle load/management
-
 * HTTP/TCP/UDP Connection feature
 * Maintenance changed handling
 * Purchase/IAP feature
@@ -157,8 +162,9 @@ hard break will appear without <br />.
 					}
 				);
 				
+
 				var canvas = GameObject.Find("Canvas");
-				root.transform.SetParent(canvas.transform);
+				// root.transform.SetParent(canvas.transform);
 
 				// var childlen = obj.transform.GetChildlen();
 
