@@ -14,6 +14,8 @@ namespace AutoyaFramework.Information {
 
 		public readonly Tag tag;
 		public readonly Tag[] depth;
+		public readonly Dictionary<KV_KEY, string> keyValueStore;
+
 		public Padding padding;
 		
 		private VirtualTransform vTransform;
@@ -32,11 +34,12 @@ namespace AutoyaFramework.Information {
 			return rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
 		}
 
-		public VirtualGameObject (Tag tag, Tag[] depth) {
+		public VirtualGameObject (Tag tag, Tag[] depth, Dictionary<KV_KEY, string> kv) {
 			this.tag = tag;
 			this.depth = depth;
 			this.padding = new Padding();
 			this.vTransform = new VirtualTransform(this);
+			this.keyValueStore = kv;
 		}
 
 		public VirtualGameObject GetRootGameObject () {
@@ -47,8 +50,6 @@ namespace AutoyaFramework.Information {
 			// no parent. return this vGameObject.
 			return this;
 		}
-
-		public Dictionary<KV_KEY, string> keyValueStore = new Dictionary<KV_KEY, string>();
 
 		private ContentWidthAndHeight GetContentWidthAndHeight (string prefabName, string text, float contentWidth, float contentHeight) {
 			// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
@@ -227,16 +228,28 @@ namespace AutoyaFramework.Information {
 				var layoutLine = new List<VirtualGameObject>();
 
 				foreach (var child in childlen) {
-					handlePoint = child.Layout(this, handlePoint, onLayoutDel);
-					
-					// 子のタグによって、layoutLineに加えなくてもいい、という感じ。現在のtagがPで、子供が_Contentな場合のみ、という。
-					if (this.tag == Tag.P) {
-						// pass.
-					} else {
+					if (child.tag == Tag.BR) {
+						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+
+						// forget current line.
+						layoutLine.Clear();
+
+						// set next line.
+						handlePoint.nextLeftHandle = 0;
 						continue;
 					}
 
-					// width over.
+					handlePoint = child.Layout(this, handlePoint, onLayoutDel);
+					
+					if (this.tag != Tag.P) {
+						continue;
+					}
+
+					/*
+						tag is P.
+					 */
+
+					// check width over.
 					if (handlePoint.viewWidth < handlePoint.nextLeftHandle) {
 						if (0 < layoutLine.Count) {
 							handlePoint = SortByLayoutLine(layoutLine, handlePoint);
@@ -252,21 +265,9 @@ namespace AutoyaFramework.Information {
 						}
 					}
 
-					// in viewpoint width.
+					// content is under viewpoint width.
 
 					layoutLine.Add(child);
-
-					// if <br /> is contained.
-					if (child.keyValueStore.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
-						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
-
-						// forget current line.
-						layoutLine.Clear();
-
-						// set next line.
-						handlePoint.nextLeftHandle = 0;
-						handlePoint.nextTopHandle = child.PaddedRightBottomPoint().y;
-					}
 				}
 
 				// if layoutLine content is exist, put all in 1 line.
