@@ -145,7 +145,7 @@ hard break will appear without <br />.
 				// 全体を生成
 				var root = tokenizer.Materialize(
 					"test",
-					new Rect(0, 0, 300, 400),
+					new Rect(0, 0, 240, 400),
 					/*
 						要素ごとにpaddingを変更できる。
 					*/

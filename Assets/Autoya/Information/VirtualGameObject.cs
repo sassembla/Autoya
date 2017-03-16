@@ -228,6 +228,17 @@ namespace AutoyaFramework.Information {
                 var layoutLine = new List<VirtualGameObject>();
 
                 foreach (var child in childlen) {
+                    if (child.tag == Tag.BR) {
+                        handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+
+                        // forget current line.
+                        layoutLine.Clear();
+
+                        // set next line.
+                        handlePoint.nextLeftHandle = 0;
+                        continue;
+                    }
+
                     handlePoint = child.Layout(this, handlePoint, onLayoutDel);
                     
                     if (this.tag != Tag.P) {
@@ -257,18 +268,6 @@ namespace AutoyaFramework.Information {
                     // content is under viewpoint width.
 
                     layoutLine.Add(child);
-
-                    // if <br /> is contained.
-                    if (child.keyValueStore.ContainsKey(KV_KEY.ENDS_WITH_BR)) {
-                        handlePoint = SortByLayoutLine(layoutLine, handlePoint);
-
-                        // forget current line.
-                        layoutLine.Clear();
-
-                        // set next line.
-                        handlePoint.nextLeftHandle = 0;
-                        handlePoint.nextTopHandle = child.PaddedRightBottomPoint().y;
-                    }
                 }
 
                 // if layoutLine content is exist, put all in 1 line.

@@ -76,8 +76,7 @@ namespace AutoyaFramework.Information
         HEIGHT,
         SRC,
         ALT,
-        HREF,
-        ENDS_WITH_BR
+        HREF
     }
 
     public class Padding {
@@ -125,22 +124,7 @@ namespace AutoyaFramework.Information
 
         private VirtualGameObject Tokenize (TagPoint2 parentTagPoint, string data) {
 			var charIndex = 0;
-            /*
-				どんな法則が必要なのか、本当にざっくりやりたい。正規表現は使わず。
-				<tag attr>content</tag>
-				<tag attr/>
-				あたりがあって、
 
-				<TAG>content<tag/></TAG> とかがある。
-				包含関係があるっていう感じ。
-
-				で、今回は、特に行数で制御できてる節はある。まあそれも怪しいのだけれど。
-				・tagを見つける
-				・attrを見つける
-				・contentsを見つけてtokenizeにかける
-				という流れの連鎖でいけるのはわかっている。
-			 */
-			
 			var tag = Tag.NO_TAG_FOUND;
 			var readPoint = 0;
 			
@@ -155,36 +139,34 @@ namespace AutoyaFramework.Information
 				
 				if (tag == Tag.NO_TAG_FOUND) {
 					if (chr == '<') {
-						// ここでコンテンツとtagをendまでみる、っていうことができれば、いい。
+						// 
 						var current = charIndex;
 						var foundTag = IsTag(data, ref charIndex);
 
 						if (foundTag == Tag.NO_TAG_FOUND) {
+							charIndex = charIndex + 1;
 							continue;
 						}
 
-						// ここまでのstrがあれば、それを親のコンテンツとして持つ。
-						// まだ適当。
 						if (readPoint < current) {
 							var str = data.Substring(readPoint, current - readPoint);
 							
-							var strRe = str.Replace("\n", string.Empty);
+							var lineReplacedStr = str.Replace("\n", string.Empty);
 
-							if (!string.IsNullOrEmpty(strRe)) {
-								Debug.LogError("str:" + str);
-								var contentTagPoint = new TagPoint2(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
+							if (!string.IsNullOrEmpty(lineReplacedStr)) {
+								var contentTagPoint = new TagPoint2(Tag._CONTENT, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
 								contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
-								contentTagPoint.vGameObject.keyValueStore[KV_KEY.CONTENT] = strRe;
+								contentTagPoint.vGameObject.keyValueStore[KV_KEY.CONTENT] = lineReplacedStr;
 								SetPrefabName(contentTagPoint, parentTagPoint.originalTagName);
 							}
 						}
 
 						var rawTagName = foundTag.ToString();
 						if (foundTag == Tag.H) {
-							// HなんとかなのでrawTagNameとして補填する
+							// Hx
 							rawTagName = rawTagName + data[charIndex].ToString();
 							
-							// indexを数字1文字ぶん進める
+							// progress 1 charactor.
 							charIndex = charIndex + 1;
 						}
 						
@@ -196,15 +178,14 @@ namespace AutoyaFramework.Information
 						var tagClosed = false;
 						var kv = new Dictionary<KV_KEY, string>();
 						{
-							// Debug.LogError("tag:" + tag);
 							switch (data[charIndex]) {
 								case ' ': {// <tag [attr]/>
 									var tagEndIndex = data.IndexOf(">", charIndex);
 									
 									var attrStr = data.Substring(charIndex + 1, tagEndIndex - charIndex - 1);
-									// Debug.LogError("attrStr:" + attrStr);
+									
 									kv = GetAttr(attrStr);
-
+									
 									// Debug.LogError("data[tagEndIndex - 1]:" + data[tagEndIndex - 1]);
 									if (data[tagEndIndex - 1] == '/') {// <tag [attr]/>
 										tagClosed = true;
@@ -219,12 +200,11 @@ namespace AutoyaFramework.Information
 									break;
 								}
 								default: {
-									Debug.LogError("パースエラー扱い、charIndex:" + charIndex);
-									break;
+									throw new Exception("parse error. unknown keyword found:" + data[charIndex] + " at tag:" + tag);
 								}
 							}
 						}
-						
+			
 						if (tagClosed) {
 							// 閉じタグが見つかっていて、すでにcharIndexがセットできてる
 							var tagPoint = new TagPoint2(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
@@ -238,13 +218,11 @@ namespace AutoyaFramework.Information
 							// Debug.LogError("endTagIndex:" + endTagIndex + " endTag:" + endTag);
 
 							if (endTagIndex == -1) {
-								Debug.LogError("parse error. endTag:" + endTag + " not found.");
-								break;
+								throw new Exception("parse error. failed to find end-tag of:" + tag);
 							}
 							
 							var contents = data.Substring(charIndex, endTagIndex - charIndex);
-							// Debug.LogError("contents:" + contents);
-
+							
 							var tagPoint = new TagPoint2(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
 							tagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
 							SetPrefabName(tagPoint, parentTagPoint.originalTagName);
@@ -254,7 +232,7 @@ namespace AutoyaFramework.Information
 							
 							charIndex = endTagIndex + endTag.Length;
 						}
-						
+
 						// Debug.LogError("charIndex:" + charIndex + " vs len:" + data.Length);
 						
 						// reset.
@@ -268,34 +246,50 @@ namespace AutoyaFramework.Information
 				charIndex++;
             }
 
+			if (readPoint < data.Length) { 
+				var restStr = data.Substring(readPoint);
+				var lineReplacedStr = restStr.Replace("\n", string.Empty);
+				
+				if (!string.IsNullOrEmpty(lineReplacedStr)) {
+					var contentTagPoint = new TagPoint2(Tag._CONTENT, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
+					contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
+					contentTagPoint.vGameObject.keyValueStore[KV_KEY.CONTENT] = restStr;
+					SetPrefabName(contentTagPoint, parentTagPoint.originalTagName);
+				}
+			}
+
             return parentTagPoint.vGameObject;
         }
         
 		private Dictionary<KV_KEY, string> GetAttr (string source) {
+			// Debug.LogError("source:" + source);
+
 			var kvDict = new Dictionary<KV_KEY, string>();
 			
-			// [ src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' /]
+			// [src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' /]
 			var attrs = source.Split(' ');
+			foreach (var s in attrs) {
+				
+				if (s.Contains("=")) {
+					var keyValueArray = s.Split(new char[]{'='}, 2);
+					if (keyValueArray.Length == 2) {
+						
+						var keyStr = keyValueArray[0];
+						try {
+							var keyEnum = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
+							var val = keyValueArray[1].Substring(1, keyValueArray[1].Length - (1 + 1));// remove head and tail "
+							kvDict[keyEnum] = val;
+						} catch (Exception e) {
+							Debug.LogError("attribute:" + keyStr + " is not supported, e:" + e);
+						}
+					}
+				}
+			}
 			
-            for (var i = 1; i < attrs.Length; i++) {
-                var kv = attrs[i].Split(new char[]{'='}, 2);
-                
-                if (kv.Length < 2) {
-                    continue;
-                }
+			// foreach (var dict in kvDict) {
+			// 	Debug.LogError("kv:" + dict.Key + " val:" + dict.Value);
+			// }
 
-                var keyStr = kv[0];
-                try {
-                    var key = (KV_KEY)Enum.Parse(typeof(KV_KEY), keyStr, true);
-                        
-                    var val = kv[1].Substring(1, kv[1].Length - (1 + 1));
-
-                    kvDict[key] = val;
-                } catch (Exception e) {
-                    Debug.LogError("attribute:" + keyStr + " does not supported, e:" + e);
-                    return new Dictionary<KV_KEY, string>();
-                }
-            }
 			return kvDict;
 		}
 
