@@ -52,7 +52,7 @@ namespace AutoyaFramework.Information {
 			return this;
 		}
 
-		private ContentWidthAndHeight GetContentWidthAndHeight (string text, float contentWidth, float contentHeight) {
+		private ContentWidthAndHeight GetContentWidthAndHeight (float offset, string text, float contentWidth, float contentHeight) {
 			// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
 			/*
 				・Resourcesに置ける
@@ -69,12 +69,12 @@ namespace AutoyaFramework.Information {
 			}
 
 			// set content height.
-			return CalculateTextContent(textComponent, text, new Vector2(contentWidth, contentHeight));
+			return CalculateTextContent(offset, textComponent, text, new Vector2(contentWidth, contentHeight));
 		}
 
-		private ContentWidthAndHeight CalculateTextContent (Text textComponent, string text, Vector2 sizeDelta) {
+		private ContentWidthAndHeight CalculateTextContent (float offset, Text textComponent, string text, Vector2 sizeDelta) {
 			textComponent.text = text;
-
+			Debug.LogError("offset:" + offset + " text:" + text);
 			var generator = new TextGenerator();
 			generator.Populate(textComponent.text, textComponent.GetGenerationSettings(sizeDelta));
 
@@ -99,10 +99,8 @@ namespace AutoyaFramework.Information {
 		}
 		
 		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint) {
-			var rectTrans = rectTransform;
-
-			// set y start pos.
-			rectTrans.anchoredPosition = new Vector2(rectTrans.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTrans.anchoredPosition.y + contentHandlePoint.nextTopHandle);
+			// set (x, y) start pos.
+			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
 			
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -114,9 +112,9 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				case Tag.IMG: {
-					// set basic size from prefab.
 					var prefab = LoadPrefab(prefabName);
 					if (prefab != null) {
+						// use prefab size by default.
 						var rectTransform = prefab.GetComponent<RectTransform>();
 						contentWidth = rectTransform.sizeDelta.x;
 						contentHeight = rectTransform.sizeDelta.y;
@@ -148,6 +146,19 @@ namespace AutoyaFramework.Information {
 							}
 						}
 					}
+
+					Debug.LogWarning("img, 画面幅に対するサイズ限界指定を行う必要がある。");
+					break;
+				}
+				case Tag.HR: {
+					Debug.LogWarning("hr, 画面幅に対するサイズ限界指定を行う必要がある。のと、もしサイズが画面幅より小さい場合、なんか中央寄せとか行うか？ パーセントで扱うか?みたいな。まあ面倒臭いので限界 + paddingでなんとかできるようにしとく");
+					var prefab = LoadPrefab(prefabName);
+					if (prefab != null) {
+						// use prefab size by default.
+						var rectTransform = prefab.GetComponent<RectTransform>();
+						contentWidth = rectTransform.sizeDelta.x;
+						contentHeight = rectTransform.sizeDelta.y;
+					}
 					break;
 				}
 				
@@ -159,7 +170,7 @@ namespace AutoyaFramework.Information {
 							case KV_KEY.CONTENT: {
 								var text = kvs.Value;
 						
-								var contentWidthAndHeight = GetContentWidthAndHeight(text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
+								var contentWidthAndHeight = GetContentWidthAndHeight(rectTransform.anchoredPosition.x, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
 
 								contentWidth = contentWidthAndHeight.width;
 								contentHeight = contentWidthAndHeight.totalHeight;
@@ -186,7 +197,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			// set content size.
-			rectTrans.sizeDelta = new Vector2(contentWidth, contentHeight);
+			rectTransform.sizeDelta = new Vector2(contentWidth, contentHeight);
 			return contentHandlePoint;
 		}
 		
@@ -240,6 +251,7 @@ namespace AutoyaFramework.Information {
 				var layoutLine = new List<VirtualGameObject>();
 
 				foreach (var child in childlen) {
+					// consume br as linefeed.
 					if (child.tag == Tag.BR) {
 						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
 
@@ -250,10 +262,28 @@ namespace AutoyaFramework.Information {
 						handlePoint.nextLeftHandle = 0;
 						continue;
 					}
+					
+					// consume hr 1/2 as horizontal rule.
+					if (child.tag == Tag.HR) {
+						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+
+						// forget current line.
+						layoutLine.Clear();
+					} 
 
 					handlePoint = child.Layout(this, handlePoint, onLayoutDel);
 					
-					if (this.tag != Tag.P) {
+					// consume hr 2/2 as horizontal rule.
+					if (child.tag == Tag.HR) {
+						// set next line.
+						handlePoint.nextLeftHandle = 0;
+						continue;
+					}
+
+
+					if (this.tag == Tag.P || this.tag == Tag.LI) {
+						// pass.
+					} else {
 						continue;
 					}
 
@@ -325,12 +355,13 @@ namespace AutoyaFramework.Information {
 				handlePoint.nextLeftHandle += padding.PadWidth();
 				handlePoint.nextTopHandle += padding.PadHeight();
 			}
-
+			
 			/*
 				set next left-top point by this tag && the parent tag kind.
 			*/
 			switch (parent.tag) {
 				case Tag.H:
+				case Tag.LI:
 				case Tag.P: {
 					// next content is planned to layout to the next of this content.
 					handlePoint.nextLeftHandle += this.rectTransform.sizeDelta.x + this.padding.PadWidth();

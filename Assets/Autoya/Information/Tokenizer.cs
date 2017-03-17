@@ -48,7 +48,9 @@ namespace AutoyaFramework.Information {
         HEIGHT,
         SRC,
         ALT,
-        HREF
+        HREF,
+		START,
+		TITLE
     }
 
     public class Padding {
@@ -83,7 +85,7 @@ namespace AutoyaFramework.Information {
         private readonly VirtualGameObject rootObject;
 
         public Tokenizer (string source) {
-            var root = new TagPoint(Tag.ROOT, string.Empty, new Tag[0], new Dictionary<KV_KEY, string>(), string.Empty, 0, "dummyEmpty");
+            var root = new TagPoint(Tag.ROOT, string.Empty, new Tag[0], new Dictionary<KV_KEY, string>(), string.Empty);
             rootObject = Tokenize(root, source);
         }
 
@@ -130,9 +132,7 @@ namespace AutoyaFramework.Information {
 									parentTagPoint.originalTagName, 
 									parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), 
 									new Dictionary<KV_KEY, string>(), 
-									string.Empty,
-									charIndex,
-									data
+									string.Empty
 								);
 								contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
 								contentTagPoint.vGameObject.keyValueStore[KV_KEY.CONTENT] = lineReplacedStr;
@@ -183,7 +183,7 @@ namespace AutoyaFramework.Information {
 			
 						if (tagClosed) {
 							// 閉じタグが見つかっていて、すでにcharIndexがセットできてる
-							var tagPoint = new TagPoint(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName, charIndex, data);
+							var tagPoint = new TagPoint(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
 							tagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
 						} else {
 							// Debug.LogError("end tag is not closed yet:" + tag);
@@ -218,7 +218,7 @@ namespace AutoyaFramework.Information {
 							
 							var contents = data.Substring(charIndex, endTagIndex - charIndex);
 							
-							var tagPoint = new TagPoint(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName, charIndex, contents);
+							var tagPoint = new TagPoint(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
 							tagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
 							
 							// Debug.LogError("contents:" + contents);
@@ -234,7 +234,7 @@ namespace AutoyaFramework.Information {
 
 
 						// update readpoint.
-						readPoint = charIndex + 1;
+						readPoint = charIndex;
 					}
 				}
 				charIndex++;
@@ -245,7 +245,7 @@ namespace AutoyaFramework.Information {
 				var lineReplacedStr = restStr.Replace("\n", string.Empty);
 				
 				if (!string.IsNullOrEmpty(lineReplacedStr)) {
-					var contentTagPoint = new TagPoint(Tag._CONTENT, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty, charIndex, lineReplacedStr);
+					var contentTagPoint = new TagPoint(Tag._CONTENT, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
 					contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
 					contentTagPoint.vGameObject.keyValueStore[KV_KEY.CONTENT] = restStr;
 				}
@@ -291,7 +291,7 @@ namespace AutoyaFramework.Information {
 			public readonly Tag tag;
 			public readonly Tag[] depth;
 			public readonly string originalTagName;
-			public TagPoint (Tag tag, string parentRawTag, Tag[] depth, Dictionary<KV_KEY, string> kv, string originalTagName, int charIndex, string s) {
+			public TagPoint (Tag tag, string parentRawTag, Tag[] depth, Dictionary<KV_KEY, string> kv, string originalTagName) {
 				this.tag = tag;
 				this.depth = depth;
 				this.originalTagName = originalTagName;
@@ -303,12 +303,18 @@ namespace AutoyaFramework.Information {
 						prefabName = parentRawTag;
 						break;
 					}
-					
+
+					case Tag.PRE:
+					case Tag.EM:
+					case Tag.STRONG:
+					case Tag.BLOCKQUOTE:
+					case Tag.CODE:
 					case Tag.H:
 					case Tag.P:
 					case Tag.A:
 					case Tag.UL:
-					case Tag.LI: {// these are container.
+					case Tag.LI:
+					case Tag.OL: {// these are container.
 						prefabName = originalTagName.ToUpper() + "Container";
 						break;
 					}
@@ -318,10 +324,6 @@ namespace AutoyaFramework.Information {
 						break;
 					}
 				}
-
-				if (string.IsNullOrEmpty(prefabName)) {
-					Debug.LogError("charIndex:" + charIndex + " s:" + s + " parentRawTag:" + parentRawTag + " originalTagName:" + originalTagName);
-				} 
 				
 				this.vGameObject = new VirtualGameObject(tag, depth, kv, prefabName);
 			}
