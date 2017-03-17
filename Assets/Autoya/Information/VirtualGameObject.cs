@@ -8,7 +8,7 @@ using UnityEngine.UI;
 namespace AutoyaFramework.Information {
 	public class VirtualGameObject {
 		public GameObject _gameObject;
-		public string prefabName;
+		public readonly string prefabName;
 
 		public InformationRootMonoBehaviour rootInstance;
 
@@ -34,12 +34,13 @@ namespace AutoyaFramework.Information {
 			return rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
 		}
 
-		public VirtualGameObject (Tag tag, Tag[] depth, Dictionary<KV_KEY, string> kv) {
+		public VirtualGameObject (Tag tag, Tag[] depth, Dictionary<KV_KEY, string> kv, string prefabName) {
 			this.tag = tag;
 			this.depth = depth;
 			this.padding = new Padding();
 			this.vTransform = new VirtualTransform(this);
 			this.keyValueStore = kv;
+			this.prefabName = prefabName;
 		}
 
 		public VirtualGameObject GetRootGameObject () {
@@ -51,15 +52,22 @@ namespace AutoyaFramework.Information {
 			return this;
 		}
 
-		private ContentWidthAndHeight GetContentWidthAndHeight (string prefabName, string text, float contentWidth, float contentHeight) {
+		private ContentWidthAndHeight GetContentWidthAndHeight (string text, float contentWidth, float contentHeight) {
 			// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
 			/*
 				・Resourcesに置ける
 				・AssetBundle化できる
 			*/
 			var prefab = LoadPrefab(prefabName);
+			if (prefab == null) {
+				return new ContentWidthAndHeight();
+			}
+
 			var textComponent = prefab.GetComponent<Text>();
-			
+			if (textComponent == null) {
+				throw new Exception("failed to get Text component from prefab:" + prefabName);
+			}
+
 			// set content height.
 			return CalculateTextContent(textComponent, text, new Vector2(contentWidth, contentHeight));
 		}
@@ -90,7 +98,7 @@ namespace AutoyaFramework.Information {
 			return new ContentWidthAndHeight(width, height);
 		}
 		
-		private HandlePoint LayoutTagContent(string prefabName, Tag tag, HandlePoint contentHandlePoint) {
+		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint) {
 			var rectTrans = rectTransform;
 
 			// set y start pos.
@@ -151,7 +159,7 @@ namespace AutoyaFramework.Information {
 							case KV_KEY.CONTENT: {
 								var text = kvs.Value;
 						
-								var contentWidthAndHeight = GetContentWidthAndHeight(prefabName, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
+								var contentWidthAndHeight = GetContentWidthAndHeight(text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
 
 								contentWidth = contentWidthAndHeight.width;
 								contentHeight = contentWidthAndHeight.totalHeight;
@@ -168,6 +176,10 @@ namespace AutoyaFramework.Information {
 				}
 				
 				default: {
+					if (0 < keyValueStore.Count()) {
+						Debug.LogError("tag:" + tag + "'s attributes are ignored.");
+					}
+
 					// do nothing.
 					break;
 				}
@@ -214,7 +226,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				default: {
-					handlePoint = LayoutTagContent(prefabName, tag, handlePoint);
+					handlePoint = LayoutTagContent(handlePoint);
 					break;
 				}
 			}
@@ -377,7 +389,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				default: {
-					this._gameObject = MaterializeTagContent(prefabName, tag);
+					this._gameObject = MaterializeTagContent();
 					this._gameObject.transform.SetParent(parent._gameObject.transform);
 					break;
 				}
@@ -390,7 +402,7 @@ namespace AutoyaFramework.Information {
 			onMaterializeDel(this._gameObject, this.tag, this.depth, new Dictionary<KV_KEY, string>(this.keyValueStore));
 		}
 
-		private GameObject MaterializeTagContent (string prefabName, Tag tag) {
+		private GameObject MaterializeTagContent () {
 			var prefab = LoadPrefab(prefabName);
 			if (prefab == null) {
 				return new GameObject("missing prefab:" + prefabName);
