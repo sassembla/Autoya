@@ -73,11 +73,12 @@ namespace AutoyaFramework.Information {
 		}
 
 		private ContentWidthAndHeight CalculateTextContent (float offset, Text textComponent, string text, Vector2 sizeDelta) {
+			Debug.LogWarning("そもそも複数行のやつをどうにかしないといけない。textが改行を含んでる場合、この上位で行を割って、かつオフセットを出す、みたいなことをすればいい感じ。");
 			textComponent.text = text;
-			Debug.LogError("offset:" + offset + " text:" + text);
+			// Debug.LogError("offset:" + offset + " text:" + text);
 			var generator = new TextGenerator();
 			generator.Populate(textComponent.text, textComponent.GetGenerationSettings(sizeDelta));
-
+			
 			var height = 0;
 			foreach(var l in generator.lines){
 				// LogError("ch topY:" + l.topY);
@@ -88,9 +89,10 @@ namespace AutoyaFramework.Information {
 			
 			var width = textComponent.preferredWidth;
 
-			if (1 < generator.lines.Count) {
-				width = sizeDelta.x;
-			}
+			// if (1 < generator.lines.Count) {// これだ〜〜　ふーーーむ、、
+			// 	Debug.LogError("行数追加で改行");
+			// 	width = sizeDelta.x;
+			// }
 
 			// reset.
 			textComponent.text = string.Empty;
@@ -101,7 +103,7 @@ namespace AutoyaFramework.Information {
 		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint) {
 			// set (x, y) start pos.
 			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
-			
+			Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " @tag:" + tag);
 			var contentWidth = 0f;
 			var contentHeight = 0f;
 
@@ -167,7 +169,7 @@ namespace AutoyaFramework.Information {
 					foreach (var kvs in this.keyValueStore) {
 						var key = kvs.Key;
 						switch (key) {
-							case KV_KEY.CONTENT: {
+							case KV_KEY._CONTENT: {
 								var text = kvs.Value;
 						
 								var contentWidthAndHeight = GetContentWidthAndHeight(rectTransform.anchoredPosition.x, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
@@ -238,6 +240,7 @@ namespace AutoyaFramework.Information {
 				}
 				default: {
 					handlePoint = LayoutTagContent(handlePoint);
+					Debug.LogError("after Layout of " + tag + ", handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
 			}
@@ -253,16 +256,20 @@ namespace AutoyaFramework.Information {
 				foreach (var child in childlen) {
 					// consume br as linefeed.
 					if (child.tag == Tag.BR) {
+						// Debug.LogError("brが発生するので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
 						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
+						// Debug.LogError("brが発生したので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
 
 						// forget current line.
 						layoutLine.Clear();
 
 						// set next line.
 						handlePoint.nextLeftHandle = 0;
+						
 						continue;
 					}
 					
+					Debug.LogWarning("hr、これ下の方でまとめて処理できるかも。");
 					// consume hr 1/2 as horizontal rule.
 					if (child.tag == Tag.HR) {
 						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
@@ -279,21 +286,10 @@ namespace AutoyaFramework.Information {
 						handlePoint.nextLeftHandle = 0;
 						continue;
 					}
-
-
-					if (this.tag == Tag.P || this.tag == Tag.LI) {
-						// pass.
-					} else {
-						continue;
-					}
-
-					/*
-						tag is P.
-					 */
-
+					
 					// check width over.
 					if (handlePoint.viewWidth < handlePoint.nextLeftHandle) {
-						if (0 < layoutLine.Count) {
+						if (1 < layoutLine.Count) {
 							handlePoint = SortByLayoutLine(layoutLine, handlePoint);
 
 							// forget current line.
@@ -307,15 +303,17 @@ namespace AutoyaFramework.Information {
 						}
 					}
 
-					// content is under viewpoint width.
+					// content width is smaller than viewpoint width.
 
 					layoutLine.Add(child);
 				}
 
-				// if layoutLine content is exist, put all in 1 line.
-				if (0 < layoutLine.Count) {
+				// if layoutLine content is exist, re-layout all in 1 line.
+				if (1 < layoutLine.Count) {
 					handlePoint = SortByLayoutLine(layoutLine, handlePoint);
 				}
+
+				layoutLine.Clear();
 				
 				// set parent size to wrapping childlen.
 				{
@@ -338,6 +336,7 @@ namespace AutoyaFramework.Information {
 
 				// layout and padding and orientation of child tags are done.
 			}
+
 			
 			/*
 				set padding if need.
@@ -355,24 +354,31 @@ namespace AutoyaFramework.Information {
 				handlePoint.nextLeftHandle += padding.PadWidth();
 				handlePoint.nextTopHandle += padding.PadHeight();
 			}
-			
+			// Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition);
+
 			/*
-				set next left-top point by this tag && the parent tag kind.
+				set next left-top point by parent tag kind.
 			*/
 			switch (parent.tag) {
-				case Tag.H:
-				case Tag.LI:
-				case Tag.P: {
+				// case Tag.H:
+				// case Tag.LI:
+				// case Tag.P:
+				default: {
+					// 回り込みを実現する。んだけど、これはどちらかというと多数派で、デフォルトっぽい。
 					// next content is planned to layout to the next of this content.
-					handlePoint.nextLeftHandle += this.rectTransform.sizeDelta.x + this.padding.PadWidth();
+					handlePoint.nextLeftHandle = this.rectTransform.anchoredPosition.x + this.rectTransform.sizeDelta.x + this.padding.PadWidth();// right edge with padding
+					// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
 					break;
 				}
-				case Tag.UL:
-				case Tag.OL:
+
+				// リストとRootは、完全に改行を余儀なくする。HRも入るのでは？
+				// case Tag.UL:
+				// case Tag.OL:
 				case Tag.ROOT: {
 					// CRLF
 					handlePoint.nextLeftHandle = 0;
 					handlePoint.nextTopHandle = this.rectTransform.anchoredPosition.y + this.rectTransform.sizeDelta.y + this.padding.PadHeight();
+					Debug.LogError("親がRootなので、改行する。handlePoint.nextTopHandle:" + handlePoint.nextTopHandle + " tag:" + tag);
 					break;
 				}
 			}
@@ -392,21 +398,25 @@ namespace AutoyaFramework.Information {
 				
 				// get tallest padded height. this will be this layoutLine's bottom line.
 				var paddedHighestHeightInLine = tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
-			
+				
 				// other child content will be moved.
-				foreach (var childInLine in layoutLine) {
-					if (childInLine == tallestContent) {// ignore tallest content itself.
+				var skipFirst = true;
+				foreach (var childInLine in targetHeightObjArray) {
+					if (skipFirst) {
+						skipFirst = false;
 						continue;
 					}
-
+					
 					var childPaddedHeight = childInLine.rectTransform.sizeDelta.y + childInLine.padding.PadHeight();
 					var heightDiff = paddedHighestHeightInLine - childPaddedHeight;
 					childInLine.rectTransform.anchoredPosition += new Vector2(0, heightDiff);
+					// Debug.LogError("childInLine:" + childInLine.tag + " childInLine.rectTransform.anchoredPosition:" + childInLine.rectTransform.anchoredPosition + " under tag:" + this.tag + " heightDiff:" + heightDiff);
 				}
 
 				// set next line head.
 				handlePoint.nextLeftHandle = 0;
-				handlePoint.nextTopHandle += paddedHighestHeightInLine;
+				handlePoint.nextTopHandle = tallestContent.rectTransform.anchoredPosition.y + tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
+				Debug.LogError("handlePoint.nextTopHandle:" + handlePoint.nextTopHandle);
 			}
 
 			return handlePoint;
@@ -419,9 +429,23 @@ namespace AutoyaFramework.Information {
 					// do nothing.
 					break;
 				}
+				case Tag.BR: {
+					// has no child. no visual. do nothing.
+					break;
+				}
 				default: {
 					this._gameObject = MaterializeTagContent();
-					this._gameObject.transform.SetParent(parent._gameObject.transform);
+					this._gameObject.transform.SetParent(parent._gameObject.transform, false);
+					var rectTrans = this._gameObject.GetComponent<RectTransform>();
+					if (rectTrans == null) {
+						return;
+					}
+
+					// set position. convert layout position to uGUI position system.
+					rectTrans.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, -rectTransform.anchoredPosition.y);
+					// Debug.LogError("materialize rectTrans.anchoredPosition:" + rectTrans.anchoredPosition);
+					rectTrans.sizeDelta = rectTransform.sizeDelta;
+
 					break;
 				}
 			}
@@ -436,18 +460,10 @@ namespace AutoyaFramework.Information {
 		private GameObject MaterializeTagContent () {
 			var prefab = LoadPrefab(prefabName);
 			if (prefab == null) {
-				return new GameObject("missing prefab:" + prefabName);
+				return new GameObject("missing prefab:" + prefabName + " of tag:" + this.tag);
 			}
 
 			var obj = LoadGameObject(prefab);
-
-			var vRectTrans = rectTransform;
-
-			var rectTrans = obj.GetComponent<RectTransform>();
-
-			// set position. convert layout position to uGUI position system.
-			rectTrans.anchoredPosition = new Vector2(vRectTrans.anchoredPosition.x, -vRectTrans.anchoredPosition.y);
-			rectTrans.sizeDelta = vRectTrans.sizeDelta;
 
 			// set parameters.
 			switch (tag) {
@@ -499,7 +515,7 @@ namespace AutoyaFramework.Information {
 				case Tag._CONTENT: {
 					foreach (var kvs in keyValueStore) {
 						switch (kvs.Key) {
-							case KV_KEY.CONTENT:{
+							case KV_KEY._CONTENT:{
 								var text = kvs.Value;
 								if (!string.IsNullOrEmpty(text)) {
 									var textComponent = obj.GetComponent<Text>();
@@ -507,7 +523,7 @@ namespace AutoyaFramework.Information {
 								}
 								break;
 							}
-							case KV_KEY.PARENTTAG: {
+							case KV_KEY._PARENTTAG: {
 								break;
 							}
 							default: {
