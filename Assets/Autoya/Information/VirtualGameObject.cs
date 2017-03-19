@@ -63,7 +63,7 @@ namespace AutoyaFramework.Information {
 				return new ContentAndWidthAndHeight();
 			}
 
-			Debug.LogError("prefabName:" + prefabName);
+			// Debug.LogError("prefabName:" + prefabName);
 
 			// use prefab's text component for using it's text setting.
 			var textComponent = prefab.GetComponent<Text>();
@@ -74,12 +74,11 @@ namespace AutoyaFramework.Information {
 			// set content first.
 			textComponent.text = text;
 			
-			Debug.LogError("offset:" + offset + " text:" + text);
+			// Debug.LogError("offset:" + offset + " text:" + text);
 
 			
 			var generator = new TextGenerator();
 
-			// まずはoffsetありきで並べる。
 			var setting = textComponent.GetGenerationSettings(new Vector2(contentWidth - offset, contentHeight));
 			generator.Populate(text, setting);
 
@@ -100,9 +99,6 @@ namespace AutoyaFramework.Information {
 				var nextTextLineInfo = generator.lines[1];
 				var startIndex = nextTextLineInfo.startCharIdx;
 				
-				// Debug.LogError("startIndex:" + startIndex);
-				//ここで、一行目の終わりがわかる。
-
 				lines.Add(nextText.Substring(0, startIndex));
 
 				nextText = nextText.Substring(startIndex);
@@ -117,7 +113,6 @@ namespace AutoyaFramework.Information {
 				generator.Populate(textComponent.text, textComponent.GetGenerationSettings(new Vector2(contentWidth, contentHeight)));
 			}
 			
-			
 			textComponent.text = lines[0];
 			var preferredWidth = textComponent.preferredWidth;
 
@@ -125,7 +120,7 @@ namespace AutoyaFramework.Information {
 			textComponent.text = string.Empty;
 			
 			/*
-				二行目以降を別のコンテンツとして強制的に挿入する。
+				insert new line contents after this content.
 			 */
 			if (1 < lines.Count) {
 				var newContentTexts = lines.GetRange(1, lines.Count-1);
@@ -155,22 +150,12 @@ namespace AutoyaFramework.Information {
 				totalHeight += l.height;
 			}
 			
-			// Debug.LogError("totalHeight:" + totalHeight + " tag:" + tag);
-
-			// 仮
-			// if (1 < generator.lines.Count) {// 端に到達したら、親のサイズが変わる、というのはある。でもここでやる必要ないかも。
-			// 	preferredWidth = width;
-			// }
-			Debug.LogError("preferredWidth:" + preferredWidth);
+			// Debug.LogError("preferredWidth:" + preferredWidth);
 			
-			if (preferredWidth == 0) {
-				throw new Exception("ex!");
-			}
-
 			return new ContentAndWidthAndHeight(lines[0], preferredWidth, totalHeight);
 		}
 		
-		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint, Action<List<VirtualGameObject>> insert) {
+		private void LayoutTagContent(HandlePoint contentHandlePoint, Action<List<VirtualGameObject>> insert) {
 			// set (x, y) start pos.
 			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
 			// Debug.Log("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
@@ -220,11 +205,11 @@ namespace AutoyaFramework.Information {
 						}
 					}
 
-					Debug.LogWarning("img, 画面幅に対するサイズ限界指定を行う必要がある。");
+					// Debug.LogWarning("img, 画面幅に対するサイズ限界指定を行う必要がある。");
 					break;
 				}
 				case Tag.HR: {
-					Debug.LogWarning("hr, 画面幅に対するサイズ限界指定を行う必要がある。のと、もしサイズが画面幅より小さい場合、なんか中央寄せとか行うか？ パーセントで扱うか?みたいな。まあ面倒臭いので限界 + paddingでなんとかできるようにしとく");
+					// Debug.LogWarning("hr, 画面幅に対するサイズ限界指定を行う必要がある。のと、もしサイズが画面幅より小さい場合、なんか中央寄せとか行うか？ パーセントで扱うか?みたいな。まあ面倒臭いので限界 + paddingでなんとかできるようにしとく");
 					var prefab = LoadPrefab(prefabName);
 					if (prefab != null) {
 						// use prefab size by default.
@@ -275,8 +260,8 @@ namespace AutoyaFramework.Information {
 
 			// set content size.
 			rectTransform.sizeDelta = new Vector2(contentWidth, contentHeight);
+			
 			// Debug.LogError("ここで、幅が決まった。 contentWidth:" + contentWidth + " tag:" + tag);
-			return contentHandlePoint;
 		}
 		
 		/**
@@ -318,7 +303,7 @@ namespace AutoyaFramework.Information {
 				}
 				default: {
 					// Debug.LogError("before layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
-					handlePoint = LayoutTagContent(handlePoint, insert);
+					LayoutTagContent(handlePoint, insert);
 					// Debug.LogError("after layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
@@ -359,7 +344,7 @@ namespace AutoyaFramework.Information {
 				default padding is 0.
 			*/
 			onLayoutDel(this.tag, this.depth, this.padding, new Dictionary<KV_KEY, string>(this.keyValueStore));
-
+			
 			/*
 				adopt padding to this content.
 			*/
@@ -369,7 +354,7 @@ namespace AutoyaFramework.Information {
 				
 				handlePoint.nextLeftHandle += padding.PadWidth();
 				handlePoint.nextTopHandle += padding.PadHeight();
-				Debug.LogWarning("実験した方が良さそう");
+				// Debug.LogWarning("実験した方が良さそう");
 			}
 			// Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition);
 
@@ -398,9 +383,9 @@ namespace AutoyaFramework.Information {
 			
 			return handlePoint;
 		}
-
+		
 		private void LayoutChildlen (List<VirtualGameObject> childlen, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel) {
-			Debug.LogWarning("LayoutChildlen、子供にいくに従って、親要素の起点から幅と高さの制限をつける必要がある。");
+			// Debug.LogWarning("LayoutChildlen、子供にいくに従って、親要素の起点から幅と高さの制限をつける必要がある。");
 			// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
 			var childHandlePoint = new HandlePoint(0, 0, handlePoint.viewWidth, handlePoint.viewHeight);
 
@@ -431,7 +416,7 @@ namespace AutoyaFramework.Information {
 					continue;
 				}
 				
-				Debug.LogWarning("hr、これ下の方でまとめて処理できるかも。");
+				// Debug.LogWarning("hr、これ下の方でまとめて処理できるかも。");
 				// consume hr 1/2 as horizontal rule.
 				if (child.tag == Tag.HR) {
 					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
@@ -458,7 +443,13 @@ namespace AutoyaFramework.Information {
 				/*
 					the insertAct is raised or not raised.
 				 */
-
+				
+				// if child is content and that width is 0, this is because, there is not enough width in this line.
+				// line is ended.
+				if (child.tag == Tag._CONTENT && child.rectTransform.sizeDelta.x == 0) {
+					lineEnded = true;
+				}
+				
 				// consume hr 2/2 as horizontal rule.
 				if (child.tag == Tag.HR) {
 					// set next line.
@@ -679,12 +670,12 @@ namespace AutoyaFramework.Information {
 		}
 
 		private GameObject LoadPrefab (string prefabName) {
-			Debug.LogWarning("辞書にできる");
+			// Debug.LogWarning("辞書にできる");
 			return Resources.Load(prefabName) as GameObject;
 		}
 
 		private GameObject LoadGameObject (GameObject prefab) {
-			Debug.LogWarning("ここを後々、プールからの取得に変える。タグ単位でGameObjectのプールを作るか。");
+			// Debug.LogWarning("ここを後々、プールからの取得に変える。タグ単位でGameObjectのプールを作るか。");
 			return GameObject.Instantiate(prefab);
 		}
 

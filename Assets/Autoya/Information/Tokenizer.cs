@@ -122,14 +122,14 @@ namespace AutoyaFramework.Information {
 						continue;
 					}
 
-					// Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
+					Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
 
 					if (readPoint < charIndex) {
 						// Debug.LogError("readPoint:" + readPoint + " vs charIndex:" + charIndex);
 						var length = charIndex - readPoint;
 						var str = data.Substring(readPoint, length);
 						
-						// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
+						Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
 
 						if (!string.IsNullOrEmpty(str)) {
 							var contentTagPoint = new TagPoint(
@@ -284,7 +284,7 @@ namespace AutoyaFramework.Information {
 
 			if (readPoint < data.Length) { 
 				var restStr = data.Substring(readPoint);
-				// Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
+				Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
 				if (!string.IsNullOrEmpty(restStr)) {
 					var contentTagPoint = new TagPoint(Tag._CONTENT, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
 					contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
