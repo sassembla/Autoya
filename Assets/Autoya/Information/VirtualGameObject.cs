@@ -52,7 +52,7 @@ namespace AutoyaFramework.Information {
 			return this;
 		}
 
-		private ContentWidthAndHeight GetContentWidthAndHeight (float offset, string text, float contentWidth, float contentHeight) {
+		private ContentAndWidthAndHeight LayoutTextContent (float offset, string text, float contentWidth, float contentHeight, Action<List<VirtualGameObject>> insert) {
 			// このあたりをhttpリクエストに乗っけるようなことができるとなおいいのだろうか。AssetBundleともちょっと違う何か、的な。
 			/*
 				・Resourcesに置ける
@@ -60,45 +60,108 @@ namespace AutoyaFramework.Information {
 			*/
 			var prefab = LoadPrefab(prefabName);
 			if (prefab == null) {
-				return new ContentWidthAndHeight();
+				return new ContentAndWidthAndHeight();
 			}
 
+			Debug.LogError("prefabName:" + prefabName);
+
+			// use prefab's text component for using it's text setting.
 			var textComponent = prefab.GetComponent<Text>();
 			if (textComponent == null) {
 				throw new Exception("failed to get Text component from prefab:" + prefabName);
 			}
 
-			// set content height.
-			return CalculateTextContent(offset, textComponent, text, new Vector2(contentWidth, contentHeight));
-		}
-
-		private ContentWidthAndHeight CalculateTextContent (float offset, Text textComponent, string text, Vector2 sizeDelta) {
+			// set content first.
 			textComponent.text = text;
-			// Debug.LogError("offset:" + offset + " text:" + text);
-			var generator = new TextGenerator();
-			generator.Populate(textComponent.text, textComponent.GetGenerationSettings(sizeDelta));
-			
-			var height = 0;
-			foreach(var l in generator.lines){
-				// LogError("ch topY:" + l.topY);
-				// LogError("ch index:" + l.startCharIdx);
-				// LogError("ch height:" + l.height);
-				height += l.height;
-			}
-			
-			var width = textComponent.preferredWidth;
+			var preferredWidth = textComponent.preferredWidth;
 
-			if (1 < generator.lines.Count) {
-				width = sizeDelta.x;
+			Debug.LogError("offset:" + offset + " text:" + text);
+
+			
+			var generator = new TextGenerator();
+
+			// まずはoffsetありきで並べる。
+			var setting = textComponent.GetGenerationSettings(new Vector2(contentWidth - offset, contentHeight));
+			generator.Populate(text, setting);
+
+			var lines = new List<string>();
+			var nextText = text;// get copy.
+			
+			while (true) {
+				if (generator.lines.Count == 1) {
+					lines.Add(nextText);
+					break;
+				}
+
+				Debug.LogError("nextText:" + nextText + " generator.lines.Count:" + generator.lines.Count);
+
+				// 複数行が出たので、continue, 
+
+				// 折り返しが発生したところから先のtextを取得し、その前までをコンテンツとしてセットする必要がある。
+				var nextTextLineInfo = generator.lines[1];
+				var startIndex = nextTextLineInfo.startCharIdx;
+				Debug.LogError("startIndex:" + startIndex);
+				//ここで、一行目の終わりがわかる。
+
+				lines.Add(nextText.Substring(0, startIndex));
+
+				nextText = nextText.Substring(startIndex);
+				// ここから先の行は、今は見る必要がなくて、ターゲットを切り替えて再度実行する。
+				
+				textComponent.text = nextText;
+
+				// populate again.
+				generator.Invalidate();
+
+				// ここで、幅は与えられている最大のものを使えるはず(親から伝わってくる時点で本来はすり減ったのが来てるはず)
+				generator.Populate(textComponent.text, textComponent.GetGenerationSettings(new Vector2(contentWidth, contentHeight)));
 			}
+			
+			/*
+				二行目以降を別のコンテンツとして強制的に挿入する。
+			 */
+			if (1 < lines.Count) {
+				var newContentTexts = lines.GetRange(1, lines.Count-1);
+				
+				foreach (var s in newContentTexts) {
+					Debug.LogError("s:" + s);
+				}
+
+				var newVGameObjects = newContentTexts.Select(
+					t => new VirtualGameObject(
+						this.tag,
+						this.depth, 
+						new Dictionary<KV_KEY, string>(){
+							{KV_KEY._CONTENT, t}
+						},
+						this.prefabName
+					)
+				).ToList();
+				insert(newVGameObjects);
+			}
+
+			var totalHeight = 0;
+			foreach (var l in generator.lines){
+				// Debug.LogError("ina:" + ina + " ch topY:" + l.topY);
+				// Debug.LogError("ina:" + ina + " ch index:" + l.startCharIdx);
+				// Debug.LogError("ina:" + ina + " ch height:" + l.height);
+				totalHeight += l.height;
+			}
+			
+			Debug.LogError("totalHeight:" + totalHeight + " tag:" + tag);
+
+			// 仮
+			// if (1 < generator.lines.Count) {// 端に到達したら、親のサイズが変わる、というのはある。でもここでやる必要ないかも。
+			// 	preferredWidth = width;
+			// }
 
 			// reset.
 			textComponent.text = string.Empty;
 
-			return new ContentWidthAndHeight(width, height);
+			return new ContentAndWidthAndHeight(lines[0], preferredWidth, totalHeight);
 		}
 		
-		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint) {
+		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint, Action<List<VirtualGameObject>> insert) {
 			// set (x, y) start pos.
 			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
 			// Debug.Log("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
@@ -163,26 +226,29 @@ namespace AutoyaFramework.Information {
 				}
 				
 				case Tag._CONTENT: {
-					// set text if exist.
-					foreach (var kvs in this.keyValueStore) {
-						var key = kvs.Key;
-						switch (key) {
-							case KV_KEY._CONTENT: {
-								var text = kvs.Value;
-						
-								var contentWidthAndHeight = GetContentWidthAndHeight(rectTransform.anchoredPosition.x, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight);
+					// 回り込みとかは親に任せられるんだけど、要素の区切りを行う必要はある。
+					// 限界幅に分割されたコンテンツ、っていう感じでできればいいんだろうか。
+					// 切り方を考えないと、、、
 
-								contentWidth = contentWidthAndHeight.width;
-								contentHeight = contentWidthAndHeight.totalHeight;
-								break;
-							}
-							default: {
-								// ignore.
-								break;
-							}
-						}
-					}
+					/*
+						・子供たちのレイアウトを行う
+						・この要素自体のrectTransform、開始位置とサイズをセットする
+
+						ということをここでやってて、
+						回り込みを実装するには、サイズ溢れの処理をここに持ってくる必要がある気がする。
+					 */
 					
+					// set text if exist.
+					if (this.keyValueStore.ContainsKey(KV_KEY._CONTENT)) {
+						var text = keyValueStore[KV_KEY._CONTENT];
+						
+						// もしテキスト行数が複数行にまたがる場合、二行目以降のコンテンツをここで勝手にガンガン足す。
+						var contentAndWidthAndHeight = LayoutTextContent(contentHandlePoint.nextLeftHandle, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight, insert);
+						
+						keyValueStore[KV_KEY._CONTENT] = contentAndWidthAndHeight.content;
+						contentWidth = contentAndWidthAndHeight.width;
+						contentHeight = contentAndWidthAndHeight.totalHeight;
+					}
 					break;
 				}
 				
@@ -208,7 +274,7 @@ namespace AutoyaFramework.Information {
 			var rootHandlePoint = new HandlePoint(0, 0, viewPort.x, viewPort.y);
 
 			// 事前計算、ここでコンテンツの一覧を返すようにすればいいかな。要素単位で。
-			Layout(this, rootHandlePoint, onLayoutDel);
+			Layout(this, rootHandlePoint, onLayoutDel, t => {});
 
 
 			this._gameObject = new GameObject(viewName + Tag.ROOT.ToString());
@@ -229,8 +295,10 @@ namespace AutoyaFramework.Information {
 		
 		/**
 			layout contents.
+
+			set position and size of content.
 		*/
-		private HandlePoint Layout (VirtualGameObject parent, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel) {
+		private HandlePoint Layout (VirtualGameObject parent, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel, Action<List<VirtualGameObject>> insert) {
 			switch (this.tag) {
 				case Tag.ROOT: {
 					// do nothing.
@@ -238,7 +306,7 @@ namespace AutoyaFramework.Information {
 				}
 				default: {
 					// Debug.LogError("before layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
-					handlePoint = LayoutTagContent(handlePoint);
+					handlePoint = LayoutTagContent(handlePoint, insert);
 					// Debug.LogError("after layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
@@ -327,8 +395,15 @@ namespace AutoyaFramework.Information {
 			// layout -> resize -> padding of childlen.
 		
 			var layoutLine = new List<VirtualGameObject>();
+			var i = 0;
 
-			foreach (var child in childlen) {
+			while (true) {
+				if (childlen.Count <= i) {
+					break;
+				}
+
+				var child = childlen[i];
+
 				// consume br as linefeed.
 				if (child.tag == Tag.BR) {
 					// Debug.LogError("brが発生するので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
@@ -340,7 +415,7 @@ namespace AutoyaFramework.Information {
 
 					// set next line.
 					childHandlePoint.nextLeftHandle = 0;
-					
+					i++;
 					continue;
 				}
 				
@@ -351,18 +426,34 @@ namespace AutoyaFramework.Information {
 
 					// forget current line.
 					layoutLine.Clear();
-				} 
+				}
 
-				childHandlePoint = child.Layout(this, childHandlePoint, onLayoutDel);
+				/*
+					インサートアクション、一つの長いコンテンツを複数のコンテンツに分解してセットする。
+				 */
+				Action<List<VirtualGameObject>> insertAct = insertNewVGameObject => {
+					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+
+					// forget current line.
+					layoutLine.Clear();
+
+					// insert new contents to next-point of child list.
+					childlen.InsertRange(i + 1, insertNewVGameObject);
+				};
+
+				// ここでレイアウト = 位置とサイズの指定を行なっている。
+				childHandlePoint = child.Layout(this, childHandlePoint, onLayoutDel, insertAct);
 				
 				// consume hr 2/2 as horizontal rule.
 				if (child.tag == Tag.HR) {
 					// set next line.
 					childHandlePoint.nextLeftHandle = 0;
+					i++;
 					continue;
 				}
 				
 				if (this.tag == Tag.ROOT) {
+					i++;
 					continue;
 				}
 
@@ -385,6 +476,8 @@ namespace AutoyaFramework.Information {
 				// content width is smaller than viewpoint width.
 
 				layoutLine.Add(child);
+				
+				i++;
 			}
 
 			// if layoutLine content is exist, re-layout all in 1 line.

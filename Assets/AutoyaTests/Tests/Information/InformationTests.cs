@@ -954,118 +954,118 @@ It converts 'HTML', but keep intact partial entries like 'xxxHTMLyyy' and so on.
 
 
 	// シンプルなヘッダひとつ
-	[MTest] public void DrawParsedSimpleHeader () {
-		var sample = @"
-# h1 Heading 8-)
-		";
-		Draw(sample);
-	}
+// 	[MTest] public void DrawParsedSimpleHeader () {
+// 		var sample = @"
+// # h1 Heading 8-)
+// 		";
+// 		Draw(sample);
+// 	}
 
 	
-	// h1を2つ
-	[MTest] public void DrawParsedSimpleContinuedSameHeaders () {
-		var sample = @"
-# h1 Heading 8-)
-# h1-2 Heading
-		";
-		Draw(sample);
-	}
+// 	// h1を2つ
+// 	[MTest] public void DrawParsedSimpleContinuedSameHeaders () {
+// 		var sample = @"
+// # h1 Heading 8-)
+// # h1-2 Heading
+// 		";
+// 		Draw(sample);
+// 	}
 
-	// br区切りのP
-	[MTest] public void DrawParsedSimpleContinuedPTagsByBR () {
-		var sample = @"
-p1 Heading 8-)  
-p2 Heading
-		";
-		Draw(sample);
-	}
+// 	// br区切りのP
+// 	[MTest] public void DrawParsedSimpleContinuedPTagsByBR () {
+// 		var sample = @"
+// p1 Heading 8-)  
+// p2 Heading
+// 		";
+// 		Draw(sample);
+// 	}
 
-	// 連続するヘッダ
-	[MTest] public void DrawParsedSimpleContinuedHeaders () {
-		var sample = @"
-# h1 Heading 8-)
-## h2 Heading
-		";
-		Draw(sample);
-	}
+// 	// 連続するヘッダ
+// 	[MTest] public void DrawParsedSimpleContinuedHeaders () {
+// 		var sample = @"
+// # h1 Heading 8-)
+// ## h2 Heading
+// 		";
+// 		Draw(sample);
+// 	}
 
-	// headers
-	[MTest] public void DrawParsedSimpleHeaders () {
-		var sample = @"
-# h1 Heading 8-)
-## h2 Heading
-### h3 Heading
-#### h4 Heading
-##### h5 Heading
-###### h6 Heading
-		";
-		Draw(sample);
-	}
+// 	// headers
+// 	[MTest] public void DrawParsedSimpleHeaders () {
+// 		var sample = @"
+// # h1 Heading 8-)
+// ## h2 Heading
+// ### h3 Heading
+// #### h4 Heading
+// ##### h5 Heading
+// ###### h6 Heading
+// 		";
+// 		Draw(sample);
+// 	}
 
-	[MTest] public void DrawSingleLongContent () {
-		var sample = @"
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-";
-		Draw(sample);
-	}
+// 	[MTest] public void DrawSingleLongContent () {
+// 		var sample = @"
+// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+// ";
+// 		Draw(sample);
+// 	}
 	[MTest] public void DrawMultipleLongContent () {
 		var sample = @"
-__test__ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+__testlen__ aaaaaaaaaaaaEndOfL0 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbEndOfL1 bcdefgEndOfL2
 ";
 		Draw(sample);
 	}
 
-	[MTest] public void DrawUListSingle () {
-		var sample = @"
-- test  fmm __hom__ hehe
-";
-		Draw(sample);
-	}
+// 	[MTest] public void DrawUListSingle () {
+// 		var sample = @"
+// - test  fmm __hom__ hehe
+// ";
+// 		Draw(sample);
+// 	}
 
-	[MTest] public void DrawUListWithA () {
-		var sample = @"
-- __[title](https://url/)__ - high quality and fast image resize in browser.
-";
-		Draw(sample);
-	}
+// 	[MTest] public void DrawUListWithA () {
+// 		var sample = @"
+// - __[title](https://url/)__ - high quality and fast image resize in browser.
+// ";
+// 		Draw(sample);
+// 	}
 
-	[MTest] public void DrawPreWithA () {
-		var sample = @"
-	- __[title](https://url/)__ - high quality and fast image  
-resize in browser.
-";
-		Draw(sample);
-	}
+// 	[MTest] public void DrawPreWithA () {
+// 		var sample = @"
+// 	- __[title](https://url/)__ - high quality and fast image  
+// resize in browser.
+// ";
+// 		Draw(sample);
+// 	}
 
-	[MTest] public void DrawParsedMarkdown2 () {
-		var sample = @"
----
-testtest!  
-something  
+// 	[MTest] public void DrawParsedMarkdown2 () {
+// 		var sample = @"
+// ---
+// testtest!  
+// something  
 
-__Advertisement :)__
- fmmm
+// __Advertisement :)__
+//  fmmm
 
 
-- test  fmm __hom__ hehe
-- __[pica](https://nodeca.github.io/pica/demo/)__ - high quality and fast image  
-resize in browser.
-- __[babelfish](https://github.com/nodeca/babelfish/)__ - developer friendly
-  i18n with plurals support and easy syntax.
+// - test  fmm __hom__ hehe
+// - __[pica](https://nodeca.github.io/pica/demo/)__ - high quality and fast image  
+// resize in browser.
+// - __[babelfish](https://github.com/nodeca/babelfish/)__ - developer friendly
+//   i18n with plurals support and easy syntax.
 
-You will like those projects!
+// You will like those projects!
 
----
+// ---
 
-# h1 Heading 8-)
-## h2 Heading
-### h3 Heading
-#### h4 Heading
-##### h5 Heading
-###### h6 Heading
-		";
-		Draw(sample);
-	}
+// # h1 Heading 8-)
+// ## h2 Heading
+// ### h3 Heading
+// #### h4 Heading
+// ##### h5 Heading
+// ###### h6 Heading
+// 		";
+// 		Draw(sample);
+// 	}
 
 
 	private static int index;

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 namespace AutoyaFramework.Information {
-	
+
     public enum Tag {
         NO_TAG_FOUND,
         _CONTENT,
@@ -31,11 +31,13 @@ namespace AutoyaFramework.Information {
         
 	}
 
-    public struct ContentWidthAndHeight {
-        public float width;
-        public int totalHeight;
-        public ContentWidthAndHeight (float width, int totalHeight) {
-            this.width = width;
+    public struct ContentAndWidthAndHeight {
+		public string content;
+		public float width;
+        public float totalHeight;
+        public ContentAndWidthAndHeight (string content, float width, float totalHeight) {
+			this.content = content;
+			this.width = width;
             this.totalHeight = totalHeight;
         }
     }
