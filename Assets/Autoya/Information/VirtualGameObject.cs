@@ -473,6 +473,7 @@ namespace AutoyaFramework.Information {
 					continue;
 				}
 
+				// 新しく足した要素が幅を超えてる場合、っていうの、もしかしたら壊れてるかも。不要かもしれない。
 				// check width overflow.
 				// if next left handle is overed, sort as lined contents.
 				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
