@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 namespace AutoyaFramework.Information {
-
+	
     public enum Tag {
         NO_TAG_FOUND,
         _CONTENT,
@@ -97,7 +97,7 @@ namespace AutoyaFramework.Information {
         }
 
         private VirtualGameObject Tokenize (TagPoint parentTagPoint, string data) {
-			// Debug.LogError("data:" + data);
+			Debug.LogError("data:" + data);
 			var charIndex = 0;
 			var readPoint = 0;
 			

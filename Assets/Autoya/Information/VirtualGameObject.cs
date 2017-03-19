@@ -73,7 +73,6 @@ namespace AutoyaFramework.Information {
 		}
 
 		private ContentWidthAndHeight CalculateTextContent (float offset, Text textComponent, string text, Vector2 sizeDelta) {
-			Debug.LogWarning("そもそも複数行のやつをどうにかしないといけない。textが改行を含んでる場合、この上位で行を割って、かつオフセットを出す、みたいなことをすればいい感じ。");
 			textComponent.text = text;
 			// Debug.LogError("offset:" + offset + " text:" + text);
 			var generator = new TextGenerator();
@@ -89,10 +88,9 @@ namespace AutoyaFramework.Information {
 			
 			var width = textComponent.preferredWidth;
 
-			// if (1 < generator.lines.Count) {// これだ〜〜　ふーーーむ、、
-			// 	Debug.LogError("行数追加で改行");
-			// 	width = sizeDelta.x;
-			// }
+			if (1 < generator.lines.Count) {
+				width = sizeDelta.x;
+			}
 
 			// reset.
 			textComponent.text = string.Empty;
@@ -103,7 +101,7 @@ namespace AutoyaFramework.Information {
 		private HandlePoint LayoutTagContent(HandlePoint contentHandlePoint) {
 			// set (x, y) start pos.
 			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
-			Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " @tag:" + tag);
+			// Debug.Log("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
 			var contentWidth = 0f;
 			var contentHeight = 0f;
 
@@ -239,104 +237,42 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				default: {
+					// Debug.LogError("before layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					handlePoint = LayoutTagContent(handlePoint);
-					Debug.LogError("after Layout of " + tag + ", handlePoint:" + handlePoint.nextTopHandle);
+					// Debug.LogError("after layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
 			}
 
-			// parent layout is done. will be resize by child, then padding.
+			// parent layout is done. will be resized by child, then padding.
 
 			var childlen = this.transform.GetChildlen();
-			
-			// layout -> resize -> padding of childlen.
 			if (0 < childlen.Count) {
-				var layoutLine = new List<VirtualGameObject>();
+				LayoutChildlen(childlen, handlePoint, onLayoutDel);
 
+				/*
+				 set parent = this content's size to wrapping all childlen.
+				 */
+				var rightBottomPoint = Vector2.zero;
+
+				// fit most large bottom-right point. largest point of width and y.
 				foreach (var child in childlen) {
-					// consume br as linefeed.
-					if (child.tag == Tag.BR) {
-						// Debug.LogError("brが発生するので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
-						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
-						// Debug.LogError("brが発生したので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
+					var paddedRightBottomPoint = child.PaddedRightBottomPoint();
 
-						// forget current line.
-						layoutLine.Clear();
-
-						// set next line.
-						handlePoint.nextLeftHandle = 0;
-						
-						continue;
+					if (rightBottomPoint.x < paddedRightBottomPoint.x) {
+						rightBottomPoint.x = paddedRightBottomPoint.x;
 					}
-					
-					Debug.LogWarning("hr、これ下の方でまとめて処理できるかも。");
-					// consume hr 1/2 as horizontal rule.
-					if (child.tag == Tag.HR) {
-						handlePoint = SortByLayoutLine(layoutLine, handlePoint);
-
-						// forget current line.
-						layoutLine.Clear();
-					} 
-
-					handlePoint = child.Layout(this, handlePoint, onLayoutDel);
-					
-					// consume hr 2/2 as horizontal rule.
-					if (child.tag == Tag.HR) {
-						// set next line.
-						handlePoint.nextLeftHandle = 0;
-						continue;
+					if (rightBottomPoint.y < paddedRightBottomPoint.y) {
+						rightBottomPoint.y = paddedRightBottomPoint.y;
 					}
-					
-					// check width over.
-					if (handlePoint.viewWidth < handlePoint.nextLeftHandle) {
-						if (1 < layoutLine.Count) {
-							handlePoint = SortByLayoutLine(layoutLine, handlePoint);
-
-							// forget current line.
-							layoutLine.Clear();
-
-							// move current child content to next line head.
-							child.rectTransform.anchoredPosition = new Vector2(handlePoint.nextLeftHandle + child.padding.left, handlePoint.nextTopHandle + child.padding.top);
-					
-							// set next handle.
-							handlePoint.nextLeftHandle = handlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
-						}
-					}
-
-					// content width is smaller than viewpoint width.
-
-					layoutLine.Add(child);
 				}
-
-				// if layoutLine content is exist, re-layout all in 1 line.
-				if (1 < layoutLine.Count) {
-					handlePoint = SortByLayoutLine(layoutLine, handlePoint);
-				}
-
-				layoutLine.Clear();
 				
-				// set parent size to wrapping childlen.
-				{
-					var rightBottomPoint = Vector2.zero;
-					// fit most large bottom-right point. largest point of width and y.
-					foreach (var child in childlen) {
-						var paddedRightBottomPoint = child.PaddedRightBottomPoint();
-
-						if (rightBottomPoint.x < paddedRightBottomPoint.x) {
-							rightBottomPoint.x = paddedRightBottomPoint.x;
-						}
-						if (rightBottomPoint.y < paddedRightBottomPoint.y) {
-							rightBottomPoint.y = paddedRightBottomPoint.y;
-						}
-					}
-
-					// fit size to wrap all child contents.
-					rectTransform.sizeDelta = rightBottomPoint - rectTransform.anchoredPosition;
-				}
-
+				// fit size to wrap all child contents.
+				rectTransform.sizeDelta = rightBottomPoint;
+				// Debug.LogError("set wrap rectTransform.sizeDelta:" + rectTransform.sizeDelta + " of tag:" + tag);
+				// Debug.LogError("after wrap rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 				// layout and padding and orientation of child tags are done.
 			}
-
 			
 			/*
 				set padding if need.
@@ -353,6 +289,7 @@ namespace AutoyaFramework.Information {
 				
 				handlePoint.nextLeftHandle += padding.PadWidth();
 				handlePoint.nextTopHandle += padding.PadHeight();
+				Debug.LogWarning("実験した方が良さそう");
 			}
 			// Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition);
 
@@ -360,9 +297,6 @@ namespace AutoyaFramework.Information {
 				set next left-top point by parent tag kind.
 			*/
 			switch (parent.tag) {
-				// case Tag.H:
-				// case Tag.LI:
-				// case Tag.P:
 				default: {
 					// 回り込みを実現する。んだけど、これはどちらかというと多数派で、デフォルトっぽい。
 					// next content is planned to layout to the next of this content.
@@ -371,19 +305,92 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 
-				// リストとRootは、完全に改行を余儀なくする。HRも入るのでは？
-				// case Tag.UL:
-				// case Tag.OL:
+				// Rootコンテンツにぶらさがっている項目は、全てCRLFがかかる。
 				case Tag.ROOT: {
 					// CRLF
 					handlePoint.nextLeftHandle = 0;
-					handlePoint.nextTopHandle = this.rectTransform.anchoredPosition.y + this.rectTransform.sizeDelta.y + this.padding.PadHeight();
-					Debug.LogError("親がRootなので、改行する。handlePoint.nextTopHandle:" + handlePoint.nextTopHandle + " tag:" + tag);
+					handlePoint.nextTopHandle += this.rectTransform.sizeDelta.y + this.padding.PadHeight();
+
+					// Debug.LogError("親がRootなので、改行する。handlePoint.nextTopHandle:" + handlePoint.nextTopHandle + " of tag:" + tag + " rectTransform.anchoredPosition:" + this.rectTransform.anchoredPosition);
 					break;
 				}
 			}
 			
 			return handlePoint;
+		}
+
+		private void LayoutChildlen (List<VirtualGameObject> childlen, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel) {
+			Debug.LogWarning("LayoutChildlen、幅と高さの制限をつける必要がある。");
+			// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
+			var childHandlePoint = new HandlePoint(0, 0, handlePoint.viewWidth, handlePoint.viewHeight);
+
+			// layout -> resize -> padding of childlen.
+		
+			var layoutLine = new List<VirtualGameObject>();
+
+			foreach (var child in childlen) {
+				// consume br as linefeed.
+				if (child.tag == Tag.BR) {
+					// Debug.LogError("brが発生するので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
+					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+					// Debug.LogError("brが発生したので、handlePointのyは変わってるはず:" + handlePoint.nextTopHandle);
+
+					// forget current line.
+					layoutLine.Clear();
+
+					// set next line.
+					childHandlePoint.nextLeftHandle = 0;
+					
+					continue;
+				}
+				
+				Debug.LogWarning("hr、これ下の方でまとめて処理できるかも。");
+				// consume hr 1/2 as horizontal rule.
+				if (child.tag == Tag.HR) {
+					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+
+					// forget current line.
+					layoutLine.Clear();
+				} 
+
+				childHandlePoint = child.Layout(this, childHandlePoint, onLayoutDel);
+				
+				// consume hr 2/2 as horizontal rule.
+				if (child.tag == Tag.HR) {
+					// set next line.
+					childHandlePoint.nextLeftHandle = 0;
+					continue;
+				}
+				
+				if (this.tag == Tag.ROOT) {
+					continue;
+				}
+
+				// check width over.
+				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
+					if (0 < layoutLine.Count) {
+						childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+
+						// forget current line.
+						layoutLine.Clear();
+
+						// move current child content to next line head.
+						child.rectTransform.anchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
+				
+						// set next handle.
+						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
+					}
+				}
+
+				// content width is smaller than viewpoint width.
+
+				layoutLine.Add(child);
+			}
+
+			// if layoutLine content is exist, re-layout all in 1 line.
+			if (0 < layoutLine.Count) {
+				childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+			}
 		}
 
 		/**
@@ -410,13 +417,15 @@ namespace AutoyaFramework.Information {
 					var childPaddedHeight = childInLine.rectTransform.sizeDelta.y + childInLine.padding.PadHeight();
 					var heightDiff = paddedHighestHeightInLine - childPaddedHeight;
 					childInLine.rectTransform.anchoredPosition += new Vector2(0, heightDiff);
+					
 					// Debug.LogError("childInLine:" + childInLine.tag + " childInLine.rectTransform.anchoredPosition:" + childInLine.rectTransform.anchoredPosition + " under tag:" + this.tag + " heightDiff:" + heightDiff);
 				}
 
 				// set next line head.
 				handlePoint.nextLeftHandle = 0;
 				handlePoint.nextTopHandle = tallestContent.rectTransform.anchoredPosition.y + tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
-				Debug.LogError("handlePoint.nextTopHandle:" + handlePoint.nextTopHandle);
+				// Debug.LogError("SortByLayoutLine handlePoint.nextTopHandle:" + handlePoint.nextTopHandle);
+				// Debug.LogError("SortByLayoutLine rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 			}
 
 			return handlePoint;
