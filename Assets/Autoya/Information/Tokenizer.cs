@@ -99,7 +99,7 @@ namespace AutoyaFramework.Information {
         }
 
         private VirtualGameObject Tokenize (TagPoint parentTagPoint, string data) {
-			Debug.LogError("data:" + data);
+			// Debug.LogError("data:" + data);
 			var charIndex = 0;
 			var readPoint = 0;
 			
@@ -108,10 +108,9 @@ namespace AutoyaFramework.Information {
 				if (data.Length <= charIndex) {
 					break;
 				}
-
+				
 				var chr = data[charIndex];
 				// Debug.LogError("chr:" + chr);
-
 				
 				if (chr == '<') {
 					var foundTag = IsTag(data, charIndex);
@@ -122,14 +121,14 @@ namespace AutoyaFramework.Information {
 						continue;
 					}
 
-					Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
+					// Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
 
 					if (readPoint < charIndex) {
 						// Debug.LogError("readPoint:" + readPoint + " vs charIndex:" + charIndex);
 						var length = charIndex - readPoint;
 						var str = data.Substring(readPoint, length);
 						
-						Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
+						// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
 
 						if (!string.IsNullOrEmpty(str)) {
 							var contentTagPoint = new TagPoint(
@@ -237,25 +236,31 @@ namespace AutoyaFramework.Information {
 								*/
 								var endTag = "</" + rawTagName.ToLower() + ">";
 								var cascadedTagHead = "<" + rawTagName.ToLower();
-
+								
 								var endTagIndex = -2;
+								var searchingIndex = charIndex;
 								while (true) {
-									var cascadedTagHeadIndex = data.IndexOf(cascadedTagHead, charIndex);
-									endTagIndex = data.IndexOf(endTag, charIndex);
+									var cascadedTagHeadIndex = data.IndexOf(cascadedTagHead, searchingIndex);
 									
-									if (cascadedTagHeadIndex != -1 && endTagIndex != -1 && cascadedTagHeadIndex < endTagIndex) {
-										// cascaded start-tag appears before end tag,
-										// this end-tag is not pair of finding target.
-										// skip to endTagIndex.
-										charIndex = endTagIndex;
-										continue;
+									// included tag found.
+									if (cascadedTagHeadIndex != -1) {
+
+										// search end-tag then found,
+										// check order of cascaded tag and end-tag.
+										var nextEndTagIndex = data.IndexOf(endTag, searchingIndex);
+
+										// found end-tag is not searching one.
+										// search again after the found end-tag point.
+										if (nextEndTagIndex != -1 && cascadedTagHeadIndex < nextEndTagIndex) {
+											searchingIndex = nextEndTagIndex + endTag.Length;
+											continue;
+										}
 									}
 
+									endTagIndex = data.IndexOf(endTag, searchingIndex);
+									// Debug.LogError("endTagIndex:" + endTagIndex + " endTag:" + endTag + " cont:" + data.Substring(endTagIndex));
 									break;
 								}
-
-
-								// Debug.LogError("endTagIndex:" + endTagIndex + " endTag:" + endTag + " data:" + data.Substring(charIndex));
 
 								if (endTagIndex == -1) {
 									throw new Exception("parse error. failed to find end-tag of:" + tag + " rawTagName:" + rawTagName);
