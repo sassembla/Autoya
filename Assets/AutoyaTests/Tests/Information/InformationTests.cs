@@ -954,63 +954,70 @@ It converts 'HTML', but keep intact partial entries like 'xxxHTMLyyy' and so on.
 
 
 	// シンプルなヘッダひとつ
-// 	[MTest] public void DrawParsedSimpleHeader () {
-// 		var sample = @"
-// # h1 Heading 8-)
-// 		";
-// 		Draw(sample);
-// 	}
+	[MTest] public void DrawParsedSimpleHeader () {
+		var sample = @"
+# h1 Heading 8-)
+		";
+		Draw(sample);
+	}
 
 	
-// 	// h1を2つ
-// 	[MTest] public void DrawParsedSimpleContinuedSameHeaders () {
-// 		var sample = @"
-// # h1 Heading 8-)
-// # h1-2 Heading
-// 		";
-// 		Draw(sample);
-// 	}
+	// h1を2つ
+	[MTest] public void DrawParsedSimpleContinuedSameHeaders () {
+		var sample = @"
+# h1 Heading 8-)
+# h1-2 Heading
+		";
+		Draw(sample);
+	}
 
-// 	// br区切りのP
-// 	[MTest] public void DrawParsedSimpleContinuedPTagsByBR () {
-// 		var sample = @"
-// p1 Heading 8-)  
-// p2 Heading
-// 		";
-// 		Draw(sample);
-// 	}
+	// br区切りのP
+	[MTest] public void DrawParsedSimpleContinuedPTagsByBR () {
+		var sample = @"
+p1 Heading 8-)  
+p2 Heading
+		";
+		Draw(sample);
+	}
 
-// 	// 連続するヘッダ
-// 	[MTest] public void DrawParsedSimpleContinuedHeaders () {
-// 		var sample = @"
-// # h1 Heading 8-)
-// ## h2 Heading
-// 		";
-// 		Draw(sample);
-// 	}
+	// 連続するヘッダ
+	[MTest] public void DrawParsedSimpleContinuedHeaders () {
+		var sample = @"
+# h1 Heading 8-)
+## h2 Heading
+		";
+		Draw(sample);
+	}
 
-// 	// headers
-// 	[MTest] public void DrawParsedSimpleHeaders () {
-// 		var sample = @"
-// # h1 Heading 8-)
-// ## h2 Heading
-// ### h3 Heading
-// #### h4 Heading
-// ##### h5 Heading
-// ###### h6 Heading
-// 		";
-// 		Draw(sample);
-// 	}
+	// headers
+	[MTest] public void DrawParsedSimpleHeaders () {
+		var sample = @"
+# h1 Heading 8-)
+## h2 Heading
+### h3 Heading
+#### h4 Heading
+##### h5 Heading
+###### h6 Heading
+		";
+		Draw(sample);
+	}
 
-// 	[MTest] public void DrawSingleLongContent () {
-// 		var sample = @"
-// aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-// ";
-// 		Draw(sample);
-// 	}
+	[MTest] public void DrawSingleLongContent () {
+		var sample = @"
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+";
+		Draw(sample);
+	}
 	[MTest] public void DrawMultipleLongContent () {
 		var sample = @"
-__testlen__ aaaaaaaaaaaaEndOfL0 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbEndOfL1 bcdefgEndOfL2
+__testlen__ aaaaaaaaaaaaEndOfL0 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbEndOfL1
+";
+		Draw(sample);
+	}
+
+	[MTest] public void DrawMultipleLongContent2 () {
+		var sample = @"
+__testlen__ aaaaaaaaaaaaEndOfL0 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbEndOfL1 iiicdefgEndOfL2
 ";
 		Draw(sample);
 	}

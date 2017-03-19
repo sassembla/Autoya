@@ -73,8 +73,7 @@ namespace AutoyaFramework.Information {
 
 			// set content first.
 			textComponent.text = text;
-			var preferredWidth = textComponent.preferredWidth;
-
+			
 			Debug.LogError("offset:" + offset + " text:" + text);
 
 			
@@ -93,14 +92,15 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 
-				Debug.LogError("nextText:" + nextText + " generator.lines.Count:" + generator.lines.Count);
+				// Debug.LogError("nextText:" + nextText + " generator.lines.Count:" + generator.lines.Count);
 
 				// 複数行が出たので、continue, 
 
 				// 折り返しが発生したところから先のtextを取得し、その前までをコンテンツとしてセットする必要がある。
 				var nextTextLineInfo = generator.lines[1];
 				var startIndex = nextTextLineInfo.startCharIdx;
-				Debug.LogError("startIndex:" + startIndex);
+				
+				// Debug.LogError("startIndex:" + startIndex);
 				//ここで、一行目の終わりがわかる。
 
 				lines.Add(nextText.Substring(0, startIndex));
@@ -117,6 +117,13 @@ namespace AutoyaFramework.Information {
 				generator.Populate(textComponent.text, textComponent.GetGenerationSettings(new Vector2(contentWidth, contentHeight)));
 			}
 			
+			
+			textComponent.text = lines[0];
+			var preferredWidth = textComponent.preferredWidth;
+
+			// reset.
+			textComponent.text = string.Empty;
+			
 			/*
 				二行目以降を別のコンテンツとして強制的に挿入する。
 			 */
@@ -124,7 +131,7 @@ namespace AutoyaFramework.Information {
 				var newContentTexts = lines.GetRange(1, lines.Count-1);
 				
 				foreach (var s in newContentTexts) {
-					Debug.LogError("s:" + s);
+					// Debug.LogError("s:" + s);
 				}
 
 				var newVGameObjects = newContentTexts.Select(
@@ -148,15 +155,17 @@ namespace AutoyaFramework.Information {
 				totalHeight += l.height;
 			}
 			
-			Debug.LogError("totalHeight:" + totalHeight + " tag:" + tag);
+			// Debug.LogError("totalHeight:" + totalHeight + " tag:" + tag);
 
 			// 仮
 			// if (1 < generator.lines.Count) {// 端に到達したら、親のサイズが変わる、というのはある。でもここでやる必要ないかも。
 			// 	preferredWidth = width;
 			// }
-
-			// reset.
-			textComponent.text = string.Empty;
+			Debug.LogError("preferredWidth:" + preferredWidth);
+			
+			if (preferredWidth == 0) {
+				throw new Exception("ex!");
+			}
 
 			return new ContentAndWidthAndHeight(lines[0], preferredWidth, totalHeight);
 		}
@@ -165,6 +174,7 @@ namespace AutoyaFramework.Information {
 			// set (x, y) start pos.
 			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
 			// Debug.Log("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
+
 			var contentWidth = 0f;
 			var contentHeight = 0f;
 
@@ -243,6 +253,7 @@ namespace AutoyaFramework.Information {
 						var text = keyValueStore[KV_KEY._CONTENT];
 						
 						// もしテキスト行数が複数行にまたがる場合、二行目以降のコンテンツをここで勝手にガンガン足す。
+						// contentHandlePoint.nextLeftHandleが使われてる。ここがあってない気がする。
 						var contentAndWidthAndHeight = LayoutTextContent(contentHandlePoint.nextLeftHandle, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight, insert);
 						
 						keyValueStore[KV_KEY._CONTENT] = contentAndWidthAndHeight.content;
@@ -264,6 +275,7 @@ namespace AutoyaFramework.Information {
 
 			// set content size.
 			rectTransform.sizeDelta = new Vector2(contentWidth, contentHeight);
+			// Debug.LogError("ここで、幅が決まった。 contentWidth:" + contentWidth + " tag:" + tag);
 			return contentHandlePoint;
 		}
 		
@@ -388,7 +400,7 @@ namespace AutoyaFramework.Information {
 		}
 
 		private void LayoutChildlen (List<VirtualGameObject> childlen, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel) {
-			Debug.LogWarning("LayoutChildlen、幅と高さの制限をつける必要がある。");
+			Debug.LogWarning("LayoutChildlen、子供にいくに従って、親要素の起点から幅と高さの制限をつける必要がある。");
 			// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
 			var childHandlePoint = new HandlePoint(0, 0, handlePoint.viewWidth, handlePoint.viewHeight);
 
@@ -429,21 +441,24 @@ namespace AutoyaFramework.Information {
 				}
 
 				/*
-					インサートアクション、一つの長いコンテンツを複数のコンテンツに分解してセットする。
+					insert content to childlen list.
+					create new content from one long content by length overflow.
 				 */
+				var lineEnded = false;
 				Action<List<VirtualGameObject>> insertAct = insertNewVGameObject => {
-					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
-
-					// forget current line.
-					layoutLine.Clear();
-
-					// insert new contents to next-point of child list.
 					childlen.InsertRange(i + 1, insertNewVGameObject);
+
+					// this line is ended at this content. need layout.
+					lineEnded = true;
 				};
 
-				// ここでレイアウト = 位置とサイズの指定を行なっている。
+				// set position and calculate size.
 				childHandlePoint = child.Layout(this, childHandlePoint, onLayoutDel, insertAct);
 				
+				/*
+					the insertAct is raised or not raised.
+				 */
+
 				// consume hr 2/2 as horizontal rule.
 				if (child.tag == Tag.HR) {
 					// set next line.
@@ -452,12 +467,14 @@ namespace AutoyaFramework.Information {
 					continue;
 				}
 				
+				// root content does not sort child contents.
 				if (this.tag == Tag.ROOT) {
 					i++;
 					continue;
 				}
 
-				// check width over.
+				// check width overflow.
+				// if next left handle is overed, sort as lined contents.
 				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
 					if (0 < layoutLine.Count) {
 						childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
@@ -476,7 +493,20 @@ namespace AutoyaFramework.Information {
 				// content width is smaller than viewpoint width.
 
 				layoutLine.Add(child);
-				
+
+				/*
+					layout line if this line is ended by this content.
+				 */
+				if (lineEnded) {
+					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+
+					// forget current line.
+					layoutLine.Clear();
+
+					// set next content's head position.
+					childHandlePoint.nextLeftHandle = 0;
+				}
+
 				i++;
 			}
 
