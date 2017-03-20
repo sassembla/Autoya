@@ -548,7 +548,7 @@ small, thin framework for Unit1.
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='200' />
-smal<Br Unit2.  
+small Br Unit2.  
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='200' />
 
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
@@ -889,7 +889,7 @@ It converts 'HTML', but keep intact partial entries like 'xxxHTMLyyy' and so on.
 		Draw(sample);
 	}
 
-	// 連続するヘッダ
+	// tagに見える文字列がタグとして処理される。
 	[MTest] public void AvoidFakeTag2 () {
 		var sample = @"
 # h1 Heading 8-)
@@ -898,6 +898,7 @@ smal<Br Unit2.
 		";
 		Draw(sample);
 	}
+
 	[MTest] public void AvoidFakeTag3 () {
 		var sample = @"
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='20' />

@@ -468,7 +468,7 @@ namespace AutoyaFramework.Information {
 
 
 				/*
-					nested bq をどうにかする。具体的には、bqの中にbgが現れたら、改行
+					nested bq.
 				 */
 				if (this.tag == Tag.BLOCKQUOTE) {
 					// nested bq.
