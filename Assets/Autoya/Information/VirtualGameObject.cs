@@ -220,7 +220,7 @@ namespace AutoyaFramework.Information {
 					var viewWidth = contentHandlePoint.viewWidth;
 					if (viewWidth < contentWidth) {
 						var ratio = viewWidth / contentWidth;
-						Debug.LogError("ratio:" + ratio);
+						// Debug.LogError("ratio:" + ratio);
 
 						contentWidth = viewWidth;
 						contentHeight = contentHeight * ratio;
@@ -236,6 +236,10 @@ namespace AutoyaFramework.Information {
 						var rectTransform = prefab.GetComponent<RectTransform>();
 						contentWidth = rectTransform.sizeDelta.x;
 						contentHeight = rectTransform.sizeDelta.y;
+
+						if (contentHandlePoint.viewWidth < contentWidth) {
+							contentWidth = contentHandlePoint.viewWidth;
+						}
 					}
 					break;
 				}
