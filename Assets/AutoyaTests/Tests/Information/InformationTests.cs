@@ -908,7 +908,16 @@ smal<Br Unit2.
 		Draw(sample);
 	}
 
+	[MTest] public void ResizeLargeImage () {
+		var sample = @"
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
 
+test
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='301' height='20' />
+test2		
+";
+		Draw(sample);
+	}
 
 	private static int index;
 

@@ -158,7 +158,7 @@ namespace AutoyaFramework.Information {
 		private void LayoutTagContent(HandlePoint contentHandlePoint, Action<List<VirtualGameObject>> insert) {
 			// set (x, y) start pos.
 			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
-			// Debug.Log("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
+			// Debug.LogError("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -217,6 +217,14 @@ namespace AutoyaFramework.Information {
 						}
 					}
 
+					var viewWidth = contentHandlePoint.viewWidth;
+					if (viewWidth < contentWidth) {
+						var ratio = viewWidth / contentWidth;
+						Debug.LogError("ratio:" + ratio);
+
+						contentWidth = viewWidth;
+						contentHeight = contentHeight * ratio;
+					}
 					// Debug.LogWarning("img, 画面幅に対するサイズ限界指定を行う必要がある。");
 					break;
 				}
@@ -511,6 +519,7 @@ namespace AutoyaFramework.Information {
 
 					// move current child content to next line head.
 					child.rectTransform.anchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
+					// Debug.LogError("child.rectTransform.anchoredPosition:" + child.rectTransform.anchoredPosition);
 			
 					// set next handle.
 					childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
