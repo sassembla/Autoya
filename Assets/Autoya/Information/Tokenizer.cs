@@ -121,6 +121,14 @@ namespace AutoyaFramework.Information {
 						continue;
 					}
 
+					var startTagEndIndex = data.IndexOf(">", charIndex);
+					
+					if (startTagEndIndex == -1) {
+						// start tag never close.
+						charIndex++;
+						continue;
+					}
+					
 					// Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
 
 					if (readPoint < charIndex) {
@@ -148,12 +156,17 @@ namespace AutoyaFramework.Information {
 						// get Hx(number). e.g. H -> H1
 						rawTagName = rawTagName + data[charIndex + 1/*length ouf '<'*/ + 1/*length of 'H'*/];
 					}
-					
+
+
 					// set tag.
 					var tag = foundTag;
 
+					
 					// set to next char index. after '<tag'
 					charIndex = charIndex + ("<" + rawTagName).Length;
+					
+
+					
 					
 					/*
 					 collect attr and find start-tag end.
@@ -162,19 +175,17 @@ namespace AutoyaFramework.Information {
 						var kv = new Dictionary<KV_KEY, string>();
 						switch (data[charIndex]) {
 							case ' ': {// <tag [attr]/> or <tag [attr]>
-								// Debug.LogError("' ' found at tag:" + tag);
-								var tagEndIndex = data.IndexOf(">", charIndex);
-								
-								var attrStr = data.Substring(charIndex + 1, tagEndIndex - charIndex - 1);
+								// Debug.LogError("' ' found at tag:" + tag);	
+								var attrStr = data.Substring(charIndex + 1, startTagEndIndex - charIndex - 1);
 								
 								kv = GetAttr(tag, attrStr);
 								
 								// tag closed point is tagEndIndex. next point is tagEndIndex + 1.
-								charIndex = tagEndIndex + 1;
+								charIndex = startTagEndIndex + 1;
 								readPoint = charIndex;
 
 								// Debug.LogError("data[tagEndIndex - 1]:" + data[tagEndIndex - 1]);
-								if (data[tagEndIndex - 1] == '/') {// <tag [attr]/>
+								if (data[startTagEndIndex - 1] == '/') {// <tag [attr]/>
 									// Debug.LogError("-1 is / @tag:" + tag);
 
 									// 閉じタグが見つかっていて、すでにcharIndexがセットできてる
@@ -194,7 +205,7 @@ namespace AutoyaFramework.Information {
 								var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, charIndex);
 								
 								var contents = data.Substring(charIndex, endTagIndex - charIndex);
-								
+											
 								var tagPoint = new TagPoint(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
 								tagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
 								
@@ -256,37 +267,29 @@ namespace AutoyaFramework.Information {
         }
 
 		private int FindEndTag (string endTagStr, string startTagStr, string data, int offset) {
-			/*
-				search end tag.
-			*/
 			var cascadedStartTagIndexies = GetIndexiesOf(startTagStr, data, offset);
 			var endTagCandidateIndexies = GetIndexiesOf(endTagStr, data, offset);
 
-			// 見つかったendの数が、見つかったstartの数より少なければ、閉じタグ不足
-			if (endTagCandidateIndexies.Length < cascadedStartTagIndexies.Length) {
-				throw new Exception("parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset);
-			}
-
-			// cascadedStartTagIndexies < endTagCandidateIndexies. 
-
-			// この条件は満たしつつも、e,s,e　とかがあり、sよりも前にあるeがある場合はそれを使う。
+			// finding pair of start-end tags.
 			for (var i = 0; i < endTagCandidateIndexies.Length; i++) {
 				var endIndex = endTagCandidateIndexies[i];
 
+				// if start tag exist, this endTag is possible pair.
 				if (i < cascadedStartTagIndexies.Length) {
-					// まだstart要素が尽きてないので、
+					// start tag exists, 
 					var startIndex = cascadedStartTagIndexies[i];
 
-					// endが、startより先に見つかった
+					// endIndex appears faster than startIndex.
+					// endIndex is that we expected.
 					if (endIndex < startIndex) {
 						return endIndex;
 					} else {
-						// startより後にendが見つかったので、これらはペアっぽい。
-						// s, e, ,,,
+						// startIndex is faster than endIndex. maybe they are pair.
+						// continue to find.
 						continue;
 					}
 				} else {
-					// startが尽きてるので、
+					// startIndex is exhausted, found endInex is the result.
 					return endIndex;
 				}
 			}
