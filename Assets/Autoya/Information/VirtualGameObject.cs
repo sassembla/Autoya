@@ -165,6 +165,18 @@ namespace AutoyaFramework.Information {
 
 			// set kv.
 			switch (tag) {
+				case Tag.OL: {
+					foreach (var kv in this.keyValueStore) {
+						var key = kv.Key;
+						switch (key) {
+							case KV_KEY.START: {
+								// do nothing yet.
+								break;
+							}
+						}
+					}
+					break;
+				}
 				case Tag.A: {
 					// do nothing.
 					break;
@@ -221,26 +233,13 @@ namespace AutoyaFramework.Information {
 				}
 				
 				case Tag._CONTENT: {
-					// 回り込みとかは親に任せられるんだけど、要素の区切りを行う必要はある。
-					// 限界幅に分割されたコンテンツ、っていう感じでできればいいんだろうか。
-					// 切り方を考えないと、、、
-
-					/*
-						・子供たちのレイアウトを行う
-						・この要素自体のrectTransform、開始位置とサイズをセットする
-
-						ということをここでやってて、
-						回り込みを実装するには、サイズ溢れの処理をここに持ってくる必要がある気がする。
-					 */
-					
 					// set text if exist.
 					if (this.keyValueStore.ContainsKey(KV_KEY._CONTENT)) {
 						var text = keyValueStore[KV_KEY._CONTENT];
-						
-						// もしテキスト行数が複数行にまたがる場合、二行目以降のコンテンツをここで勝手にガンガン足す。
-						// contentHandlePoint.nextLeftHandleが使われてる。ここがあってない気がする。
+
 						var contentAndWidthAndHeight = LayoutTextContent(contentHandlePoint.nextLeftHandle, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight, insert);
 						
+						// overwrite actually layouted content.
 						keyValueStore[KV_KEY._CONTENT] = contentAndWidthAndHeight.content;
 						contentWidth = contentAndWidthAndHeight.width;
 						contentHeight = contentAndWidthAndHeight.totalHeight;
@@ -260,8 +259,6 @@ namespace AutoyaFramework.Information {
 
 			// set content size.
 			rectTransform.sizeDelta = new Vector2(contentWidth, contentHeight);
-			
-			// Debug.LogError("ここで、幅が決まった。 contentWidth:" + contentWidth + " tag:" + tag);
 		}
 		
 		/**
@@ -383,7 +380,7 @@ namespace AutoyaFramework.Information {
 			
 			return handlePoint;
 		}
-		
+
 		private void LayoutChildlen (List<VirtualGameObject> childlen, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel) {
 			// Debug.LogWarning("LayoutChildlen、子供にいくに従って、親要素の起点から幅と高さの制限をつける必要がある。");
 			// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
@@ -425,30 +422,24 @@ namespace AutoyaFramework.Information {
 					layoutLine.Clear();
 				}
 
+
+				var sortLayoutLineBeforeLining = false;
+				var sortLayoutLineAfterLining = false;
+				
+
 				/*
 					insert content to childlen list.
 					create new content from one long content by length overflow.
 				 */
-				var lineEnded = false;
 				Action<List<VirtualGameObject>> insertAct = insertNewVGameObject => {
 					childlen.InsertRange(i + 1, insertNewVGameObject);
 
 					// this line is ended at this content. need layout.
-					lineEnded = true;
+					sortLayoutLineAfterLining = true;
 				};
 
 				// set position and calculate size.
 				childHandlePoint = child.Layout(this, childHandlePoint, onLayoutDel, insertAct);
-				
-				/*
-					the insertAct is raised or not raised.
-				 */
-				
-				// if child is content and that width is 0, this is because, there is not enough width in this line.
-				// line is ended.
-				if (child.tag == Tag._CONTENT && child.rectTransform.sizeDelta.x == 0) {
-					lineEnded = true;
-				}
 				
 				// consume hr 2/2 as horizontal rule.
 				if (child.tag == Tag.HR) {
@@ -458,38 +449,83 @@ namespace AutoyaFramework.Information {
 					continue;
 				}
 				
-				// root content does not sort child contents.
+				// root content does not request sorting child contents.
 				if (this.tag == Tag.ROOT) {
 					i++;
 					continue;
 				}
 
-				// 新しく足した要素が幅を超えてる場合、っていうの、もしかしたら壊れてるかも。不要かもしれない。
-				// check width overflow.
-				// if next left handle is overed, sort as lined contents.
-				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
-					if (0 < layoutLine.Count) {
-						childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
 
-						// forget current line.
-						layoutLine.Clear();
-
-						// move current child content to next line head.
-						child.rectTransform.anchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
+				/*
+					the insertAct(t) is raised or not raised.
+				 */
 				
-						// set next handle.
-						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
+				// if child is content and that width is 0, this is because, there is not enough width in this line.
+				// line is ended.
+				if (child.tag == Tag._CONTENT && child.rectTransform.sizeDelta.x == 0) {
+					sortLayoutLineAfterLining = true;
+				}
+
+
+				/*
+					nested bq をどうにかする。具体的には、bqの中にbgが現れたら、改行
+				 */
+				if (this.tag == Tag.BLOCKQUOTE) {
+					// nested bq.
+					if (child.tag == Tag.BLOCKQUOTE) {
+						sortLayoutLineBeforeLining = true;
 					}
 				}
 
-				// content width is smaller than viewpoint width.
+				/*
+					nested list's child list should be located to new line.
+				 */
+				if (this.tag == Tag.LI) {
+					// nested list.
+					if (child.tag == Tag.OL || child.tag == Tag.UL) {
+						sortLayoutLineBeforeLining = true;
+					}
+				}
 
+				// list's child should be ordered vertically.
+				if (this.tag == Tag.OL || this.tag == Tag.UL) {
+					sortLayoutLineAfterLining = true;
+				}
+				
+				// check width overflow.
+				// if next left handle is overed, sort as lined contents.
+				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
+					sortLayoutLineBeforeLining = true;
+				}
+				
+
+				/*
+					sort current lined contents as 1 line of contents.
+					before adding current content.
+				 */
+				if (sortLayoutLineBeforeLining) {
+					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
+
+					// forget current line.
+					layoutLine.Clear();
+
+					// move current child content to next line head.
+					child.rectTransform.anchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
+			
+					// set next handle.
+					childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
+				}
+
+				// content width is smaller than viewpoint width.
 				layoutLine.Add(child);
 
 				/*
-					layout line if this line is ended by this content.
+					sort current lined contents as 1 line of contents.
+					after adding current content.
+
+					this line is ended by this content.
 				 */
-				if (lineEnded) {
+				if (sortLayoutLineAfterLining) {
 					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
 
 					// forget current line.

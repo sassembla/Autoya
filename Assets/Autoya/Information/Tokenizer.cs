@@ -108,7 +108,7 @@ namespace AutoyaFramework.Information {
 				if (data.Length <= charIndex) {
 					break;
 				}
-				
+
 				var chr = data[charIndex];
 				// Debug.LogError("chr:" + chr);
 				
@@ -155,7 +155,9 @@ namespace AutoyaFramework.Information {
 					// set to next char index. after '<tag'
 					charIndex = charIndex + ("<" + rawTagName).Length;
 					
-					// collect attr and find start-tag end.
+					/*
+					 collect attr and find start-tag end.
+					 */
 					{
 						var kv = new Dictionary<KV_KEY, string>();
 						switch (data[charIndex]) {
@@ -184,32 +186,12 @@ namespace AutoyaFramework.Information {
 								// Debug.LogError("not closed tag:" + tag);
 
 								/*
-									finding end-tag of tag.
+									finding end-tag of this tag.
 								*/
 								var endTag = "</" + rawTagName.ToLower() + ">";
-								var cascadedTagHead = "<" + rawTagName.ToLower();
-
-								var endTagIndex = -2;
-								while (true) {
-									var cascadedTagHeadIndex = data.IndexOf(cascadedTagHead, charIndex);
-									endTagIndex = data.IndexOf(endTag, charIndex);
-									
-									if (cascadedTagHeadIndex != -1 && endTagIndex != -1 && cascadedTagHeadIndex < endTagIndex) {
-										// cascaded start-tag appears before end tag,
-										// this end-tag is not pair of finding target.
-										// skip to endTagIndex.
-										charIndex = endTagIndex;
-										continue;
-									}
-
-									break;
-								}
+								var cascadedStartTagHead = "<" + rawTagName.ToLower();
 								
-								// Debug.LogError("endTagIndex:" + endTagIndex + " endTag:" + endTag + " data:" + data.Substring(charIndex));
-
-								if (endTagIndex == -1) {
-									throw new Exception("parse error. failed to find end-tag of:" + tag + " rawTagName:" + rawTagName);
-								}
+								var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, charIndex);
 								
 								var contents = data.Substring(charIndex, endTagIndex - charIndex);
 								
@@ -226,46 +208,19 @@ namespace AutoyaFramework.Information {
 								continue;;
 							}
 							case '>': {// <tag> start tag is closed.
-								// Debug.LogError("> found at tag:" + tag);
-
 								// set to next char.
 								charIndex = charIndex + 1;
+
+								// Debug.LogError("> found at tag:" + tag + " cont:" + data.Substring(charIndex) + "___ finding end tag of tag:" + tag);
 
 								/*
 									finding end-tag of this tag.
 								*/
 								var endTag = "</" + rawTagName.ToLower() + ">";
-								var cascadedTagHead = "<" + rawTagName.ToLower();
-								
-								var endTagIndex = -2;
-								var searchingIndex = charIndex;
-								while (true) {
-									var cascadedTagHeadIndex = data.IndexOf(cascadedTagHead, searchingIndex);
-									
-									// included tag found.
-									if (cascadedTagHeadIndex != -1) {
+								var cascadedStartTagHead = "<" + rawTagName.ToLower();
 
-										// search end-tag then found,
-										// check order of cascaded tag and end-tag.
-										var nextEndTagIndex = data.IndexOf(endTag, searchingIndex);
+								var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, charIndex);
 
-										// found end-tag is not searching one.
-										// search again after the found end-tag point.
-										if (nextEndTagIndex != -1 && cascadedTagHeadIndex < nextEndTagIndex) {
-											searchingIndex = nextEndTagIndex + endTag.Length;
-											continue;
-										}
-									}
-
-									endTagIndex = data.IndexOf(endTag, searchingIndex);
-									// Debug.LogError("endTagIndex:" + endTagIndex + " endTag:" + endTag + " cont:" + data.Substring(endTagIndex));
-									break;
-								}
-
-								if (endTagIndex == -1) {
-									throw new Exception("parse error. failed to find end-tag of:" + tag + " rawTagName:" + rawTagName);
-								}
-								
 								var contents = data.Substring(charIndex, endTagIndex - charIndex);
 								
 								var tagPoint = new TagPoint(tag, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{tag}).ToArray(), kv, rawTagName);
@@ -289,7 +244,7 @@ namespace AutoyaFramework.Information {
 
 			if (readPoint < data.Length) { 
 				var restStr = data.Substring(readPoint);
-				Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
+				// Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
 				if (!string.IsNullOrEmpty(restStr)) {
 					var contentTagPoint = new TagPoint(Tag._CONTENT, parentTagPoint.originalTagName, parentTagPoint.depth.Concat(new Tag[]{Tag._CONTENT}).ToArray(), new Dictionary<KV_KEY, string>(), string.Empty);
 					contentTagPoint.vGameObject.transform.SetParent(parentTagPoint.vGameObject.transform);
@@ -299,7 +254,62 @@ namespace AutoyaFramework.Information {
 
             return parentTagPoint.vGameObject;
         }
+
+		private int FindEndTag (string endTagStr, string startTagStr, string data, int offset) {
+			/*
+				search end tag.
+			*/
+			var cascadedStartTagIndexies = GetIndexiesOf(startTagStr, data, offset);
+			var endTagCandidateIndexies = GetIndexiesOf(endTagStr, data, offset);
+
+			// 見つかったendの数が、見つかったstartの数より少なければ、閉じタグ不足
+			if (endTagCandidateIndexies.Length < cascadedStartTagIndexies.Length) {
+				throw new Exception("parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset);
+			}
+
+			// cascadedStartTagIndexies < endTagCandidateIndexies. 
+
+			// この条件は満たしつつも、e,s,e　とかがあり、sよりも前にあるeがある場合はそれを使う。
+			for (var i = 0; i < endTagCandidateIndexies.Length; i++) {
+				var endIndex = endTagCandidateIndexies[i];
+
+				if (i < cascadedStartTagIndexies.Length) {
+					// まだstart要素が尽きてないので、
+					var startIndex = cascadedStartTagIndexies[i];
+
+					// endが、startより先に見つかった
+					if (endIndex < startIndex) {
+						return endIndex;
+					} else {
+						// startより後にendが見つかったので、これらはペアっぽい。
+						// s, e, ,,,
+						continue;
+					}
+				} else {
+					// startが尽きてるので、
+					return endIndex;
+				}
+			}
+			
+			throw new Exception("parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset);
+		}
         
+		private int[] GetIndexiesOf (string tagStr, string data, int offset) {
+			var resultList = new List<int>();
+			var result = -1;
+			while (true) {
+				result = data.IndexOf(tagStr, offset);
+				if (result == -1) {
+					break;
+				}
+
+				resultList.Add(result);
+				offset = result + 1;
+			}
+			return resultList.ToArray();
+		}
+
+
 		private Dictionary<KV_KEY, string> GetAttr (Tag tag, string source) {
 			// Debug.LogError("source:" + source);
 
@@ -341,7 +351,6 @@ namespace AutoyaFramework.Information {
 				this.tag = tag;
 				this.depth = depth;
 				this.originalTagName = originalTagName;
-
 				
 				var prefabName = string.Empty;
 				switch (tag) {
@@ -350,17 +359,9 @@ namespace AutoyaFramework.Information {
 						break;
 					}
 
-					// these are not container, not content, only parameters.
+					// these are container.
 					case Tag.EM:
-					case Tag.STRONG: 
-					// {
-					// 	// こいつが実体を持たないようにしたい。
-					// 	prefabName = Tag.P.ToString();
-					// 	kv[KV_KEY._STYLE] = tag.ToString();
-						
-					// 	break;
-					// }
-
+					case Tag.STRONG:
 					case Tag.PRE:
 					case Tag.BLOCKQUOTE:
 					case Tag.CODE:
