@@ -42,11 +42,11 @@ namespace AutoyaFramework.Information {
     public struct ContentAndWidthAndHeight {
 		public string content;
         public float width;
-        public int totalHeight;
+        public int height;
         public ContentAndWidthAndHeight (string content, float width, int totalHeight) {
 			this.content = content;
             this.width = width;
-            this.totalHeight = totalHeight;
+            this.height = totalHeight;
         }
     }
 

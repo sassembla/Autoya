@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -75,7 +76,7 @@ namespace AutoyaFramework.Information {
 			textComponent.text = text;
 			
 			// Debug.LogError("offset:" + offset + " text:" + text);
-			
+
 			var generator = new TextGenerator();
 
 			var setting = textComponent.GetGenerationSettings(new Vector2(contentWidth - offset, contentHeight));
@@ -85,10 +86,23 @@ namespace AutoyaFramework.Information {
 			var nextText = text;// get copy.
 			
 			if (generator.lineCount == 0) {
-				throw new Exception("no line detected. text:" + text + " offset:" + offset + " contentWidth:" + contentWidth);
+				// no line layouted. set this text to next line.
+				var nextLineVGameObject = new VirtualGameObject(
+					this.tag,
+					this.depth, 
+					new Dictionary<KV_KEY, string>(){
+						{KV_KEY._CONTENT, nextText}
+					},
+					this.prefabName
+				);
+				insert(new List<VirtualGameObject>{nextLineVGameObject});
+
+				// return empty line.
+				new ContentAndWidthAndHeight(string.Empty, 0, 0);
 			}
 
 			while (true) {
+				// if rest text is included by one line, line collection is done.
 				if (generator.lineCount == 1) {
 					lines.Add(nextText);
 					break;
@@ -131,9 +145,9 @@ namespace AutoyaFramework.Information {
 			if (1 < lines.Count) {
 				var newContentTexts = lines.GetRange(1, lines.Count-1);
 				
-				foreach (var s in newContentTexts) {
-					// Debug.LogError("s:" + s);
-				}
+				// foreach (var s in newContentTexts) {
+				// 	Debug.LogError("s:" + s);
+				// }
 
 				var newVGameObjects = newContentTexts.Select(
 					t => new VirtualGameObject(
@@ -148,22 +162,14 @@ namespace AutoyaFramework.Information {
 				insert(newVGameObjects);
 			}
 
-			var totalHeight = 0;
-			foreach (var l in generator.lines){
-				// Debug.LogError("ina:" + ina + " ch topY:" + l.topY);
-				// Debug.LogError("ina:" + ina + " ch index:" + l.startCharIdx);
-				// Debug.LogError("ina:" + ina + " ch height:" + l.height);
-				totalHeight += l.height;
-			}
-			
 			// Debug.LogError("preferredWidth:" + preferredWidth);
 			
-			return new ContentAndWidthAndHeight(lines[0], preferredWidth, totalHeight);
+			return new ContentAndWidthAndHeight(lines[0], preferredWidth, generator.lines[0].height);
 		}
 		
-		private void LayoutTagContent(HandlePoint contentHandlePoint, Action<List<VirtualGameObject>> insert) {
+		private void LayoutTagContent (float xOffset, float yOffset, float viewWidth, float viewHeight, Action<List<VirtualGameObject>> insert) {
 			// set (x, y) start pos.
-			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + contentHandlePoint.nextLeftHandle, rectTransform.anchoredPosition.y + contentHandlePoint.nextTopHandle);
+			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + xOffset, rectTransform.anchoredPosition.y + yOffset);
 			// Debug.LogError("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
 
 			var contentWidth = 0f;
@@ -223,7 +229,6 @@ namespace AutoyaFramework.Information {
 						}
 					}
 
-					var viewWidth = contentHandlePoint.viewWidth;
 					if (viewWidth < contentWidth) {
 						var ratio = viewWidth / contentWidth;
 						// Debug.LogError("ratio:" + ratio);
@@ -243,8 +248,8 @@ namespace AutoyaFramework.Information {
 						contentWidth = rectTransform.sizeDelta.x;
 						contentHeight = rectTransform.sizeDelta.y;
 
-						if (contentHandlePoint.viewWidth < contentWidth) {
-							contentWidth = contentHandlePoint.viewWidth;
+						if (viewWidth < contentWidth) {
+							contentWidth = viewWidth;
 						}
 					}
 					break;
@@ -253,14 +258,25 @@ namespace AutoyaFramework.Information {
 				case Tag._CONTENT: {
 					// set text if exist.
 					if (this.keyValueStore.ContainsKey(KV_KEY._CONTENT)) {
-						var text = keyValueStore[KV_KEY._CONTENT];
+						// already layout done.
+						if (keyValueStore.ContainsKey(KV_KEY.WIDTH)) {
+							// set view width if exist.
+							viewWidth = float.Parse(keyValueStore[KV_KEY.WIDTH], CultureInfo.InvariantCulture.NumberFormat);
+						}
 
-						var contentAndWidthAndHeight = LayoutTextContent(contentHandlePoint.nextLeftHandle, text, contentHandlePoint.viewWidth, contentHandlePoint.viewHeight, insert);
+						var text = keyValueStore[KV_KEY._CONTENT];
+						
+						var contentAndWidthAndHeight = LayoutTextContent(xOffset, text, viewWidth, viewHeight, insert);
 						
 						// overwrite actually layouted content.
 						keyValueStore[KV_KEY._CONTENT] = contentAndWidthAndHeight.content;
+						
+						// write width and height.
+						keyValueStore[KV_KEY.WIDTH] = contentAndWidthAndHeight.width.ToString();
+						keyValueStore[KV_KEY.HEIGHT] = contentAndWidthAndHeight.height.ToString();
+
 						contentWidth = contentAndWidthAndHeight.width;
-						contentHeight = contentAndWidthAndHeight.totalHeight;
+						contentHeight = contentAndWidthAndHeight.height;
 					}
 					break;
 				}
@@ -318,13 +334,31 @@ namespace AutoyaFramework.Information {
 				}
 				default: {
 					// Debug.LogError("before layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
-					LayoutTagContent(handlePoint, insert);
+					LayoutTagContent(handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, insert);
 					// Debug.LogError("after layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
 			}
 
 			// parent layout is done. will be resized by child, then padding.
+
+			// calculate table's column count.
+			if (this.tag == Tag.TABLE) {
+
+				// ハンドラで、n x m のテーブルであることが通知できる。
+				// 別の話、N文字目に改行があったことが記録として残せるので、要素にidを振ることができる。
+				// n x mがわかったら、それぞれの幅をどうしたいかを通知できるはず。
+				// 指定したら、その幅を採用する。レイアウトも溢れも。ということはできそう。
+
+				// ッツー感じか。n単位でwidthを返せばいいので、nを受け取ってn x widthを返すのでよさげ。
+				var maxPoints = new MaxPoints();
+				
+				// pre-layout table contents.
+				foreach (var tableChild in this.transform.GetChildlen()) {
+					DoLayoutTagContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, maxPoints);
+				}
+			}
+
 
 			var childlen = this.transform.GetChildlen();
 			if (0 < childlen.Count) {
@@ -358,7 +392,7 @@ namespace AutoyaFramework.Information {
 				set padding if need.
 				default padding is 0.
 			*/
-			onLayoutDel(this.tag, this.depth, this.padding, new Dictionary<KV_KEY, string>(this.keyValueStore));
+			onLayoutDel(this.tag, this.depth, this.padding, this.keyValueStore);
 			
 			/*
 				adopt padding to this content.
@@ -397,6 +431,36 @@ namespace AutoyaFramework.Information {
 			}
 			
 			return handlePoint;
+		}
+
+		private class MaxPoints {
+			public int xCount;
+			public float xWidth;
+
+			public void AddXCount () {
+				xCount++;
+			}
+			
+			public void UpdateSize (Vector2 size) {
+				if (xWidth < size.x) {
+					xWidth = size.x;
+				}
+			}
+		}
+
+		private void DoLayoutTagContentRecursively (VirtualGameObject child, float offsetX, float offsetY, float viewWidth, float viewHeight, MaxPoints maxPoints) {
+			if (child.tag == Tag.TH) {
+				maxPoints.AddXCount();
+			}
+			
+			// もし子供ゾーンに入ったら、その時点でmaxPointの値を指定していいはず。
+			// で。それを抜けたら、場で保持しているパラメータを、viewWidthとして指定できる！
+
+			child.LayoutTagContent(offsetX, offsetY, viewWidth, viewHeight, (a) => {});
+			
+			foreach (var nestedChild in child.transform.GetChildlen()) {
+				child.DoLayoutTagContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, maxPoints);
+			}
 		}
 
 		private void LayoutChildlen (List<VirtualGameObject> childlen, HandlePoint handlePoint, Tokenizer.OnLayoutDelegate onLayoutDel) {
