@@ -12,23 +12,31 @@ namespace AutoyaFramework.Information {
         ROOT,
 
 		BLOCKQUOTE,
+
 		STRONG,
+
+		TABLE,
+		THEAD,
+		TBODY,
+
 		CODE,
+
 		PRE,
 		IMG, 
+
+		TR,
+		TH,
+		TD,
 		EM,
         UL, 
         OL,
         LI, 
 		BR,
-
 		HR,
 
         H, 
         P, 
-        
         A,
-        
 	}
 
     public struct ContentAndWidthAndHeight {
@@ -462,7 +470,13 @@ namespace AutoyaFramework.Information {
 					case Tag.A:
 					case Tag.UL:
 					case Tag.LI:
-					case Tag.OL: {// these are container.
+					case Tag.OL:
+					case Tag.TABLE:
+					case Tag.THEAD:
+					case Tag.TBODY:
+					case Tag.TR:
+					case Tag.TH:
+					case Tag.TD: {// these are container.
 						prefabName = originalTagName.ToUpper() + "Container";
 						break;
 					}

@@ -919,6 +919,36 @@ test2
 		Draw(sample);
 	}
 
+	[MTest] public void DrawTable () {
+		var sample = @"
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataaaaaaaa</td>
+<td>path to data files to supply the data that will be passed into templates.</td>
+</tr>
+<tr>
+<td>engine</td>
+<td>engine to be used for processing templates. Handlebars is the default.</td>
+</tr>
+<tr>
+<td>ext</td>
+<td>extension to be used for dest files.</td>
+</tr>
+</tbody>
+</table>
+";
+		Draw(sample);
+	}
+
+	
+
 	private static int index;
 
 	private void Draw (string sample, int width=300) {

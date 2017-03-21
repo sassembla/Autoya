@@ -75,7 +75,6 @@ namespace AutoyaFramework.Information {
 			textComponent.text = text;
 			
 			// Debug.LogError("offset:" + offset + " text:" + text);
-
 			
 			var generator = new TextGenerator();
 
@@ -85,8 +84,12 @@ namespace AutoyaFramework.Information {
 			var lines = new List<string>();
 			var nextText = text;// get copy.
 			
+			if (generator.lineCount == 0) {
+				throw new Exception("no line detected. text:" + text + " offset:" + offset + " contentWidth:" + contentWidth);
+			}
+
 			while (true) {
-				if (generator.lines.Count == 1) {
+				if (generator.lineCount == 1) {
 					lines.Add(nextText);
 					break;
 				}
@@ -111,6 +114,9 @@ namespace AutoyaFramework.Information {
 
 				// ここで、幅は与えられている最大のものを使えるはず(親から伝わってくる時点で本来はすり減ったのが来てるはず)
 				generator.Populate(textComponent.text, textComponent.GetGenerationSettings(new Vector2(contentWidth, contentHeight)));
+				if (generator.lineCount == 0) {
+					throw new Exception("no line detected 2. nextText:" + nextText);
+				}
 			}
 			
 			textComponent.text = lines[0];
