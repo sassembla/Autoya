@@ -8,19 +8,26 @@ using UnityEngine;
 namespace AutoyaFramework {
 	public class AutoyaMainThreadDispatcher : MonoBehaviour, ICoroutineUpdater {
 		private List<IEnumerator> coroutines = new List<IEnumerator>();
-		
+		private object lockObj = new object();
+
 		public void Commit (IEnumerator iEnum) {
-			coroutines.Add(iEnum);
+			lock (lockObj) {
+				coroutines.Add(iEnum);
+			}
 		}
 
 		private void Update () {
-			
 			if (0 < coroutines.Count) {
-				foreach (var coroutine in coroutines) {
-					// Debug.Log("commiting:" + coroutine);
-					StartCoroutine(coroutine);
+				lock (lockObj) {
+					var commitingList = new List<IEnumerator>(coroutines);
+					coroutines.Clear();
+					
+					foreach (var coroutine in commitingList) {
+						// Debug.Log("commiting:" + coroutine);
+						StartCoroutine(coroutine);
+					}
 				}
-				coroutines.Clear();
+				
 			}
 		}
 
