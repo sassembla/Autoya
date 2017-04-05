@@ -31,10 +31,10 @@ see below.
 ### automatic Authentication
 already implemented.
 
-###AssetBundle list/preload/load
+### AssetBundle list/preload/load
 already implemented.
 
-###HTTP/TCP/UDP Connection feature
+### HTTP/TCP/UDP Connection feature
 
 | Protocol        | Progress     |
 | ------------- |:-------------:|
@@ -44,16 +44,16 @@ already implemented.
 | udp	| not yet      |  
 
 
-###app-version/asset-version/server-condition changed handles
+### app-version/asset-version/server-condition changed handles
 already implemented.
 
-###Purchase/IAP flow
+### Purchase/IAP flow
 already implemented.
 
-###Notification(local/remote)
+### Notification(local/remote)
 in 2017 early.
 
-###Information
+### Information
 in 2017 early.
 
 
