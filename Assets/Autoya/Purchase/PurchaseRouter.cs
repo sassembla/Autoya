@@ -451,7 +451,7 @@ namespace AutoyaFramework.Purchase {
 						},
 						(conId, code, reason, autoyaStatus) => {
 							// 通信が失敗したら、アイテムがdeployできてないので、再度送り出す必要がある。自動リトライが必須。
-							Debug.LogError("failed to deploy. code:" + code + " reason:" + reason);
+							Debug.LogError("failed to deploy purchased item. code:" + code + " reason:" + reason);
 						}
 					);
 					enumExecutor(cor);
@@ -460,7 +460,7 @@ namespace AutoyaFramework.Purchase {
 				default: {
 					Debug.LogError("ここにくるケースを見切れていない。");
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy product. state:" + routerState, new AutoyaStatus());
+						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item 2. state:" + routerState, new AutoyaStatus());
 					}
 					break;
 				}

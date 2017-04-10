@@ -10,10 +10,6 @@ using AutoyaFramework.Information;
 
 public class InformationTests : MiyamasuTestRunner {
 	[MTest] public void ParseSmallMarkdown () {
-		if (true) {
-			return;
-		}
-
 		var sampleMd = @"
 An h1 header
 ============
@@ -173,7 +169,7 @@ $$I = \int \rho R^{2} dV$$
 And note that you can backslash-escape any punctuation characters
 which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
 		";
-	
+
 		// Create new markdown instance
 		Markdown mark = new Markdown();
 
@@ -194,6 +190,7 @@ which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
 
 			描画範囲に対する生成が未完成。
 		*/
+
 		RunOnMainThread(
 			() => {
 				var tokenizer = new Tokenizer(text);
@@ -947,16 +944,13 @@ test2
 		Draw(sample);
 	}
 
-	
-
 	private static int index;
 
 	private void Draw (string sample, int width=300) {
 		// Create new markdown instance
 		Markdown mark = new Markdown();
 
-		// Run parser
-		string text = mark.Transform(sample);
+		var text = mark.Transform(sample);
 		
 		RunOnMainThread(
 			() => {

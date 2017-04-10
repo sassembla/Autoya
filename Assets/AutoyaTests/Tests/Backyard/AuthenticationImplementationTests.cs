@@ -225,7 +225,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		
 		WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			5,
+			10,
 			"failed to handle tokenRefreshFailed."
 		);
 	}

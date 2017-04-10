@@ -56,7 +56,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 
 		WaitUntil(
 			() => done,
-			5,
+			10,
 			"failed to ready."
 		);
 
