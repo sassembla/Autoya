@@ -290,7 +290,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 			}
-
+			
 			// set content size.
 			rectTransform.sizeDelta = new Vector2(contentWidth, contentHeight);
 		}
@@ -355,8 +355,15 @@ namespace AutoyaFramework.Information {
 				
 				// pre-layout table contents.
 				foreach (var tableChild in this.transform.GetChildlen()) {
-					DoLayoutTagContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, maxPoints);
+					DoLayoutTableContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, maxPoints);
 				}
+
+				// after layout, max widht detected.
+				foreach (var width in maxPoints.xWidth) {
+					Debug.LogError("width:" + width);
+				}
+
+				// んで、これを元に、列単位で横の幅を整える。
 			}
 
 
@@ -434,32 +441,34 @@ namespace AutoyaFramework.Information {
 		}
 
 		private class MaxPoints {
-			public int xCount;
-			public float xWidth;
+			public int xIndex;
+			public List<float> xWidth = new List<float>();
 
-			public void AddXCount () {
-				xCount++;
+			public void IncrementRow () {
+				xIndex++;
+				xWidth.Add(0);
 			}
 			
-			public void UpdateSize (Vector2 size) {
-				if (xWidth < size.x) {
-					xWidth = size.x;
+			public void UpdateMaxWidthOfCurrentRow (Vector2 size) {
+				if (xWidth[xIndex-1] < size.x) {
+					xWidth[xIndex-1] = size.x;
 				}
 			}
 		}
 
-		private void DoLayoutTagContentRecursively (VirtualGameObject child, float offsetX, float offsetY, float viewWidth, float viewHeight, MaxPoints maxPoints) {
+		private void DoLayoutTableContentRecursively (VirtualGameObject child, float offsetX, float offsetY, float viewWidth, float viewHeight, MaxPoints maxPoints) {
+			// こいつ自身がtable headerだったら、その個数が横の項目の数。
 			if (child.tag == Tag.TH) {
-				maxPoints.AddXCount();
+				maxPoints.IncrementRow();
 			}
-			
-			// もし子供ゾーンに入ったら、その時点でmaxPointの値を指定していいはず。
-			// で。それを抜けたら、場で保持しているパラメータを、viewWidthとして指定できる！
 
 			child.LayoutTagContent(offsetX, offsetY, viewWidth, viewHeight, (a) => {});
 			
 			foreach (var nestedChild in child.transform.GetChildlen()) {
-				child.DoLayoutTagContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, maxPoints);
+				child.DoLayoutTableContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, maxPoints);
+				if (child.tag == Tag.TH || child.tag == Tag.TD) {
+					maxPoints.UpdateMaxWidthOfCurrentRow(nestedChild.rectTransform.sizeDelta);
+				}
 			}
 		}
 

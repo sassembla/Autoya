@@ -95,7 +95,7 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		for (int t = 0; t < m_Controller.products.all.Length; t++)
 		{
 			var item = m_Controller.products.all[t];
-			var description = string.Format("{0} - {1}", item.metadata.localizedTitle, item.metadata.localizedPriceString);
+			var description = string.Format("{0} | {1} => {2}", item.metadata.localizedTitle, item.metadata.localizedPriceString, item.metadata.localizedPrice);
 
 			// NOTE: my options list is created in InitUI
 			GetDropdown().options[t] = new Dropdown.OptionData(description);
@@ -306,7 +306,13 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 
 
 		#if RECEIPT_VALIDATION
-		validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.bundleIdentifier);
+		string appIdentifier;
+		#if UNITY_5_6_OR_NEWER
+		appIdentifier = Application.identifier;
+		#else
+		appIdentifier = Application.bundleIdentifier;
+		#endif
+		validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), appIdentifier);
 		#endif
 
 		// Now we're ready to initialize Unity IAP.

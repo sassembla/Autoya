@@ -1,3 +1,11 @@
+## [1.10.1] - 2017-03-29
+### Fixed
+- GooglePlay - Suspending and resuming from app-icon while purchase dialog displayed no longer generates both OnPurchaseFailed then ProcessPurchase messages, only whichever callback is correct.
+- Remove cloud JSON exporter that was erroneously showing in the IAP Catalog export list
+- Fixed a bug when parsing localized prices when the device's localization does not match the number format rules for the currency
+- Resolved DLL name conflict by renaming Assets/Plugins/UnityPurchasing/Bin/Common.dll to Purchasing.Common.dll
+- Installer - Suppressed multiple redundant dialogs
+
 ## [1.10.0] - 2017-01-23
 ### Added
 - Samsung Galaxy Apps - In-App Purchase SDK v4. Simplifies flow for first-time payment users. See [Samsung Developer IAP Documentation](http://developer.samsung.com/iap) for more.
