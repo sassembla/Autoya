@@ -349,7 +349,7 @@ namespace AutoyaFramework.Information {
 				// ハンドラで、n x m のテーブルであることが通知できる。
 				// n x mがわかったら、それぞれの幅をどうしたいかを通知できるはず。
 				// 指定したら、その幅を採用する。レイアウトも溢れも。ということはできそう。
-
+				
 				// ッツー感じか。n単位でwidthを返せばいいので、nを受け取ってn x widthを返すのでよさげ。
 				var maxPoints = new MaxPoints();
 				
