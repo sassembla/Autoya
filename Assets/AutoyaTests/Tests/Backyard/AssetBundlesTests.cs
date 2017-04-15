@@ -1,13 +1,13 @@
-using AutoyaFramework;
-using Miyamasu;
-using UnityEngine;
+// using AutoyaFramework;
+// using Miyamasu;
+// using UnityEngine;
 
 
 
-/**
-	tests for Autoya AssetBundle feature.
-*/
-public class AssetBundlesTests : MiyamasuTestRunner {
+// /**
+// 	tests for Autoya AssetBundle feature.
+// */
+// public class AssetBundlesTests : MiyamasuTestRunner {
 	
 	
-}
+// }

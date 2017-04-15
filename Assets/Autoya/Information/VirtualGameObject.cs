@@ -258,10 +258,13 @@ namespace AutoyaFramework.Information {
 				case Tag._CONTENT: {
 					// set text if exist.
 					if (this.keyValueStore.ContainsKey(KV_KEY._CONTENT)) {
+						var widthUpdated = false;
+
 						// already layout done.
 						if (keyValueStore.ContainsKey(KV_KEY.WIDTH)) {
 							// set view width if exist.
 							viewWidth = float.Parse(keyValueStore[KV_KEY.WIDTH], CultureInfo.InvariantCulture.NumberFormat);
+							widthUpdated = true;
 						}
 
 						var text = keyValueStore[KV_KEY._CONTENT];
@@ -277,6 +280,12 @@ namespace AutoyaFramework.Information {
 
 						contentWidth = contentAndWidthAndHeight.width;
 						contentHeight = contentAndWidthAndHeight.height;
+
+						// overwrite content width.
+						if (widthUpdated) {
+							keyValueStore[KV_KEY.WIDTH] = viewWidth.ToString();
+							contentWidth = viewWidth;
+						}
 					}
 					break;
 				}
@@ -358,12 +367,10 @@ namespace AutoyaFramework.Information {
 					DoLayoutTableContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, maxPoints);
 				}
 
-				// after layout, max widht detected.
-				foreach (var width in maxPoints.xWidth) {
-					Debug.LogError("width:" + width);
+				// re-size contents.
+				foreach (var tableChild in this.transform.GetChildlen()) {
+					DoResizeTableContentRecursively(tableChild, maxPoints);
 				}
-
-				// んで、これを元に、列単位で横の幅を整える。
 			}
 
 
@@ -441,18 +448,25 @@ namespace AutoyaFramework.Information {
 		}
 
 		private class MaxPoints {
-			public int xIndex;
-			public List<float> xWidth = new List<float>();
+			private int rowIndex;
+			private List<float> xWidth = new List<float>();
 
 			public void IncrementRow () {
-				xIndex++;
 				xWidth.Add(0);
 			}
 			
-			public void UpdateMaxWidthOfCurrentRow (Vector2 size) {
-				if (xWidth[xIndex-1] < size.x) {
-					xWidth[xIndex-1] = size.x;
+			public void UpdateMaxWidth (Vector2 size) {
+				if (xWidth[rowIndex] < size.x) {
+					xWidth[rowIndex] = size.x;
 				}
+				rowIndex = (rowIndex + 1)%xWidth.Count;
+			}
+
+			public float GetWidth () {
+				var ret = xWidth[rowIndex];
+				rowIndex = (rowIndex + 1)%xWidth.Count;
+
+				return ret;
 			}
 		}
 
@@ -466,9 +480,20 @@ namespace AutoyaFramework.Information {
 			
 			foreach (var nestedChild in child.transform.GetChildlen()) {
 				child.DoLayoutTableContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, maxPoints);
-				if (child.tag == Tag.TH || child.tag == Tag.TD) {
-					maxPoints.UpdateMaxWidthOfCurrentRow(nestedChild.rectTransform.sizeDelta);
+				if (child.tag == Tag.TD) {
+					maxPoints.UpdateMaxWidth(nestedChild.rectTransform.sizeDelta);
 				}
+			}
+		}
+
+		private void DoResizeTableContentRecursively (VirtualGameObject child, MaxPoints maxPoints) {
+			if (child.tag == Tag._CONTENT) {
+				var width = maxPoints.GetWidth();
+				child.keyValueStore[KV_KEY.WIDTH] = width.ToString();
+			}
+			
+			foreach (var nestedChild in child.transform.GetChildlen()) {
+				child.DoResizeTableContentRecursively(nestedChild, maxPoints);	
 			}
 		}
 
