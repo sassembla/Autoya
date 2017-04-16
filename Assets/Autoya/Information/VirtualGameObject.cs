@@ -342,9 +342,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				default: {
-					// Debug.LogError("before layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					LayoutTagContent(handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, insert);
-					// Debug.LogError("after layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
 			}
@@ -353,23 +351,16 @@ namespace AutoyaFramework.Information {
 
 			// calculate table's column count.
 			if (this.tag == Tag.TABLE) {
-				// 別の話、N文字目に改行があったことが記録として残せるので、要素にidを振ることができる。
-
-				// ハンドラで、n x m のテーブルであることが通知できる。
-				// n x mがわかったら、それぞれの幅をどうしたいかを通知できるはず。
-				// 指定したら、その幅を採用する。レイアウトも溢れも。ということはできそう。
-				
-				// ッツー感じか。n単位でwidthを返せばいいので、nを受け取ってn x widthを返すのでよさげ。
-				var maxPoints = new MaxPoints();
+				var tableLayoutRecord = new TableLayoutRecord();
 				
 				// pre-layout table contents.
 				foreach (var tableChild in this.transform.GetChildlen()) {
-					DoLayoutTableContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, maxPoints);
+					DoLayoutTableContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, tableLayoutRecord);
 				}
 
 				// re-size contents.
 				foreach (var tableChild in this.transform.GetChildlen()) {
-					DoResizeTableContentRecursively(tableChild, maxPoints);
+					SetupTableSettingToTableContentRecursively(tableChild, tableLayoutRecord);
 				}
 			}
 
@@ -399,6 +390,7 @@ namespace AutoyaFramework.Information {
 				rectTransform.sizeDelta = rightBottomPoint;
 				// Debug.LogError("set wrap rectTransform.sizeDelta:" + rectTransform.sizeDelta + " of tag:" + tag);
 				// Debug.LogError("after wrap rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
+
 				// layout and padding and orientation of child tags are done.
 			}
 			
@@ -447,7 +439,7 @@ namespace AutoyaFramework.Information {
 			return handlePoint;
 		}
 
-		private class MaxPoints {
+		private class TableLayoutRecord {
 			private int rowIndex;
 			private List<float> xWidth = new List<float>();
 
@@ -459,41 +451,47 @@ namespace AutoyaFramework.Information {
 				if (xWidth[rowIndex] < size.x) {
 					xWidth[rowIndex] = size.x;
 				}
-				rowIndex = (rowIndex + 1)%xWidth.Count;
+				rowIndex = (rowIndex + 1) % xWidth.Count;
 			}
 
 			public float GetWidth () {
-				var ret = xWidth[rowIndex];
-				rowIndex = (rowIndex + 1)%xWidth.Count;
-
+				var ret = xWidth[rowIndex % xWidth.Count];
+				rowIndex++;
 				return ret;
+			}
+			public bool IsEndOfRow () {
+				if (rowIndex % xWidth.Count == xWidth.Count - 1) {
+					return true;
+				}
+				return false;
+
 			}
 		}
 
-		private void DoLayoutTableContentRecursively (VirtualGameObject child, float offsetX, float offsetY, float viewWidth, float viewHeight, MaxPoints maxPoints) {
-			// こいつ自身がtable headerだったら、その個数が横の項目の数。
+		private void DoLayoutTableContentRecursively (VirtualGameObject child, float offsetX, float offsetY, float viewWidth, float viewHeight, TableLayoutRecord tableLayoutRecord) {
+			// count up table header count.
 			if (child.tag == Tag.TH) {
-				maxPoints.IncrementRow();
+				tableLayoutRecord.IncrementRow();
 			}
 
 			child.LayoutTagContent(offsetX, offsetY, viewWidth, viewHeight, (a) => {});
 			
 			foreach (var nestedChild in child.transform.GetChildlen()) {
-				child.DoLayoutTableContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, maxPoints);
+				child.DoLayoutTableContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, tableLayoutRecord);
 				if (child.tag == Tag.TD) {
-					maxPoints.UpdateMaxWidth(nestedChild.rectTransform.sizeDelta);
+					tableLayoutRecord.UpdateMaxWidth(nestedChild.rectTransform.sizeDelta);
 				}
 			}
 		}
 
-		private void DoResizeTableContentRecursively (VirtualGameObject child, MaxPoints maxPoints) {
-			if (child.tag == Tag._CONTENT) {
-				var width = maxPoints.GetWidth();
+		private void SetupTableSettingToTableContentRecursively (VirtualGameObject child, TableLayoutRecord tableLayoutRecord) {
+			if (child.tag == Tag._CONTENT || child.tag == Tag.IMG) {
+				var width = tableLayoutRecord.GetWidth();
 				child.keyValueStore[KV_KEY.WIDTH] = width.ToString();
 			}
 			
 			foreach (var nestedChild in child.transform.GetChildlen()) {
-				child.DoResizeTableContentRecursively(nestedChild, maxPoints);	
+				child.SetupTableSettingToTableContentRecursively(nestedChild, tableLayoutRecord);	
 			}
 		}
 
@@ -613,7 +611,15 @@ namespace AutoyaFramework.Information {
 				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
 					sortLayoutLineBeforeLining = true;
 				}
-				
+
+				// table
+				{
+					if (child.tag == Tag.THEAD) {// table head is single line.
+						sortLayoutLineAfterLining = true;
+					} else if (child.tag == Tag.TR) {// table row.
+						sortLayoutLineAfterLining = true;
+					}
+				}
 
 				/*
 					sort current lined contents as 1 line of contents.

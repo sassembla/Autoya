@@ -941,8 +941,39 @@ test2
 </tbody>
 </table>
 ";
-		
-		Draw(sample, 1800);
+
+		Draw(sample, 500);
+	}
+
+	[MTest] public void DrawTableWhichContainsImages () {
+		var sample = @"
+<table>
+<thead>
+<tr>
+<th>row1</th>
+<th>row2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='300' height='90' />
+</td>
+<td>col2 ~~~~~~~~~~~~ .</td>
+</tr>
+<tr>
+<td>col1-2 ~~~~~~~ </td>
+<td>col2-2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ </td>
+</tr>
+<tr>
+<td>col1-3</td>
+<td>col2-3</td>
+</tr>
+</tbody>
+</table>
+";
+
+		Draw(sample, 800);
 	}
 
 	private static int index;

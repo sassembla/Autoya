@@ -54,8 +54,7 @@ namespace AutoyaFramework.Information {
 		_UNKNOWN,
 
         _CONTENT,
-        _PARENTTAG,
-		
+        _PARENTTAG,		
         WIDTH,
         HEIGHT,
         SRC,

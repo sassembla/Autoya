@@ -482,7 +482,7 @@ namespace AutoyaFramework.AssetBundles {
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
 
-				if (request.isNetworkError) {
+				if (request.isError) {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
 				}
