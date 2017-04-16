@@ -1,5 +1,5 @@
 # Autoya
-ver 0.8.7
+ver 0.8.8
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
 
@@ -54,7 +54,7 @@ already implemented.
 in 2017 early.
 
 ### Information
-in 2017 early.
+already implemented.
 
 
 ## Tests
