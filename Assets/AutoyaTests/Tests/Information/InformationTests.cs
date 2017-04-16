@@ -950,14 +950,14 @@ test2
 <table>
 <thead>
 <tr>
-<th>row1</th>
-<th>row2</th>
+<th>row1--------------------------------------</th>
+<th>row2----------------------------------------------</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>
-<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='300' height='90' />
+<td>fmm <a href='test'>test</a> 
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='10' />
 </td>
 <td>col2 ~~~~~~~~~~~~ .</td>
 </tr>
