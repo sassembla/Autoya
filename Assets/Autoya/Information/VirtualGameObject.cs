@@ -21,7 +21,7 @@ namespace AutoyaFramework.Information {
 		
 		private VirtualTransform vTransform;
 		
-		public VirtualRectTransform rectTransform = new VirtualRectTransform();
+		public VirtualRectTransform vRectTransform = new VirtualRectTransform();
 
 		public VirtualGameObject parent;
 		
@@ -32,7 +32,7 @@ namespace AutoyaFramework.Information {
 		}
 
 		public Vector2 PaddedRightBottomPoint () {
-			return rectTransform.anchoredPosition + rectTransform.sizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
+			return vRectTransform.vAnchoredPosition + vRectTransform.vSizeDelta + new Vector2(padding.PadWidth(), padding.PadHeight());
 		}
 
 		public VirtualGameObject (Tag tag, Tag[] depth, Dictionary<KV_KEY, string> kv, string prefabName) {
@@ -169,7 +169,7 @@ namespace AutoyaFramework.Information {
 		
 		private void LayoutTagContent (float xOffset, float yOffset, float viewWidth, float viewHeight, Action<List<VirtualGameObject>> insert) {
 			// set (x, y) start pos.
-			rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x + xOffset, rectTransform.anchoredPosition.y + yOffset);
+			vRectTransform.vAnchoredPosition = new Vector2(vRectTransform.vAnchoredPosition.x + xOffset, vRectTransform.vAnchoredPosition.y + yOffset);
 			// Debug.LogError("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
 
 			var contentWidth = 0f;
@@ -206,7 +206,7 @@ namespace AutoyaFramework.Information {
 						var key = kv.Key;
 						switch (key) {
 							case KV_KEY.WIDTH: {
-								var width = Convert.ToInt32(kv.Value);;
+								var width = Convert.ToInt32(kv.Value);
 								contentWidth = width;
 								break;
 							}
@@ -258,10 +258,13 @@ namespace AutoyaFramework.Information {
 				case Tag._CONTENT: {
 					// set text if exist.
 					if (this.keyValueStore.ContainsKey(KV_KEY._CONTENT)) {
+						var widthUpdated = false;
+
 						// already layout done.
-						if (keyValueStore.ContainsKey(KV_KEY.WIDTH)) {
+						if (keyValueStore.ContainsKey(KV_KEY._CONTENT_WIDTH)) {
 							// set view width if exist.
-							viewWidth = float.Parse(keyValueStore[KV_KEY.WIDTH], CultureInfo.InvariantCulture.NumberFormat);
+							viewWidth = float.Parse(keyValueStore[KV_KEY._CONTENT_WIDTH], CultureInfo.InvariantCulture.NumberFormat);
+							widthUpdated = true;
 						}
 
 						var text = keyValueStore[KV_KEY._CONTENT];
@@ -272,15 +275,25 @@ namespace AutoyaFramework.Information {
 						keyValueStore[KV_KEY._CONTENT] = contentAndWidthAndHeight.content;
 						
 						// write width and height.
-						keyValueStore[KV_KEY.WIDTH] = contentAndWidthAndHeight.width.ToString();
+						keyValueStore[KV_KEY._CONTENT_WIDTH] = contentAndWidthAndHeight.width.ToString();
 						keyValueStore[KV_KEY.HEIGHT] = contentAndWidthAndHeight.height.ToString();
 
 						contentWidth = contentAndWidthAndHeight.width;
 						contentHeight = contentAndWidthAndHeight.height;
+
+						// overwrite content width.
+						if (widthUpdated) {
+							keyValueStore[KV_KEY._CONTENT_WIDTH] = viewWidth.ToString();
+							contentWidth = viewWidth;
+						}
 					}
 					break;
 				}
-				
+				case Tag.TH:
+				case Tag.TD: {
+					// has KV_KEY._CONTENT_WIDTH value, but ignore.
+					break;
+				}
 				default: {
 					if (0 < keyValueStore.Count()) {
 						Debug.LogError("tag:" + tag + "'s attributes are ignored.");
@@ -292,7 +305,7 @@ namespace AutoyaFramework.Information {
 			}
 			
 			// set content size.
-			rectTransform.sizeDelta = new Vector2(contentWidth, contentHeight);
+			vRectTransform.vSizeDelta = new Vector2(contentWidth, contentHeight);
 		}
 		
 		/**
@@ -333,40 +346,14 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				default: {
-					// Debug.LogError("before layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					LayoutTagContent(handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, insert);
-					// Debug.LogError("after layout rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 					break;
 				}
 			}
 
 			// parent layout is done. will be resized by child, then padding.
 
-			// calculate table's column count.
-			if (this.tag == Tag.TABLE) {
-				// 別の話、N文字目に改行があったことが記録として残せるので、要素にidを振ることができる。
-
-				// ハンドラで、n x m のテーブルであることが通知できる。
-				// n x mがわかったら、それぞれの幅をどうしたいかを通知できるはず。
-				// 指定したら、その幅を採用する。レイアウトも溢れも。ということはできそう。
-				
-				// ッツー感じか。n単位でwidthを返せばいいので、nを受け取ってn x widthを返すのでよさげ。
-				var maxPoints = new MaxPoints();
-				
-				// pre-layout table contents.
-				foreach (var tableChild in this.transform.GetChildlen()) {
-					DoLayoutTableContentRecursively(tableChild, handlePoint.nextLeftHandle, handlePoint.nextTopHandle, handlePoint.viewWidth, handlePoint.viewHeight, maxPoints);
-				}
-
-				// after layout, max widht detected.
-				foreach (var width in maxPoints.xWidth) {
-					Debug.LogError("width:" + width);
-				}
-
-				// んで、これを元に、列単位で横の幅を整える。
-			}
-
-
+			
 			var childlen = this.transform.GetChildlen();
 			if (0 < childlen.Count) {
 				LayoutChildlen(childlen, handlePoint, onLayoutDel);
@@ -389,10 +376,34 @@ namespace AutoyaFramework.Information {
 				}
 				
 				// fit size to wrap all child contents.
-				rectTransform.sizeDelta = rightBottomPoint;
-				// Debug.LogError("set wrap rectTransform.sizeDelta:" + rectTransform.sizeDelta + " of tag:" + tag);
-				// Debug.LogError("after wrap rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
-				// layout and padding and orientation of child tags are done.
+				vRectTransform.vSizeDelta = rightBottomPoint;
+				
+
+				// calculate table's contents.
+				if (this.tag == Tag.TABLE) {
+					/*
+						all contents size calculation inside this table is done.
+						count up row,
+						find longest content,
+						and adjust left point of contents.
+					 */
+					var tableLayoutRecord = new TableLayoutRecord();
+					
+					// countup rows.
+					foreach (var tableChild in this.transform.GetChildlen()) {
+						CollectTableContentRowCountRecursively(tableChild, tableLayoutRecord);
+					}
+
+					// find longest content.
+					foreach (var tableChild in this.transform.GetChildlen()) {
+						CollectTableContentRowMaxWidthsRecursively(tableChild, tableLayoutRecord);
+					}
+
+					// resize & reset position of this table contents by calculated record.
+					foreach (var tableChild in this.transform.GetChildlen()) {
+						SetupTableContentPositionRecursively(tableChild, tableLayoutRecord);
+					}
+				}
 			}
 			
 			/*
@@ -406,7 +417,7 @@ namespace AutoyaFramework.Information {
 			*/
 			{
 				// translate anchor position of content.(child follows parent.)
-				rectTransform.anchoredPosition += padding.LeftTopPoint();
+				vRectTransform.vAnchoredPosition += padding.LeftTopPoint();
 				
 				handlePoint.nextLeftHandle += padding.PadWidth();
 				handlePoint.nextTopHandle += padding.PadHeight();
@@ -421,7 +432,7 @@ namespace AutoyaFramework.Information {
 				default: {
 					// 回り込みを実現する。んだけど、これはどちらかというと多数派で、デフォルトっぽい。
 					// next content is planned to layout to the next of this content.
-					handlePoint.nextLeftHandle = this.rectTransform.anchoredPosition.x + this.rectTransform.sizeDelta.x + this.padding.PadWidth();// right edge with padding
+					handlePoint.nextLeftHandle = this.vRectTransform.vAnchoredPosition.x + this.vRectTransform.vSizeDelta.x + this.padding.PadWidth();// right edge with padding
 					// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
 					break;
 				}
@@ -430,7 +441,7 @@ namespace AutoyaFramework.Information {
 				case Tag.ROOT: {
 					// CRLF
 					handlePoint.nextLeftHandle = 0;
-					handlePoint.nextTopHandle += this.rectTransform.sizeDelta.y + this.padding.PadHeight();
+					handlePoint.nextTopHandle += this.vRectTransform.vSizeDelta.y + this.padding.PadHeight();
 
 					// Debug.LogError("親がRootなので、改行する。handlePoint.nextTopHandle:" + handlePoint.nextTopHandle + " of tag:" + tag + " rectTransform.anchoredPosition:" + this.rectTransform.anchoredPosition);
 					break;
@@ -440,35 +451,98 @@ namespace AutoyaFramework.Information {
 			return handlePoint;
 		}
 
-		private class MaxPoints {
-			public int xIndex;
-			public List<float> xWidth = new List<float>();
+		private class TableLayoutRecord {
+			private int rowIndex;
+			private List<float> xWidth = new List<float>();
 
 			public void IncrementRow () {
-				xIndex++;
 				xWidth.Add(0);
 			}
 			
-			public void UpdateMaxWidthOfCurrentRow (Vector2 size) {
-				if (xWidth[xIndex-1] < size.x) {
-					xWidth[xIndex-1] = size.x;
+			public void UpdateMaxWidth (float width) {
+				if (xWidth[rowIndex] < width) {
+					xWidth[rowIndex] = width;
+				}
+				rowIndex = (rowIndex + 1) % xWidth.Count;
+			}
+			public float TotalWidth () {
+				var ret = 0f;
+				foreach (var width in xWidth) {
+					ret += width;
+				}
+				return ret;
+			}
+			
+			public OffsetAndWidth GetOffsetAndWidth () {
+				var currentIndex = rowIndex % xWidth.Count;
+				var offset = 0f;
+				for (var i = 0; i < currentIndex; i++) {
+					offset += xWidth[i];
+				}
+				var width = xWidth[rowIndex % xWidth.Count];
+
+				rowIndex++;
+
+				return new OffsetAndWidth(offset, width);
+			}
+
+			public struct OffsetAndWidth {
+				public float offset;
+				public float width;
+				public OffsetAndWidth (float offset, float width) {
+					this.offset = offset;
+					this.width = width;
 				}
 			}
 		}
 
-		private void DoLayoutTableContentRecursively (VirtualGameObject child, float offsetX, float offsetY, float viewWidth, float viewHeight, MaxPoints maxPoints) {
-			// こいつ自身がtable headerだったら、その個数が横の項目の数。
+		private void CollectTableContentRowCountRecursively (VirtualGameObject child, TableLayoutRecord tableLayoutRecord) {
+			// count up table header count.
 			if (child.tag == Tag.TH) {
-				maxPoints.IncrementRow();
+				tableLayoutRecord.IncrementRow();
 			}
 
-			child.LayoutTagContent(offsetX, offsetY, viewWidth, viewHeight, (a) => {});
+			foreach (var nestedChild in child.transform.GetChildlen()) {
+				child.CollectTableContentRowCountRecursively(nestedChild, tableLayoutRecord);
+			}
+		}
+
+		private void CollectTableContentRowMaxWidthsRecursively (VirtualGameObject child, TableLayoutRecord tableLayoutRecord) {
+			var total = 0f;
+			foreach (var nestedChild in child.transform.GetChildlen()) {
+				child.CollectTableContentRowMaxWidthsRecursively(nestedChild, tableLayoutRecord);
+				if (child.tag == Tag.TH || child.tag == Tag.TD) {
+					var nestedChildContentWidth = nestedChild.vRectTransform.vSizeDelta.x;
+					total += nestedChildContentWidth;
+				}
+			}
+
+			if (child.tag == Tag.TH || child.tag == Tag.TD) {
+				tableLayoutRecord.UpdateMaxWidth(total);
+			}
+		}
+
+		private void SetupTableContentPositionRecursively (VirtualGameObject child, TableLayoutRecord tableLayoutRecord) {
+			// overwrite parent content width of TH and TD.
+			if (child.tag == Tag.THEAD || child.tag == Tag.TBODY || child.tag == Tag.THEAD || child.tag == Tag.TR) {
+				var width = tableLayoutRecord.TotalWidth();
+				child.vRectTransform.vSizeDelta = new Vector2(width, child.vRectTransform.vSizeDelta.y);
+			}
+
+			/*
+				change TH, TD content's x position and width.
+				x position -> 0, 1st row's longest content len, 2nd row's longest content len,...
+				width -> 1st row's longest content len, 2nd row's longest content len,...
+			*/
+			if (child.tag == Tag.TH || child.tag == Tag.TD) {
+				var offsetAndWidth = tableLayoutRecord.GetOffsetAndWidth();
+				
+				child.vRectTransform.vAnchoredPosition = new Vector2(offsetAndWidth.offset, child.vRectTransform.vAnchoredPosition.y);
+				child.vRectTransform.vSizeDelta = new Vector2(offsetAndWidth.width, child.vRectTransform.vSizeDelta.y);
+			}
 			
 			foreach (var nestedChild in child.transform.GetChildlen()) {
-				child.DoLayoutTableContentRecursively(nestedChild, offsetX, offsetY, viewWidth, viewHeight, maxPoints);
-				if (child.tag == Tag.TH || child.tag == Tag.TD) {
-					maxPoints.UpdateMaxWidthOfCurrentRow(nestedChild.rectTransform.sizeDelta);
-				}
+				child.SetupTableContentPositionRecursively(nestedChild, tableLayoutRecord);	
 			}
 		}
 
@@ -553,7 +627,7 @@ namespace AutoyaFramework.Information {
 				
 				// if child is content and that width is 0, this is because, there is not enough width in this line.
 				// line is ended.
-				if (child.tag == Tag._CONTENT && child.rectTransform.sizeDelta.x == 0) {
+				if (child.tag == Tag._CONTENT && child.vRectTransform.vSizeDelta.x == 0) {
 					sortLayoutLineAfterLining = true;
 				}
 
@@ -588,7 +662,15 @@ namespace AutoyaFramework.Information {
 				if (childHandlePoint.viewWidth < childHandlePoint.nextLeftHandle) {
 					sortLayoutLineBeforeLining = true;
 				}
-				
+
+				// table
+				{
+					if (child.tag == Tag.THEAD) {// table head is single line.
+						sortLayoutLineAfterLining = true;
+					} else if (child.tag == Tag.TR) {// table row.
+						sortLayoutLineAfterLining = true;
+					}
+				}
 
 				/*
 					sort current lined contents as 1 line of contents.
@@ -601,11 +683,11 @@ namespace AutoyaFramework.Information {
 					layoutLine.Clear();
 
 					// move current child content to next line head.
-					child.rectTransform.anchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
+					child.vRectTransform.vAnchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
 					// Debug.LogError("child.rectTransform.anchoredPosition:" + child.rectTransform.anchoredPosition);
 			
 					// set next handle.
-					childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.rectTransform.sizeDelta.x + child.padding.right;
+					childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.vRectTransform.vSizeDelta.x + child.padding.right;
 				}
 
 				// content width is smaller than viewpoint width.
@@ -641,13 +723,13 @@ namespace AutoyaFramework.Information {
 		*/
 		private HandlePoint SortByLayoutLine (List<VirtualGameObject> layoutLine, HandlePoint handlePoint) {
 			// find tallest content in layoutLine.
-			var targetHeightObjArray = layoutLine.OrderByDescending(c => c.rectTransform.sizeDelta.y + c.padding.PadHeight()).ToArray();
+			var targetHeightObjArray = layoutLine.OrderByDescending(c => c.vRectTransform.vSizeDelta.y + c.padding.PadHeight()).ToArray();
 			
 			if (0 < targetHeightObjArray.Length) {
 				var tallestContent = targetHeightObjArray[0];
 				
 				// get tallest padded height. this will be this layoutLine's bottom line.
-				var paddedHighestHeightInLine = tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
+				var paddedHighestHeightInLine = tallestContent.vRectTransform.vSizeDelta.y + tallestContent.padding.PadHeight();
 				
 				// other child content will be moved.
 				var skipFirst = true;
@@ -657,16 +739,16 @@ namespace AutoyaFramework.Information {
 						continue;
 					}
 					
-					var childPaddedHeight = childInLine.rectTransform.sizeDelta.y + childInLine.padding.PadHeight();
+					var childPaddedHeight = childInLine.vRectTransform.vSizeDelta.y + childInLine.padding.PadHeight();
 					var heightDiff = paddedHighestHeightInLine - childPaddedHeight;
-					childInLine.rectTransform.anchoredPosition += new Vector2(0, heightDiff);
+					childInLine.vRectTransform.vAnchoredPosition += new Vector2(0, heightDiff);
 					
 					// Debug.LogError("childInLine:" + childInLine.tag + " childInLine.rectTransform.anchoredPosition:" + childInLine.rectTransform.anchoredPosition + " under tag:" + this.tag + " heightDiff:" + heightDiff);
 				}
 
 				// set next line head.
 				handlePoint.nextLeftHandle = 0;
-				handlePoint.nextTopHandle = tallestContent.rectTransform.anchoredPosition.y + tallestContent.rectTransform.sizeDelta.y + tallestContent.padding.PadHeight();
+				handlePoint.nextTopHandle = tallestContent.vRectTransform.vAnchoredPosition.y + tallestContent.vRectTransform.vSizeDelta.y + tallestContent.padding.PadHeight();
 				// Debug.LogError("SortByLayoutLine handlePoint.nextTopHandle:" + handlePoint.nextTopHandle);
 				// Debug.LogError("SortByLayoutLine rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag + " handlePoint:" + handlePoint.nextTopHandle);
 			}
@@ -694,10 +776,9 @@ namespace AutoyaFramework.Information {
 					}
 
 					// set position. convert layout position to uGUI position system.
-					rectTrans.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, -rectTransform.anchoredPosition.y);
+					rectTrans.anchoredPosition = new Vector2(vRectTransform.vAnchoredPosition.x, -vRectTransform.vAnchoredPosition.y);
 					// Debug.LogError("materialize rectTrans.anchoredPosition:" + rectTrans.anchoredPosition);
-					rectTrans.sizeDelta = rectTransform.sizeDelta;
-
+					rectTrans.sizeDelta = vRectTransform.vSizeDelta;
 					break;
 				}
 			}
@@ -868,7 +949,7 @@ namespace AutoyaFramework.Information {
 	}
 
 	public class VirtualRectTransform {
-		public Vector2 anchoredPosition = Vector2.zero;
-		public Vector2 sizeDelta = Vector2.zero;
+		public Vector2 vAnchoredPosition = Vector2.zero;
+		public Vector2 vSizeDelta = Vector2.zero;
 	}
 }

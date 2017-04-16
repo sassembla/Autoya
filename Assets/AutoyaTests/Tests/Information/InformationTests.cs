@@ -915,33 +915,65 @@ test2
 ";
 		Draw(sample);
 	}
-
+	
 	[MTest] public void DrawTable () {
 		var sample = @"
 <table>
 <thead>
 <tr>
-<th>Option</th>
-<th>Description</th>
+<th>row1</th>
+<th>row2</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>dataaaaaaaa</td>
-<td>path to data files to supply the data that will be passed into templates.</td>
+<td>col1 ~~~~~~~~~~~~~~~~~~~~~~</td>
+<td>col2 ~~~~~~~~~~~~ .</td>
 </tr>
 <tr>
-<td>engine</td>
-<td>engine to be used for processing templates. Handlebars is the default.</td>
+<td>col1-2 ~~~~~~~ </td>
+<td>col2-2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ </td>
 </tr>
 <tr>
-<td>ext</td>
-<td>extension to be used for dest files.</td>
+<td>col1-3</td>
+<td>col2-3</td>
 </tr>
 </tbody>
 </table>
 ";
-		Draw(sample);
+
+		Draw(sample, 500);
+	}
+
+	[MTest] public void DrawTableWhichContainsImages () {
+		var sample = @"
+<table>
+<thead>
+<tr>
+<th>row1--------------------------------------</th>
+<th>row2----------------------------------------------</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fmm <a href='test'>test</a> 
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true' width='100' height='10' />
+</td>
+<td>col2 ~~~~~~~~~~~~ .</td>
+</tr>
+<tr>
+<td>col1-2 ~~~~~~~ </td>
+<td>col2-2 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ </td>
+</tr>
+<tr>
+<td>col1-3</td>
+<td>col2-3</td>
+</tr>
+</tbody>
+</table>
+";
+
+		Draw(sample, 800);
 	}
 
 	private static int index;
