@@ -399,9 +399,9 @@ namespace AutoyaFramework.Information {
 						CollectTableContentRowMaxWidthsRecursively(tableChild, tableLayoutRecord);
 					}
 
-					// re-size contents.
+					// resize & reset position of this table contents by calculated record.
 					foreach (var tableChild in this.transform.GetChildlen()) {
-						SetupTableSettingToTableContentRecursively(tableChild, tableLayoutRecord);
+						SetupTableContentPositionRecursively(tableChild, tableLayoutRecord);
 					}
 				}
 			}
@@ -522,24 +522,27 @@ namespace AutoyaFramework.Information {
 			}
 		}
 
-		private void SetupTableSettingToTableContentRecursively (VirtualGameObject child, TableLayoutRecord tableLayoutRecord) {
+		private void SetupTableContentPositionRecursively (VirtualGameObject child, TableLayoutRecord tableLayoutRecord) {
 			// overwrite parent content width of TH and TD.
 			if (child.tag == Tag.THEAD || child.tag == Tag.TBODY || child.tag == Tag.THEAD || child.tag == Tag.TR) {
 				var width = tableLayoutRecord.TotalWidth();
 				child.vRectTransform.vSizeDelta = new Vector2(width, child.vRectTransform.vSizeDelta.y);
 			}
 
-			// TH, TDは、その原点の位置に影響を受ける。ん〜〜どうやって出そうかなこれ、、
+			/*
+				change TH, TD content's x position and width.
+				x position -> 0, 1st row's longest content len, 2nd row's longest content len,...
+				width -> 1st row's longest content len, 2nd row's longest content len,...
+			*/
 			if (child.tag == Tag.TH || child.tag == Tag.TD) {
 				var offsetAndWidth = tableLayoutRecord.GetOffsetAndWidth();
 				
-				// 原点を移動させる。
 				child.vRectTransform.vAnchoredPosition = new Vector2(offsetAndWidth.offset, child.vRectTransform.vAnchoredPosition.y);
 				child.vRectTransform.vSizeDelta = new Vector2(offsetAndWidth.width, child.vRectTransform.vSizeDelta.y);
 			}
 			
 			foreach (var nestedChild in child.transform.GetChildlen()) {
-				child.SetupTableSettingToTableContentRecursively(nestedChild, tableLayoutRecord);	
+				child.SetupTableContentPositionRecursively(nestedChild, tableLayoutRecord);	
 			}
 		}
 
