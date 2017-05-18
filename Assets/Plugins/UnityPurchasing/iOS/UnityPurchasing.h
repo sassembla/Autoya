@@ -5,7 +5,7 @@
 typedef void (*UnityPurchasingCallback)(const char* subject, const char* payload, const char* receipt, const char* transactionId);
 
 @interface ProductDefinition : NSObject
-    
+
 @property (nonatomic, strong) NSString *id;
 @property (nonatomic, strong) NSString *storeSpecificId;
 @property (nonatomic, strong) NSString *type;
@@ -23,6 +23,7 @@ typedef void (*UnityPurchasingCallback)(const char* subject, const char* payload
     NSSet* productIds;
     SKProductsRequest *request;
     NSMutableDictionary *pendingTransactions;
+    NSMutableSet *finishedTransactions;
 }
 
 + (NSArray*) deserializeProductDefs:(NSString*)json;
@@ -34,5 +35,7 @@ typedef void (*UnityPurchasingCallback)(const char* subject, const char* payload
 -(void) addTransactionObserver;
 @property (nonatomic, strong) ReceiptRefresher* receiptRefresher;
 @property (nonatomic, strong) SKReceiptRefreshRequest* refreshRequest;
+@property BOOL simulateAskToBuyEnabled;
+@property (nonatomic, copy, readwrite) NSString* applicationUsername;
 
 @end

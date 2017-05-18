@@ -1,3 +1,25 @@
+## [1.11.0] - 2017-05-01
+### Added
+- FacebookStore - Facebook Gameroom Payments Lite support. Available on Unity 5.6+ when building for Facebook Platform on Gameroom (Windows) and WebGL. Preliminary documentation is available [here](https://docs.google.com/document/d/1FaYwKvdnMHxkh47YVuXx9dMbc6ZtLX53mtgyAIn6WfU/)
+- Apple platforms - Added experimental support for setting "simulatesAskToBuyInSandbox". Please let us know how this impacts ask-to-buy testability for you.
+```csharp
+extensions.GetExtension<IAppleExtensions>().simulateAskToBuy = true;
+```
+- Apple platforms - Added support for setting "applicationUsername" field which will be added to every payment request to help the store detect fraud.
+```csharp
+// Set the applicationUsername to help Apple detect fraud
+extensions.GetExtension<IAppleExtensions>().SetApplicationUsername(hashedUsername);
+```
+
+### Requirement
+- GooglePlay - "Android SDK API Level 24 (7.0)" (or higher) must now be installed. To upgrade, either perform the one-time step of setting the project's "Android Player Settings > Other Settings > Minimum API Level" to 24, building an APK, then resetting to the project's previous value. Or, run the `android` Android SDK Manager tool manually and install "Android 7.0 (API 24)". Addresses build error messages: "Unable to merge android manifests." and "Main manifest has \<uses-sdk android:targetSdkVersion='23'> but library uses targetSdkVersion='24'". Note the Minimum API Level support is unchanged; merely the installation of API 24 SDK is now required for Daydream VR.
+
+### Fixed
+- GooglePlay Daydream VR - Uses decoration-free Activity for purchasing
+- GooglePlay - Avoids sporadic price serialization exception
+- Apple App Stores - Improve handling of the situation where an attempt to finish a transaction fails (if the user is signed out of the store and cancels the sign in dialog, for example). The Apple store implementation will now remember that the transaction should be finished, and attempt to call finishTransaction again if the transaction is retrieved from the queue again. When this happens, the store will call OnPurchaseFailed with the reason "DuplicateTransaction"—this prevents a situation where a call to InitiatePurchase could result in no call to ProcessPurchase or OnPurchaseFailed.
+- Amazon - Fix for a crash when loading product metadata for subscription parent products
+
 ## [1.10.1] - 2017-03-29
 ### Fixed
 - GooglePlay - Suspending and resuming from app-icon while purchase dialog displayed no longer generates both OnPurchaseFailed then ProcessPurchase messages, only whichever callback is correct.

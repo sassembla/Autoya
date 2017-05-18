@@ -3,8 +3,10 @@
 // before receipt validation will compile in this sample.
 // #define RECEIPT_VALIDATION
 #endif
+//#define DELAY_CONFIRMATION // Returns PurchaseProcessingResult.Pending from ProcessPurchase, then calls ConfirmPendingPurchase after a delay
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
@@ -122,9 +124,6 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		m_LastReceipt = e.purchasedProduct.receipt;
 		m_PurchaseInProgress = false;
 
-		// Now that my purchase history has changed, update its UI
-		UpdateHistoryUI();
-
 		#if RECEIPT_VALIDATION
 		// Local validation is available for GooglePlay and Apple stores
 		if (m_IsGooglePlayStoreSelected ||
@@ -191,8 +190,32 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		//     m_Controller.ConfirmPendingPurchase(Product) to complete handling
 		//     this purchase. Use to transactionally save purchases to a cloud
 		//     game service. 
+#if DELAY_CONFIRMATION
+		StartCoroutine(ConfirmPendingPurchaseAfterDelay(e.purchasedProduct));
+		return PurchaseProcessingResult.Pending;
+#else
+		UpdateHistoryUI();
 		return PurchaseProcessingResult.Complete;
+#endif
 	}
+
+#if DELAY_CONFIRMATION
+	private HashSet<string> m_PendingProducts = new HashSet<string>();
+
+	private IEnumerator ConfirmPendingPurchaseAfterDelay(Product p)
+	{
+		m_PendingProducts.Add(p.definition.id);
+		Debug.Log("Delaying confirmation of " + p.definition.id + " for 5 seconds.");
+		UpdateHistoryUI();
+
+		yield return new WaitForSeconds(5f);
+
+		Debug.Log("Confirming purchase of " + p.definition.id);
+		m_Controller.ConfirmPendingPurchase(p);
+		m_PendingProducts.Remove(p.definition.id);
+		UpdateHistoryUI();
+	}
+#endif
 
 	/// <summary>
 	/// This will be called is an attempted purchase fails.
@@ -514,14 +537,15 @@ public class IAPDemo : MonoBehaviour, IStoreListener
 		var itemText = "Item\n\n";
 		var countText = "Purchased\n\n";
 
-		for (int t = 0; t < m_Controller.products.all.Length; t++)
-		{
-			var item = m_Controller.products.all [t];
-
+		foreach (var item in m_Controller.products.all) {
 			// Collect history status report
-
 			itemText += "\n\n" + item.definition.id;
-			countText += "\n\n" + item.hasReceipt.ToString();
+			countText += "\n\n";
+#if DELAY_CONFIRMATION
+			if (m_PendingProducts.Contains(item.definition.id))
+				countText += "(Pending) ";
+#endif
+			countText += item.hasReceipt.ToString();
 		}
 
 		// Show history

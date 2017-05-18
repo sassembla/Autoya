@@ -828,6 +828,8 @@ namespace AutoyaFramework.Information {
 						switch (key) {
 							case KV_KEY.SRC: {
 								var src = kv.Value;
+
+								Debug.LogWarning("ここな、IEnumeratorに対して投機できるような構造になってればいいな。StartCoroutineとか。");
 								
 								// add button component.
 								var rootObject = GetRootGameObject();
