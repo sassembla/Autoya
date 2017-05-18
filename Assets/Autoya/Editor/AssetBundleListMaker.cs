@@ -158,6 +158,8 @@ public class AssetBundleListMaker {
 						}
 					}
 				}
+				
+				newAssetBundleInfo.size = new FileInfo(targetBundleName).Length;
 
 				assetBundleInfos.Add(newAssetBundleInfo);
 			}

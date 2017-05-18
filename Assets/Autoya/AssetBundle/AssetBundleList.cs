@@ -42,12 +42,15 @@ namespace AutoyaFramework.AssetBundles {
 		[SerializeField] public string[] dependsBundleNames;
 		[SerializeField] public uint crc;
 		[SerializeField] public string hash;
-		public AssetBundleInfo (string bundleName, string[] assetNames, string[] dependsBundleNames, uint crc, string hash) {
+		[SerializeField] public long size;
+
+		public AssetBundleInfo (string bundleName, string[] assetNames, string[] dependsBundleNames, uint crc, string hash, long size) {
 			this.bundleName = bundleName;
 			this.assetNames = assetNames;
 			this.dependsBundleNames = dependsBundleNames;
 			this.crc = crc;
 			this.hash = hash;
+			this.size = size;
 		}
 
 		public AssetBundleInfo (AssetBundleInfo baseAssetBundleInfo) {
@@ -64,6 +67,7 @@ namespace AutoyaFramework.AssetBundles {
 
 			this.crc = baseAssetBundleInfo.crc;
 			this.hash = baseAssetBundleInfo.hash;
+			this.size = baseAssetBundleInfo.size;
 		}
 	}
 }

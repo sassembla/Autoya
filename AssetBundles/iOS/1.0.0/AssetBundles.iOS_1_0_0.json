@@ -9,7 +9,8 @@
             ],
             "dependsBundleNames": [],
             "crc": 1185682787,
-            "hash": "3812fe236999769a86e109e8547ab93f"
+            "hash": "3812fe236999769a86e109e8547ab93f",
+            "size": 100
         },
         {
             "bundleName": "dependsbundlename",
@@ -20,7 +21,8 @@
                 "bundlename"
             ],
             "crc": 1720254707,
-            "hash": "aa1a6261b786372cac15b80b67bbee57"
+            "hash": "aa1a6261b786372cac15b80b67bbee57",
+            "size": 100
         },
         {
             "bundleName": "dependsbundlename2",
@@ -31,7 +33,8 @@
                 "bundlename"
             ],
             "crc": 3560736009,
-            "hash": "ed4fb0c25ab08630e946e1fc6a6ac301"
+            "hash": "ed4fb0c25ab08630e946e1fc6a6ac301",
+            "size": 100
         },
         {
             "bundleName": "nestedprefab",
@@ -42,7 +45,8 @@
                 "dependsbundlename"
             ],
             "crc": 2624287464,
-            "hash": "edfc40769f30cad546b35fdef505a7b9"
+            "hash": "edfc40769f30cad546b35fdef505a7b9",
+            "size": 100
         }
     ]
 }

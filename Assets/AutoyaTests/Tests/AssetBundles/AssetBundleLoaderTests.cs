@@ -1093,6 +1093,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		Assert(assetInfo.assetNames.Any(), "no assetBundle containes this asset.");
 	}
 
+	[MTest] public void GetAssetBundleSize () {
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
+		var assetInfo = loader.AssetBundleInfoOfAsset(assetName);
+
+		Assert(assetInfo.size == 100, "not match.");
+	}
+
 	[MTest] public void Offline () {
 		Debug.LogWarning("オフライン時のテストを追加したい。");
 	}
