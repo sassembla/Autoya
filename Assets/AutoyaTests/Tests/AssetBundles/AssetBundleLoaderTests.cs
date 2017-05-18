@@ -1085,6 +1085,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var bundleName = loader.GetContainedAssetBundleName(assetName);
 		Assert(loader.IsAssetBundleCachedOnMemory(bundleName), "not cached on memory.");
 	}
+	
+	[MTest] public void AssetBundleInfoFromAssetName () {
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
+		var assetInfo = loader.AssetBundleInfoOfAsset(assetName);
+		
+		Assert(assetInfo.assetNames.Any(), "no assetBundle containes this asset.");
+	}
 
 	[MTest] public void Offline () {
 		Debug.LogWarning("オフライン時のテストを追加したい。");

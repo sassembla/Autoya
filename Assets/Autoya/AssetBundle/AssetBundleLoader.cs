@@ -125,6 +125,22 @@ namespace AutoyaFramework.AssetBundles {
 			return Caching.CleanCache();
 		}
 
+		/**
+			get AssetBundleInfo which contains requested asset name.
+			this method is useful when you want to know which assets are contained with specific asset.
+			return empty AssetBundleInfo if assetName is not contained by any AssetBundle in current AssetBundleList.
+		 */
+		public AssetBundleInfo AssetBundleInfoOfAsset (string assetName) {
+			if (assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
+				var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
+				return list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault();
+			}
+
+			// return empty assetBundle info.
+			return new AssetBundleInfo();
+		}
+
+
 		private List<string> loadingAssetBundleNames = new List<string>();
 		private Dictionary<string, string> assetNamesAndAssetBundleNamesDict = new Dictionary<string, string>();
 
