@@ -1,6 +1,6 @@
 {
     "target": "StandaloneOSXIntel64",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "assetBundles": [
         {
             "bundleName": "bundlename",
@@ -8,9 +8,9 @@
                 "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png"
             ],
             "dependsBundleNames": [],
-            "crc": 2295533441,
+            "crc": 1328749671,
             "hash": "ff27e042d637f562654e58184e442b0f",
-            "size": 100
+            "size": 235806
         },
         {
             "bundleName": "dependsbundlename",
@@ -20,9 +20,9 @@
             "dependsBundleNames": [
                 "bundlename"
             ],
-            "crc": 2700258234,
+            "crc": 3700761985,
             "hash": "00bf2213139c6f99845283e8f522f8cf",
-            "size": 100
+            "size": 2209
         },
         {
             "bundleName": "dependsbundlename2",
@@ -32,9 +32,9 @@
             "dependsBundleNames": [
                 "bundlename"
             ],
-            "crc": 3349321939,
+            "crc": 3159351234,
             "hash": "15d7131f1abceece97bd63106cbe81b6",
-            "size": 100
+            "size": 2227
         },
         {
             "bundleName": "nestedprefab",
@@ -44,9 +44,9 @@
             "dependsBundleNames": [
                 "dependsbundlename"
             ],
-            "crc": 3861065238,
+            "crc": 560877069,
             "hash": "b1121ec2e4bd3b6872d13a47b167f2d6",
-            "size": 100
+            "size": 2148
         },
         {
             "bundleName": "updatable",
@@ -56,9 +56,9 @@
             "dependsBundleNames": [
                 "bundlename"
             ],
-            "crc": 1986692927,
+            "crc": 2348302994,
             "hash": "80c9f92bdec3c5223aed00b60650a837",
-            "size": 100
+            "size": 2266
         }
     ]
 }

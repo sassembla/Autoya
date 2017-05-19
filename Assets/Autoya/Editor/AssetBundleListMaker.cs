@@ -112,7 +112,7 @@ public class AssetBundleListMaker {
 		*/
 		foreach (var bundleAndDependencie in bundleAndDependencies) {
 			var targetBundleName = bundleAndDependencie.bundleName;
-			
+			Debug.LogError("targetBundleName:" + targetBundleName);
 			var newAssetBundleInfo = new AssetBundleInfo();
 			newAssetBundleInfo.bundleName = targetBundleName;
 			newAssetBundleInfo.dependsBundleNames = bundleAndDependencie.dependsBundleNames;
@@ -159,8 +159,8 @@ public class AssetBundleListMaker {
 					}
 				}
 				
-				newAssetBundleInfo.size = new FileInfo(targetBundleName).Length;
-
+				newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName)).Length;
+				Debug.LogError("newAssetBundleInfo.size:" + newAssetBundleInfo.size);
 				assetBundleInfos.Add(newAssetBundleInfo);
 			}
 		}
