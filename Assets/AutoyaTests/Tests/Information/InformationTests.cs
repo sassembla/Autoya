@@ -7,8 +7,18 @@ using System.Linq;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using AutoyaFramework.Information;
+using System.Collections;
+using UnityEditor;
 
 public class InformationTests : MiyamasuTestRunner {
+	[MSetup] public void Setup () {
+
+		// GetTexture(url) runs only Play mode.
+		if (!IsTestRunningInPlayingMode()) {
+			SkipCurrentTest("Information feature should run on MainThread.");
+		};
+	}
+
 	[MTest] public void ParseSmallMarkdown () {
 		var sampleMd = @"
 An h1 header
@@ -177,6 +187,7 @@ which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
 		string text = mark.Transform(sampleMd);
 		Debug.LogError("text:" + text);
 
+
 		/*
 			次のようなhtmlが手に入るので、
 			hX, p, img, ul, li, aとかのタグを見て、それぞれを「行単位の要素」に変形、uGUIの要素に変形できれば良さそう。
@@ -190,55 +201,61 @@ which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
 
 			描画範囲に対する生成が未完成。
 		*/
+		Debug.LogWarning("一個めの要素の描画抑制中。");
+		// RunOnMainThread(
+		// 	() => {
+		// 		var tokenizer = new Tokenizer(text);
 
-		RunOnMainThread(
-			() => {
-				var tokenizer = new Tokenizer(text);
-
-				// 全体を生成
-				var root = tokenizer.Materialize(
-					"test",
-					new Rect(0, 0, 1024, 400),
-					/*
-						要素ごとにpaddingを変更できる。
-					*/
-					(tag, depth, padding, kv) => {
-						// padding.left += 10;
-						// padding.top += 41;
-						// padding.bottom += 31;
-					},
-					/*
-						要素ごとに表示に使われているgameObjectへの干渉ができる。
-					 */
-					(go, tag, depth, kv) => {
+		// 		Action<IEnumerator> executor = i => {
+		// 			var s = new GameObject("test0");
+		// 			s.AddComponent<MainThreadRunner>().StartCoroutine(i);
+		// 		};
+				
+		// 		// 全体を生成
+		// 		var root = tokenizer.Materialize(
+		// 			"test",
+		// 			executor,
+		// 			new Rect(0, 0, 1024, 400),
+		// 			/*
+		// 				要素ごとにpaddingを変更できる。
+		// 			*/
+		// 			(tag, depth, padding, kv) => {
+		// 				// padding.left += 10;
+		// 				// padding.top += 41;
+		// 				// padding.bottom += 31;
+		// 			},
+		// 			/*
+		// 				要素ごとに表示に使われているgameObjectへの干渉ができる。
+		// 			 */
+		// 			(go, tag, depth, kv) => {
 						
-					}
-				);
+		// 			}
+		// 		);
 				
 
-				var canvas = GameObject.Find("Canvas");
-				if (canvas != null) {
-					root.transform.SetParent(canvas.transform);
-				}
+		// 		var canvas = GameObject.Find("Canvas");
+		// 		if (canvas != null) {
+		// 			root.transform.SetParent(canvas.transform);
+		// 		}
 
-				// var childlen = obj.transform.GetChildlen();
+		// 		// var childlen = obj.transform.GetChildlen();
 
-				// for (var i = 0; i < tokenizer.ComponentCount(); i++) {
-				// 	tokenizer.Materialize(i);
-				// 	// これがuGUIのコンポーネントになってる
-				// }
+		// 		// for (var i = 0; i < tokenizer.ComponentCount(); i++) {
+		// 		// 	tokenizer.Materialize(i);
+		// 		// 	// これがuGUIのコンポーネントになってる
+		// 		// }
 
-				/*
-					位置を指定して書き出すことができる(一番上がずれる = cursorか。)
-				*/
-				// for (var i = 1; i < tokenizer.ComponentCount(); i++) {
-				// 	var component = tokenizer.GetComponentAt(i);
-				// 	// これがuGUIのコンポーネントになってる
-				// }
+		// 		/*
+		// 			位置を指定して書き出すことができる(一番上がずれる = cursorか。)
+		// 		*/
+		// 		// for (var i = 1; i < tokenizer.ComponentCount(); i++) {
+		// 		// 	var component = tokenizer.GetComponentAt(i);
+		// 		// 	// これがuGUIのコンポーネントになってる
+		// 		// }
 
-				// GameObject.DestroyImmediate(root);
-			}
-		);
+		// 		// GameObject.DestroyImmediate(root);
+		// 	}
+		// );
 	}
 
 	// シンプルなヘッダひとつ
@@ -915,6 +932,31 @@ test2
 ";
 		Draw(sample);
 	}
+
+	[MTest] public void LoadLocalImage () {
+		// load image from Resources/informationTest/icon.png
+		var sample = @"
+<img src='informationTest/icon.png' width='366' height='366' />
+";
+		Draw(sample);
+	}
+
+	[MTest] public void LoadAssetBundleImage () {
+		Debug.LogError("not yet applied.");
+// 		// load image from Resources/informationTest/icon.png
+// 		var sample = @"
+// <img src='assetbundle://informationTest/icon.png' width='301' height='20' />
+// ";
+// 		Draw(sample);
+	}
+
+	[MTest] public void LoadAssetBundleImageWithRelativePath () {
+		// load image from Resources/informationTest/icon.png
+		var sample = @"
+<img src='./informationTest/icon.png' width='301' height='20' />
+";
+		Draw(sample);
+	}
 	
 	[MTest] public void DrawTable () {
 		var sample = @"
@@ -972,7 +1014,6 @@ test2
 </tbody>
 </table>
 ";
-
 		Draw(sample, 800);
 	}
 
@@ -984,24 +1025,50 @@ test2
 
 		var text = mark.Transform(sample);
 		
-		RunOnMainThread(
-			() => {
-				var tokenizer = new Tokenizer(text);
-
-				var root = tokenizer.Materialize(
-					"test",
-					new Rect(index, 0, width, 400),
-					(tag, depth, padding, kv) => {},
-					(go, tag, depth, kv) => {}
-				);
-
-				var canvas = GameObject.Find("Canvas");
-				if (canvas != null) {
-					root.transform.SetParent(canvas.transform);
-				}
-			}
+		RunEnumeratorOnMainThread(
+			RunEnum(text, width)
 		);
 
 		index+=width;
+	}
+
+	private IEnumerator RunEnum (string text, int width) {
+		var tokenizer = new Tokenizer(text);
+		
+		var coroutineCount = 0;
+
+		Action<IEnumerator> executor = i => {
+			coroutineCount++;
+			
+			EditorApplication.CallbackFunction d = null;
+
+			d = () => {
+				var result = i.MoveNext();
+				if (!result) {
+					EditorApplication.update -= d;
+					coroutineCount--;
+				} 
+			};
+
+			// start running.
+			EditorApplication.update += d;
+		};
+
+		var root = tokenizer.Materialize(
+			"test",
+			executor,
+			new Rect(index, 0, width, 400),
+			(tag, depth, padding, kv) => {},
+			(go, tag, depth, kv) => {}
+		);
+
+		var canvas = GameObject.Find("Canvas");
+		if (canvas != null) {
+			root.transform.SetParent(canvas.transform);
+		}
+
+		while (coroutineCount != 0) {
+			yield return null;
+		}
 	}
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -94,16 +95,18 @@ namespace AutoyaFramework.Information {
     public class Tokenizer {
         public delegate void OnLayoutDelegate (Tag tag, Tag[] depth, Padding padding, Dictionary<KV_KEY, string> keyValue);
         public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, Dictionary<KV_KEY, string> keyValue);
-		
-        private readonly VirtualGameObject rootObject;
+
+		private readonly VirtualGameObject rootObject;
 
         public Tokenizer (string source) {
             var root = new TagPoint(Tag.ROOT, string.Empty, new Tag[0], new Dictionary<KV_KEY, string>(), string.Empty);
             rootObject = Tokenize(root, source.Replace("\n", string.Empty));
         }
 
-        public GameObject Materialize (string viewName, Rect viewport, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
-            var rootObj = rootObject.MaterializeRoot(viewName, viewport.size, onLayoutDel, onMaterializeDel);
+        public GameObject Materialize (string viewName, Action<IEnumerator> executor, Rect viewport, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
+			rootObject.executor = executor;
+			
+			var rootObj = rootObject.MaterializeRoot(viewName, viewport.size, onLayoutDel, onMaterializeDel);
             rootObj.transform.position = viewport.position;
             return rootObj;
         }

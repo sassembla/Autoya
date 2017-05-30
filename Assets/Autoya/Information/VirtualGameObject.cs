@@ -1,13 +1,22 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
 	public class VirtualGameObject {
+
+		// global static sprite cache.
+		private static Dictionary<string, Sprite> spriteCache = new Dictionary<string, Sprite>();
+		private static List<string> spriteDownloadingUris = new List<string>();
+
+
 		public GameObject _gameObject;
 		public readonly string prefabName;
 
@@ -24,6 +33,8 @@ namespace AutoyaFramework.Information {
 		public VirtualRectTransform vRectTransform = new VirtualRectTransform();
 
 		public VirtualGameObject parent;
+
+		public Action<IEnumerator> executor;
 		
 		public VirtualTransform transform {
 			get {
@@ -798,6 +809,7 @@ namespace AutoyaFramework.Information {
 
 			var obj = LoadGameObject(prefab);
 
+
 			// set parameters.
 			switch (tag) {
 				case Tag.A: {
@@ -829,12 +841,12 @@ namespace AutoyaFramework.Information {
 							case KV_KEY.SRC: {
 								var src = kv.Value;
 
-								Debug.LogWarning("ここな、IEnumeratorに対して投機できるような構造になってればいいな。StartCoroutineとか。");
-								
-								// add button component.
 								var rootObject = GetRootGameObject();
-								var rootMBInstance = rootObject.rootInstance;
 								
+								LoadImageAsync(src, obj, rootObject.executor);
+
+								// add button component.
+								var rootMBInstance = rootObject.rootInstance;
 								AddButton(obj, () => rootMBInstance.OnImageTapped(tag, src));
 								break;
 							}
@@ -880,13 +892,148 @@ namespace AutoyaFramework.Information {
 			return obj;
 		}
 
+		private void LoadImageAsync (string uriSource, GameObject target, Action<IEnumerator> executor) {
+			IEnumerator coroutine;
+
+			/*
+				supported schemes are,
+					
+					^http://		http scheme => load asset from web.
+					^https://		https scheme => load asset from web.
+					^assetbundle://	assetbundle scheme => load asset from assetBundle.
+					^*				absolute path => (Resources/)somewhere/resource path.
+					^./				relative path => (Resources/)somewhere/resource path.
+			 */
+			var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
+			var scheme = schemeAndPath[0];
+			switch (scheme) {
+				case "assetbundle:": {
+					var bundleName = uriSource;// ./始まりのケースもあるのはまあなんかまとめない方が良さそう。
+					coroutine = LoadImageFromAssetBundle(uriSource, target);
+					break;
+				}
+				case "https:":
+				case "http:": {
+					coroutine = LoadImageFromWeb(uriSource, target);
+					break;
+				}
+				case ".": {
+					var resourcePath = uriSource.Substring(2);
+					coroutine = LoadImageFromResources(resourcePath, target);
+					break;
+				}
+				default: {// other.
+					if (string.IsNullOrEmpty(scheme)) {
+						Debug.LogError("empty uri found:" + uriSource);
+						return;
+					}
+
+					// not empty. treat as resource file path.
+					coroutine = LoadImageFromResources(uriSource, target);
+					break;
+				}
+			}
+
+			executor(coroutine);
+		}
+
+		private IEnumerator LoadImageFromAssetBundle (string assetName, GameObject target) {
+			yield return null;
+			Debug.LogError("LoadImageFromAssetBundle bundleName:" + assetName);
+		}
+
+		private IEnumerator LoadImageFromResources (string uriSource, GameObject target) {
+			var extLen = Path.GetExtension(uriSource).Length;
+			var uri = uriSource.Substring(0, uriSource.Length - extLen);
+
+			var resourceLoading = Resources.LoadAsync(uri);
+			while (!resourceLoading.isDone) {
+				yield return null;
+			}
+			
+			// create tex.
+			var tex = resourceLoading.asset as Texture2D;
+			
+			// set tex to sprite.
+			var targetImageComponent = target.GetComponent<Image>();
+			targetImageComponent.sprite = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
+		}
+
+		private IEnumerator LoadImageFromWeb (string url, GameObject target) {
+			// this request does not have any request-header parameters.
+			var targetImageComponent = target.GetComponent<Image>();
+
+			if (targetImageComponent != null) {
+				if (spriteDownloadingUris.Contains(url)) {
+					while (!spriteCache.ContainsKey(url)) {
+						yield return null;
+					}
+
+					// download is done. cached sprite exists.
+					targetImageComponent.sprite = spriteCache[url];
+				} else {
+					spriteDownloadingUris.Add(url);
+				}
+
+				// go through.
+			} else {
+				Debug.LogError("no Image component found.");
+				yield break;
+			}
+
+			// start download tex from url.
+			using (var request = UnityWebRequest.GetTexture(url)) {
+				var p = request.Send();
+				var timeoutSec = 5;
+				var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
+
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+						Debug.LogError("timeout. load aborted, dataPath:" + url);
+						request.Abort();
+						yield break;
+					}
+				}
+
+				var responseCode = (int)request.responseCode;
+				var responseHeaders = request.GetResponseHeaders();
+				
+				if (request.isError) {
+					Debug.LogError("failed to download data:" + url + " reason:" + request.error);
+					// failed(connectionId, responseCode, request.error, responseHeaders);
+					yield break;
+				}
+
+				if (responseCode != 200) {
+					Debug.LogError("failed to download data:" + url);
+					yield break;
+				}
+
+				// create tex.
+				var tex = DownloadHandlerTexture.GetContent(request);
+
+
+				// cache this sprite for other requests.
+				var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
+				spriteCache[url] = spr;
+				spriteDownloadingUris.Remove(url);
+
+				// set tex to sprite.
+				targetImageComponent.sprite = spr;
+			}
+		}
+
+		
 		private GameObject LoadPrefab (string prefabName) {
 			// Debug.LogWarning("辞書にできる");
 			return Resources.Load(prefabName) as GameObject;
 		}
 
 		private GameObject LoadGameObject (GameObject prefab) {
-			// Debug.LogWarning("ここを後々、プールからの取得に変える。タグ単位でGameObjectのプールを作るか。");
+			// Debug.LogWarning("ここを後々、プールからの取得に変える。タグ単位でGameObjectのプールを作るか。スクロールとかで可視範囲に入ったら内容を当てる、みたいなのがやりたい。");
 			return GameObject.Instantiate(prefab);
 		}
 
