@@ -94,4 +94,13 @@ namespace AutoyaFramework {
 			// do nothing.
 		}
 	}
+	
+	public partial class Autoya {
+		/*
+			public api.
+		*/
+		public static void Mainthread_Commit (IEnumerator iEnum) {
+			autoya.mainthreadDispatcher.Commit(iEnum);
+		}
+	}
 }
