@@ -943,11 +943,11 @@ test2
 
 	[MTest] public void LoadAssetBundleImage () {
 		Debug.LogError("not yet applied.");
-// 		// load image from Resources/informationTest/icon.png
-// 		var sample = @"
-// <img src='assetbundle://informationTest/icon.png' width='301' height='20' />
-// ";
-// 		Draw(sample);
+		// load image from AssetBundle which contains informationTest/icon.png
+		var sample = @"
+<img src='assetbundle://informationTest/icon.png' width='301' height='20' />
+";
+		Draw(sample);
 	}
 
 	[MTest] public void LoadAssetBundleImageWithRelativePath () {
@@ -1014,6 +1014,14 @@ test2
 </tbody>
 </table>
 ";
+		Draw(sample, 800);
+	}
+
+	[MTest] public void WellDesignedView () {
+		var sample = @"
+		
+		";
+
 		Draw(sample, 800);
 	}
 
