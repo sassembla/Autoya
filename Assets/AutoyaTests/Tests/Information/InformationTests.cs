@@ -1065,10 +1065,15 @@ test2
 		var root = tokenizer.Materialize(
 			"test",
 			executor,
-			new Rect(index, 0, width, 400),
+			new View(width, 4000, 0),
 			(tag, depth, padding, kv) => {},
 			(go, tag, depth, kv) => {}
 		);
+
+		var rect = root.GetComponent<RectTransform>();
+
+		// 横にずらす
+		rect.anchoredPosition = new Vector2(index, 0);
 
 		var canvas = GameObject.Find("Canvas");
 		if (canvas != null) {

@@ -92,6 +92,17 @@ namespace AutoyaFramework.Information {
         }
     }
 
+	public struct View {
+		public float width;
+		public float height;
+		public float yAnchor;
+		public View (float width, float height, float yAnchor) {
+			this.width = width;
+			this.height = height;
+			this.yAnchor = yAnchor;
+		}
+	}
+
     public class Tokenizer {
         public delegate void OnLayoutDelegate (Tag tag, Tag[] depth, Padding padding, Dictionary<KV_KEY, string> keyValue);
         public delegate void OnMaterializeDelegate (GameObject obj, Tag tag, Tag[] depth, Dictionary<KV_KEY, string> keyValue);
@@ -103,11 +114,10 @@ namespace AutoyaFramework.Information {
             rootObject = Tokenize(root, source.Replace("\n", string.Empty));
         }
 
-        public GameObject Materialize (string viewName, Action<IEnumerator> executor, Rect viewport, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
+        public GameObject Materialize (string viewName, Action<IEnumerator> executor, View view, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
 			rootObject.executor = executor;
 			
-			var rootObj = rootObject.MaterializeRoot(viewName, viewport.size, onLayoutDel, onMaterializeDel);
-            rootObj.transform.position = viewport.position;
+			var rootObj = rootObject.MaterializeRoot(viewName, view, onLayoutDel, onMaterializeDel);
             return rootObj;
         }
 

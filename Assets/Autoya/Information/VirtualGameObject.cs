@@ -322,25 +322,28 @@ namespace AutoyaFramework.Information {
 		/**
 			return generated game object.
 		*/
-		public GameObject MaterializeRoot (string viewName, Vector2 viewPort, Tokenizer.OnLayoutDelegate onLayoutDel, Tokenizer.OnMaterializeDelegate onMaterializeDel) {
-			var rootHandlePoint = new HandlePoint(0, 0, viewPort.x, viewPort.y);
+		public GameObject MaterializeRoot (string viewName, View view, Tokenizer.OnLayoutDelegate onLayoutDel, Tokenizer.OnMaterializeDelegate onMaterializeDel) {
+			var rootHandlePoint = new HandlePoint(0, 0, view.width, view.height);
 
 			// 事前計算、ここでコンテンツの一覧を返すようにすればいいかな。要素単位で。
 			Layout(this, rootHandlePoint, onLayoutDel, t => {});
 
-
+			
 			this._gameObject = new GameObject(viewName + Tag.ROOT.ToString());
 			
 			this.rootInstance = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
+			
 			var rectTrans = this._gameObject.AddComponent<RectTransform>();
 			rectTrans.anchorMin = Vector2.up;
 			rectTrans.anchorMax = Vector2.up;
 			rectTrans.pivot = Vector2.up;
 			rectTrans.position = Vector2.zero;
-			rectTrans.sizeDelta = viewPort;
 			
 			// 範囲指定してGOを充てる、ということがしたい。
-			Materialize(this, onMaterializeDel);
+			var totalHeight = Materialize(this, onMaterializeDel);
+
+			// コンテンツのサイズにセット。
+			rectTrans.sizeDelta = new Vector2(view.width, totalHeight);
 
 			return this._gameObject;
 		}
@@ -768,7 +771,9 @@ namespace AutoyaFramework.Information {
 		}
 
 
-		private void Materialize (VirtualGameObject parent, Tokenizer.OnMaterializeDelegate onMaterializeDel) {
+		private float Materialize (VirtualGameObject parent, Tokenizer.OnMaterializeDelegate onMaterializeDel) {
+			var height = 0f;
+			
 			switch (this.tag) {
 				case Tag.ROOT: {
 					// do nothing.
@@ -783,22 +788,29 @@ namespace AutoyaFramework.Information {
 					this._gameObject.transform.SetParent(parent._gameObject.transform, false);
 					var rectTrans = this._gameObject.GetComponent<RectTransform>();
 					if (rectTrans == null) {
-						return;
+						return 0;
 					}
 
 					// set position. convert layout position to uGUI position system.
 					rectTrans.anchoredPosition = new Vector2(vRectTransform.vAnchoredPosition.x, -vRectTransform.vAnchoredPosition.y);
 					// Debug.LogError("materialize rectTrans.anchoredPosition:" + rectTrans.anchoredPosition);
 					rectTrans.sizeDelta = vRectTransform.vSizeDelta;
+
+					height = Math.Abs(rectTrans.anchoredPosition.y) + Math.Abs(rectTrans.sizeDelta.y);
 					break;
 				}
 			}
 			
 			foreach (var child in this.transform.GetChildlen()) {
-				child.Materialize(this, onMaterializeDel);
+				var childHeight = child.Materialize(this, onMaterializeDel);
+				if (height < childHeight) {
+					height = childHeight;
+				}
 			}
 			
 			onMaterializeDel(this._gameObject, this.tag, this.depth, new Dictionary<KV_KEY, string>(this.keyValueStore));
+
+			return height;
 		}
 
 		private GameObject MaterializeTagContent () {

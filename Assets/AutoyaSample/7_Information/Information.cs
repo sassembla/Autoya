@@ -7,25 +7,28 @@ public class Information : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		var http = new HTTPConnection();
-		var con = http.Get(
-			"info",
-			new Dictionary<string, string>(),
+		var scrollViewContent = GameObject.Find("Content");
+		var scrollContentRect = scrollViewContent.GetComponent<RectTransform>();
+		
+		scrollContentRect.sizeDelta = new Vector2(300,300);
+		
+		Autoya.Info_Show(
 			"https://raw.githubusercontent.com/sassembla/Autoya/master/README.md",
-			(conId, code, respHeader, data) => {
-				Debug.Log("markdown:" + data);
-				Autoya.Info_ConstructMarkdownView(data, windowObj => {}, id => {});
+			scrollContentRect.sizeDelta.x,// view width.
+			scrollContentRect.sizeDelta.y,// view height.
+			0,// y anchor.
+			viewObj => {
+				// add information obj to scroll view.
+				viewObj.transform.SetParent(scrollViewContent.transform, false);
+
+				var contentHeight = viewObj.GetComponent<RectTransform>().sizeDelta.y;
+
+				// set height.
+				scrollContentRect.sizeDelta = new Vector2(scrollContentRect.sizeDelta.x, contentHeight);
 			},
-			(conId, code, reason, respHeader) => {
-				Debug.LogError("failed to dl, reason:" + reason);
+			(a, b) => {
+
 			}
 		);
-
-		StartCoroutine(con);
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
 	}
 }
