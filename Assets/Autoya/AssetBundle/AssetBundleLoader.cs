@@ -8,23 +8,27 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
+	public enum AssetBundleLoadError {
+		Undefined,
+		Unauthorized,
+		NotContained,
+		CrcMismatched,
+		DownloadFailed,
+		AssetLoadFailed,
+		NullAssetFound,
+		NoAssetBundleFoundInList,
+		FailedToLoadDependentBundles,
+		FailedToGetPreloadList,
+		FailedToGetAssetBundleList,
+		NotContainedAssetBundle,
+	}
+	
 	public class AssetBundleLoader {
 
 		public const int CODE_CRC_MISMATCHED = 399;
 
-		public enum AssetBundleLoadError {
-			Unauthorized,
-			NotContained,
-			CrcMismatched,
-			DownloadFailed,
-			AssetLoadFailed,
-			NullAssetFound,
-			NoAssetBundleFoundInList,
-			FailedToLoadDependentBundles
-		}
-
 		private string assetDownloadBasePath;
-		private AssetBundleList list;
+		public readonly AssetBundleList list;
 
 		private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
@@ -52,10 +56,10 @@ namespace AutoyaFramework.AssetBundles {
 				this.requestHeader = BasicRequestHeaderDelegate;
 			}
 
-			if (httpResponseHandlingDelegate == null) {
-				this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
-			} else {
+			if (httpResponseHandlingDelegate != null) {
 				this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
+			} else {
+				this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
 			}
 
 			/*
@@ -69,48 +73,6 @@ namespace AutoyaFramework.AssetBundles {
 					assetNamesAndAssetBundleNamesDict[assetName] = bundleName;
 				}
 			}
-		}
-
-		/**
-			update assetbundle list and basePath.
-		 */
-		public void UpdateList (string basePath, AssetBundleList newList, Action<string[], string> updatedOnMemoryAssetNameAndBundleName) {
-			this.assetDownloadBasePath = basePath;
-			
-			/*
-				check updated asset -> notify with asset names.
-			 */
-			var loadedBundleNames = assetBundleDict.Keys.ToArray();
-			if (loadedBundleNames.Any()) {
-				// current.
-				var bundleNameHashDict = this.list.assetBundles
-					.Where(b => loadedBundleNames.Contains(b.bundleName))
-					.ToDictionary(i => i.bundleName, i => i.hash);
-
-				// new.
-				var newBundleNameHashDict = newList.assetBundles
-					.Where(b => loadedBundleNames.Contains(b.bundleName))
-					.ToDictionary(i => i.bundleName, i => i.hash);
-				
-				foreach (var loadedBundleName in loadedBundleNames) {
-					if (!newBundleNameHashDict.ContainsKey(loadedBundleName)) {
-						continue;
-					}
-
-					var currentHash = bundleNameHashDict[loadedBundleName];
-					var newHash = newBundleNameHashDict[loadedBundleName];
-
-					// if hash is not matched between current and new, this "on memory assetBundle" is updated.
-					// notify to user.
-					if (currentHash != newHash) {
-						var updatedAssetNames = assetBundleDict[loadedBundleName].GetAllAssetNames();
-						updatedOnMemoryAssetNameAndBundleName(updatedAssetNames, loadedBundleName);
-					}
-				}
-			}
-			
-			// update list.
-			this.list = newList;
 		}
 
 		/*
@@ -133,11 +95,15 @@ namespace AutoyaFramework.AssetBundles {
 		public AssetBundleInfo AssetBundleInfoOfAsset (string assetName) {
 			if (assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
 				var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
-				return list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault();
+				return AssetBundleInfo(bundleName);
 			}
 
 			// return empty assetBundle info.
 			return new AssetBundleInfo();
+		}
+
+		public AssetBundleInfo AssetBundleInfo (string bundleName) {
+			return list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault();
 		}
 
 
@@ -159,7 +125,8 @@ namespace AutoyaFramework.AssetBundles {
 			string assetName, 
 			Action<string, T> loadSucceeded, 
 			Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed, 
-			double timeoutSec=0) where T : UnityEngine.Object {
+			double timeoutSec=0) where T : UnityEngine.Object 
+		{
 			if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
 				loadFailed(assetName, AssetBundleLoadError.NotContained, string.Empty, new AutoyaStatus());
 				yield break;
@@ -455,7 +422,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 		
-		private IEnumerator DownloadAssetBundle (
+		public IEnumerator DownloadAssetBundle (
 			string bundleName, 
 			string connectionId, 
 			Dictionary<string, string> requestHeader, 
@@ -563,7 +530,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
-		private string GetAssetBundleDownloadUrl (string bundleName) {
+		public string GetAssetBundleDownloadUrl (string bundleName) {
 			return assetDownloadBasePath + bundleName;
 		}
 
@@ -619,6 +586,19 @@ namespace AutoyaFramework.AssetBundles {
 		}
 
 		public void UnloadOnMemoryAssetBundle (string bundleName) {
+			if (assetBundleDict.ContainsKey(bundleName)) {
+				var asset = assetBundleDict[bundleName];
+				if (asset != null) {
+					asset.Unload(true);
+				}
+				
+				assetBundleDict.Remove(bundleName);
+			}
+		}
+
+		public void UnloadOnMemoryAsset (string assetNameName) {
+			var bundleName = GetContainedAssetBundleName(assetNameName);
+
 			if (assetBundleDict.ContainsKey(bundleName)) {
 				var asset = assetBundleDict[bundleName];
 				if (asset != null) {

@@ -11,10 +11,10 @@ using UnityEngine;
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	[MTest] public void GetAssetBundleList () {
-		
+		Debug.LogError("取得");
 	}
 
 	[MTest] public void ListUpdated () {
-		Debug.LogWarning("リストがアップデートされた際、AssetBundles系の内容を更新する必要がある。");
+		Debug.LogError("リストがアップデートされた際、AssetBundles系の内容を更新する必要がある。この辺は単にダウンロードした時になんとかなればいいのか。");
 	}
 }

@@ -16,7 +16,7 @@ using UnityEngine;
  */
 namespace AutoyaFramework.AssetBundles {
 	
-	[Serializable] public struct AssetBundleList {
+	[Serializable] public class AssetBundleList {
 		[SerializeField] public string target;
 		[SerializeField] public string version;
 		[SerializeField] public AssetBundleInfo[] assetBundles;

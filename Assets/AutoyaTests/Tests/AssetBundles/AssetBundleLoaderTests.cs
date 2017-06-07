@@ -21,7 +21,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
 		
 	*/
-	private const string baseUrl = 
+	public const string baseUrl = 
 		#if UNITY_EDITOR_OSX
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
 		#elif UNITY_EDITOR_WIN
@@ -538,7 +538,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 						// do nothing.
 					},
 					(assetName, failEnum, reason, status) => {
-						Assert(failEnum == AssetBundleLoader.AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
+						Assert(failEnum == AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
 						done = true;
 					}
 				),
@@ -587,304 +587,305 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void UpdateListWithoutOnMemoryAssets () {
-		// assume that: list is updated.
-		// 1.0.0 -> 1.0.1
+		Debug.LogError("UpdateListWithoutOnMemoryAssets、リストが更新されたらどうしよう的な。検知する機構からどう繋ぐか。");
+	// 	// assume that: list is updated.
+	// 	// 1.0.0 -> 1.0.1
 
-		var lostDownloader = new HTTPConnection();
-		var notified = false;
-		var listUpdated = false;
+	// 	var lostDownloader = new HTTPConnection();
+	// 	var notified = false;
+	// 	var listUpdated = false;
 
-		// renew list.
-		var newVersionStr = "1.0.1";
-		RunEnumeratorOnMainThread(
-			lostDownloader.Get(
-				"loadListFromWeb",
-				null,
-				ListPath(newVersionStr),
-				(conId, code, respHeaders, data) => {
-					var newList = JsonUtility.FromJson<AssetBundleList>(data);
+	// 	// renew list.
+	// 	var newVersionStr = "1.0.1";
+	// 	RunEnumeratorOnMainThread(
+	// 		lostDownloader.Get(
+	// 			"loadListFromWeb",
+	// 			null,
+	// 			ListPath(newVersionStr),
+	// 			(conId, code, respHeaders, data) => {
+	// 				var newList = JsonUtility.FromJson<AssetBundleList>(data);
 					
-					// update loader's list.
-					loader.UpdateList(
-						BundlePath(newVersionStr), 
-						newList, 
-						(updatedAssetNames, bundleName) => {
-							notified = true;
-						}
-					);
-					listUpdated = true;
-				},
-				(conId, code, reason, respHeaders) => {
-					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
-				}
-			)
-		);
+	// 				// update loader's list.
+	// 				loader.UpdateList(
+	// 					BundlePath(newVersionStr), 
+	// 					newList, 
+	// 					(updatedAssetNames, bundleName) => {
+	// 						notified = true;
+	// 					}
+	// 				);
+	// 				listUpdated = true;
+	// 			},
+	// 			(conId, code, reason, respHeaders) => {
+	// 				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+	// 			}
+	// 		)
+	// 	);
 
-		WaitUntil(
-			() => listUpdated,
-			5,
-			"failed to update list."
-		);
+	// 	WaitUntil(
+	// 		() => listUpdated,
+	// 		5,
+	// 		"failed to update list."
+	// 	);
 
-		Assert(!notified, "should not be notified. nothing on memory yet.");
+	// 	Assert(!notified, "should not be notified. nothing on memory yet.");
 	}
 
-	[MTest] public void UpdateListAndReceiveOnMemoryAssetsUpdated () {
-		{
-			var done = false;
-			// load assets.
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					dummyList.assetBundles[0].assetNames[0],
-					(string assetName, Texture2D t) => {
-						done = true;
-					},
-					(assetName, e, reason, status) => {
+	// [MTest] public void UpdateListAndReceiveOnMemoryAssetsUpdated () {
+	// 	{
+	// 		var done = false;
+	// 		// load assets.
+	// 		RunEnumeratorOnMainThread(
+	// 			loader.LoadAsset(
+	// 				dummyList.assetBundles[0].assetNames[0],
+	// 				(string assetName, Texture2D t) => {
+	// 					done = true;
+	// 				},
+	// 				(assetName, e, reason, status) => {
 
-					}
-				)
-			);
+	// 				}
+	// 			)
+	// 		);
 
-			WaitUntil(
-				() => done,
-				5,
-				"failed to get asset."
-			);
-		}
+	// 		WaitUntil(
+	// 			() => done,
+	// 			5,
+	// 			"failed to get asset."
+	// 		);
+	// 	}
 		
-		// assume that: list is updated.
-		// 1.0.0 -> 1.0.1
+	// 	// assume that: list is updated.
+	// 	// 1.0.0 -> 1.0.1
 
-		var lostDownloader = new HTTPConnection();
-		var notified = false;
-		var updatedBundleName = string.Empty;
+	// 	var lostDownloader = new HTTPConnection();
+	// 	var notified = false;
+	// 	var updatedBundleName = string.Empty;
 
-		// renew list.
-		var newVersionStr = "1.0.1";
-		RunEnumeratorOnMainThread(
-			lostDownloader.Get(
-				"loadListFromWeb",
-				null,
-				ListPath(newVersionStr),
-				(conId, code, respHeaders, data) => {
-					var newList = JsonUtility.FromJson<AssetBundleList>(data);
+	// 	// renew list.
+	// 	var newVersionStr = "1.0.1";
+	// 	RunEnumeratorOnMainThread(
+	// 		lostDownloader.Get(
+	// 			"loadListFromWeb",
+	// 			null,
+	// 			ListPath(newVersionStr),
+	// 			(conId, code, respHeaders, data) => {
+	// 				var newList = JsonUtility.FromJson<AssetBundleList>(data);
 					
-					// update loader's list.
-					loader.UpdateList(
-						BundlePath(newVersionStr), 
-						newList, 
-						(updatedAssetNames, bundleName) => {
-							notified = true;
-							updatedBundleName = bundleName;
-						}
-					);
-				},
-				(conId, code, reason, respHeaders) => {
-					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
-				}
-			)
-		);
+	// 				// update loader's list.
+	// 				loader.UpdateList(
+	// 					BundlePath(newVersionStr), 
+	// 					newList, 
+	// 					(updatedAssetNames, bundleName) => {
+	// 						notified = true;
+	// 						updatedBundleName = bundleName;
+	// 					}
+	// 				);
+	// 			},
+	// 			(conId, code, reason, respHeaders) => {
+	// 				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+	// 			}
+	// 		)
+	// 	);
 
-		WaitUntil(
-			() => notified,
-			5,
-			"failed to get on memory asset is notified."
-		);
+	// 	WaitUntil(
+	// 		() => notified,
+	// 		5,
+	// 		"failed to get on memory asset is notified."
+	// 	);
 
-		Assert(updatedBundleName == dummyList.assetBundles[0].bundleName, "not match, actual:" + updatedBundleName + " expected:" + dummyList.assetBundles[0].bundleName);
-	}
+	// 	Assert(updatedBundleName == dummyList.assetBundles[0].bundleName, "not match, actual:" + updatedBundleName + " expected:" + dummyList.assetBundles[0].bundleName);
+	// }
 
-	[MTest] public void UpdateListAndGetAlreadyOnMemoryOldAsset () {
-		UnityEngine.Object oldAsset = null;
-		{
-			var done = false;
-			// load assets.
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					dummyList.assetBundles[0].assetNames[0],
-					(string assetName, Texture2D t) => {
-						done = true;
-						oldAsset = t;
-					},
-					(assetName, e, reason, status) => {
+	// [MTest] public void UpdateListAndGetAlreadyOnMemoryOldAsset () {
+	// 	UnityEngine.Object oldAsset = null;
+	// 	{
+	// 		var done = false;
+	// 		// load assets.
+	// 		RunEnumeratorOnMainThread(
+	// 			loader.LoadAsset(
+	// 				dummyList.assetBundles[0].assetNames[0],
+	// 				(string assetName, Texture2D t) => {
+	// 					done = true;
+	// 					oldAsset = t;
+	// 				},
+	// 				(assetName, e, reason, status) => {
 
-					}
-				)
-			);
+	// 				}
+	// 			)
+	// 		);
 
-			WaitUntil(
-				() => done,
-				5,
-				"failed to get asset."
-			);
-		}
+	// 		WaitUntil(
+	// 			() => done,
+	// 			5,
+	// 			"failed to get asset."
+	// 		);
+	// 	}
 		
-		// assume that: list is updated.
-		// 1.0.0 -> 1.0.1
+	// 	// assume that: list is updated.
+	// 	// 1.0.0 -> 1.0.1
 
-		var lostDownloader = new HTTPConnection();
-		var downloaded = false;
+	// 	var lostDownloader = new HTTPConnection();
+	// 	var downloaded = false;
 		
-		// renew list.
-		var newVersionStr = "1.0.1";
-		RunEnumeratorOnMainThread(
-			lostDownloader.Get(
-				"loadListFromWeb",
-				null,
-				ListPath(newVersionStr),
-				(conId, code, respHeaders, data) => {
-					downloaded = true;
-					var newList = JsonUtility.FromJson<AssetBundleList>(data);
+	// 	// renew list.
+	// 	var newVersionStr = "1.0.1";
+	// 	RunEnumeratorOnMainThread(
+	// 		lostDownloader.Get(
+	// 			"loadListFromWeb",
+	// 			null,
+	// 			ListPath(newVersionStr),
+	// 			(conId, code, respHeaders, data) => {
+	// 				downloaded = true;
+	// 				var newList = JsonUtility.FromJson<AssetBundleList>(data);
 					
-					// update loader's list.
-					loader.UpdateList(
-						BundlePath(newVersionStr), 
-						newList, 
-						(updatedAssetNames, bundleName) => {
-							// update & on memory assets are detected.
-						}
-					);
-				},
-				(conId, code, reason, respHeaders) => {
-					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
-				}
-			)
-		);
+	// 				// update loader's list.
+	// 				loader.UpdateList(
+	// 					BundlePath(newVersionStr), 
+	// 					newList, 
+	// 					(updatedAssetNames, bundleName) => {
+	// 						// update & on memory assets are detected.
+	// 					}
+	// 				);
+	// 			},
+	// 			(conId, code, reason, respHeaders) => {
+	// 				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+	// 			}
+	// 		)
+	// 	);
 
-		WaitUntil(
-			() => downloaded,
-			5,
-			"failed to download list."
-		);
+	// 	WaitUntil(
+	// 		() => downloaded,
+	// 		5,
+	// 		"failed to download list."
+	// 	);
 
-		// new list is downloaded and loader is updated.
+	// 	// new list is downloaded and loader is updated.
 
-		// get old on memory asset from on memory cache.
-		{
-			var done = false;
-			var isSameOldAsset = false;
-			// load assets.
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					dummyList.assetBundles[0].assetNames[0],
-					(string assetName, Texture2D t) => {
-						done = true;
-						if (oldAsset.GetInstanceID() == t.GetInstanceID()) {
-							isSameOldAsset = true;
-						}
-					},
-					(assetName, e, reason, status) => {
-						// do nothing.
-					}
-				)
-			);
+	// 	// get old on memory asset from on memory cache.
+	// 	{
+	// 		var done = false;
+	// 		var isSameOldAsset = false;
+	// 		// load assets.
+	// 		RunEnumeratorOnMainThread(
+	// 			loader.LoadAsset(
+	// 				dummyList.assetBundles[0].assetNames[0],
+	// 				(string assetName, Texture2D t) => {
+	// 					done = true;
+	// 					if (oldAsset.GetInstanceID() == t.GetInstanceID()) {
+	// 						isSameOldAsset = true;
+	// 					}
+	// 				},
+	// 				(assetName, e, reason, status) => {
+	// 					// do nothing.
+	// 				}
+	// 			)
+	// 		);
 
-			WaitUntil(
-				() => done,
-				5,
-				"failed to get asset."
-			);
+	// 		WaitUntil(
+	// 			() => done,
+	// 			5,
+	// 			"failed to get asset."
+	// 		);
 
-			Assert(isSameOldAsset, "not same asset.");
-		}
-	}
+	// 		Assert(isSameOldAsset, "not same asset.");
+	// 	}
+	// }
 
-	[MTest] public void UpdateListAndUnloadNotifiedAssetThenGetNewAsset () {
-		UnityEngine.Object oldAsset = null;
-		{
-			var done = false;
-			// load assets.
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					dummyList.assetBundles[0].assetNames[0],
-					(string assetName, Texture2D t) => {
-						done = true;
-						oldAsset = t;
-					},
-					(assetName, e, reason, status) => {
+	// [MTest] public void UpdateListAndUnloadNotifiedAssetThenGetNewAsset () {
+	// 	UnityEngine.Object oldAsset = null;
+	// 	{
+	// 		var done = false;
+	// 		// load assets.
+	// 		RunEnumeratorOnMainThread(
+	// 			loader.LoadAsset(
+	// 				dummyList.assetBundles[0].assetNames[0],
+	// 				(string assetName, Texture2D t) => {
+	// 					done = true;
+	// 					oldAsset = t;
+	// 				},
+	// 				(assetName, e, reason, status) => {
 
-					}
-				)
-			);
+	// 				}
+	// 			)
+	// 		);
 
-			WaitUntil(
-				() => done,
-				5,
-				"failed to get asset."
-			);
-		}
+	// 		WaitUntil(
+	// 			() => done,
+	// 			5,
+	// 			"failed to get asset."
+	// 		);
+	// 	}
 		
-		// assume that: list is updated.
-		// 1.0.0 -> 1.0.1
+	// 	// assume that: list is updated.
+	// 	// 1.0.0 -> 1.0.1
 
-		var listDownloader = new HTTPConnection();
-		var downloaded = false;
+	// 	var listDownloader = new HTTPConnection();
+	// 	var downloaded = false;
 		
-		// renew list.
-		var newVersionStr = "1.0.1";
-		RunEnumeratorOnMainThread(
-			listDownloader.Get(
-				"loadListFromWeb",
-				null,
-				ListPath(newVersionStr),
-				(conId, code, respHeaders, data) => {
-					downloaded = true;
-					var newList = JsonUtility.FromJson<AssetBundleList>(data);
+	// 	// renew list.
+	// 	var newVersionStr = "1.0.1";
+	// 	RunEnumeratorOnMainThread(
+	// 		listDownloader.Get(
+	// 			"loadListFromWeb",
+	// 			null,
+	// 			ListPath(newVersionStr),
+	// 			(conId, code, respHeaders, data) => {
+	// 				downloaded = true;
+	// 				var newList = JsonUtility.FromJson<AssetBundleList>(data);
 					
-					// update loader's list.
-					loader.UpdateList(
-						BundlePath(newVersionStr), 
-						newList, 
-						(updatedAssetNames, bundleName) => {
-							// updated && on memory loaded assets are detected.
-							// unload it from memory then get again later.
-							loader.UnloadOnMemoryAssetBundle(bundleName);
-						}
-					);
-				},
-				(conId, code, reason, respHeaders) => {
-					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
-				}
-			)
-		);
+	// 				// update loader's list.
+	// 				loader.UpdateList(
+	// 					BundlePath(newVersionStr), 
+	// 					newList, 
+	// 					(updatedAssetNames, bundleName) => {
+	// 						// updated && on memory loaded assets are detected.
+	// 						// unload it from memory then get again later.
+	// 						loader.UnloadOnMemoryAssetBundle(bundleName);
+	// 					}
+	// 				);
+	// 			},
+	// 			(conId, code, reason, respHeaders) => {
+	// 				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+	// 			}
+	// 		)
+	// 	);
 
-		WaitUntil(
-			() => downloaded,
-			5,
-			"failed to download list."
-		);
+	// 	WaitUntil(
+	// 		() => downloaded,
+	// 		5,
+	// 		"failed to download list."
+	// 	);
 
-		// new list is downloaded and loader list is updated.
+	// 	// new list is downloaded and loader list is updated.
 
-		// get new asset from server.
-		{
-			var done = false;
-			var isAssetUpdated = false;
-			// load assets.
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					dummyList.assetBundles[0].assetNames[0],
-					(string assetName, Texture2D t) => {
-						done = true;
-						if (oldAsset.GetInstanceID() != t.GetInstanceID()) {
-							isAssetUpdated = true;
-						}
-					},
-					(assetName, e, reason, status) => {
-						// do nothing.
-					}
-				)
-			);
+	// 	// get new asset from server.
+	// 	{
+	// 		var done = false;
+	// 		var isAssetUpdated = false;
+	// 		// load assets.
+	// 		RunEnumeratorOnMainThread(
+	// 			loader.LoadAsset(
+	// 				dummyList.assetBundles[0].assetNames[0],
+	// 				(string assetName, Texture2D t) => {
+	// 					done = true;
+	// 					if (oldAsset.GetInstanceID() != t.GetInstanceID()) {
+	// 						isAssetUpdated = true;
+	// 					}
+	// 				},
+	// 				(assetName, e, reason, status) => {
+	// 					// do nothing.
+	// 				}
+	// 			)
+	// 		);
 
-			WaitUntil(
-				() => done,
-				5,
-				"failed to get asset."
-			);
+	// 		WaitUntil(
+	// 			() => done,
+	// 			5,
+	// 			"failed to get asset."
+	// 		);
 
-			Assert(isAssetUpdated, "not updated.");
-		}
-	}
+	// 		Assert(isAssetUpdated, "not updated.");
+	// 	}
+	// }
 
 	[MTest] public void LoadMissingBundle () {
 		Debug.LogWarning("指定したassetを含むbundleがDLできない場合のテスト");
@@ -1098,6 +1099,14 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		var assetInfo = loader.AssetBundleInfoOfAsset(assetName);
 
 		Assert(assetInfo.size == 100, "not match.");
+	}
+
+	[MTest] public void UnloadOnMemoryAssetBundle () {
+		Debug.LogError("UnloadOnMemoryAssetBundle not yet.");
+	}
+
+	[MTest] public void UnloadOnMemoryAsset () {
+		Debug.LogError("UnloadOnMemoryAsset not yet.");
 	}
 
 	[MTest] public void Offline () {
