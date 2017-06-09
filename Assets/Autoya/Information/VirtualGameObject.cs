@@ -328,7 +328,7 @@ namespace AutoyaFramework.Information {
 			// 事前計算、ここでコンテンツの一覧を返すようにすればいいかな。要素単位で。
 			Layout(this, rootHandlePoint, onLayoutDel, t => {});
 
-			
+
 			this._gameObject = new GameObject(viewName + Tag.ROOT.ToString());
 			
 			this.rootInstance = this._gameObject.AddComponent<InformationRootMonoBehaviour>();
@@ -433,9 +433,8 @@ namespace AutoyaFramework.Information {
 				// translate anchor position of content.(child follows parent.)
 				vRectTransform.vAnchoredPosition += padding.LeftTopPoint();
 				
-				handlePoint.nextLeftHandle += padding.PadWidth();
-				handlePoint.nextTopHandle += padding.PadHeight();
-				// Debug.LogWarning("実験した方が良さそう");
+				handlePoint.nextLeftHandle += padding.right;
+				handlePoint.nextTopHandle += padding.bottom;
 			}
 			// Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition);
 

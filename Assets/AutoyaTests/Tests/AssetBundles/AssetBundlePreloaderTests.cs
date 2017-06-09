@@ -21,77 +21,58 @@ using UnityEngine;
 public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 	
 	private AssetBundlePreloader assetBundlePreloader;
+
+	private AssetBundleLoader loader;
+
 	[MSetup] public void Setup () {
+		if (!IsTestRunningInPlayingMode()) {
+			SkipCurrentTest("AssetBundle request should run on MainThread.");
+		};
+
 		assetBundlePreloader = new AssetBundlePreloader();
+
+		var loaderTestObj = new AssetBundleLoaderTests();
+		var assetBundleList = loaderTestObj.LoadListFromWeb();
+		loader = new AssetBundleLoader(AssetBundleLoaderTests.BundlePath(assetBundleList.version), assetBundleList);
+
+
+		var cleaned = false;
+		RunOnMainThread(
+			() => {
+				cleaned = loader.CleanCachedAssetBundles();
+			}
+		);
+		if (!cleaned) {
+			Assert(false, "clean cache failed 1.");
+		}
 	}
 
 	[MTeardownAttribute] public void Teardown () {
-
-	}
-
-	private AssetBundleList ExampleList () {
-		var dummyList = new AssetBundleList(
-			"Mac",
-			"1.0.0", 
-			new AssetBundleInfo[]{
-				// pngが一枚入ったAssetBundle
-				new AssetBundleInfo(
-					"bundlename", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"}, 
-					new string[0], 
-					621985162,
-					"578b73927bc11f6e80072caa17983776",
-					100
-				),
-				// 他のAssetBundleへの依存があるAssetBundle
-				new AssetBundleInfo(
-					"dependsbundlename", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName1.prefab"}, 
-					new string[]{"bundlename"}, 
-					2389728195,
-					"1a3bdb638b301fd91fc5569e016604ad",
-					100
-				),
-				// もう一つ、他のAssetBundleへの依存があるAssetBundle
-				new AssetBundleInfo(
-					"dependsbundlename2", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName2.prefab"}, 
-					new string[]{"bundlename"}, 
-					1194278944,
-					"b24db843879f6f82d9bee95e15559003",
-					100
-				),
-				// nestedprefab -> dependsbundlename -> bundlename
-				new AssetBundleInfo(
-					"nestedprefab", 
-					new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab"}, 
-					new string[]{"dependsbundlename"}, 
-					779842307,
-					"30b17595dd7be703c2b04a6e4c3830ff",
-					100
-				),
-				
+		var cleaned = false;
+		RunOnMainThread(
+			() => {
+				cleaned = loader.CleanCachedAssetBundles();
 			}
 		);
-
-		return dummyList;
+		if (!cleaned) {
+			Assert(false, "clean cache failed 2.");
+		}
 	}
 
+	
 	[MTest] public void GetPreloadList () {
 		var done = false;
-
-		var assetBundleList = ExampleList();
-		var loader = new AssetBundleLoader(AssetBundleLoaderTests.baseUrl, assetBundleList);
 
 		RunEnumeratorOnMainThread(
 			assetBundlePreloader.Preload(
 				loader,
-				AssetBundleLoaderTests.baseUrl + "sample.preloadList.json", 
+				loader.assetDownloadBasePath + "sample.preloadList.json", 
 				progress => {
-					Debug.Log("progress:" + progress);
+					// do nothing.
 				},
 				() => {
-					Debug.Log("done!");
+					Assert(!loader.IsAssetBundleCachedOnMemory("bundlename"), "cached on memory.");
+					Assert(loader.IsAssetBundleCachedOnStorage("bundlename"), "not cached on storage.");
 					done = true;
 				},
 				(code, reason, autoyaStatus) => {
@@ -105,13 +86,95 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		);
 
 		WaitUntil(() => done, 5, "not yet done.");
-		// 追加で、preloadListに書いてあるものがdlできてればそれでOK.
-		// 手元にhttpサーバ欲しいな。dropboxは怖いので避けたい。
-	}
-	
-	[MTest] public void GetPreloadListButWholeABListIsChanged () {
-		// なにかしらエラーが出せればいいと思うんだけど、エラーを出すコンテキストを集めておこう。まだ実装できない。
-		Debug.LogError("特定のpreloadListを取得、書かれているAssetBundleを全て取得する、、、の開始時処理中で、リストそのものが書き換わったことを検知したので、停止する?");
 	}
 
+	[MTest] public void PreloadWithCached () {
+		// preload once.
+		GetPreloadList();
+
+		var done = false;
+		RunEnumeratorOnMainThread(
+			assetBundlePreloader.Preload(
+				loader,
+				loader.assetDownloadBasePath + "sample.preloadList.json", 
+				progress => {
+					// 0, 1の2つが来るはず
+					Debug.Log("progress:" + progress);
+					if (progress == 1.0) {
+						done = true;
+					}
+				},
+				() => {
+					Assert(false, "must not be downloaded.");
+				},
+				(code, reason, autoyaStatus) => {
+					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
+				},
+				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
+				},
+				5
+			)
+		);
+
+		WaitUntil(() => done, 5, "not yet done.");
+	}
+
+	[MTest] public void PreloadWithCachedAndNotCached () {
+		// preload once.
+		GetPreloadList();
+
+		var done = false;
+		RunEnumeratorOnMainThread(
+			assetBundlePreloader.Preload(
+				loader,
+				loader.assetDownloadBasePath + "sample.preloadList2.json", 
+				progress => {
+					// only one assetBundle should be download.
+					Assert(progress == 0.0 | progress == 1.0, "not match. progress:" + progress);
+				},
+				() => {
+					// do nothng.
+				},
+				(code, reason, autoyaStatus) => {
+					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
+				},
+				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
+				},
+				5
+			)
+		);
+
+		WaitUntil(() => done, 5, "not yet done.");
+	}
+
+	[MTest] public void Preload2AssetBundles () {
+		// preload once.
+		GetPreloadList();
+
+		var doneCount = 0;
+		RunEnumeratorOnMainThread(
+			assetBundlePreloader.Preload(
+				loader,
+				loader.assetDownloadBasePath + "sample.preloadList2.json", 
+				progress => {
+					// 0, 0.5, 1の3つが来るはず
+					doneCount++;
+				},
+				() => {
+					// do nothng.
+				},
+				(code, reason, autoyaStatus) => {
+					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
+				},
+				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
+				},
+				5
+			)
+		);
+
+		WaitUntil(() => doneCount == 3, 5, "not yet done.");
+	}
 }

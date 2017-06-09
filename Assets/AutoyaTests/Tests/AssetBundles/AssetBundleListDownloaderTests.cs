@@ -11,7 +11,7 @@ using UnityEngine;
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	[MTest] public void GetAssetBundleList () {
-		Debug.LogError("取得");
+		Debug.LogError("AssetBundleListの取得について");
 	}
 
 	[MTest] public void ListUpdated () {

@@ -27,7 +27,7 @@ namespace AutoyaFramework.AssetBundles {
 
 		public const int CODE_CRC_MISMATCHED = 399;
 
-		private string assetDownloadBasePath;
+		public readonly string assetDownloadBasePath;
 		public readonly AssetBundleList list;
 
 		private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;

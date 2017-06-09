@@ -70,7 +70,7 @@ public class LoadAssetBundle : MonoBehaviour {
 
 		// loadList -> preload assetBundles -> load asset.
 		Autoya.AssetBundle_UpdateList(basePath, dummyList);
-
+		
 		/*
 			load asset from bundle.
 			automatically download bundle then load asset.

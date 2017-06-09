@@ -73,6 +73,13 @@ namespace AutoyaFramework.Information {
         public float bottom; 
         public float left;
 
+		public void Adjust (float top, float right, float bottom, float left) {
+			this.top += top;
+			this.right += right;
+			this.bottom += bottom;
+			this.left += left;
+		}
+
         public Vector2 LeftTopPoint () {
             return new Vector2(left, top);
         }

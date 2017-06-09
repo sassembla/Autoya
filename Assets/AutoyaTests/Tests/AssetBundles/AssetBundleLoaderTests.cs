@@ -21,7 +21,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
 		
 	*/
-	public const string baseUrl = 
+	private const string baseUrl = 
 		#if UNITY_EDITOR_OSX
 			"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
 		#elif UNITY_EDITOR_WIN
@@ -50,7 +50,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	private const string listNamePostfix = ".json";
 
 
-	private string BundlePath (string version) {
+	public static string BundlePath (string version) {
 		return baseUrl + version + "/";
 	}
 
@@ -66,8 +66,27 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			SkipCurrentTest("AssetBundle request should run on MainThread.");
 		};
 
+		dummyList = LoadListFromWeb();
+
+		loader = new AssetBundleLoader(BundlePath("1.0.0"), dummyList, null);
+
+		var cleaned = false;
+		RunOnMainThread(
+			() => {
+				cleaned = loader.CleanCachedAssetBundles();
+			}
+		);
+		if (!cleaned) {
+			Assert(false, "clean cache failed.");
+		}
+	}
+
+	public AssetBundleList LoadListFromWeb () {
 		var downloaded = false;
 		var downloader = new HTTPConnection();
+		
+		AssetBundleList listObj = null;
+
 		RunEnumeratorOnMainThread(
 			downloader.Get(
 				"loadListFromWeb",
@@ -75,7 +94,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				ListPath("1.0.0"),
 				(conId, code, respHeaders, data) => {
 					downloaded = true;
-					dummyList = JsonUtility.FromJson<AssetBundleList>(data);
+					listObj = JsonUtility.FromJson<AssetBundleList>(data);
 				},
 				(conId, code, reason, respHeaders) => {
 					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
@@ -89,17 +108,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			"failed to download list."
 		);
 
-		loader = new AssetBundleLoader(BundlePath("1.0.0"), dummyList, null);
-
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
-		if (!cleaned) {
-			Assert(false, "clean cache failed.");
-		}
+		return listObj;
 	}
 
 	[MTeardown] public void Teardown () {
