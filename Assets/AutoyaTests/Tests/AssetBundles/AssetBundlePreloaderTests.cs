@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
 using Miyamasu;
@@ -68,7 +69,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				loader,
 				loader.assetDownloadBasePath + "sample.preloadList.json", 
 				progress => {
-					// do nothing.
+					Assert(progress == 1.0, "not match. progress:" + progress);
 				},
 				() => {
 					Assert(!loader.IsAssetBundleCachedOnMemory("bundlename"), "cached on memory.");
@@ -88,7 +89,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		WaitUntil(() => done, 5, "not yet done.");
 	}
 
-	[MTest] public void PreloadWithCached () {
+	[MTest] public void PreloadWithCached_NoAdditionalDownload () {
 		// preload once.
 		GetPreloadList();
 
@@ -98,14 +99,10 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				loader,
 				loader.assetDownloadBasePath + "sample.preloadList.json", 
 				progress => {
-					// 0, 1の2つが来るはず
-					Debug.Log("progress:" + progress);
-					if (progress == 1.0) {
-						done = true;
-					}
+					Assert(false, "should not be progress.");
 				},
 				() => {
-					Assert(false, "must not be downloaded.");
+					done = true;
 				},
 				(code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
@@ -124,42 +121,14 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		// preload once.
 		GetPreloadList();
 
-		var done = false;
-		RunEnumeratorOnMainThread(
-			assetBundlePreloader.Preload(
-				loader,
-				loader.assetDownloadBasePath + "sample.preloadList2.json", 
-				progress => {
-					// only one assetBundle should be download.
-					Assert(progress == 0.0 | progress == 1.0, "not match. progress:" + progress);
-				},
-				() => {
-					// do nothng.
-				},
-				(code, reason, autoyaStatus) => {
-					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
-				},
-				(preloadFailedAssetBundleName, error, autoyaStatus) => {
-					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
-				},
-				5
-			)
-		);
-
-		WaitUntil(() => done, 5, "not yet done.");
-	}
-
-	[MTest] public void Preload2AssetBundles () {
-		// preload once.
-		GetPreloadList();
-
 		var doneCount = 0;
 		RunEnumeratorOnMainThread(
 			assetBundlePreloader.Preload(
 				loader,
 				loader.assetDownloadBasePath + "sample.preloadList2.json", 
 				progress => {
-					// 0, 0.5, 1の3つが来るはず
+					// 1.0
+					Assert(progress == 1.0, "not match. progress:" + progress);
 					doneCount++;
 				},
 				() => {
@@ -175,6 +144,66 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 			)
 		);
 
-		WaitUntil(() => doneCount == 3, 5, "not yet done.");
+		WaitUntil(() => doneCount == 1, 5, "not yet done.");
+	}
+
+	[MTest] public void Preload2AssetBundles () {
+		var doneCount = 0;
+		RunEnumeratorOnMainThread(
+			assetBundlePreloader.Preload(
+				loader,
+				loader.assetDownloadBasePath + "sample.preloadList2.json", 
+				progress => {
+					// 0.5, 1 の2つが来るはず
+					Assert(
+						progress == 0.5 ||
+						progress == 1.0, 
+						"not match. progress:" + progress
+					);
+					doneCount++;
+				},
+				() => {
+					// do nothng.
+				},
+				(code, reason, autoyaStatus) => {
+					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
+				},
+				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
+				},
+				5
+			)
+		);
+
+		WaitUntil(() => doneCount == 2, 5, "not yet done. doneCount:" + doneCount);
+	}
+
+	[MTest] public void PreloadWithPreloadList () {
+		var preloadBundleNames = loader.list.assetBundles.Select(info => info.bundleName).ToArray();
+		var preloadList = new PreloadList("PreloadWithPreloadList", preloadBundleNames);
+		
+		var doneCount = 0;
+
+		RunEnumeratorOnMainThread(
+			assetBundlePreloader.Preload(
+				loader,
+				preloadList,
+				progress => {
+					doneCount++;
+				},
+				() => {
+					// do nothng.
+				},
+				(code, reason, autoyaStatus) => {
+					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
+				},
+				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
+				},
+				5
+			)
+		);
+
+		WaitUntil(() => doneCount == preloadBundleNames.Length, 5, "not yet done. doneCount:" + doneCount);
 	}
 }
