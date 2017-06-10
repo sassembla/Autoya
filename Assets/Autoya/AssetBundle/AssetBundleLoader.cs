@@ -10,7 +10,6 @@ using UnityEngine.Networking;
 namespace AutoyaFramework.AssetBundles {
 	public enum AssetBundleLoadError {
 		Undefined,
-		Unauthorized,
 		NotContained,
 		CrcMismatched,
 		DownloadFailed,
@@ -18,8 +17,6 @@ namespace AutoyaFramework.AssetBundles {
 		NullAssetFound,
 		NoAssetBundleFoundInList,
 		FailedToLoadDependentBundles,
-		FailedToGetPreloadList,
-		FailedToGetAssetBundleList,
 		NotContainedAssetBundle,
 	}
 	

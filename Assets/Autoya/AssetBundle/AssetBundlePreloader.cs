@@ -9,6 +9,8 @@ using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
 
+	public delegate void BundlePreloadFailed (string conId, AssetBundleLoadError err, int code, string reason, AutoyaStatus autoyaStatus);
+	
 	[Serializable] public class PreloadList {
 		public string name;
 		public string[] bundleNames;
@@ -49,7 +51,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
-		public IEnumerator Preload (AssetBundleLoader loader, string url, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, AssetBundleLoadError, AutoyaStatus> bundleDownloadFailed, double timeoutSec, int maxParallelCount=1) {
+		public IEnumerator Preload (AssetBundleLoader loader, string url, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, BundlePreloadFailed bundlePreloadFailed, double timeoutSec, int maxParallelCount=1) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -104,13 +106,14 @@ namespace AutoyaFramework.AssetBundles {
 				yield break;
 			}
 			
-			var bundleDownloadCor = Preload(loader, list, progress, done, preloadFailed, bundleDownloadFailed, maxParallelCount);
+			var bundleDownloadCor = Preload(loader, list, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
 			while (bundleDownloadCor.MoveNext()) {
 				yield return null;
 			}
 		}
 
-		public IEnumerator Preload (AssetBundleLoader loader, PreloadList list, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, AssetBundleLoadError, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
+		
+		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, BundlePreloadFailed bundlePreloadFailed, int maxParallelCount=1) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -127,7 +130,7 @@ namespace AutoyaFramework.AssetBundles {
 				yield break;
 			}
 
-			if (list != null) {
+			if (preloadList != null) {
 				// pass.
 			} else {
 				yield return null;
@@ -140,7 +143,7 @@ namespace AutoyaFramework.AssetBundles {
 			 */
 			var assetBundleList = loader.list;
 
-			var targetAssetBundleNames = list.bundleNames;
+			var targetAssetBundleNames = preloadList.bundleNames;
 			var assetBundleListContainedAssetBundleNames = assetBundleList.assetBundles.Select(a => a.bundleName).ToList();
 
 			// start preload assetBundles.
@@ -169,13 +172,13 @@ namespace AutoyaFramework.AssetBundles {
 			Action<string, int, string, AutoyaStatus> bundlePreloadFailedAct = (bundleName, code, reason, autoyaStatus) => {
 				Debug.LogError("bundlePreloadFailedActに到達");
 				var error = AssetBundleLoadError.Undefined;
-				bundlePreloadFailed(bundleName, error, autoyaStatus);
+				bundlePreloadFailed(bundleName, error, code, reason, autoyaStatus);
 			};
 
 			var wholeDownloadableAssetBundleNames = new List<string>();
 			foreach (var targetAssetBundleName in targetAssetBundleNames) {
 				if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName)) {
-					bundlePreloadFailed(targetAssetBundleName, AssetBundleLoadError.NotContainedAssetBundle, new AutoyaStatus());
+					bundlePreloadFailed(targetAssetBundleName, AssetBundleLoadError.NotContainedAssetBundle, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.list.version, new AutoyaStatus());
 					yield break;
 				}
 				

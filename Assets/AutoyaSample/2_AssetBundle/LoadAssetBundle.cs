@@ -68,8 +68,9 @@ public class LoadAssetBundle : MonoBehaviour {
 			}
 		);
 
+		Debug.LogError("リスト取得周りを書き直す。");
 		// loadList -> preload assetBundles -> load asset.
-		Autoya.AssetBundle_UpdateList(basePath, dummyList);
+		// Autoya.AssetBundle_UpdateAssetBundleList(basePath, dummyList);
 		
 		/*
 			load asset from bundle.

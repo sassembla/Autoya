@@ -39,7 +39,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 		
-		public IEnumerator DownloadAssetBundleList (string url, Action<AssetBundleList> done, Action<string, AssetBundleLoadError, string, AutoyaStatus> failed, double timeoutSec) {
+		public IEnumerator DownloadAssetBundleList (string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec) {
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_ASSETBUNDLELIST_PREFIX + Guid.NewGuid().ToString();
 			var reqHeader = requestHeader(url, new Dictionary<string, string>());
 			var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
@@ -53,7 +53,7 @@ namespace AutoyaFramework.AssetBundles {
 			};
 
 			Action<string, int, string, AutoyaStatus> listDownloadFailed = (conId, code, reason, autoyaStatus) => {
-				failed(url, AssetBundleLoadError.FailedToGetAssetBundleList, reason, autoyaStatus);
+				failed(code, reason, autoyaStatus);
 			};
 			
 			var downloadCoroutine = DownloadAssetBundleList(

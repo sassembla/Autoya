@@ -3,6 +3,7 @@ using AutoyaFramework.Connections.HTTP;
 using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Settings.Auth;
 using AutoyaFramework.Purchase;
+using System;
 
 /**
 	constructor implementation of Autoya.
@@ -26,8 +27,12 @@ namespace AutoyaFramework {
 			// Debug.LogWarning("autoya initialize start. basePath:" + basePath);
 			
 			var isPlayer = false;
-			if (Application.isPlaying) {// create game object for Autoya.
+
+			if (Application.isPlaying) {
+
 				isPlayer = true;
+
+				// create game object for Autoya.
 				var go = GameObject.Find("AutoyaMainthreadDispatcher");
 				if (go == null) {
 					go = new GameObject("AutoyaMainthreadDispatcher");
@@ -36,7 +41,8 @@ namespace AutoyaFramework {
 				} else {
 					this.mainthreadDispatcher = go.GetComponent<AutoyaMainThreadDispatcher>();
 				}
-			} else {// create editor runnner for Autoya.
+			} else {
+				// create editor runnner for Autoya.
 				this.mainthreadDispatcher = new EditorUpdator();
 			}
 			
@@ -44,8 +50,15 @@ namespace AutoyaFramework {
 
 			_autoyaHttp = new HTTPConnection();
 
-			if (isPlayer) ReloadPurchasability();
+			/*
+				initialize purchase feature.
+			 */
+			if (isPlayer) {
+				ReloadPurchasability();
+			}
 			
+			InitializeAssetBundleFeature();
+
 			var isFirstBoot = IsFirstBoot();
 			
 			/*

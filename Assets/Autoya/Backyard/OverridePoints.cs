@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using AutoyaFramework.AssetBundles;
 using AutoyaFramework.Purchase;
 using AutoyaFramework.Representation.Base64;
+using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using UnityEngine;
 
@@ -238,6 +240,35 @@ namespace AutoyaFramework {
 			AssetBundles
 		*/
 
+		private AssetBundleList LoadAssetBundleListFromStorage () {
+			// load stored assetBundleList then return it.
+			var listStr = _autoyaFilePersistence.Load(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
+			if (string.IsNullOrEmpty(listStr)) {
+				return null;
+			}
+			
+			return JsonUtility.FromJson<AssetBundleList>(listStr);
+		}
+		private bool StoreAssetBundleListToStorage (AssetBundleList list) {
+			var listStr = JsonUtility.ToJson(list);
+			var result = _autoyaFilePersistence.Update(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME, listStr);
+			return result;
+		}
+
+		private bool DeleteAssetBundleListFromStorage () {
+			var result = _autoyaFilePersistence.Delete(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
+			return result;
+		}
+		
+		/**
+			request headers of AssetBundles features.
+		 */
+		private Dictionary<string, string> OnAssetBundleListGetRequest (string url, Dictionary<string, string> requestHeader) {
+			return requestHeader;
+		}
+		private Dictionary<string, string> OnAssetBundlePreloadListGetRequest (string url, Dictionary<string, string> requestHeader) {
+			return requestHeader;
+		}
 		private Dictionary<string, string> OnAssetBundleGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}

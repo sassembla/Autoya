@@ -67,7 +67,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		RunEnumeratorOnMainThread(
 			assetBundlePreloader.Preload(
 				loader,
-				loader.assetDownloadBasePath + "sample.preloadList.json", 
+				"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/1.0.0/sample.preloadList.json", 
 				progress => {
 					Assert(progress == 1.0, "not match. progress:" + progress);
 				},
@@ -79,7 +79,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				(code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
 				},
-				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+				(preloadFailedAssetBundleName, error, code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
 				},
 				5
@@ -107,7 +107,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				(code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
 				},
-				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+				(preloadFailedAssetBundleName, error, code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
 				},
 				5
@@ -137,7 +137,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				(code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
 				},
-				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+				(preloadFailedAssetBundleName, error, code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
 				},
 				5
@@ -168,7 +168,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				(code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
 				},
-				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+				(preloadFailedAssetBundleName, error, code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
 				},
 				5
@@ -197,7 +197,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 				(code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, code:" + code + " reason:" + reason);
 				},
-				(preloadFailedAssetBundleName, error, autoyaStatus) => {
+				(preloadFailedAssetBundleName, error, code, reason, autoyaStatus) => {
 					Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " error:" + error );
 				},
 				5
