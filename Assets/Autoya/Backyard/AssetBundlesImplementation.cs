@@ -79,11 +79,22 @@ namespace AutoyaFramework {
 		*/
 
 		private AssetBundleListDownloader _assetBundleListDownloader = new AssetBundleListDownloader();
+		/**
+			Download assetBundleList from AssetBundleSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST/version/fileName path.
+		 */
 		public static void AssetBundle_DownloadAssetBundleList (string fileName, string version, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=0) {
+			var listUrl = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName;
+			AssetBundle_DownloadAssetBundleList(listUrl, downloadSucceeded, downloadFailed, timeoutSec);
+		}
+
+		/**
+			Download assetBundle from url.
+		 */
+		public static void AssetBundle_DownloadAssetBundleList (string listUrl, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=0) {
 			Action act = () => {	
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundleListDownloader.DownloadAssetBundleList(
-						AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName, 
+						listUrl, 
 						list => {
 							var result = autoya.StoreAssetBundleListToStorage(list);
 							if (result) {
@@ -111,6 +122,9 @@ namespace AutoyaFramework {
 			);
 		}
 
+		/**
+			get copy of assetBundleList which is storead in this device.
+		 */
 		public static AssetBundleList AssetBundle_AssetBundleList () {
 			return autoya.LoadAssetBundleListFromStorage();
 		}

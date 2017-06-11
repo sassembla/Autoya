@@ -24,7 +24,13 @@ public class LoadAssetBundle : MonoBehaviour {
 			yield return null;
 		}
 		
-		var dummyList = new AssetBundleList(
+		/*
+			first, Autoya manages whole assetBundle information as the "AssetBundleList".
+			the structure of assetBundleList is like below.
+
+			recent file is located at https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json
+		 */
+		var assetBundleListDemo = new AssetBundleList(
 			"Mac",
 			"1.0.0", 
 			new AssetBundleInfo[]{
@@ -68,24 +74,47 @@ public class LoadAssetBundle : MonoBehaviour {
 			}
 		);
 
-		Debug.LogError("リスト取得周りを書き直す。");
-		// loadList -> preload assetBundles -> load asset.
-		// Autoya.AssetBundle_UpdateAssetBundleList(basePath, dummyList);
-		
-		/*
-			load asset from bundle.
-			automatically download bundle then load asset.
-		*/
-		Autoya.AssetBundle_LoadAsset<GameObject>(
-			"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/nestedPrefab.prefab",
-			(assetName, prefab) => {
-				Debug.Log("asset:" + assetName + " is successfully loaded as:" + prefab);
-				Instantiate(prefab);
+		// you can get that assetBundleList sample from web.
+		var assetBundleListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+		Autoya.AssetBundle_DownloadAssetBundleList(
+			assetBundleListPath, 
+			() => {
+				Debug.Log("assetBundleList download succeeded.");
+				var theList = Autoya.AssetBundle_AssetBundleList();
+				foreach (var ab in theList.assetBundles) {
+					Debug.Log("ab:" + string.Join(", ", ab.assetNames));
+				}
+				
+				/*
+					then, you can load asset from web.
+						
+					assetBundleList has the information which asset is contained by specific assetBundle.
+						(asset <-containes-- assetBundle <-info contains-- assetBundleList)
+
+					you can load asset from web after downloading assetBundleList once.
+				*/
+
+				/*
+					load asset from web or cache.
+					automatically download bundle then load asset.
+				*/
+				Autoya.AssetBundle_LoadAsset<GameObject>(
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab",
+					(assetName, prefab) => {
+						Debug.Log("asset:" + assetName + " is successfully loaded as:" + prefab);
+						Instantiate(prefab);
+					},
+					(assetName, err, reason, status) => {
+						Debug.LogError("failed to load assetName:" + assetName + " err:" + err + " reason:" + reason);
+					}
+				);
 			},
-			(assetName, err, reason, status) => {
-				Debug.LogError("failed to load assetName:" + assetName + " err:" + err + " reason:" + reason);
+			(code, reason, autoyaStatus) => {
+				Debug.LogError("failed to download assetBundleList from url:" + assetBundleListPath);
 			}
 		);
+
+		
 	}
 	
 }
