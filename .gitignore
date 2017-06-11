@@ -49,3 +49,4 @@ Assembly-CSharp-firstpass.csproj
 Assets/SignerLibs/*
 
 Assets/StreamingAssets/build_info.txt
+CHANGELOG.md
