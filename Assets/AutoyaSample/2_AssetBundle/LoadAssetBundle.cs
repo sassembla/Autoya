@@ -5,30 +5,14 @@ using AutoyaFramework.AssetBundles;
 using UnityEngine;
 
 public class LoadAssetBundle : MonoBehaviour {
-	private const string basePath = 
-		#if UNITY_STANDALONE_OSX
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
-		#elif UNITY_STANDALONE_WIN
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Windows/AssetBundles/";
-		#elif UNITY_IOS
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/iOS/AssetBundles/";
-		#elif UNITY_ANDROID
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Android/AssetBundles/";
-		#else
-		"https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/AssetBundles/";
-		#endif
 
 	// Use this for initialization
-	IEnumerator Start () {
-		while (!Autoya.Auth_IsAuthenticated()) {
-			yield return null;
-		}
-		
+	void Start () {
 		/*
 			first, Autoya manages whole assetBundle information as the "AssetBundleList".
 			the structure of assetBundleList is like below.
 
-			recent file is located at https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json
+			latest file is located at https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json
 		 */
 		var assetBundleListDemo = new AssetBundleList(
 			"Mac",
@@ -80,10 +64,6 @@ public class LoadAssetBundle : MonoBehaviour {
 			assetBundleListPath, 
 			() => {
 				Debug.Log("assetBundleList download succeeded.");
-				var theList = Autoya.AssetBundle_AssetBundleList();
-				foreach (var ab in theList.assetBundles) {
-					Debug.Log("ab:" + string.Join(", ", ab.assetNames));
-				}
 				
 				/*
 					then, you can load asset from web.
@@ -91,7 +71,9 @@ public class LoadAssetBundle : MonoBehaviour {
 					assetBundleList has the information which asset is contained by specific assetBundle.
 						(asset <-containes-- assetBundle <-info contains-- assetBundleList)
 
-					you can load asset from web after downloading assetBundleList once.
+					you can load asset from web after downloading the assetBundleList.
+
+					the downloaded assetBundleList is stored in device. you can set the location and the way of read/write the list via OverridePoint.cs.
 				*/
 
 				/*
@@ -99,9 +81,11 @@ public class LoadAssetBundle : MonoBehaviour {
 					automatically download bundle then load asset.
 				*/
 				Autoya.AssetBundle_LoadAsset<GameObject>(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab",
+					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab",
 					(assetName, prefab) => {
 						Debug.Log("asset:" + assetName + " is successfully loaded as:" + prefab);
+
+						// instantiate asset.
 						Instantiate(prefab);
 					},
 					(assetName, err, reason, status) => {
@@ -113,8 +97,15 @@ public class LoadAssetBundle : MonoBehaviour {
 				Debug.LogError("failed to download assetBundleList from url:" + assetBundleListPath);
 			}
 		);
+	}
 
-		
+	void OnApplicationQuit () {
+		Autoya.AssetBundle_DeleteAllStorageCache(
+			(result, message) => {
+				Debug.Log("the end of demo. in OnApplicationQuit, deleting all storage cached assetBundles. result:" + result + " (message:" + message + ")");
+			},
+			true
+		);
 	}
 	
 }

@@ -24,7 +24,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         var deleted = false;
         Autoya.AssetBundle_DeleteAllStorageCache(
-            result => {
+            (result, message) => {
                 deleted = result;
                 Assert(deleted, "on setup, not deleted.");
             }
@@ -45,7 +45,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         var deleted = false;
         Autoya.AssetBundle_DeleteAllStorageCache(
-            result => {
+            (result, message) => {
                 deleted = result;
                 Assert(deleted, "on teardown, not deleted.");
             }

@@ -50,17 +50,35 @@ namespace AutoyaFramework {
 		}
 
 		
-		public static void AssetBundle_DeleteAllStorageCache (Action<bool> result) {
+		public static void AssetBundle_DeleteAllStorageCache (Action<bool, string> result, bool runAnyway=false) {
+			if (runAnyway) {
+				var isCacheDeleted = Caching.CleanCache();
+				if (isCacheDeleted) {
+					result(true, "succeeded to delete all assetBundles in storage.");
+					return;
+				}
+
+				// failed.
+				result(false, "failed to delete all assetBundles in storage. maybe this is not mainthread or some assetBundles are in use. or Caching feature is not ready.");
+				return;
+			}
+			
 			autoya.mainthreadDispatcher.Commit(autoya.CleanCacheEnumRunner(result));
 		}
-		private IEnumerator CleanCacheEnumRunner (Action<bool> result) {
+		private IEnumerator CleanCacheEnumRunner (Action<bool, string> result) {
 			while (!Caching.ready) {
 				yield return null;
 			}
 
 			var isDeleted = Caching.CleanCache();
 
-			result(isDeleted);
+			if (isDeleted) {
+				result(true, "succeeded to delete all assetBundles in storage.");
+				yield break;
+			}
+
+			// failed.
+			result(false, "failed to delete all assetBundles in storage. some assetBundles are in use or Caching feature is not ready.");
 		}
 		
 		private enum AssetBundlesFeatureState {
