@@ -96,7 +96,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		
 		Autoya.Http_Get(
 			"https://httpbin.org/status/404", 
-			(conId, resultData) => {
+			(string conId, string resultData) => {
 				Assert(false, "unexpected succeeded. resultData:" + resultData);
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -286,7 +286,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Autoya.Http_Post(
 			"https://httpbin.org/delay/1",
 			"data",
-			(conId, resultData) => {
+			(string conId, string resultData) => {
 				Assert(false, "got success result.");
 			},
 			(conId, code, reason, autoyaStatus) => {

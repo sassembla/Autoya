@@ -1087,15 +1087,15 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		Assert(assetInfo.size == 100, "not match.");
 	}
 
-	[MTest] public void UnloadOnMemoryAssetBundle () {
-		Debug.LogError("UnloadOnMemoryAssetBundle not yet.");
-	}
+	// [MTest] public void UnloadOnMemoryAssetBundle () {
+	// 	Debug.LogError("UnloadOnMemoryAssetBundle not yet.");
+	// }
 
-	[MTest] public void UnloadOnMemoryAsset () {
-		Debug.LogError("UnloadOnMemoryAsset not yet.");
-	}
+	// [MTest] public void UnloadOnMemoryAsset () {
+	// 	Debug.LogError("UnloadOnMemoryAsset not yet.");
+	// }
 
-	[MTest] public void Offline () {
-		Debug.LogError("オフライン時のテストを追加したい。");
-	}
+	// [MTest] public void Offline () {
+	// 	Debug.LogError("オフライン時のテストを追加したい。");
+	// }
 }

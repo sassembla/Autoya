@@ -61,7 +61,7 @@ public class MaintenanceTests : MiyamasuTestRunner {
 		// start connection -> Maintenance mode notification will return.
 		Autoya.Http_Get(
 			"https://github.com",
-			(conId, data) => {
+			(string conId, string data) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -87,7 +87,7 @@ public class MaintenanceTests : MiyamasuTestRunner {
 		// start connection -> Maintenance mode notification will return.
 		Autoya.Http_Get(
 			"https://github.com",
-			(conId, data) => {
+			(string conId, string data) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {

@@ -236,7 +236,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		// forcibly get 401 response.
 		Autoya.Http_Get(
 			"https://httpbin.org/status/401",
-			(conId, resultData) => {
+			(string conId, string resultData) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -245,7 +245,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
                     () => {
                         Autoya.Http_Get(
                             "https://httpbin.org/get",
-                            (conId2, data2) => {
+                            (string conId2, string data2) => {
                                 reauthenticationSucceeded = true;
                             },
                             (conId2, code2, reason2, autoyaStatus2) => {
