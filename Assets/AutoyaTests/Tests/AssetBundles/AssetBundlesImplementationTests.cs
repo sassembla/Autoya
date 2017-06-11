@@ -1,4 +1,5 @@
 using AutoyaFramework;
+using AutoyaFramework.AssetBundles;
 using Miyamasu;
 using UnityEngine;
 
@@ -18,14 +19,14 @@ using UnityEngine;
  */
 public class AssetBundlesImplementationTests : MiyamasuTestRunner {
     [MSetup] public void Setup () {
-        // delete anyway.
+        // delete assetBundleList anyway.
         Autoya.AssetBundle_DiscardAssetBundleList();
 
         var deleted = false;
         Autoya.AssetBundle_DeleteAllStorageCache(
             result => {
                 deleted = result;
-                Assert(deleted, "not deleted.");
+                Assert(deleted, "on setup, not deleted.");
             }
         );
         
@@ -34,36 +35,36 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             5,
             "not deleted. some assetBundles are in use."
         );
-    }
-    [MTeardown] public void Teardown () {
-        // delete anyway.
-        Autoya.AssetBundle_DiscardAssetBundleList();
 
-        var deleted = false;
-        Autoya.AssetBundle_DeleteAllStorageCache(
-            result => {
-                deleted = result;
-                Assert(deleted, "not deleted.");
-            }
-        );
-        
-        WaitUntil(
-            () => deleted,
-            5,
-            "not deleted. some assetBundles are in use."
-        );
-    }
-
-    [MTest] public void CheckIsAssetBundleExists () {
         var exists = Autoya.AssetBundle_IsAssetBundleListReady();
         Assert(!exists, "exists, not intended.");
     }
+    [MTeardown] public void Teardown () {
+        // delete assetBundleList anyway.
+        Autoya.AssetBundle_DiscardAssetBundleList();
+
+        var deleted = false;
+        Autoya.AssetBundle_DeleteAllStorageCache(
+            result => {
+                deleted = result;
+                Assert(deleted, "on teardown, not deleted.");
+            }
+        );
+        
+        WaitUntil(
+            () => deleted,
+            5,
+            "not deleted. some assetBundles are in use."
+        );
+    }
 
     [MTest] public void GetAssetBundleList () {
-        var fileName = "1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var version = "1.0.0";
         var done = false;
         Autoya.AssetBundle_DownloadAssetBundleList(
             fileName,
+            version,
             () => {
                 done = true;
             },
@@ -82,10 +83,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
     [MTest] public void GetAssetBundleListFailThenTryAgain () {
         // fail once.
         {
-            var notExistFileName = "fake_1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+            var notExistFileName = "fake_AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+            var version = "1.0.0";
             var done = false;
             Autoya.AssetBundle_DownloadAssetBundleList(
                 notExistFileName,
+                version,
                 () => {
                     Assert(false, "should not be succeeded.");
                 },
@@ -104,10 +107,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         // try again with valid fileName.
         {
-            var fileName = "1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+            var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+            var version = "1.0.0";
+
             var done = false;
             Autoya.AssetBundle_DownloadAssetBundleList(
                 fileName,
+                version,
                 () => {
                     done = true;
                 },
@@ -125,21 +131,203 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         }
     }
 
-    [MTest] public void GetAssetBundleBeforeGetAssetBundleList () {
-        Assert(false, "not yet implemented.");
+    [MTest] public void GetAssetBundleBeforeGetAssetBundleListBecomeFailed () {
+        var loaderTest = new AssetBundleLoaderTests();
+        var list = loaderTest.LoadListFromWeb();
+
+        var done = false;
+        var assetName = list.assetBundles[0].assetNames[0];
+        Autoya.AssetBundle_LoadAsset<GameObject>(
+            assetName,
+            (name, obj) => {
+                Assert(false, "should not comes here.");
+            },
+            (name, err, reason, autoyaStatus) => {
+                Assert(err == AssetBundleLoadError.AssetBundleListIsNotReady, "not match.");
+                done = true;
+            }
+        );
+
+        WaitUntil(
+            () => done,
+            5,
+            "not yet failed."
+        );
     }
 
     [MTest] public void GetAssetBundle () {
-        // get list
-        Assert(false, "not yet implemented.");
+        GetAssetBundleList();
+        
+        var list = Autoya.AssetBundle_AssetBundleList();
+
+        var done = false;
+        var assetName = list.assetBundles[0].assetNames[0];
+        Autoya.AssetBundle_LoadAsset<Texture2D>(
+            assetName,
+            (name, tex) => {
+                done = true;
+            },
+            (name, err, reason, autoyaStatus) => {
+                Assert(false, "err:" + err);
+            }
+        );
+
+        WaitUntil(
+            () => done,
+            5,
+            "not yet done."
+        );
+
+        RunOnMainThread(
+            Autoya.AssetBundle_UnloadOnMemoryAssetBundles
+        );
     }
 
-    [MTest] public void PreloadAssetBundleBeforeGetAssetBundleList () {
-        Assert(false, "not yet implemented.");
+    [MTest] public void PreloadAssetBundleBeforeGetAssetBundleListBecomeFailed () {
+        Assert(!Autoya.AssetBundle_IsAssetBundleListReady(), "not match.");
+        var done = false;
+
+        Autoya.AssetBundle_Preload(
+            "1.0.0/sample.preloadList.json",
+            progress => {
+
+            },
+            () => {
+                Assert(false, "should not be succeeded.");
+            },
+            (code, reason, autoyaStatus) => {
+                Assert(code == -1, "not match. code:" + code + " reason:" + reason);
+                done = true;
+            },
+            (failedAssetBundleName, code, reason, autoyaStatus) => {
+
+            },
+            1
+        );
+
+         WaitUntil(
+            () => done,
+            5,
+            "not yet done."
+        );
     }
 
     [MTest] public void PreloadAssetBundle () {
-        // get list
-        Assert(false, "not yet implemented.");
+        GetAssetBundleList();
+        var done = false;
+
+        Autoya.AssetBundle_Preload(
+            "1.0.0/sample.preloadList.json",
+            progress => {
+
+            },
+            () => {
+                done = true;
+            },
+            (code, reason, autoyaStatus) => {
+                Assert(false, "should not be failed. code:" + code + " reason:" + reason);
+            },
+            (failedAssetBundleName, code, reason, autoyaStatus) => {
+
+            },
+            1
+        );
+
+         WaitUntil(
+            () => done,
+            5,
+            "not yet done."
+        );
+    }
+    [MTest] public void PreloadAssetBundles () {
+        GetAssetBundleList();
+        var done = false;
+
+        Autoya.AssetBundle_Preload(
+            "1.0.0/sample.preloadList2.json",
+            progress => {
+
+            },
+            () => {
+                done = true;
+            },
+            (code, reason, autoyaStatus) => {
+                Assert(false, "should not be failed. code:" + code + " reason:" + reason);
+            },
+            (failedAssetBundleName, code, reason, autoyaStatus) => {
+
+            },
+            2
+        );
+
+         WaitUntil(
+            () => done,
+            5,
+            "not yet done."
+        );
+    }
+
+    [MTest] public void PreloadAssetBundleWithGeneratedPreloadList () {
+        GetAssetBundleList();
+        var done = false;
+
+        var list = Autoya.AssetBundle_AssetBundleList();
+        var preloadList = new PreloadList("test", list);
+
+        // rewrite. set 1st content of bundleName.
+        preloadList.bundleNames = new string[]{preloadList.bundleNames[0]};
+        
+        Autoya.AssetBundle_Preload(
+            preloadList,
+            progress => {
+
+            },
+            () => {
+                done = true;
+            },
+            (code, reason, autoyaStatus) => {
+                Assert(false, "should not be failed. code:" + code + " reason:" + reason);
+            },
+            (failedAssetBundleName, code, reason, autoyaStatus) => {
+
+            },
+            1
+        );
+
+         WaitUntil(
+            () => done,
+            5,
+            "not yet done."
+        );
+    }
+    [MTest] public void PreloadAssetBundlesWithGeneratedPreloadList () {
+        GetAssetBundleList();
+        var done = false;
+
+        var list = Autoya.AssetBundle_AssetBundleList();
+        var preloadList = new PreloadList("test", list);
+        
+        Autoya.AssetBundle_Preload(
+            preloadList,
+            progress => {
+
+            },
+            () => {
+                done = true;
+            },
+            (code, reason, autoyaStatus) => {
+                Assert(false, "should not be failed. code:" + code + " reason:" + reason);
+            },
+            (failedAssetBundleName, code, reason, autoyaStatus) => {
+
+            },
+            4
+        );
+
+         WaitUntil(
+            () => done,
+            5,
+            "not yet done."
+        );
     }
 }

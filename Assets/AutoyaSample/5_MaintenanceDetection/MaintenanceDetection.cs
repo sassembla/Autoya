@@ -1,6 +1,7 @@
 using UnityEngine;
 using AutoyaFramework;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MaintenanceDetection : MonoBehaviour {
 	
@@ -15,7 +16,7 @@ public class MaintenanceDetection : MonoBehaviour {
 			string.Empty,
 			null,
 			"https://google.com",// fake url. please use your own url for serve maintenance information data.
-			(conId, code, responseHeader, result) => {
+			(string conId, int code, Dictionary<string, string> responseHeader, string result) => {
 				Debug.Log("here you've got maintenance information from your host(recommend to set that server is not same with your game server).");
 				Debug.Log("maintenance info:" + result);
 			},
@@ -53,7 +54,7 @@ public class MaintenanceDetection : MonoBehaviour {
 		// start connection -> Maintenance mode notification will return.
 		Autoya.Http_Get(
 			"https://github.com",
-			(conId, data) => {
+			(string conId, string data) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {

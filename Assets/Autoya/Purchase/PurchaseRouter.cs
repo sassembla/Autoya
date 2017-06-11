@@ -613,7 +613,7 @@ namespace AutoyaFramework.Purchase {
 				connectionId,
 				header,
 				url,
-				(conId, code, respHeaders, result) => {
+				(string conId, int code, Dictionary<string, string> respHeaders, string result) => {
 					httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
 				},
 				(conId, code, reason, respHeaders) => {
@@ -635,7 +635,7 @@ namespace AutoyaFramework.Purchase {
 				header,
 				url,
 				data,
-				(conId, code, respHeaders, result) => {
+				(string conId, int code, Dictionary<string, string> respHeaders, string result) => {
 					httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
 				},
 				(conId, code, reason, respHeaders) => {

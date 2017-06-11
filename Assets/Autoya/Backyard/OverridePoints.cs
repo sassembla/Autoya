@@ -163,7 +163,21 @@ namespace AutoyaFramework {
 			else, set reason.
 				then "failed" action of Autoya.Http_X will be raised with code 200 ~ 299 with the reason which you set.
 		*/
+
+		// string version.
 		private bool OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data, out string reason) {
+			// let's validate http response if need.
+			if (true) {
+				reason = null;
+				return true;
+			} else {
+				reason = "run over by a bicycle.";
+				return false;
+			}
+		}
+
+		// byte[] version.
+		private bool OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, byte[] data, out string reason) {
 			// let's validate http response if need.
 			if (true) {
 				reason = null;

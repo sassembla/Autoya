@@ -26,15 +26,20 @@ namespace AutoyaFramework {
 		}
 
 		public static bool AssetBundle_IsAssetBundleListReady () {
-			if (autoya._currentAssetBundleList != null) {
-				return true;
+			switch (autoya.assetBundleFeatState) {
+				case AssetBundlesFeatureState.ListLoaded:
+				case AssetBundlesFeatureState.LoaderReady: {
+					return true;
+				}
+				default: {
+					return false;
+				}
 			}
-			return false;
 		}
 
-		public static string AssetBundle_GetAssetBundleListVersion () {
+		private static string AssetBundle_GetAssetBundleListVersionedBasePath (string basePath) {
 			if (autoya._currentAssetBundleList != null) {
-				return autoya._currentAssetBundleList.version;
+				return basePath + autoya._currentAssetBundleList.version + "/";
 			}
 
 			return "no list exists yet. run AssetBundle_DownloadAssetBundleList() first.";
@@ -61,8 +66,8 @@ namespace AutoyaFramework {
 		private enum AssetBundlesFeatureState {
 			None,
 			ListLoading,
-			ListLoaded,// loaderが使える
-			LoaderReady,// preloaderが使える
+			ListLoaded,
+			LoaderReady,
 		}
 		private AssetBundlesFeatureState assetBundleFeatState;
 
@@ -74,16 +79,16 @@ namespace AutoyaFramework {
 		*/
 
 		private AssetBundleListDownloader _assetBundleListDownloader = new AssetBundleListDownloader();
-		public static void AssetBundle_DownloadAssetBundleList (string fileName, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed) {
+		public static void AssetBundle_DownloadAssetBundleList (string fileName, string version, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=0) {
 			Action act = () => {	
-				var urlBase = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST;
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundleListDownloader.DownloadAssetBundleList(
-						urlBase + fileName, 
+						AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName, 
 						list => {
 							var result = autoya.StoreAssetBundleListToStorage(list);
 							if (result) {
 								autoya.assetBundleFeatState = AssetBundlesFeatureState.ListLoaded;
+								autoya._currentAssetBundleList = list;
 								downloadSucceeded();
 								return;
 							}
@@ -96,7 +101,7 @@ namespace AutoyaFramework {
 							autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
 							downloadFailed(code, reason, autoyaStatus);
 						},
-						10.0// タイムアウト直書きが辛い。
+						timeoutSec
 					)
 				);
 			};
@@ -104,6 +109,10 @@ namespace AutoyaFramework {
 			autoya.mainthreadDispatcher.Commit(
 				autoya.ListLoaderCoroutine(act, downloadFailed)
 			);
+		}
+
+		public static AssetBundleList AssetBundle_AssetBundleList () {
+			return autoya.LoadAssetBundleListFromStorage();
 		}
 
 		private IEnumerator ListLoaderCoroutine (Action execute, Action<int, string, AutoyaStatus> downloadFailed) {
@@ -121,7 +130,7 @@ namespace AutoyaFramework {
 				case AssetBundlesFeatureState.LoaderReady: {
 					// すでにloaderReadyなloaderがあるんで、listLoaderに対しての処理は制限されていないといけない。
 					// そのへんのチェックをすべきなのかな、、
-					Debug.LogError("考え中の、loaderやpreloaderが元気でリストを再取得したいケース。loaderの状態によってやるべきことが変わる。");
+					Debug.LogWarning("考え中の、loaderやpreloaderが元気でリストを再取得したいケース。loaderの状態によってやるべきことが変わる。");
 
 					if (true) {
 						downloadFailed(-3, "downloading AssetBundles with AssetBundleLoader.", new AutoyaStatus());
@@ -159,7 +168,9 @@ namespace AutoyaFramework {
 					return true;
 				}
 				case AssetBundlesFeatureState.LoaderReady: {
-					Debug.LogError("状態によって変わる。loaderやpreloaderが頑張ってるならダメ。Preloaderは関係あるんだろうか。");
+					Debug.LogWarning("状態によって変わる。loaderやpreloaderが頑張ってるならダメ。Preloaderは関係あるんだろうか。とりあえず消す。");
+					DeleteAssetBundleListFromStorage();
+					assetBundleFeatState = AssetBundlesFeatureState.None;
 					break;
 				}
 			}
@@ -173,78 +184,102 @@ namespace AutoyaFramework {
 		*/
 		private AssetBundleLoader _assetBundleLoader;
 		
-		public static void AssetBundle_LoadAsset<T> (string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object {
+		public static void AssetBundle_LoadAsset<T> (
+			string assetName, 
+			Action<string, T> loadSucceeded, 
+			Action<string, AssetBundleLoadError, 
+			string, AutoyaStatus> loadFailed
+		) where T : UnityEngine.Object {
 			Action act = () => {
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)
 				);
 			};
 			autoya.mainthreadDispatcher.Commit(
-				autoya.BundleLoaderCoroutine(act, () => {})
+				autoya.BundleLoaderCoroutine(
+					act, 
+					(err, reason, autoyaStatus) => {
+						loadFailed(assetName, err, reason, autoyaStatus);
+					}
+				)
 			);
 		}
-		
-		public static void AssetBundle_UnloadAllAssets () {
+
+        public static void AssetBundle_UnloadOnMemoryAssetBundles () {
 			Action act = () => {
 				autoya._assetBundleLoader.UnloadOnMemoryAssetBundles();
 			};
 
-			autoya.mainthreadDispatcher.Commit(
-				autoya.BundleLoaderCoroutine(act, () => {})
-			);
+			autoya.BundleLoaderExecute(act);
 		}
 
-		public static void AssetBundle_UnloadAssetBundle (string bundleName) {
+		public static void AssetBundle_UnloadOnMemoryAssetBundle (string bundleName) {
 			Action act = () => {
 				autoya._assetBundleLoader.UnloadOnMemoryAssetBundle(bundleName);
 			};
 
-			autoya.mainthreadDispatcher.Commit(
-				autoya.BundleLoaderCoroutine(act, () => {})
-			);
+			autoya.BundleLoaderExecute(act);
 		}
 		
-		public static void AssetBundle_UnloadAsset (string assetName) {
+		public static void AssetBundle_UnloadOnMemoryAsset (string assetName) {
 			Action act = () => {
 				autoya._assetBundleLoader.UnloadOnMemoryAsset(assetName);
 			};
 
-			autoya.mainthreadDispatcher.Commit(
-				autoya.BundleLoaderCoroutine(act, () => {})
-			);
+			autoya.BundleLoaderExecute(act);
 		}
 
-		private IEnumerator BundleLoaderCoroutine (Action execute, Action failed) {
-			while (true) {
-				switch (assetBundleFeatState) {
-					case AssetBundlesFeatureState.None: {
-						failed();
-						yield break;
-					}
-					case AssetBundlesFeatureState.ListLoading: {
-						// waiting download finish.
-						break;
-					}
-					case AssetBundlesFeatureState.ListLoaded: {
-						// new or renew AssetBundleLoader.
-						_assetBundleLoader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET, _currentAssetBundleList, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
-
-						// set to load ready.
-						assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
-						goto LoadReady;
-					}
-					case AssetBundlesFeatureState.LoaderReady: {
-						goto LoadReady;
-					}
+		private IEnumerator BundleLoaderCoroutine (Action execute, Action<AssetBundleLoadError, string, AutoyaStatus> failed) {
+			switch (assetBundleFeatState) {
+				case AssetBundlesFeatureState.None: {
+					yield return null;
+					failed(AssetBundleLoadError.AssetBundleListIsNotReady, "please run AssetBundle_DownloadAssetBundleList first.", new AutoyaStatus());
+					yield break;
 				}
+				case AssetBundlesFeatureState.ListLoading: {
+					yield return null;
+					failed(AssetBundleLoadError.AssetBundleListIsNotReady, "assetBundleList is now downloading.", new AutoyaStatus());
+					yield break;
+				}
+				case AssetBundlesFeatureState.ListLoaded: {
+					// new or renew AssetBundleLoader.
+					_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
+					_assetBundlePreloader = new AssetBundlePreloader(assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
 
-				// loop.
-				yield return null;
-
-				LoadReady:
-				break;
+					// set to load ready.
+					assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
+					break;
+				}
+				case AssetBundlesFeatureState.LoaderReady: {
+					break;
+				}
 			}
 			
+			execute();
+		}
+
+		private void BundleLoaderExecute (Action execute) {
+			switch (assetBundleFeatState) {
+				case AssetBundlesFeatureState.None: {
+					return;
+				}
+				case AssetBundlesFeatureState.ListLoading: {
+					return;
+				}
+				case AssetBundlesFeatureState.ListLoaded: {
+					// new or renew AssetBundleLoader.
+					_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
+					_assetBundlePreloader = new AssetBundlePreloader(assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
+
+					// set to load ready.
+					assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
+					break;
+				}
+				case AssetBundlesFeatureState.LoaderReady: {
+					break;
+				}
+			}
+
 			execute();
 		}
 
@@ -253,38 +288,77 @@ namespace AutoyaFramework {
 			Preloader
 		*/
 		private AssetBundlePreloader _assetBundlePreloader;
-		public static void AssetBundle_Preload (string url, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, AssetBundleLoadError, AutoyaStatus> bundleDownloadFailed) {
-			// Debug.LogError("仮でリストを入れる");
-			// var assetBundleList = new AssetBundleList(
-			// 	"Mac",
-			// 	"1.0.0", 
-			// 	new AssetBundleInfo[]{
-			// 		// pngが一枚入ったAssetBundle
-			// 		new AssetBundleInfo(
-			// 			"bundlename", 
-			// 			new string[]{"Assets/AutoyaTests/Runtime/AssetBundles/TestResources/textureName.png"}, 
-			// 			new string[0], 
-			// 			621985162,
-			// 			"578b73927bc11f6e80072caa17983776",
-			// 			100
-			// 		)
-			// 	}
-			// );
+		public static void AssetBundle_Preload (string preloadListPath, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
 
-			// loaderはそのへんに存在している気がする。
-			// var loader = new AssetBundleLoader();
+			Action<AssetBundleLoader> act = loader => {
+				var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + preloadListPath;
+				autoya.mainthreadDispatcher.Commit(
+					autoya._assetBundlePreloader.Preload(
+						loader,
+						url, 
+						progress,
+						done,
+						listDownloadFailed,
+						bundleDownloadFailed,
+						maxParallelCount,
+						timeoutSec
+					)
+				);
+			};
 
-			// autoya.mainthreadDispatcher.Commit(
-			// 	autoya._assetBundlePreloader.Preload(
-			// 		loader,
-			// 		url, 
-			// 		progress,
-			// 		done,
-			// 		listDownloadFailed,
-			// 		bundleDownloadFailed,
-			// 		10// うまい指定方法がよくわかってない、ここで固定するのはまずいかな〜〜という気持ち
-			// 	)
-			// );
+			autoya.mainthreadDispatcher.Commit(
+				autoya.PreloaderCoroutine(act, listDownloadFailed)
+			);
+		}
+
+		public static void AssetBundle_Preload (PreloadList preloadList, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
+
+			Action<AssetBundleLoader> act = loader => {
+				autoya.mainthreadDispatcher.Commit(
+					autoya._assetBundlePreloader.Preload(
+						loader,
+						preloadList,
+						progress,
+						done,
+						listDownloadFailed,
+						bundleDownloadFailed,
+						maxParallelCount
+					)
+				);
+			};
+
+			autoya.mainthreadDispatcher.Commit(
+				autoya.PreloaderCoroutine(act, listDownloadFailed)
+			);
+		}
+
+		private IEnumerator PreloaderCoroutine (Action<AssetBundleLoader> execute, Action<int, string, AutoyaStatus> listDownloadFailed) {
+			switch (assetBundleFeatState) {
+				case AssetBundlesFeatureState.None: {
+					yield return null;
+					listDownloadFailed(-1, "please run AssetBundle_DownloadAssetBundleList first.", new AutoyaStatus());
+					yield break;
+				}
+				case AssetBundlesFeatureState.ListLoading: {
+					yield return null;
+					listDownloadFailed(-2, "assetBundleList is now downloading.", new AutoyaStatus());
+					yield break;
+				}
+				case AssetBundlesFeatureState.ListLoaded: {
+					// new or renew AssetBundleLoader.
+					_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
+					_assetBundlePreloader = new AssetBundlePreloader(assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
+
+					// set to load ready.
+					assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
+					break;
+				}
+				case AssetBundlesFeatureState.LoaderReady: {
+					break;
+				}
+			}
+			
+			execute(_assetBundleLoader);
 		}
 	}
 }

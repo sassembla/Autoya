@@ -13,7 +13,7 @@ public class Connections : MonoBehaviour {
 
 		var connectionId1 = Autoya.Http_Get(
 			"https://httpbin.org/get",		// url
-			(conId, data) => {				// on succeeded
+			(string conId, string data) => {// on succeeded
 				Debug.Log("get data:" + data);
 			},
 			(conId, code, reason, autoyaStatus) => {// on failed
@@ -28,7 +28,7 @@ public class Connections : MonoBehaviour {
 		var connectionId2 = Autoya.Http_Post(
 			"https://httpbin.org/post",
 			postData,
-			(conId, resultData) => {
+			(string conId, string resultData) => {
 				Debug.Log("post data:" + resultData);
 			},
 			(conId, code, reason, autoyaStatus) => {

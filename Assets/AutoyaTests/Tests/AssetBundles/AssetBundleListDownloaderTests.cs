@@ -13,18 +13,17 @@ using UnityEngine;
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	[MTest] public void GetAssetBundleList () {
 		var listPath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
-		var loader = new AssetBundleListDownloader();
+		var listDownloader = new AssetBundleListDownloader();
 
 		var done = false;
-		var cor = loader.DownloadAssetBundleList(
+		var cor = listDownloader.DownloadAssetBundleList(
 			listPath, 
 			list => {
 				done = true;
 			}, 
 			(code, reason, autoyaStatus) => {
 				// do nothing.
-			}, 
-			5
+			}
 		);
 		RunEnumeratorOnMainThread(
 			cor
@@ -48,8 +47,7 @@ public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 			(code, reason, autoyaStatus) => {
 				Assert(code == 404, "error code does not match.");
 				done = true;
-			}, 
-			5
+			}
 		);
 
 		RunEnumeratorOnMainThread(

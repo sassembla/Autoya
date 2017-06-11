@@ -39,11 +39,10 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 		
-		public IEnumerator DownloadAssetBundleList (string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec) {
+		public IEnumerator DownloadAssetBundleList (string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec=0) {
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_ASSETBUNDLELIST_PREFIX + Guid.NewGuid().ToString();
 			var reqHeader = requestHeader(url, new Dictionary<string, string>());
-			var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-
+			
 			AssetBundleList assetBundleList = null;
 			Action<string, object> listDonwloadSucceeded = (conId, listData) => {
 				var listString = listData as string;
@@ -56,7 +55,7 @@ namespace AutoyaFramework.AssetBundles {
 				failed(code, reason, autoyaStatus);
 			};
 			
-			var downloadCoroutine = DownloadAssetBundleList(
+			var downloadCoroutine = DownloadAssetBundleListCoroutine(
 				connectionId,
 				reqHeader,
 				url,
@@ -66,7 +65,7 @@ namespace AutoyaFramework.AssetBundles {
 				(conId, code, reason, responseHeader) => {
 					httpResponseHandlingDelegate(connectionId, responseHeader, code, string.Empty, reason, listDonwloadSucceeded, listDownloadFailed);
 				},
-				timeoutTick
+				timeoutSec
 			);
 
 			while (downloadCoroutine.MoveNext()) {
@@ -74,14 +73,15 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
-		private IEnumerator DownloadAssetBundleList (
+		private IEnumerator DownloadAssetBundleListCoroutine (
 			string connectionId, 
 			Dictionary<string, string> requestHeader, 
 			string url, 
 			Action<string, int, Dictionary<string, string>, string> succeeded, 
 			Action<string, int, string, Dictionary<string, string>> failed, 
-			long limitTick
+			double timeoutSec=0
 		) {
+			var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			using (var request = UnityWebRequest.Get(url)) {
 				if (requestHeader != null) {
 					foreach (var kv in requestHeader) {
@@ -95,7 +95,7 @@ namespace AutoyaFramework.AssetBundles {
 					yield return null;
 
 					// check timeout.
-					if (limitTick != 0 && limitTick < DateTime.UtcNow.Ticks) {
+					if (timeoutSec != 0 && timeoutTick < DateTime.UtcNow.Ticks) {
 						request.Abort();
 						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "timeout to download assetBundleList:" + url, new Dictionary<string, string>());
 						yield break;

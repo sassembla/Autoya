@@ -10,7 +10,7 @@ public class MainthreadDispatchSample : MonoBehaviour {
             "newConnectionId",
             new Dictionary<string, string>(),
             "https://google.com",
-            (conId, code, responseHeaders, data) => {
+            (string conId, int code, Dictionary<string, string> responseHeaders, string data) => {
                 // succeeded.
                 Debug.Log("data:" + data);
             },

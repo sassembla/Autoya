@@ -9,14 +9,20 @@ using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
 
-	public delegate void BundlePreloadFailed (string conId, AssetBundleLoadError err, int code, string reason, AutoyaStatus autoyaStatus);
-	
 	[Serializable] public class PreloadList {
 		public string name;
 		public string[] bundleNames;
 		public PreloadList (string name, string[] bundleNames) {
 			this.name = name;
 			this.bundleNames = bundleNames;
+		}
+
+		/**
+			create preloadList which contains whole assetBundle names in the AssetBundleList.
+		 */
+		public PreloadList (string name, AssetBundleList list) {
+			this.name = name;
+			this.bundleNames = list.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
 		}
 	}
 
@@ -51,7 +57,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
-		public IEnumerator Preload (AssetBundleLoader loader, string url, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, BundlePreloadFailed bundlePreloadFailed, double timeoutSec, int maxParallelCount=1) {
+		public IEnumerator Preload (AssetBundleLoader loader, string url, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1, double timeoutSec=0) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -70,8 +76,7 @@ namespace AutoyaFramework.AssetBundles {
 
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_PRELOADLIST_PREFIX + Guid.NewGuid().ToString();
 			var reqHeader = requestHeader(url, new Dictionary<string, string>());
-			var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-
+			
 			PreloadList list = null;
 			Action<string, object> listDonwloadSucceeded = (conId, listData) => {
 				var listStr = listData as string;
@@ -92,7 +97,7 @@ namespace AutoyaFramework.AssetBundles {
 				(conId, code, reason, responseHeaders) => {
 					httpResponseHandlingDelegate(connectionId, responseHeaders, code, string.Empty, reason, listDonwloadSucceeded, listDownloadFailedAct);
 				},
-				timeoutTick
+				timeoutSec
 			);
 
 			while (downloadCoroutine.MoveNext()) {
@@ -112,8 +117,10 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
-		
-		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, BundlePreloadFailed bundlePreloadFailed, int maxParallelCount=1) {
+		/**
+			preload assetBundles by preloadList.
+		 */
+		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -170,15 +177,13 @@ namespace AutoyaFramework.AssetBundles {
 			};
 
 			Action<string, int, string, AutoyaStatus> bundlePreloadFailedAct = (bundleName, code, reason, autoyaStatus) => {
-				Debug.LogError("bundlePreloadFailedActに到達");
-				var error = AssetBundleLoadError.Undefined;
-				bundlePreloadFailed(bundleName, error, code, reason, autoyaStatus);
+				bundlePreloadFailed(bundleName, code, reason, autoyaStatus);
 			};
 
 			var wholeDownloadableAssetBundleNames = new List<string>();
 			foreach (var targetAssetBundleName in targetAssetBundleNames) {
 				if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName)) {
-					bundlePreloadFailed(targetAssetBundleName, AssetBundleLoadError.NotContainedAssetBundle, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.list.version, new AutoyaStatus());
+					bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.list.version, new AutoyaStatus());
 					yield break;
 				}
 				
@@ -218,7 +223,6 @@ namespace AutoyaFramework.AssetBundles {
 						httpResponseHandlingDelegate(conId, responseHeaders, code, bundle, string.Empty, bundlePreloadSucceededAct, bundlePreloadFailedAct);
 					},
 					(conId, code, reason, responseHeaders) => {
-						Debug.LogError("failed code:" + code);
 						httpResponseHandlingDelegate(conId, responseHeaders, code, string.Empty, reason, bundlePreloadSucceededAct, bundlePreloadFailedAct);
 					},
 					bundlePreloadTimeoutTick
@@ -288,8 +292,9 @@ namespace AutoyaFramework.AssetBundles {
 			string url, 
 			Action<string, int, Dictionary<string, string>, string> succeeded, 
 			Action<string, int, string, Dictionary<string, string>> failed, 
-			long limitTick
+			double timeoutSec=0
 		) {
+			var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			using (var request = UnityWebRequest.Get(url)) {
 				if (requestHeader != null) {
 					foreach (var kv in requestHeader) {
@@ -303,7 +308,7 @@ namespace AutoyaFramework.AssetBundles {
 					yield return null;
 
 					// check timeout.
-					if (limitTick != 0 && limitTick < DateTime.UtcNow.Ticks) {
+					if (timeoutSec != 0 && timeoutTick < DateTime.UtcNow.Ticks) {
 						request.Abort();
 						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "timeout to download preload list:" + url, new Dictionary<string, string>());
 						yield break;
