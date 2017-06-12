@@ -6,8 +6,8 @@ AssetBundle management utilities.
 次のクラスがある。
 
 * AssetBundleLoader
-* PresetDownloader
-* ListDownloader
+* AssetBundleListDownloader
+* AssetBundlePreloader
 
 ## AssetBundleLoader
 
@@ -106,7 +106,7 @@ Asset名からそのAssetを含むAssetBundle名を知りたい場合、[AssetBu
 #### Assetを取得する際の内部フロー
 次のようなフローで動作している。
 
-* Assetを指定した段階で、該当するAssetを含むAssetBundleがOnMemoryにロード済みであれば、そのAssetBundleからAssetを取得
+* Asset名を指定した段階で、該当するAssetを含むAssetBundleがOnMemoryにロード済みであれば、そのAssetBundleからAssetを取得
 * ロード済みでない場合はFileCacheを探索し、あればOnMemoryにロードし、そのAssetBundleからAssetを取得
 * FileCacheに含まれていない場合、AssetBundleのダウンロードを開始し、完了時にOnMemoryにロードし、そのAssetBundleからAssetを取得
 * ダウンロードに失敗した場合、エラーが返る
@@ -114,44 +114,16 @@ Asset名からそのAssetを含むAssetBundle名を知りたい場合、[AssetBu
 
 
 #### ゲーム中にListの更新を行う際の注意
-例えばゲームプレイ中にListが更新された場合 = サーバ上などでゲームリソースの更新が行われた場合、最新のListをAssetBundleDownloaderに対して[AssetBundleLoader#UpdateList](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundleLoader.cs#L77)でセットし、最新版のリソースを取得して使用するように仕向けることができる。
+##### 追記中
 
+## AssetBundleListDownloader
 
-ただし、次の条件を満たすAsset | AssetBundleに関しては、最新版をサーバから取得し使用するために、一度Unloadする必要がある。
+特定のAssetBundle x Nの情報が入ったリストをWebや端末内から読み出す。
+##### 追記中
 
-* ListUpdate時、既にOnMemoryに乗っていて、使用中のAsset | AssetBundle
+## AssetBundlePreloader
 
+特定のAssetBundle x NをWebから端末内にDLする。すでに保持している場合は何も起こらない。
 
-**もしUnloadしなかった場合、更新前の、OnMemoryにあるAsset | AssetBundleが継続して使用される。**
-
-ListUpdateメソッドには「更新がかかったAsset | AssetBundleがOnMemoryにあるかどうかチェックし、通知する」ためのコールバック`updatedOnMemoryAssetNameAndBundleName` があるため、もし現在使用中のAssetに更新が掛かったら、下記のようなコードでUnloadして再読み込みをするとよい。
-
-[UpdateList sample](https://github.com/sassembla/Autoya/blob/master/Assets/AutoyaTests/Tests/AssetBundles/AssetBundleLoaderTests.cs#L834)
-
-```
-// update loader's list.
-loader.UpdateList(
-	BundlePath(newVersionStr), 
-	newList, 
-	(updatedAssetNames, bundleName) => {
-		// updated && on memory loaded assets are detected.
-		// unload it from memory then get again later.
-		loader.UnloadOnMemoryAssetBundle(bundleName);
-	}
-);
-```
-
-もちろん、更新が掛かったAssetをすぐに適応せず、適当に画面遷移する際にUnloadして再度読み込み時に最新版が使われるようにする、という手法もありえる。
-
-
-## PresetDownloader
-
-開発中。特定のAssetBundle x Nのグループを作成し、それらを事前に読み込んでおく機能。
-ぶっちゃけ既存の機能でも実現可能。
-
-
-## ListDownloader
-
-開発中。ListをDLするか、ストレージから読み出すかの2択を制御する機能。
-ぶっちゃけわざわざ作る必要性がなくて放置中。
-
+DL時には進捗などが取得できる。
+##### 追記中
