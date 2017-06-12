@@ -56,7 +56,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		var result = string.Empty;
 		Autoya.Http_Get(
 			"https://httpbin.org/get", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				result = "done!:" + resultData;
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -96,7 +96,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		
 		Autoya.Http_Get(
 			"https://httpbin.org/status/404", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				Assert(false, "unexpected succeeded. resultData:" + resultData);
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -121,7 +121,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		*/
 		Autoya.Http_Get(
 			"https://httpbin.org/status/401", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				// do nothing.
 				Debug.Log("Http_Get a resultData:" + resultData);
 			},
@@ -153,7 +153,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		*/
 		Autoya.Http_Get(
 			"https://httpbin.org/delay/1", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				Assert(false, "got success result.");
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -179,7 +179,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Autoya.Http_Post(
 			"https://httpbin.org/post", 
 			"data",
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				result = "done!:" + resultData;
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -201,7 +201,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	// 	Autoya.Http_Post(
 	// 		"https://httpbin.org/headers", 
 	// 		"data",
-	// 		(string conId, string resultData) => {
+	// 		(conId, resultData) => {
 	// 			TestLogger.Log("resultData:" + resultData);
 	// 			result = resultData;
 	// 		},
@@ -229,7 +229,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Autoya.Http_Post(
 			"https://httpbin.org/status/404",
 			"data", 
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -256,7 +256,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Autoya.Http_Post(
 			"https://httpbin.org/status/401", 
 			"dummy_data",
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {
@@ -286,7 +286,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Autoya.Http_Post(
 			"https://httpbin.org/delay/1",
 			"data",
-			(string conId, string resultData) => {
+			(conId, resultData) => {
 				Assert(false, "got success result.");
 			},
 			(conId, code, reason, autoyaStatus) => {

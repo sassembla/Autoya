@@ -178,7 +178,7 @@ namespace AutoyaFramework.Connections.HTTP {
 		}
 
 		// response by byte[]
-		public IEnumerator Get (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator GetByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
@@ -219,7 +219,7 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 
-		public IEnumerator Post (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator PostByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
@@ -260,7 +260,7 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 
-		public IEnumerator Put (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator PutByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			
@@ -302,7 +302,7 @@ namespace AutoyaFramework.Connections.HTTP {
 			}
 		}
 
-		public IEnumerator Delete (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
+		public IEnumerator DeleteByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
 			var currentDate = DateTime.UtcNow;
 			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 			

@@ -54,7 +54,7 @@ public class MaintenanceDetection : MonoBehaviour {
 		// start connection -> Maintenance mode notification will return.
 		Autoya.Http_Get(
 			"https://github.com",
-			(string conId, string data) => {
+			(conId, data) => {
 				// do nothing.
 			},
 			(conId, code, reason, autoyaStatus) => {

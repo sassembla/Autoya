@@ -262,7 +262,7 @@ namespace AutoyaFramework {
 
 
 		// response by byte[]
-		public static string Http_Get (
+		public static string Http_GetByBytes (
 			string url, 
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
@@ -289,7 +289,7 @@ namespace AutoyaFramework {
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Get, url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
-				autoya._autoyaHttp.Get(
+				autoya._autoyaHttp.GetByBytes(
 					connectionId,
 					headers,
 					url,
@@ -319,7 +319,7 @@ namespace AutoyaFramework {
 			return connectionId;
 		}
 
-		public static string Http_Post (
+		public static string Http_PostByBytes (
 			string url, 
 			string data,
 			Action<string, byte[]> succeeded, 
@@ -347,7 +347,7 @@ namespace AutoyaFramework {
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Post, url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
-				autoya._autoyaHttp.Post(
+				autoya._autoyaHttp.PostByBytes(
 					connectionId,
 					headers,
 					url,
@@ -378,7 +378,7 @@ namespace AutoyaFramework {
 			return connectionId;
 		}
 
-		public static string Http_Put (
+		public static string Http_PutByBytes (
 			string url, 
 			string data,
 			Action<string, byte[]> succeeded, 
@@ -406,7 +406,7 @@ namespace AutoyaFramework {
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Put, url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
-				autoya._autoyaHttp.Put(
+				autoya._autoyaHttp.PutByBytes(
 					connectionId,
 					headers,
 					url,
@@ -437,7 +437,7 @@ namespace AutoyaFramework {
 			return connectionId;
 		}
 
-		public static string Http_Delete (
+		public static string Http_DeleteByBytes (
 			string url, 
 			string data,
 			Action<string, byte[]> succeeded, 
@@ -465,7 +465,7 @@ namespace AutoyaFramework {
 			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Delete, url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
-				autoya._autoyaHttp.Delete(
+				autoya._autoyaHttp.DeleteByBytes(
 					connectionId,
 					headers,
 					url,
