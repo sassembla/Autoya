@@ -123,7 +123,8 @@ Asset名からそのAssetを含むAssetBundle名を知りたい場合、[AssetBu
 
 ## AssetBundlePreloader
 
-特定のAssetBundle x NをWebから端末内にDLする。すでに保持している場合は何も起こらない。
+特定のAssetBundle x NをWebから端末内にDLする。
+すでに保持している場合は何も起こらない。
 
 DL時には進捗などが取得できる。
 ##### 追記中
