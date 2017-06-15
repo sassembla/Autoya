@@ -54,7 +54,7 @@ namespace AutoyaFramework.Information {
 			this.keyValueStore = kv;
 			this.prefabName = prefabName;
 		}
-
+		
 		public VirtualGameObject GetRootGameObject () {
 			if (vTransform.Parent() != null) {
 				return vTransform.Parent().GetRootGameObject();
@@ -212,18 +212,42 @@ namespace AutoyaFramework.Information {
 						contentWidth = rectTransform.sizeDelta.x;
 						contentHeight = rectTransform.sizeDelta.y;
 					}
-
+					
+					var usePercent = false;
 					foreach (var kv in this.keyValueStore) {
 						var key = kv.Key;
 						switch (key) {
 							case KV_KEY.WIDTH: {
-								var width = Convert.ToInt32(kv.Value);
-								contentWidth = width;
+								var val = kv.Value;
+								
+								if (val.EndsWith("%")) {
+									usePercent = true;
+									var number = val.Substring(0, val.Length-1);
+									var widthPer = Convert.ToInt32(number);
+									var width = viewWidth * widthPer * 0.01f;// adopt %
+									contentWidth = width;
+								} else {
+									var width = Convert.ToInt32(val);
+									contentWidth = width;
+								}
+								
+								
 								break;
 							}
 							case KV_KEY.HEIGHT: {
-								var height = Convert.ToInt32(kv.Value);
-								contentHeight = height;
+								var val = kv.Value;
+								if (val.EndsWith("%")) {
+									usePercent = true;
+									var number = val.Substring(0, val.Length-1);
+									var heightPer = Convert.ToInt32(number);
+									var height = viewHeight * heightPer * 0.01f;// adopt %
+									contentHeight = height;
+								} else {
+									var height = Convert.ToInt32(kv.Value);
+									contentHeight = height;
+								}
+								
+								
 								break;
 							}
 							case KV_KEY.SRC: {
@@ -240,7 +264,7 @@ namespace AutoyaFramework.Information {
 						}
 					}
 
-					if (viewWidth < contentWidth) {
+					if (!usePercent && viewWidth < contentWidth) {
 						var ratio = viewWidth / contentWidth;
 						// Debug.LogError("ratio:" + ratio);
 
@@ -855,7 +879,7 @@ namespace AutoyaFramework.Information {
 								var rootObject = GetRootGameObject();
 								
 								LoadImageAsync(src, obj, rootObject.executor);
-
+								
 								// add button component.
 								var rootMBInstance = rootObject.rootInstance;
 								AddButton(obj, () => rootMBInstance.OnImageTapped(tag, src));
@@ -944,7 +968,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 			}
-
+			
 			executor(coroutine);
 		}
 

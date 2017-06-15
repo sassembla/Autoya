@@ -31,8 +31,14 @@ public class Information : MonoBehaviour {
 				// set height to scroll view's content.
 				scrollContentRect.sizeDelta = new Vector2(scrollContentRect.sizeDelta.x, contentHeight);
 			},
-			(a, b) => {
-
+			progress => {
+				Debug.Log("progress:" + progress);
+			},
+			() => {
+				Debug.Log("view load done.");
+			},
+			(code, reason) => {
+				Debug.Log("view load failed, code:" + code + " reason:" + reason);
 			}
 		);
 	}

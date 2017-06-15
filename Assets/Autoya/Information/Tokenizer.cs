@@ -121,12 +121,53 @@ namespace AutoyaFramework.Information {
             rootObject = Tokenize(root, source.Replace("\n", string.Empty));
         }
 
-        public GameObject Materialize (string viewName, Action<IEnumerator> executor, View view, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel) {
-			rootObject.executor = executor;
+
+		private List<IEnumerator> coroutines = new List<IEnumerator>();
+        public GameObject Materialize (string viewName, Action<IEnumerator> executor, View view, OnLayoutDelegate onLayoutDel, OnMaterializeDelegate onMaterializeDel, Action<double> progress, Action loadDone) {
+			var total = 0.0;
+			var done = 0.0;
+
+			Action<IEnumerator> act = (iEnum) => {
+				total++;
+				var loadAct = LoadingDone(
+					iEnum, 
+					() => {
+						done++;
+
+						if (progress != null) {
+							var progressRate = done / total;
+							
+							if (done == total) {
+								progressRate = 1.0;
+							}
+
+							progress(progressRate);
+
+							if (done == total) {
+								loadDone();
+							}
+						}
+					}
+				);
+				executor(loadAct);
+			};
+
+			rootObject.executor = act;
 			
 			var rootObj = rootObject.MaterializeRoot(viewName, view, onLayoutDel, onMaterializeDel);
+
             return rootObj;
         }
+
+		private IEnumerator LoadingDone (IEnumerator loadingCoroutine, Action loadDone) {
+			while (loadingCoroutine.MoveNext()) {
+				yield return null;
+			}
+
+			if (loadDone != null) {
+				loadDone();
+			}
+		}
 
         private VirtualGameObject Tokenize (TagPoint parentTagPoint, string data) {
 			// Debug.LogError("data:" + data);
@@ -411,13 +452,13 @@ namespace AutoyaFramework.Information {
 			var kvDict = new Dictionary<KV_KEY, string>();
 			
 			// k1="v1" k2='v2'
-			
+			// k1="v1%" k2='v2%'
 			var index = 0;
 			while (true) {
 				if (source.Length <= index) {
 					break;
 				}
-
+				
 				var eqIndex = source.IndexOf('=', index);
 				if (eqIndex == -1) {
 					// no "=" found.
@@ -433,9 +474,9 @@ namespace AutoyaFramework.Information {
 				} catch (Exception e) {
 					throw new Exception("at tag:" + tag + ", found attribute:" + keyStr + " is not supported yet, e:" + e);
 				}
-
+				
 				var valStartIndex = eqIndex + 1;
-
+				
 				var delim = source[valStartIndex];
 				var valEndIndex = source.IndexOf(delim, valStartIndex + 1);
 				if (valEndIndex == -1) {
@@ -446,7 +487,6 @@ namespace AutoyaFramework.Information {
 				var val = source.Substring(valStartIndex + 1, valEndIndex - (valStartIndex + 1));
 
 				kvDict[keyEnum] = val;
-				// Debug.LogError("keyEnum:" + keyEnum + " val:" + val);
 
 				var spaceIndex = source.IndexOf(" ", valEndIndex);
 				if (spaceIndex == -1) {
