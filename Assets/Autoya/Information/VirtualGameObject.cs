@@ -146,6 +146,10 @@ namespace AutoyaFramework.Information {
 			
 			textComponent.text = lines[0];
 			var preferredWidth = textComponent.preferredWidth;
+			
+			if (contentWidth < preferredWidth) {
+				preferredWidth = contentWidth;
+			}
 
 			// reset.
 			textComponent.text = string.Empty;
@@ -181,7 +185,6 @@ namespace AutoyaFramework.Information {
 		private void LayoutTagContent (float xOffset, float yOffset, float viewWidth, float viewHeight, Action<List<VirtualGameObject>> insert) {
 			// set (x, y) start pos.
 			vRectTransform.vAnchoredPosition = new Vector2(vRectTransform.vAnchoredPosition.x + xOffset, vRectTransform.vAnchoredPosition.y + yOffset);
-			// Debug.LogError("LayoutTagContent rectTransform.anchoredPosition:" + rectTransform.anchoredPosition + " of tag:" + tag);
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -450,18 +453,7 @@ namespace AutoyaFramework.Information {
 			*/
 			onLayoutDel(this.tag, this.depth, this.padding, this.keyValueStore);
 			
-			/*
-				adopt padding to this content.
-			*/
-			{
-				// translate anchor position of content.(child follows parent.)
-				vRectTransform.vAnchoredPosition += padding.LeftTopPoint();
-				
-				handlePoint.nextLeftHandle += padding.right;
-				handlePoint.nextTopHandle += padding.bottom;
-			}
-			// Debug.LogError("rectTransform.anchoredPosition:" + rectTransform.anchoredPosition);
-
+			
 			/*
 				set next left-top point by parent tag kind.
 			*/
@@ -469,8 +461,7 @@ namespace AutoyaFramework.Information {
 				default: {
 					// 回り込みを実現する。んだけど、これはどちらかというと多数派で、デフォルトっぽい。
 					// next content is planned to layout to the next of this content.
-					handlePoint.nextLeftHandle = this.vRectTransform.vAnchoredPosition.x + this.vRectTransform.vSizeDelta.x + this.padding.PadWidth();// right edge with padding
-					// Debug.LogError("handlePoint.nextLeftHandle:" + handlePoint.nextLeftHandle);
+					handlePoint.nextLeftHandle = this.vRectTransform.vAnchoredPosition.x + this.vRectTransform.vSizeDelta.x;// after padding.
 					break;
 				}
 
@@ -483,6 +474,17 @@ namespace AutoyaFramework.Information {
 					// Debug.LogError("親がRootなので、改行する。handlePoint.nextTopHandle:" + handlePoint.nextTopHandle + " of tag:" + tag + " rectTransform.anchoredPosition:" + this.rectTransform.anchoredPosition);
 					break;
 				}
+			}
+
+			/*
+				adopt padding to this content.
+			*/
+			{
+				// translate anchor position of content.(child follows parent.)
+				vRectTransform.vAnchoredPosition += padding.LeftTopPoint();
+				
+				// handlePoint.nextLeftHandle += padding.right;
+				handlePoint.nextTopHandle += padding.top + padding.bottom;
 			}
 			
 			return handlePoint;
@@ -720,8 +722,11 @@ namespace AutoyaFramework.Information {
 					layoutLine.Clear();
 
 					// move current child content to next line head.
-					child.vRectTransform.vAnchoredPosition = new Vector2(childHandlePoint.nextLeftHandle + child.padding.left, childHandlePoint.nextTopHandle + child.padding.top);
-					// Debug.LogError("child.rectTransform.anchoredPosition:" + child.rectTransform.anchoredPosition);
+					child.vRectTransform.vAnchoredPosition = new Vector2(
+						childHandlePoint.nextLeftHandle + child.padding.left, 
+						childHandlePoint.nextTopHandle + child.padding.top
+					);
+					// Debug.LogError("child.rectTransform.anchoredPosition:" + child.vRectTransform.vAnchoredPosition);
 			
 					// set next handle.
 					childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.vRectTransform.vSizeDelta.x + child.padding.right;
@@ -756,7 +761,7 @@ namespace AutoyaFramework.Information {
 		}
 
 		/**
-			create line of contents -> sort all content by base line.
+			create line of contents -> sort all content by Y base line.
 		*/
 		private HandlePoint SortByLayoutLine (List<VirtualGameObject> layoutLine, HandlePoint handlePoint) {
 			// find tallest content in layoutLine.
@@ -780,7 +785,7 @@ namespace AutoyaFramework.Information {
 					var heightDiff = paddedHighestHeightInLine - childPaddedHeight;
 					childInLine.vRectTransform.vAnchoredPosition += new Vector2(0, heightDiff);
 					
-					// Debug.LogError("childInLine:" + childInLine.tag + " childInLine.rectTransform.anchoredPosition:" + childInLine.rectTransform.anchoredPosition + " under tag:" + this.tag + " heightDiff:" + heightDiff);
+					// Debug.LogError("childInLine:" + childInLine.tag + " childInLine.rectTransform.anchoredPosition:" + childInLine.vRectTransform.vAnchoredPosition + " under tag:" + this.tag + " heightDiff:" + heightDiff);
 				}
 
 				// set next line head.
