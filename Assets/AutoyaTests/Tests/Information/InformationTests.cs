@@ -933,6 +933,26 @@ test2
 		Draw(sample);
 	}
 
+	[MTest] public void SetImageWidthByPer () {
+		var sample = @"
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100%' height='20%' />
+ratioTest(100% x 20%)
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100%' height='30%' />
+ratioTest(100% x 30%)
+";
+		Draw(
+			sample, 
+			300, 
+			300, 
+			progress => {
+				Debug.Log("progress:" + progress);
+			},
+			() => {
+				Debug.Log("done.");
+			}
+		);
+	}
+
 	[MTest] public void LoadLocalImage () {
 		// load image from Resources/informationTest/icon.png
 		var sample = @"
@@ -1017,30 +1037,34 @@ test2
 		Draw(sample, 800);
 	}
 
-	[MTest] public void WellDesignedView () {
+	[MTest] public void BugFix_IlligalPreferredWidth () {
+		/*
+			幅指定300で折り返しサイズを測ろうとするも、preferredWidthが301とかを返してくるコーナーケースが存在する。
+			レイアウトの結果画面幅を超えるpreferredWidthが来た際、その微差を丸め込むという処理で対処した。
+		 */
 		var sample = @"
-		
+With a reference later in the document defining the URL location xxxxx:
 		";
 
-		Draw(sample, 800);
+		Draw(sample);
 	}
 
 	private static int index;
 
-	private void Draw (string sample, int width=300) {
+	private void Draw (string sample, int width=300, int height=1000, Action<double> progress=null, Action done=null) {
 		// Create new markdown instance
 		Markdown mark = new Markdown();
 
 		var text = mark.Transform(sample);
 		
 		RunEnumeratorOnMainThread(
-			RunEnum(text, width)
+			RunEnum(text, width, height, progress, done)
 		);
 
 		index+=width;
 	}
 
-	private IEnumerator RunEnum (string text, int width) {
+	private IEnumerator RunEnum (string text, int width, int height, Action<double> progress, Action done) {
 		var tokenizer = new Tokenizer(text);
 		
 		var coroutineCount = 0;
@@ -1065,9 +1089,11 @@ test2
 		var root = tokenizer.Materialize(
 			"test",
 			executor,
-			new View(width, 4000, 0),
+			new View(width, height, 0),
 			(tag, depth, padding, kv) => {},
-			(go, tag, depth, kv) => {}
+			(go, tag, depth, kv) => {},
+			progress,
+			done
 		);
 
 		var rect = root.GetComponent<RectTransform>();
