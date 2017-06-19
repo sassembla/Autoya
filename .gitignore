@@ -50,3 +50,7 @@ Assets/SignerLibs/*
 
 Assets/StreamingAssets/build_info.txt
 CHANGELOG.md
+.DS_Store
+InformationViewer.app/*
+default.profraw
+Assets/StreamingAssets/build_info.txt.meta

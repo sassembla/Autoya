@@ -8,7 +8,6 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using AutoyaFramework.Information;
 using System.Collections;
-using UnityEditor;
 
 public class InformationTests : MiyamasuTestRunner {
 	[MSetup] public void Setup () {
@@ -1071,19 +1070,38 @@ With a reference later in the document defining the URL location xxxxx:
 
 		Action<IEnumerator> executor = i => {
 			coroutineCount++;
-			
-			EditorApplication.CallbackFunction d = null;
+			#if UNITY_EDITOR
+			{
+				UnityEditor.EditorApplication.CallbackFunction d = null;
 
-			d = () => {
-				var result = i.MoveNext();
-				if (!result) {
-					EditorApplication.update -= d;
-					coroutineCount--;
-				} 
-			};
+				d = () => {
+					var result = i.MoveNext();
+					if (!result) {
+						UnityEditor.EditorApplication.update -= d;
+						coroutineCount--;
+					} 
+				};
 
-			// start running.
-			EditorApplication.update += d;
+				// start running.
+				UnityEditor.EditorApplication.update += d;
+			}
+			#else 
+			Debug.LogError("do same things with editor.");
+			// {
+			// 	UnityEditor.EditorApplication.CallbackFunction d = null;
+
+			// 	d = () => {
+			// 		var result = i.MoveNext();
+			// 		if (!result) {
+			// 			UnityEditor.EditorApplication.update -= d;
+			// 			coroutineCount--;
+			// 		} 
+			// 	};
+
+			// 	// start running.
+			// 	UnityEditor.EditorApplication.update += d;
+			// }
+			#endif
 		};
 
 		var root = tokenizer.Materialize(
