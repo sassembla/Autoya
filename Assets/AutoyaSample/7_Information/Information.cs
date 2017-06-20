@@ -8,6 +8,9 @@ public class Information : MonoBehaviour {
 	public InputField inputField;
 	public string url = "https://raw.githubusercontent.com/sassembla/Autoya/master/README.md";
 
+	// sample information view content instance.
+	private GameObject informationView;
+
 	// Use this for initialization
 	void Start () {
 		Input(url);
@@ -18,6 +21,9 @@ public class Information : MonoBehaviour {
 	}
 
 	public void Reload (string newUrl) {
+		// destory view instance.
+		Destroy(informationView);
+
 		url = newUrl;
 		Debug.LogError("url:" + url);
 		Input(url);
@@ -38,8 +44,9 @@ public class Information : MonoBehaviour {
 			viewSize.y,// view height.
 			0,// y anchor.
 			viewObj => {
+				this.informationView = viewObj;
 				// add information obj to scroll view.
-				viewObj.transform.SetParent(scrollViewContent.transform, false);
+				informationView.transform.SetParent(scrollViewContent.transform, false);
 
 				// get content height.
 				var contentHeight = viewObj.GetComponent<RectTransform>().sizeDelta.y;

@@ -946,6 +946,7 @@ namespace AutoyaFramework.Information {
 			 */
 			var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
 			var scheme = schemeAndPath[0];
+			Debug.LogWarning("githubとかは/始まりでlocalのルートを刺す。");
 			switch (scheme) {
 				case "assetbundle:": {
 					var bundleName = uriSource;// ./始まりのケースもあるのはまあなんかまとめない方が良さそう。
@@ -962,6 +963,11 @@ namespace AutoyaFramework.Information {
 					coroutine = LoadImageFromResources(resourcePath, target);
 					break;
 				}
+				// case "/:": {
+				// 	// basePathになんかjoinして出す
+
+				// 	break;
+				// }
 				default: {// other.
 					if (string.IsNullOrEmpty(scheme)) {
 						Debug.LogError("empty uri found:" + uriSource);
