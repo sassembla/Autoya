@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AutoyaFramework.AssetBundles;
 using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
@@ -145,6 +146,17 @@ namespace AutoyaFramework {
 		 */
 		public static AssetBundleList AssetBundle_AssetBundleList () {
 			return autoya.LoadAssetBundleListFromStorage();
+		}
+
+		/**
+			get total weight of specific AssetBundles.
+		 */
+		public static long AssetBundle_GetAssetBundlesWeight (string[] bundleNames) {
+			var list = AssetBundle_AssetBundleList();
+			if (list != null) {
+				return list.assetBundles.Where(bundleInfo => bundleNames.Contains(bundleInfo.bundleName)).Sum(b => b.size);
+			}
+			return 0;
 		}
 
 		private IEnumerator ListLoaderCoroutine (Action execute, Action<int, string, AutoyaStatus> downloadFailed) {
@@ -320,14 +332,15 @@ namespace AutoyaFramework {
 			Preloader
 		*/
 		private AssetBundlePreloader _assetBundlePreloader;
-		public static void AssetBundle_Preload (string preloadListPath, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
+		public static void AssetBundle_Preload (string preloadListUrl, Func<string[], IEnumerator<bool>> shouldContinePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
 
 			Action<AssetBundleLoader> act = loader => {
-				var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + preloadListPath;
+				var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + preloadListUrl;
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundlePreloader.Preload(
 						loader,
 						url, 
+						shouldContinePreloading,
 						progress,
 						done,
 						listDownloadFailed,
@@ -343,13 +356,14 @@ namespace AutoyaFramework {
 			);
 		}
 
-		public static void AssetBundle_Preload (PreloadList preloadList, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
+		public static void AssetBundle_Preload (PreloadList preloadList, Func<string[], IEnumerator<bool>> shouldContinePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
 
 			Action<AssetBundleLoader> act = loader => {
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundlePreloader.Preload(
 						loader,
 						preloadList,
+						shouldContinePreloading,
 						progress,
 						done,
 						listDownloadFailed,

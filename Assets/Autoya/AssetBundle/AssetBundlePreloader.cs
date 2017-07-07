@@ -57,7 +57,10 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
-		public IEnumerator Preload (AssetBundleLoader loader, string url, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1, double timeoutSec=0) {
+		/**
+			preload assetBundle from list url.
+		 */
+		public IEnumerator Preload (AssetBundleLoader loader, string listUrl, Func<string[], IEnumerator<bool>> shouldContinuePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1, double timeoutSec=0) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -75,7 +78,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_PRELOADLIST_PREFIX + Guid.NewGuid().ToString();
-			var reqHeader = requestHeader(url, new Dictionary<string, string>());
+			var reqHeader = requestHeader(listUrl, new Dictionary<string, string>());
 			
 			PreloadList list = null;
 			Action<string, object> listDonwloadSucceeded = (conId, listData) => {
@@ -90,7 +93,7 @@ namespace AutoyaFramework.AssetBundles {
 			var downloadCoroutine = DownloadPreloadList(
 				connectionId,
 				reqHeader,
-				url,
+				listUrl,
 				(conId, code, responseHeaders, listData) => {
 					httpResponseHandlingDelegate(connectionId, responseHeaders, code, listData, string.Empty, listDonwloadSucceeded, listDownloadFailedAct);
 				}, 
@@ -110,8 +113,8 @@ namespace AutoyaFramework.AssetBundles {
 			} else {
 				yield break;
 			}
-			
-			var bundleDownloadCor = Preload(loader, list, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
+
+			var bundleDownloadCor = Preload(loader, list, shouldContinuePreloading, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
 			while (bundleDownloadCor.MoveNext()) {
 				yield return null;
 			}
@@ -120,7 +123,7 @@ namespace AutoyaFramework.AssetBundles {
 		/**
 			preload assetBundles by preloadList.
 		 */
-		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
+		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Func<string[], IEnumerator<bool>> shouldContinuePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -196,6 +199,20 @@ namespace AutoyaFramework.AssetBundles {
 
 			var shouldDownloadAssetBundleNames = wholeDownloadableAssetBundleNames.Distinct().ToArray();
 			
+			/*
+				ask should continue or not.
+			 */
+			var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames);
+			while (shouldContinueCor.MoveNext()) {
+				yield return null;
+			}
+			
+			var shouldContine = shouldContinueCor.Current;
+			if (!shouldContine) {
+				done();
+				yield break;
+			}
+
 			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames) {
 				var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
 				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);

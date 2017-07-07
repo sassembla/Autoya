@@ -55,6 +55,7 @@ public class PreloadAssetBundle : MonoBehaviour {
 
 		Autoya.AssetBundle_Preload(
 			newPreloadList,
+			ShouldContinePreloading,
 			progress => {
 				Debug.Log("progress:" + progress);
 			},
@@ -83,6 +84,10 @@ public class PreloadAssetBundle : MonoBehaviour {
 			},
 			10 // 10 parallel download! you can set more than 0.
 		);
+	}
+
+	private IEnumerator<bool> ShouldContinePreloading (string[] preloadingBundleNames) {
+		yield return true;
 	}
 
 	void OnApplicationQuit () {

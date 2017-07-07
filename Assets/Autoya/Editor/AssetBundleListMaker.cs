@@ -1,5 +1,4 @@
 using YamlDotNet.Serialization;
-using UnityEngine.Purchasing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,48 +60,49 @@ public class AssetBundleListMaker {
 				.Build();
 
 			var json = serializer.Serialize(yamlObject);
-			var rootManifestHashTable = json.HashtableFromJson();
+			Debug.LogError("json.HashtableFromJsonがなくなったので封印中。");
+			// var rootManifestHashTable = json.HashtableFromJson();
 
-			/*
-				C#でUnity JsonUtilityが読めるような型を作るには、manifestの型情報は汚すぎる。
-				よって、Unityに同梱されているMiniJsonを使って、manifestをyaml -> json -> objectへと変換する。
-			*/
-			foreach (var has in rootManifestHashTable) {
-				if (has.Key == "AssetBundleManifest") {
-					var manifestVal = has.Value as Dictionary<string, object>;
-					foreach (var k in manifestVal) {
-						if (k.Key == "AssetBundleInfos") {
-							var infoDict = k.Value as Dictionary<string, object>;
-							foreach (var l in infoDict) {
-								var bundleInfo = new AssetBundleInfo();
+			// /*
+			// 	C#でUnity JsonUtilityが読めるような型を作るには、manifestの型情報は汚すぎる。
+			// 	よって、Unityに同梱されているMiniJsonを使って、manifestをyaml -> json -> objectへと変換する。
+			// */
+			// foreach (var has in rootManifestHashTable) {
+			// 	if (has.Key == "AssetBundleManifest") {
+			// 		var manifestVal = has.Value as Dictionary<string, object>;
+			// 		foreach (var k in manifestVal) {
+			// 			if (k.Key == "AssetBundleInfos") {
+			// 				var infoDict = k.Value as Dictionary<string, object>;
+			// 				foreach (var l in infoDict) {
+			// 					var bundleInfo = new AssetBundleInfo();
 
-								/*
-									each assetBundle infos in root manifest are here.
-								*/
-								{
-									var bundleKv = l.Value as Dictionary<string, object>;
-									foreach (var m in bundleKv) {
-										var bundleKvKey = m.Key;
-										switch (bundleKvKey) {
-											case "Name": {
-												bundleInfo.bundleName = m.Value.ToString();
-												break;
-											}
-											case "Dependencies": {
-												var dependenciesDict = m.Value as Dictionary<string, object>;
-												var dependentBundleNames = dependenciesDict.Values.Select(t => t.ToString()).ToArray();
-												bundleInfo.dependsBundleNames = dependentBundleNames;
-												break;
-											}
-										}	
-									}
-								}
-								bundleAndDependencies.Add(bundleInfo);
-							}
-						}
-					}
-				}
-			}
+			// 					/*
+			// 						each assetBundle infos in root manifest are here.
+			// 					*/
+			// 					{
+			// 						var bundleKv = l.Value as Dictionary<string, object>;
+			// 						foreach (var m in bundleKv) {
+			// 							var bundleKvKey = m.Key;
+			// 							switch (bundleKvKey) {
+			// 								case "Name": {
+			// 									bundleInfo.bundleName = m.Value.ToString();
+			// 									break;
+			// 								}
+			// 								case "Dependencies": {
+			// 									var dependenciesDict = m.Value as Dictionary<string, object>;
+			// 									var dependentBundleNames = dependenciesDict.Values.Select(t => t.ToString()).ToArray();
+			// 									bundleInfo.dependsBundleNames = dependentBundleNames;
+			// 									break;
+			// 								}
+			// 							}	
+			// 						}
+			// 					}
+			// 					bundleAndDependencies.Add(bundleInfo);
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
 		}
 
 		var assetBundleInfos = new List<AssetBundleInfo>();
@@ -112,7 +112,6 @@ public class AssetBundleListMaker {
 		*/
 		foreach (var bundleAndDependencie in bundleAndDependencies) {
 			var targetBundleName = bundleAndDependencie.bundleName;
-			Debug.LogError("targetBundleName:" + targetBundleName);
 			var newAssetBundleInfo = new AssetBundleInfo();
 			newAssetBundleInfo.bundleName = targetBundleName;
 			newAssetBundleInfo.dependsBundleNames = bundleAndDependencie.dependsBundleNames;
@@ -127,41 +126,41 @@ public class AssetBundleListMaker {
 
 				var json = serializer.Serialize(yamlObject);
 				
-
-				var bundleManifestHashTable = json.HashtableFromJson();
-				foreach (var k in bundleManifestHashTable) {
-					switch (k.Key) {
-						case "CRC": {
-							var crc = Convert.ToUInt32(k.Value);
-							newAssetBundleInfo.crc = crc;
-							break;
-						}
-						case "Assets": {
-							var assetNames = (k.Value as List<object>).Select(n => n.ToString()).ToArray();
-							newAssetBundleInfo.assetNames = assetNames;
-							break;
-						}
-						case "Hashes": {
-							var hashDict = k.Value as Dictionary<string, object>;
-							foreach (var hashItem in hashDict) {
-								if (hashItem.Key == "AssetFileHash") {
-									var assetFileHashDict = hashItem.Value as Dictionary<string, object>;
-									foreach (var assetFileHashItem in assetFileHashDict) {
-										if (assetFileHashItem.Key == "Hash") {
-											var hashStr = assetFileHashItem.Value.ToString();
-											newAssetBundleInfo.hash = hashStr;
-										}
-									}
-								}
-							}
-							break;
-						}
-					}
-				}
+				Debug.LogError("json.HashtableFromJson がなくなったので封印中");
+				// var bundleManifestHashTable = json.HashtableFromJson();
+				// foreach (var k in bundleManifestHashTable) {
+				// 	switch (k.Key) {
+				// 		case "CRC": {
+				// 			var crc = Convert.ToUInt32(k.Value);
+				// 			newAssetBundleInfo.crc = crc;
+				// 			break;
+				// 		}
+				// 		case "Assets": {
+				// 			var assetNames = (k.Value as List<object>).Select(n => n.ToString()).ToArray();
+				// 			newAssetBundleInfo.assetNames = assetNames;
+				// 			break;
+				// 		}
+				// 		case "Hashes": {
+				// 			var hashDict = k.Value as Dictionary<string, object>;
+				// 			foreach (var hashItem in hashDict) {
+				// 				if (hashItem.Key == "AssetFileHash") {
+				// 					var assetFileHashDict = hashItem.Value as Dictionary<string, object>;
+				// 					foreach (var assetFileHashItem in assetFileHashDict) {
+				// 						if (assetFileHashItem.Key == "Hash") {
+				// 							var hashStr = assetFileHashItem.Value.ToString();
+				// 							newAssetBundleInfo.hash = hashStr;
+				// 						}
+				// 					}
+				// 				}
+				// 			}
+				// 			break;
+				// 		}
+				// 	}
+				// }
 				
-				newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName)).Length;
-				Debug.LogError("newAssetBundleInfo.size:" + newAssetBundleInfo.size);
-				assetBundleInfos.Add(newAssetBundleInfo);
+				// newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName)).Length;
+				// Debug.LogError("newAssetBundleInfo.size:" + newAssetBundleInfo.size);
+				// assetBundleInfos.Add(newAssetBundleInfo);
 			}
 		}
 		

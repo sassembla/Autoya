@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
 using Miyamasu;
@@ -56,6 +57,10 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             5,
             "not deleted. some assetBundles are in use."
         );
+    }
+
+    private IEnumerator<bool> ShouldContinuePreloading (string[] bundleNames) {
+        yield return true;
     }
 
     [MTest] public void GetAssetBundleList () {
@@ -189,6 +194,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList.json",
+            ShouldContinuePreloading,
             progress => {
 
             },
@@ -218,6 +224,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList.json",
+            ShouldContinuePreloading,
             progress => {
 
             },
@@ -245,6 +252,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList2.json",
+            ShouldContinuePreloading,
             progress => {
 
             },
@@ -279,6 +287,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         
         Autoya.AssetBundle_Preload(
             preloadList,
+            ShouldContinuePreloading,
             progress => {
 
             },
@@ -309,6 +318,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         
         Autoya.AssetBundle_Preload(
             preloadList,
+            ShouldContinuePreloading,
             progress => {
 
             },

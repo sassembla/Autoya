@@ -20,6 +20,7 @@ namespace AutoyaFramework.AssetBundles {
 		[SerializeField] public string target;
 		[SerializeField] public string version;
 		[SerializeField] public AssetBundleInfo[] assetBundles;
+
 		public AssetBundleList (string target, string version, AssetBundleInfo[] assetBundles) {
 			this.target = target;
 			this.version = version;

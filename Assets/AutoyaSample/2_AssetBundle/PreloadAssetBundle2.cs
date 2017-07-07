@@ -62,6 +62,7 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		// download preloadList from web then preload described assetBundles.
 		Autoya.AssetBundle_Preload(
 			preloadListPath,
+			shouldContinePreloading,
 			progress => {
 				Debug.Log("progress:" + progress);
 			},
@@ -96,6 +97,10 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 			},
 			10 // 10 parallel download! you can set more than 0.
 		);
+	}
+
+	private IEnumerator<bool> shouldContinePreloading (string[] bundleNames) {
+		yield return true;
 	}
 
 	void OnApplicationQuit () {
