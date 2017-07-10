@@ -1,5 +1,7 @@
+using System;
+
 namespace AutoyaFramework.Information {
-	public struct HandlePoint {
+	public class HandlePoint {
 		public float nextLeftHandle;
 		public float nextTopHandle;
 

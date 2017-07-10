@@ -54,3 +54,7 @@ CHANGELOG.md
 InformationViewer.app/*
 default.profraw
 Assets/StreamingAssets/build_info.txt.meta
+Assets/SimpleAndroidNotifications/*
+Assets/SimpleAndroidNotifications.meta
+Assets/InformationResources/Resources/Views/MyView/*
+Assets/InformationResources/Resources/Views/MyView.meta

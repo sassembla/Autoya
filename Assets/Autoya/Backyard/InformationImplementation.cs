@@ -10,8 +10,6 @@ using System.Linq;
 */
 namespace AutoyaFramework {
 	public partial class Autoya {
-		private InformationView info = new InformationView();
-
 		/*
 			public apis
 		*/
@@ -27,41 +25,41 @@ namespace AutoyaFramework {
 
 			var http = new Connections.HTTP.HTTPConnection();
 
-			var view = new View(windowWidth, windowHeight, anchorPos);
+			var view = new ViewBox(windowWidth, windowHeight, anchorPos);
 
 			var cor = http.Get(
 				Guid.NewGuid().ToString(),
 				new Dictionary<string, string>(),
 				url,
 				(conId, code, responseHeaders, data) => {
-					var mark = new Markdown();
-					var html = mark.Transform(data);
-					var tokenizer = new Tokenizer(html);
-					var root = tokenizer.Materialize(
-						"test",
-						autoya.mainthreadDispatcher.Commit,
-						view,
-						(tag, depth, padding, kv) => {
-							var depthStr = string.Join(".", depth.Select(d => d.ToString()).ToArray());
-							switch (depthStr) {
-								case "H": {
-									padding.Adjust(2, 0, 1, 5);
-									break;
-								}
-								default: {
-									padding.Adjust(0, 0, 0, 8);
-									break;
-								}
-							}
-						},
-						(go, tag, depth, kv) => {
+					// var mark = new Markdown();
+					// var html = mark.Transform(data);
+					// var tokenizer = new Tokenizer(html);
+					// var root = tokenizer.Materialize(
+					// 	"test",
+					// 	autoya.mainthreadDispatcher.Commit,
+					// 	view,
+					// 	(tag, depth, padding, kv) => {
+					// 		var depthStr = string.Join(".", depth.Select(d => d.ToString()).ToArray());
+					// 		switch (depthStr) {
+					// 			case "H": {
+					// 				padding.Adjust(2, 0, 1, 5);
+					// 				break;
+					// 			}
+					// 			default: {
+					// 				padding.Adjust(0, 0, 0, 8);
+					// 				break;
+					// 			}
+					// 		}
+					// 	},
+					// 	(go, tag, depth, kv) => {
 
-						},
-						progress,
-						loadDone
-					);
+					// 	},
+					// 	progress,
+					// 	loadDone
+					// );
 
-					viewAct(root);
+					// viewAct(root);
 				},
 				(conId, code, reason, responseHeaders) => {
 					loadFailed(code, reason);

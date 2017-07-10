@@ -7,7 +7,7 @@ using System.IO;
 [InitializeOnLoad] public class Bundlizer {
 	[MenuItem("Window/Autoya/Generate Test AssetBundles")] public static void BuildAssetBundles () {
 		var currentPlatform = EditorUserBuildSettings.activeBuildTarget;
-
+		
 		var currentPlatformStr = currentPlatform.ToString();
 		
 		var assetBundleExportPath = FileController.PathCombine("AssetBundles", currentPlatformStr);

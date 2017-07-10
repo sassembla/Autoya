@@ -27,7 +27,6 @@ namespace AutoyaFramework.AssetBundles {
 	}
 
 	public class AssetBundlePreloader {
-		private readonly string basePath;
 
 		private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {

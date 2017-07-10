@@ -29,6 +29,15 @@ namespace AutoyaFramework.Purchase {
 			this.info = info;
 		}
 	}
+
+	/**
+		serialized product info struct.
+	 */
+	[Serializable] public struct ProductInfos {
+		[SerializeField] public ProductInfo[] productInfos;
+	}
+
+	
 	
 	public class PurchaseRouter : IStoreListener {
 		

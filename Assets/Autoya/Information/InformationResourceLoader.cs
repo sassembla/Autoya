@@ -1,0 +1,636 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
+
+namespace AutoyaFramework.Information {
+
+    [Serializable] public class DepthAssetList {
+        [SerializeField] public DepthAssetInfo[] depthAssetNames;
+        public DepthAssetList (DepthAssetInfo[] depthAssetNames) {
+            this.depthAssetNames = depthAssetNames;
+
+        }
+    }
+
+    [Serializable] public class DepthAssetInfo {
+        [SerializeField] public string depthAssetName;
+        [SerializeField] public string loadPath;
+        public DepthAssetInfo (string depthAssetName, string loadPath) {
+            this.depthAssetName = depthAssetName;
+            this.loadPath = loadPath;
+        }
+    }
+
+    public class InformationResourceLoader {
+        private class SpriteCache : Dictionary<string, Sprite> {};
+        private class PrefabCache : Dictionary<string, GameObject> {};
+
+        /*
+            information feature global cache.
+
+            sprites and prefabs are cached statically.
+         */
+        private static SpriteCache spriteCache = new SpriteCache();
+        private static List<string> spriteDownloadingUris = new List<string>();
+
+
+        private static PrefabCache prefabCache = new PrefabCache();
+        private static List<string> loadingPrefabNames = new List<string>();
+
+
+        private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
+		private Dictionary<string, string> BasicRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+			return requestHeader;
+		}
+
+		private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+			if (200 <= httpCode && httpCode < 299) {
+				succeeded(connectionId, data);
+				return;
+			}
+			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
+		}
+
+
+
+        private readonly Action<IEnumerator> executor;
+        public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate) {
+            this.executor = executor;
+
+            /*
+                set request header generation func and response validation delegate.
+             */
+            if (requestHeader != null) {
+				this.requestHeader = requestHeader;
+			} else {
+				this.requestHeader = BasicRequestHeaderDelegate;
+			}
+			
+			if (httpResponseHandlingDelegate != null) {
+				this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
+			} else {
+				this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
+			}
+        }
+
+
+        /**
+            load prefab from AssetBundle or Resources.
+         */
+        public IEnumerator LoadPrefab (string viewName, ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
+            IEnumerator coroutine = null;
+            switch (viewName) {
+                case InformationConstSettings.VIEWNAME_DEFAULT: {
+                    coroutine = LoadPrefabFromDefaultResources(tree, onLoaded, onLoadFailed);
+                    break;
+                }
+                default: {
+                    /*
+                        if viewName is not Default, enable to load depthAsset prefabs.
+                     */
+                    var depth = string.Empty;
+                    if (tree.isContainer) {
+                        depth = viewName + "/" + string.Join("/", tree.depth.Select(t => t.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER).ToArray());
+                    } else {
+                        for (var i = 0; i < tree.depth.Length-1; i++) {
+                            var d = tree.depth[i];
+                            depth = depth + "/" + d.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER;
+                        }
+                        depth += "/" + tree.prefabName;
+                    }
+                    
+                    var getListCoroutine = DepthAssetList();
+                    while (getListCoroutine.MoveNext()) {
+                        yield return null;
+                    }
+                    var list = getListCoroutine.Current;
+
+                    var targetDepthAssetInfos = list.depthAssetNames.Where(d => d.depthAssetName == depth).ToArray();
+                    if (targetDepthAssetInfos.Any()) {
+                        var targetInfo = targetDepthAssetInfos[0];
+                        coroutine = LoadPrefabByDepth(tree, targetInfo, onLoaded, onLoadFailed);
+                        break;
+                    }
+
+                    // Debug.Log("depth:" + depth + " not found. loading default depth,");
+
+                    /*
+                        depthAsset is not contained in depthAssetList. load Default asset from Resources.
+                     */
+                    coroutine = LoadPrefabFromDefaultResources(tree, onLoaded, onLoadFailed);
+                    break;
+                }
+            }
+
+            while (coroutine.MoveNext()) {
+                yield return null;
+            }
+		}
+
+        private IEnumerator LoadPrefabByDepth (ParsedTree tree, DepthAssetInfo info, Action<GameObject> onLoaded, Action onLoadFailed) {
+            IEnumerator coroutine = null;
+
+            var assetName = info.depthAssetName;
+            var uriSource = info.loadPath;
+
+            var schemeEndIndex = uriSource.IndexOf("//");
+            if (schemeEndIndex == -1) {
+                throw new Exception("failed to get scheme from loadPath:" + uriSource);
+            }
+            var scheme = uriSource.Substring(0, schemeEndIndex);
+            
+            switch (scheme) {
+                case "assetbundle:": {
+                    Debug.LogError("まだ未実装");
+                    // var bundleName = uriSource;
+                    // coroutine = LoadListFromAssetBundle(uriSource, succeeded, failed);
+                    break;
+                }
+                case "resources:": {
+                    var resourcePath = uriSource.Substring("resources:".Length + 2);
+                    coroutine = LoadPrefabFromResources(resourcePath, tree, onLoaded, onLoadFailed);
+                    break;
+                }
+                default: {// other.
+                    throw new Exception("unsupported scheme found, :/");
+                }
+            }
+
+            while (coroutine.MoveNext()) {
+                yield return null;
+            }
+        }
+
+        private IEnumerator LoadPrefabFromResources (string loadingPrefabName, ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
+            
+            // cached.
+            if (prefabCache.ContainsKey(loadingPrefabName)) {
+                onLoaded(prefabCache[loadingPrefabName]);
+                yield break;
+            }
+            
+            // wait the end of other loading for same prefab.
+            if (loadingPrefabNames.Contains(loadingPrefabName)) {
+                while (loadingPrefabNames.Contains(loadingPrefabName)) {
+                    yield return null;
+                }
+
+                if (!prefabCache.ContainsKey(loadingPrefabName)) {
+                    onLoadFailed();
+                    yield break;
+                }
+
+                onLoaded(prefabCache[loadingPrefabName]);
+                yield break;
+            }
+            
+            // start loading.
+            using (new AssetLoadingConstraint(loadingPrefabName, loadingPrefabNames)) {
+                GameObject obj = null;
+                var cor = Resources.LoadAsync(loadingPrefabName);
+            
+                while (!cor.isDone) {
+                    yield return null;
+                }
+                
+                obj = cor.asset as GameObject;
+                if (obj == null) {
+                    // no prefab found.
+                    Debug.LogError("failed to load prefab:" + tree.prefabName + " path:" + loadingPrefabName);
+                    onLoadFailed();
+                    yield break;
+                }
+                
+                // set cache.
+                prefabCache[loadingPrefabName] = obj;
+
+                onLoaded(obj);
+            }
+        }
+
+
+        private IEnumerator LoadPrefabFromDefaultResources (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
+            // default path.
+            var defaultPath = InformationConstSettings.PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
+
+            var loadingPrefabName = string.Empty;
+
+            if (tree.isContainer) {
+                loadingPrefabName = defaultPath + InformationConstSettings.NAME_PREFAB_CONTAINER;
+			} else {
+				loadingPrefabName = defaultPath + tree.prefabName;
+			}
+
+            var cor = LoadPrefabFromResources(loadingPrefabName, tree, onLoaded, onLoadFailed);
+            while (cor.MoveNext()) {
+                yield return null;
+            }
+        }
+        
+
+        private DepthAssetList depthAssetList;
+        private bool isLoadingDepthAssetList = false;
+        /**
+            この機構はLayoutにおいても特に特異で、リストを使う際にDLが完了して入ればそれでいいので、非同期的に振る舞うことができる。
+            独自でexecutorを回す。
+
+            また、リストへのアクセスが来た際に、DL中であれば待たせる。
+        */
+        public void GetDepthAssetList (string uriSource) {
+            if (isLoadingDepthAssetList) {
+                throw new Exception("multiple depth description found. only one description is valid.");
+            }
+
+            IEnumerator coroutine;
+
+			var schemeEndIndex = uriSource.IndexOf("//");
+            var scheme = uriSource.Substring(0, schemeEndIndex);
+            
+            isLoadingDepthAssetList = true;
+
+
+            Action<DepthAssetList> succeeded = (depthAssetList) => {
+                this.depthAssetList = depthAssetList;
+                isLoadingDepthAssetList = false;
+            };
+            
+            Action failed = () => {
+                Debug.LogError("failed to load depthAssetList from url:" + uriSource);
+                this.depthAssetList = new DepthAssetList(new DepthAssetInfo[0]);// set empty list.
+                isLoadingDepthAssetList = false;
+            };
+
+            switch (scheme) {
+                case "assetbundle:": {
+                    var bundleName = uriSource;
+                    coroutine = LoadListFromAssetBundle(uriSource, succeeded, failed);
+                    break;
+                }
+                case "https:":
+                case "http:": {
+                    coroutine = LoadListFromWeb(uriSource, succeeded, failed);
+                    break;
+                }
+                case "resources:": {
+                    var resourcePath = uriSource.Substring("resources:".Length + 2);
+                    coroutine = LoadListFromResources(resourcePath, succeeded, failed);
+                    break;
+                }
+                case "/:": {
+                    throw new Exception("unsupported scheme found, :/");
+                }
+                default: {// other.
+                    if (string.IsNullOrEmpty(scheme)) {
+                        Debug.LogError("empty uri found:" + uriSource);
+                        return;
+                    }
+
+                    // not empty. treat as resource file path.
+                    coroutine = LoadListFromResources(uriSource, succeeded, failed);
+                    break;
+                }
+            }
+
+            // run partially.
+            executor(coroutine);
+        }
+
+
+        private IEnumerator<DepthAssetList> DepthAssetList () {
+            if (this.depthAssetList == null) {
+                yield return null;
+            }
+
+            while (isLoadingDepthAssetList) {
+                yield return null;
+            }
+
+            if (this.depthAssetList == null) {
+                throw new Exception("failed to get depthAssetList. depthAssetList is null.");
+            }
+
+            yield return this.depthAssetList;
+        }
+
+        private IEnumerator LoadListFromAssetBundle (string url, Action<DepthAssetList> succeeded, Action failed) {
+            Debug.LogError("not yet applied. LoadListFromAssetBundle url:" + url);
+            failed();
+            yield break;
+        }
+        
+        private IEnumerator LoadListFromWeb (string url, Action<DepthAssetList> loadSucceeded, Action loadFailed) {
+            var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
+            var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+
+            using (var request = UnityWebRequest.Get(url)) {
+                foreach (var reqHeader in reqHeaders) {
+                    request.SetRequestHeader(reqHeader.Key, reqHeader.Value);
+                }
+
+                var p = request.Send();
+
+                var timeoutSec = InformationConstSettings.TIMEOUT_SEC;
+                var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
+
+                while (!p.isDone) {
+                    yield return null;
+
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+                        Debug.LogError("timeout. load aborted, dataPath:" + url);
+                        request.Abort();
+                        loadFailed();
+                        yield break;
+                    }
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+                
+                if (request.isError) {
+                    httpResponseHandlingDelegate(
+                        connectionId,
+                        responseHeaders,
+                        responseCode,
+                        null, 
+                        request.error, 
+                        (conId, data) => {
+                            throw new Exception("request encountered some kind of error.");
+                        }, 
+                        (conId, code, reason, autoyaStatus) => {
+                            Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
+                            loadFailed();
+                        }
+                    );
+                    yield break;
+                }
+
+                httpResponseHandlingDelegate(
+                    connectionId,
+                    responseHeaders,
+                    responseCode,
+                    string.Empty, 
+                    request.error,
+                    (conId, unusedData) => {
+                        var jsonStr = request.downloadHandler.text;
+                        var newDepthAssetList = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+
+                        loadSucceeded(newDepthAssetList);
+                    }, 
+                    (conId, code, reason, autoyaStatus) => {
+                        Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
+                        loadFailed();
+                    }
+                );
+            }
+        }
+        
+        private IEnumerator LoadListFromResources (string path, Action<DepthAssetList> succeeded, Action failed) {
+            var requestCor = Resources.LoadAsync(path);
+
+            while (!requestCor.isDone) {
+                yield return null;
+            }
+
+            if (requestCor.asset == null) {
+                failed();
+                yield break;
+            }
+
+            var jsonStr = (requestCor.asset as TextAsset).text;
+            var depthAssetList = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+            succeeded(depthAssetList);
+		}
+
+
+        public void LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
+            IEnumerator coroutine;
+
+            /*
+                supported schemes are,
+                    
+                    ^http://		http scheme => load asset from web.
+                    ^https://		https scheme => load asset from web.
+                    ^assetbundle://	assetbundle scheme => load asset from assetBundle.
+                    ^resources://   resources scheme => (Resources/)somewhere/resource path.
+                    ^./				relative path => (Resources/)somewhere/resource path.
+                    ^/              absolute path => unsupported.
+                    ^.*				path => (Resources/)somewhere/resource path.
+            */
+            var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
+            var scheme = schemeAndPath[0];
+
+            switch (scheme) {
+                case "assetbundle:": {
+                    var bundleName = uriSource;
+                    coroutine = LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
+                    break;
+                }
+                case "https:":
+                case "http:": {
+                    coroutine = LoadImageFromWeb(uriSource, loaded, loadFailed);
+                    break;
+                }
+                case ".": {
+                    var resourcePath = uriSource.Substring(2);
+                    coroutine = LoadImageFromResources(resourcePath, loaded, loadFailed);
+                    break;
+                }
+                case "resources:": {
+                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
+                    break;
+                }
+                case "/:": {
+                    throw new Exception("unsupported scheme:/");
+                }
+                default: {// other.
+                    if (string.IsNullOrEmpty(scheme)) {
+                        Debug.LogError("empty uri found:" + uriSource);
+                        return;
+                    }
+
+                    // not empty. treat as resource file path.
+                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
+                    break;
+                }
+            }
+            
+            // execute loading.
+            executor(coroutine);
+        }
+
+
+        
+
+
+
+
+        /*
+            return imageLoad iEnum functions.   
+         */
+        
+        private IEnumerator LoadImageFromAssetBundle (string assetName, Action<Sprite> loaded, Action loadFailed) {
+            yield return null;
+            Debug.LogError("LoadImageFromAssetBundle bundleName:" + assetName);
+        }
+
+        private IEnumerator LoadImageFromResources (string uriSource, Action<Sprite> loaded, Action loadFailed) {
+            var extLen = Path.GetExtension(uriSource).Length;
+            var uri = uriSource.Substring(0, uriSource.Length - extLen);
+
+            var resourceLoadingCor = Resources.LoadAsync(uri);
+            while (!resourceLoadingCor.isDone) {
+                yield return null;
+            }
+            
+            if (resourceLoadingCor.asset == null) {
+                loadFailed();
+                yield break;
+            }
+
+            // create tex.
+            var tex = resourceLoadingCor.asset as Texture2D;
+            var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
+            
+            loaded(spr);
+        }
+
+        private IEnumerator LoadImageFromWeb (string url, Action<Sprite> loaded, Action loadFailed) {
+            if (spriteCache.ContainsKey(url)) {
+                loaded(spriteCache[url]);
+                yield break;
+            }
+
+            if (spriteDownloadingUris.Contains(url)) {
+                while (spriteDownloadingUris.Contains(url)) {
+                    yield return null;
+                }
+
+                if (spriteCache.ContainsKey(url)) {
+                    // download is done. cached sprite exists.
+                    loaded(spriteCache[url]);
+                    yield break;
+                }
+
+                loadFailed();
+                yield break;
+            }
+
+            // start downloading.
+            using (new AssetLoadingConstraint(url, spriteDownloadingUris)) {
+                var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_IMAGE_PREFIX + Guid.NewGuid().ToString();
+                var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+
+                // start download tex from url.
+                using (var request = UnityWebRequest.GetTexture(url)) {
+                    foreach (var reqHeader in reqHeaders) {
+                        request.SetRequestHeader(reqHeader.Key, reqHeader.Value);
+                    }
+
+                    var p = request.Send();
+
+                    var timeoutSec = InformationConstSettings.TIMEOUT_SEC;
+                    var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
+
+                    while (!p.isDone) {
+                        yield return null;
+
+                        // check timeout.
+                        if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+                            Debug.LogError("timeout. load aborted, dataPath:" + url);
+                            request.Abort();
+                            loadFailed();
+                            yield break;
+                        }
+                    }
+
+                    var responseCode = (int)request.responseCode;
+                    var responseHeaders = request.GetResponseHeaders();
+                    
+                    
+                    if (request.isError) {
+                        httpResponseHandlingDelegate(
+                            connectionId,
+                            responseHeaders,
+                            responseCode,
+                            null, 
+                            request.error, 
+                            (conId, data) => {
+                                throw new Exception("request encountered some kind of error.");
+                            }, 
+                            (conId, code, reason, autoyaStatus) => {
+                                Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
+                                loadFailed();
+                            }
+                        );
+                        yield break;
+                    }
+
+                    httpResponseHandlingDelegate(
+                        connectionId,
+                        responseHeaders,
+                        responseCode,
+                        request, 
+                        request.error,
+                        (conId, data) => {
+                            // create tex.
+                            var tex = DownloadHandlerTexture.GetContent(request);
+
+                            // cache this sprite for other requests.
+                            var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
+                            spriteCache[url] = spr;
+                            
+                            loaded(spriteCache[url]);
+                        }, 
+                        (conId, code, reason, autoyaStatus) => {
+                            Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
+                            loadFailed();
+                        }
+                    );
+                }
+            }
+        }
+
+        private class AssetLoadingConstraint : IDisposable {
+			private string target;
+			private List<string> list;
+			
+			public AssetLoadingConstraint (string target, List<string> list) {
+				this.target = target;
+				this.list = list;
+
+				this.list.Add(this.target);
+			}
+
+			private bool disposedValue = false;
+
+			protected virtual void Dispose (bool disposing) {
+				if (!disposedValue) {
+					if (disposing) {
+						list.Remove(target);
+					}
+					disposedValue = true;
+				}
+			}
+
+			void IDisposable.Dispose () {
+				Dispose(true);
+			}
+		}
+
+
+
+
+        public static GameObject LoadGameObject (GameObject prefab) {
+            // Debug.LogWarning("ここを後々、可視範囲へのオブジェクトプールからの取得に変える。タグ単位でGameObjectのプールを作るか。スクロールとかで可視範囲に入ったら内容を当てる、みたいなのがやりたい。");
+            return GameObject.Instantiate(prefab);
+        }
+    }
+}

@@ -74,7 +74,20 @@ public class FileController {
 		return ConvertSeparater(Directory.GetDirectories(path).ToList());
 	}
 
-	/**
+	public static void CreateDirectoryRecursively (string path) {
+		var paths = path.Split('/');
+		CreateDirectoryRecursively(paths);
+    }
+
+    public static void CreateDirectoryRecursively (string[] paths) {
+		var basePath = string.Empty;
+        foreach (var path in paths) {
+			basePath = Path.Combine(basePath, path);
+			Directory.CreateDirectory(basePath);
+		}
+    }
+
+    /**
 		returns file paths which are located in the folder.
 
 		this method is main point for supporting path format of cross platform.
@@ -101,7 +114,7 @@ public class FileController {
 
 		this method replaces folder delimiters to '/'.
 	*/
-	public static List<string> FilePathsInFolderOnly1Level (string localFolderPath) {
+    public static List<string> FilePathsInFolderOnly1Level (string localFolderPath) {
 		// change platform-depends folder delimiter -> '/'
 		var filePaths = ConvertSeparater(Directory.GetFiles(localFolderPath)
 				.Where(path => !(Path.GetFileName(path).StartsWith(".")))

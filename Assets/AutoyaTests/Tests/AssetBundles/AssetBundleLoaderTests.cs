@@ -1087,6 +1087,10 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		Assert(assetInfo.size == 100, "not match.");
 	}
 
+    [MTest] public void GetSameAssetBundleOnceThenFailToDownload () {
+        // 同じbundleをDL中に、最初にDL開始したassetがDL失敗になった際の処理。
+    }
+
 	// [MTest] public void UnloadOnMemoryAssetBundle () {
 	// 	Debug.LogError("UnloadOnMemoryAssetBundle not yet.");
 	// }

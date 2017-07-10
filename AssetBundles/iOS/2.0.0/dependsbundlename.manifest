@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 4178986787
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: b873c0743bb0bbf54f5398f2d2408bef
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 2973e7e5e128b5453eee3c3bbbbd4b69
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 54
+  Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab
+Dependencies:
+- /Users/passepied/Desktop/autoya/AssetBundles/iOS/2.0.0/bundlename

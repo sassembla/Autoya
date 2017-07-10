@@ -116,8 +116,6 @@ namespace AutoyaFramework.AssetBundles {
 				this timeoutSec param is enabled only for downloading AssetBundle from web.
 
 				複数のAssetBundleに依存していて、それのうちのひとつとかがtimeoutしたら
-				
-
 		*/
 		public IEnumerator LoadAsset<T> (
 			string assetName, 
@@ -258,14 +256,23 @@ namespace AutoyaFramework.AssetBundles {
 					}
 				}
 			}
+			
+			var url = GetAssetBundleDownloadUrl(bundleName);
 
 			// check now loading or not. if same bundle is already under loading, wait it here.
-			while (loadingAssetBundleNames.Contains(bundleName)) {
-				yield return null;
+			if (loadingAssetBundleNames.Contains(bundleName)) {
+				while (loadingAssetBundleNames.Contains(bundleName)) {
+					yield return null;
+				}
+
+				// check downloaded bundle is correctly cached or not.
+				var isCached = Caching.IsVersionCached(url, hash);
+				if (!isCached) {
+					loadFailed(assetName, AssetBundleLoadError.DownloadFailed, "caching failed.", new AutoyaStatus());
+					yield break;
+				}
 			}
 
-			var url = GetAssetBundleDownloadUrl(bundleName);
-			
 			// assetBundle is already allocated on memory. load that.
 			if (assetBundleDict.ContainsKey(bundleName)) {
 				if (isDependency) {
