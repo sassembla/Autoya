@@ -22,6 +22,46 @@ public class AssetBundleListMaker {
 		targetOS = EditorUserBuildSettings.activeBuildTarget;
 		shouldOverwrite = false;
 	}
+	/*
+{
+	"ManifestFileVersion": "0",
+	"CRC": "2462514955",
+	"AssetBundleManifest": {
+		"AssetBundleInfos": {
+			"Info_0": {
+				"Name": "bundlename",
+				"Dependencies": {}
+			},
+			"Info_1": {
+				"Name": "dependsbundlename",
+				"Dependencies": {// うーん複数階層持つことがあり得るのか〜〜きっちーな。このレイヤーは紛れもなく辞書なんだ。
+					"Dependency_0": "bundlename"
+				}
+			},
+			"Info_2": {
+				"Name": "dependsbundlename2",
+				"Dependencies": {
+					"Dependency_0": "bundlename"
+				}
+			},
+			"Info_3": {
+				"Name": "nestedprefab",
+				"Dependencies": {
+					"Dependency_0": "dependsbundlename"
+				}
+			},
+			"Info_4": {
+				"Name": "updatable",
+				"Dependencies": {
+					"Dependency_0": "bundlename"
+				}
+			}
+		}
+	}
+}	
+	
+	 */
+	
 	
 	public void MakeList () {
 		var targetOSStr = targetOS.ToString();
@@ -54,13 +94,14 @@ public class AssetBundleListMaker {
 			var deserializer = new DeserializerBuilder().Build();
 			
 			var yamlObject = deserializer.Deserialize(new StringReader(rootManifest));
+			// このへんを換えればいけそうな気がする。yamlObject自体から列挙とかがとれるはず。
 			
 			var serializer = new SerializerBuilder()
 				.JsonCompatible()
 				.Build();
 
 			var json = serializer.Serialize(yamlObject);
-			Debug.LogError("json.HashtableFromJsonがなくなったので封印中。");
+			Debug.LogError("json:" + json);
 			// var rootManifestHashTable = json.HashtableFromJson();
 
 			// /*
