@@ -294,4 +294,15 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 
 		WaitUntil(() => doneCount == 2, 5, "not yet done. doneCount:" + doneCount);
 	}
+
+    [MTest] public void GetPreloadingAssetBundleNames () {
+        // Preloaderのテストで、途中で得られるbundleNameがキャッシュ状況によって変わるやつ
+        Assert(false, "not yet tested.");
+    }
+
+    [MTest] public void GetPreloadingAssetBundleNamesWithCache () {
+        // Preloaderのテストで、途中で得られるbundleNameがキャッシュ状況によって変わるやつ
+        Assert(false, "not yet tested.");
+    }
+    
 }

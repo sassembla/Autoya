@@ -340,4 +340,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             "not yet done."
         );
     }
+
+    [MTest] public void AssetBundle_NotCachedBundleNames () {
+        Assert(false, "not yet implemented.");
+    }
 }
