@@ -184,7 +184,7 @@ namespace AutoyaFramework {
 
 				var isCachedOnStorage = Caching.IsVersionCached(url, hash);
 
-				if (!isCachedOnStorage) {
+				if (isCachedOnStorage) {
 					continue;
 				}
 
