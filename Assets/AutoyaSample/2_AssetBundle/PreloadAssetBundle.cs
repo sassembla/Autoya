@@ -55,7 +55,7 @@ public class PreloadAssetBundle : MonoBehaviour {
 
 		Autoya.AssetBundle_Preload(
 			newPreloadList,
-			ShouldContinePreloading,
+			ShouldContinuePreloading,
 			progress => {
 				Debug.Log("progress:" + progress);
 			},
@@ -86,7 +86,7 @@ public class PreloadAssetBundle : MonoBehaviour {
 		);
 	}
 
-	private IEnumerator<bool> ShouldContinePreloading (string[] preloadingBundleNames) {
+	private IEnumerator<bool> ShouldContinuePreloading (string[] preloadingBundleNames) {
 		yield return true;
 	}
 

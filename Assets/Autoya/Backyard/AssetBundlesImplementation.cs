@@ -148,6 +148,7 @@ namespace AutoyaFramework {
 			return autoya.LoadAssetBundleListFromStorage();
 		}
 
+
 		/**
 			get total weight of specific AssetBundles.
 		 */
@@ -158,6 +159,41 @@ namespace AutoyaFramework {
 			}
 			return 0;
 		}
+
+
+
+		/**
+			get bundle names of "not storage cached" assetBundle from assetBundleList.
+		 */
+		public static void AssetBundle_NotCachedBundleNames (Action<string[]> onBundleNamesReady) {
+			var cor = GetNotCachedAssetBundleNames(onBundleNamesReady);
+			Autoya.Mainthread_Commit(cor);
+		}
+
+		private static IEnumerator GetNotCachedAssetBundleNames (Action<string[]> onBundleNamesReady) {
+			while (!Caching.ready) {
+				yield return null;
+			}
+
+			var bundleNames = new List<string>();
+			var assetBundleList = AssetBundle_AssetBundleList();
+			foreach (var bundleInfo in assetBundleList.assetBundles) {
+				var bundleName = bundleInfo.bundleName;
+				var url = Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET) + bundleName;
+				var hash = Hash128.Parse(bundleInfo.hash);
+
+				var isCachedOnStorage = Caching.IsVersionCached(url, hash);
+
+				if (!isCachedOnStorage) {
+					continue;
+				}
+
+				bundleNames.Add(bundleName);
+			}
+
+			onBundleNamesReady(bundleNames.ToArray());
+		}
+
 
 		private IEnumerator ListLoaderCoroutine (Action execute, Action<int, string, AutoyaStatus> downloadFailed) {
 			// check current state.
@@ -332,7 +368,7 @@ namespace AutoyaFramework {
 			Preloader
 		*/
 		private AssetBundlePreloader _assetBundlePreloader;
-		public static void AssetBundle_Preload (string preloadListUrl, Func<string[], IEnumerator<bool>> shouldContinePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
+		public static void AssetBundle_Preload (string preloadListUrl, Func<string[], IEnumerator<bool>> shouldContinuePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> listDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
 
 			Action<AssetBundleLoader> act = loader => {
 				var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + preloadListUrl;
@@ -340,7 +376,7 @@ namespace AutoyaFramework {
 					autoya._assetBundlePreloader.Preload(
 						loader,
 						url, 
-						shouldContinePreloading,
+						shouldContinuePreloading,
 						progress,
 						done,
 						listDownloadFailed,

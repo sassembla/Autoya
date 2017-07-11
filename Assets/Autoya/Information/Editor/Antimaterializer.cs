@@ -82,7 +82,6 @@ namespace AutoyaFramework.Information {
 
             var rectTrans = source.GetComponent<RectTransform>();
             var isContainer = source.name.EndsWith(InformationConstSettings.NAME_PREFAB_CONTAINER);
-            var anchor = rectTrans.anchoredPosition;
             
             var currentDepth = string.Join("/", currentDepthSource.ToArray());
             
@@ -94,13 +93,29 @@ namespace AutoyaFramework.Information {
                 var reason = string.Empty;
 
                 var useThisContainer = false;
-                if (anchor != Vector2.zero) {
-                    reason += "anchor,";
+
+
+                // diff by anchordPosition.
+                if (rectTrans.anchoredPosition != Vector2.zero) {
+                    reason += "position,";
                     useThisContainer = true;
                 }
 
                 // アンカー設定が異なる
-
+                // diff by anchor setting.
+                if (
+                    rectTrans.anchorMin.x == 0 &&
+                    rectTrans.anchorMin.y == 1 &&
+                    rectTrans.anchorMax.x == 0 &&
+                    rectTrans.anchorMax.y == 1 &&
+                    rectTrans.pivot.x == 0 &&
+                    rectTrans.pivot.y == 1
+                ) {
+                    // pass.
+                } else {
+                    reason += "anchor,";
+                    useThisContainer = true;
+                }
 
                 // RectTransform以外にもComponentがついてる
                 var components = source.GetComponents<Component>();
@@ -137,7 +152,7 @@ namespace AutoyaFramework.Information {
             } else {
                 /*
                     containerではない要素の比較の場合、単体のtagとしての比較を行うことになる。
-                    
+                    component単位で差分を見る？
                  */
 
             }

@@ -196,12 +196,26 @@ namespace AutoyaFramework.AssetBundles {
 				wholeDownloadableAssetBundleNames.AddRange(dependentBundleNames);
 			}
 
-			var shouldDownloadAssetBundleNames = wholeDownloadableAssetBundleNames.Distinct().ToArray();
-			
+			var shouldDownloadAssetBundleNamesCandidate = wholeDownloadableAssetBundleNames.Distinct().ToArray();
+			var shouldDownloadAssetBundleNames = new List<string>();
+
+			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNamesCandidate) {
+				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
+				var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
+				var hash = Hash128.Parse(targetBundleInfo.hash);
+				
+				// check if bundle is cached.
+				if (Caching.IsVersionCached(bundleUrl, hash)) {
+					continue;
+				}
+				shouldDownloadAssetBundleNames.Add(shouldDownloadAssetBundleName);
+			}
+
+
 			/*
 				ask should continue or not.
 			 */
-			var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames);
+			var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray());
 			while (shouldContinueCor.MoveNext()) {
 				yield return null;
 			}
@@ -212,6 +226,9 @@ namespace AutoyaFramework.AssetBundles {
 				yield break;
 			}
 
+			/*
+				bundles are not cached. should start download.
+			 */
 			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames) {
 				var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
 				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
@@ -221,11 +238,6 @@ namespace AutoyaFramework.AssetBundles {
 				var crc = targetBundleInfo.crc;
 				var hash = Hash128.Parse(targetBundleInfo.hash);
 				
-				// check if bundle is cached.
-				if (Caching.IsVersionCached(bundleUrl, hash)) {
-					continue;
-				}
-
 				var bundlePreloadTimeoutTick = 0;// preloader does not have limit now.
 
 				var cor = loader.DownloadAssetBundle(

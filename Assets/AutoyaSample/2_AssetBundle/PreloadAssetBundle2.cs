@@ -62,7 +62,7 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		// download preloadList from web then preload described assetBundles.
 		Autoya.AssetBundle_Preload(
 			preloadListPath,
-			shouldContinePreloading,
+			ShouldContinuePreloading,
 			progress => {
 				Debug.Log("progress:" + progress);
 			},
@@ -99,7 +99,7 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		);
 	}
 
-	private IEnumerator<bool> shouldContinePreloading (string[] bundleNames) {
+	private IEnumerator<bool> ShouldContinuePreloading (string[] bundleNames) {
 		yield return true;
 	}
 
