@@ -1,4 +1,6 @@
+using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +8,7 @@ using UnityEngine;
 using System.Linq;
 using AutoyaFramework.AssetBundles;
 using UnityEditor;
+using System.Text;
 
 public class AssetBundleListMaker {
 	// this list make feature expect that folder is exists on the top level of YOUR_PROJECT_FOLDER.
@@ -90,60 +93,71 @@ public class AssetBundleListMaker {
 		*/
 		
 		using (var sr = new StreamReader(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetOSStr + ".manifest"))) {
-			var rootManifest = sr.ReadToEnd();
-			var deserializer = new DeserializerBuilder().Build();
-			
-			var yamlObject = deserializer.Deserialize(new StringReader(rootManifest));
-			// このへんを換えればいけそうな気がする。yamlObject自体から列挙とかがとれるはず。
-			
-			var serializer = new SerializerBuilder()
-				.JsonCompatible()
-				.Build();
+			// read root manifest file.
+			{
+				var rootYaml = new YamlStream();
+				rootYaml.Load(sr);
+				
+				var rootMapping = (YamlMappingNode)rootYaml.Documents[0].RootNode;
+				foreach (var root_item in rootMapping) {
+					var rootKey = ((YamlScalarNode)root_item.Key).Value;
+					switch (rootKey) {
+						case "ManifestFileVersion": {
+							// Debug.LogError("ManifestFileVersion:" + ((YamlScalarNode)root_item.Value).Value);
+							break;
+						}
+						case "AssetBundleManifest": {
+							var assetBundleManifestMapping = (YamlMappingNode)root_item.Value;
+							foreach (var assetBundleManifestMapping_item in assetBundleManifestMapping) {
+								var manifestKey = ((YamlScalarNode)assetBundleManifestMapping_item.Key).Value;
+								switch (manifestKey) {
+									case "AssetBundleInfos": {
 
-			var json = serializer.Serialize(yamlObject);
-			Debug.LogError("json:" + json);
-			// var rootManifestHashTable = json.HashtableFromJson();
+										var manifestInfoSeq = (YamlMappingNode)assetBundleManifestMapping_item.Value;
+										foreach (var manifestInfo_item in manifestInfoSeq) {
 
-			// /*
-			// 	C#でUnity JsonUtilityが読めるような型を作るには、manifestの型情報は汚すぎる。
-			// 	よって、Unityに同梱されているMiniJsonを使って、manifestをyaml -> json -> objectへと変換する。
-			// */
-			// foreach (var has in rootManifestHashTable) {
-			// 	if (has.Key == "AssetBundleManifest") {
-			// 		var manifestVal = has.Value as Dictionary<string, object>;
-			// 		foreach (var k in manifestVal) {
-			// 			if (k.Key == "AssetBundleInfos") {
-			// 				var infoDict = k.Value as Dictionary<string, object>;
-			// 				foreach (var l in infoDict) {
-			// 					var bundleInfo = new AssetBundleInfo();
+											var bundleInfo = new AssetBundleInfo();
+											
+											
+											var bundleInfoMapping = (YamlMappingNode)manifestInfo_item.Value;
+											foreach (var info_item in bundleInfoMapping) {
+												var infoKey = ((YamlScalarNode)info_item.Key).Value;
+												switch (infoKey) {
+													case "Name": {
+														var name = ((YamlScalarNode)info_item.Value).Value;
+														// Debug.LogError("name:" + name);
 
-			// 					/*
-			// 						each assetBundle infos in root manifest are here.
-			// 					*/
-			// 					{
-			// 						var bundleKv = l.Value as Dictionary<string, object>;
-			// 						foreach (var m in bundleKv) {
-			// 							var bundleKvKey = m.Key;
-			// 							switch (bundleKvKey) {
-			// 								case "Name": {
-			// 									bundleInfo.bundleName = m.Value.ToString();
-			// 									break;
-			// 								}
-			// 								case "Dependencies": {
-			// 									var dependenciesDict = m.Value as Dictionary<string, object>;
-			// 									var dependentBundleNames = dependenciesDict.Values.Select(t => t.ToString()).ToArray();
-			// 									bundleInfo.dependsBundleNames = dependentBundleNames;
-			// 									break;
-			// 								}
-			// 							}	
-			// 						}
-			// 					}
-			// 					bundleAndDependencies.Add(bundleInfo);
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
+														bundleInfo.bundleName = name;
+														break;
+													}
+													case "Dependencies": {
+														var dependenciesMapping = (YamlMappingNode)info_item.Value;
+														foreach (var dependency_item in dependenciesMapping) {
+															var dependentBundleName = ((YamlScalarNode)dependency_item.Value).Value;
+															// Debug.LogError("dependentBundleName:" + dependentBundleName);
+														}
+
+														var dependentBundleNames = dependenciesMapping.Select(t => ((YamlScalarNode)t.Value).Value).ToArray();
+														bundleInfo.dependsBundleNames = dependentBundleNames;
+														break;
+													}
+												}
+											}
+
+
+											bundleAndDependencies.Add(bundleInfo);
+										}
+
+										break;
+									}
+								}
+								
+							}						
+							break;
+						}
+					}
+				}
+			}
 		}
 
 		var assetBundleInfos = new List<AssetBundleInfo>();
@@ -153,55 +167,73 @@ public class AssetBundleListMaker {
 		*/
 		foreach (var bundleAndDependencie in bundleAndDependencies) {
 			var targetBundleName = bundleAndDependencie.bundleName;
+
 			var newAssetBundleInfo = new AssetBundleInfo();
 			newAssetBundleInfo.bundleName = targetBundleName;
 			newAssetBundleInfo.dependsBundleNames = bundleAndDependencie.dependsBundleNames;
 			
 			using (var sr = new StreamReader(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName + ".manifest"))) {
-				var bundleManifest = sr.ReadToEnd();
+				var rootYaml = new YamlStream();
+				rootYaml.Load(sr);
+				
+				var rootMapping = (YamlMappingNode)rootYaml.Documents[0].RootNode;
+				foreach (var root_item in rootMapping) {
+					var rootKey = ((YamlScalarNode)root_item.Key).Value;
+					switch (rootKey) {
+						case "CRC": {
+							var crc = Convert.ToUInt32(((YamlScalarNode)root_item.Value).Value);
+							// Debug.LogError("crc:" + crc);
 
-				var deserializer = new DeserializerBuilder().Build();
-				
-				var yamlObject = deserializer.Deserialize(new StringReader(bundleManifest));
-				var serializer = new SerializerBuilder().JsonCompatible().Build();
+							newAssetBundleInfo.crc = crc;
+							break;
+						}
+						case "Assets": {
+							var assetNamesSeq = (YamlSequenceNode)root_item.Value;
+							var assetNames = assetNamesSeq.Select(n => ((YamlScalarNode)n).Value).ToArray();
 
-				var json = serializer.Serialize(yamlObject);
+							// foreach (var assetName in assetNames) {
+							// 	Debug.LogError("assetName:" + assetName);
+							// }
+
+							newAssetBundleInfo.assetNames = assetNames;
+							break;
+						}
+						case "Hashes": {
+							var hashMapping = (YamlMappingNode)root_item.Value;
+							foreach (var hash_item in hashMapping) {
+								var hashKey = ((YamlScalarNode)hash_item.Key).Value;
+								switch (hashKey) {
+									case "AssetFileHash": {
+										var assetHashMapping = (YamlMappingNode)hash_item.Value;
+										foreach (var assetHash_item in assetHashMapping) {
+											var assetHashKey = ((YamlScalarNode)assetHash_item.Key).Value;
+											switch (assetHashKey) {
+												case "Hash": {
+													var hashStr = ((YamlScalarNode)assetHash_item.Value).Value;
+													
+													// Debug.LogError("hashStr:" + hashStr);
+
+													newAssetBundleInfo.hash = hashStr;
+													break;
+												}
+											}
+										}
+
+										break;
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
 				
-				Debug.LogError("json.HashtableFromJson がなくなったので封印中");
-				// var bundleManifestHashTable = json.HashtableFromJson();
-				// foreach (var k in bundleManifestHashTable) {
-				// 	switch (k.Key) {
-				// 		case "CRC": {
-				// 			var crc = Convert.ToUInt32(k.Value);
-				// 			newAssetBundleInfo.crc = crc;
-				// 			break;
-				// 		}
-				// 		case "Assets": {
-				// 			var assetNames = (k.Value as List<object>).Select(n => n.ToString()).ToArray();
-				// 			newAssetBundleInfo.assetNames = assetNames;
-				// 			break;
-				// 		}
-				// 		case "Hashes": {
-				// 			var hashDict = k.Value as Dictionary<string, object>;
-				// 			foreach (var hashItem in hashDict) {
-				// 				if (hashItem.Key == "AssetFileHash") {
-				// 					var assetFileHashDict = hashItem.Value as Dictionary<string, object>;
-				// 					foreach (var assetFileHashItem in assetFileHashDict) {
-				// 						if (assetFileHashItem.Key == "Hash") {
-				// 							var hashStr = assetFileHashItem.Value.ToString();
-				// 							newAssetBundleInfo.hash = hashStr;
-				// 						}
-				// 					}
-				// 				}
-				// 			}
-				// 			break;
-				// 		}
-				// 	}
-				// }
-				
-				// newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName)).Length;
+				// set size.
+				newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(PATH_ASSETBUNDLES_EXPORTED, targetOSStr, targetBundleName)).Length;
+
 				// Debug.LogError("newAssetBundleInfo.size:" + newAssetBundleInfo.size);
-				// assetBundleInfos.Add(newAssetBundleInfo);
+
+				assetBundleInfos.Add(newAssetBundleInfo);
 			}
 		}
 		
