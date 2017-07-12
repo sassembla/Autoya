@@ -97,6 +97,7 @@ namespace AutoyaFramework.Information {
          */
         private static void AntimaterializeChildlen (GameObject source, List<string> depthSource) {
             var contentName = source.name;
+            
             var currentDepthSource = new List<string>(depthSource);
             currentDepthSource.Add(contentName);
 
@@ -144,33 +145,10 @@ namespace AutoyaFramework.Information {
                 }
 
                 if (useThisContainer) {
-                    /*
-                        copy gameobject for deleting all child, then create prefab.
-                        in this phase, prefab should not have child gameObject.
-                     */
-                    var targetPrefabSource = GameObject.Instantiate(source);
-                    var children = new List<GameObject>();
-                    foreach (Transform t in targetPrefabSource.transform) {
-                        children.Add(t.gameObject);
-                    }
-                    children.ForEach(child => GameObject.DestroyImmediate(child));
-
-                    var prefabPath = InformationConstSettings.FULLPATH_INFORMATION_RESOURCE + currentDepth + ".prefab";
-                    
-                    var dirPath = Path.GetDirectoryName(prefabPath);
-                    
-                    /*
-                        create prefab.
-                     */
-                    FileController.CreateDirectoryRecursively(dirPath);
-                    PrefabUtility.CreatePrefab(prefabPath, targetPrefabSource);
-
-                    // delete unnecessary copied prefab source.
-                    GameObject.DestroyImmediate(targetPrefabSource);
+                    CreatePrefab(currentDepth, source);
                 }
             } else {
                 var reason = string.Empty;
-
                 
                 var useThisContent = false;
                 
@@ -204,18 +182,19 @@ namespace AutoyaFramework.Information {
                 // RectTransform以外にもComponentがついてる
                 var components = source.GetComponents<Component>();
                 if (components.Where(c => c.GetType() != typeof(RectTransform)).Any()) {
+
                     if (!useThisContent && defaultTagStrs.Contains(contentName)) {
+
                         // この時点でまだ使う決定がなされてない = 新種や位置違いのcontentではない。
                         // componentの構成差を見る。
                         
                         useThisContent = CheckComponent(contentName, components, out reason);
-                        
-                        if (useThisContent) {
-                            Debug.LogError("let's create depthAsset prefab of content. reason:" + reason);
-                        }
                     }
                 }
 
+                if (useThisContent) {
+                    CreatePrefab(currentDepth, source);
+                }
             }
             
             for (var i = 0; i < source.transform.childCount; i++) {
@@ -223,9 +202,36 @@ namespace AutoyaFramework.Information {
                 AntimaterializeChildlen(child.gameObject, currentDepthSource);
             }
         }
+
+        private static void CreatePrefab (string depth, GameObject sourceObject) {
+            /*
+                copy gameobject for deleting all child, then create prefab.
+                in this phase, prefab should not have child gameObject.
+                */
+            var targetPrefabSource = GameObject.Instantiate(sourceObject);
+            var children = new List<GameObject>();
+            foreach (Transform t in targetPrefabSource.transform) {
+                children.Add(t.gameObject);
+            }
+            children.ForEach(child => GameObject.DestroyImmediate(child));
+
+            var prefabPath = InformationConstSettings.FULLPATH_INFORMATION_RESOURCE + depth + ".prefab";
+            
+            var dirPath = Path.GetDirectoryName(prefabPath);
+            
+            /*
+                create prefab.
+                */
+            FileController.CreateDirectoryRecursively(dirPath);
+            PrefabUtility.CreatePrefab(prefabPath, targetPrefabSource);
+
+            // delete unnecessary copied prefab source.
+            GameObject.DestroyImmediate(targetPrefabSource);
+        }
+
         private static bool CheckComponent (string contentName, Component[] components, out string reason) {
             reason = string.Empty;
-
+            
             var prefabPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/" + contentName;
             var prefab = Resources.Load(prefabPath) as GameObject;
 
@@ -238,7 +244,7 @@ namespace AutoyaFramework.Information {
             }
             
             foreach (var component in components) {
-                Debug.LogError("component is:" + component);
+                
                 if (component is Text) {
                     var text = component as Text;
                     var prefabText = prefab.GetComponent<Text>();
