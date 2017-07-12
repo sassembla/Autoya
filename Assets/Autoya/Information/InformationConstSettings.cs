@@ -4,11 +4,12 @@ namespace AutoyaFramework.Information {
       public const double TIMEOUT_SEC = 5.0;
 
       public const string NAME_PREFAB_CONTAINER = "_CONTAINER";
-      public const string PATH_INFORMATION_RESOURCE_FULLPATH = "Assets/InformationResources/Resources/Views/";
-      
-      public const string PATH_INFORMATION_ASSETBUNDLE = "Assets/InformationResources/AssetBundle/Views/";
-      public const string PATH_INFORMATION_RESOURCE = "Views/";
       public const string VIEWNAME_DEFAULT = "Default";
+      public const string FULLPATH_INFORMATION_RESOURCE = "Assets/InformationResources/Resources/Views/";
+      
+      public const string FULLPATH_DEFAULT_TAGS = FULLPATH_INFORMATION_RESOURCE + VIEWNAME_DEFAULT + "/";
+      public const string PREFIX_PATH_INFORMATION_RESOURCE = "Views/";
+      
 
 
       public const string DEPTH_ASSETLIST_URL_START = "depth asset list url(";

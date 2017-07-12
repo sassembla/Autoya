@@ -1,12 +1,32 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
     public class Antimaterializer {
+        private static string[] defaultTagStrs;
+
+        private static string[] CollectDefaultTag () {
+            var htmlTags = new List<string>();
+
+            var defaultAssetPaths = InformationConstSettings.FULLPATH_DEFAULT_TAGS;
+            var filePaths = FileController.FilePathsInFolder(defaultAssetPaths);
+            foreach (var filePath in filePaths) {
+                // Debug.LogError("filePath:" + filePath + " filenameWithoutExtension:" + Path.GetFileNameWithoutExtension(filePath));
+                var tagStr = Path.GetFileNameWithoutExtension(filePath);
+                htmlTags.Add(tagStr);
+            }
+
+            return htmlTags.ToArray();
+        }
+
         [MenuItem("Window/Information/Antimaterialize")] public static void Antimaterialize () {
+            defaultTagStrs = CollectDefaultTag();
+
             /*
                 ここでの処理は、ResourcesにdepthAssetListを吐き出して、リスト自体をResourcesから取得し、そのリストにはResourcesからdepthAssetを読み込むパスがかいてある、
                 という構成に対応している状態。
@@ -26,14 +46,14 @@ namespace AutoyaFramework.Information {
             }
 
             var viewName = target.name;
-            var exportBasePath = InformationConstSettings.PATH_INFORMATION_RESOURCE_FULLPATH + viewName;
+            var exportBasePath = InformationConstSettings.FULLPATH_INFORMATION_RESOURCE + viewName;
             Debug.Log("start antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath);
 
             // remove all files in exportBasePath.
             FileController.RemakeDirectory(exportBasePath);
             
             /*
-                root -> container or val -> container or val...
+                root -> container or content -> container or content...
              */
             for (var i = 0; i < target.transform.childCount; i++) {
                 var child = target.transform.GetChild(i);
@@ -101,7 +121,6 @@ namespace AutoyaFramework.Information {
                     useThisContainer = true;
                 }
 
-                // アンカー設定が異なる
                 // diff by anchor setting.
                 if (
                     rectTrans.anchorMin.x == 0 &&
@@ -120,7 +139,7 @@ namespace AutoyaFramework.Information {
                 // RectTransform以外にもComponentがついてる
                 var components = source.GetComponents<Component>();
                 if (components.Where(c => c.GetType() != typeof(RectTransform)).Any()) {
-                    reason += "component,";
+                    reason += "additional component,";
                     useThisContainer = true;
                 }
 
@@ -136,7 +155,7 @@ namespace AutoyaFramework.Information {
                     }
                     children.ForEach(child => GameObject.DestroyImmediate(child));
 
-                    var prefabPath = InformationConstSettings.PATH_INFORMATION_RESOURCE_FULLPATH + currentDepth + ".prefab";
+                    var prefabPath = InformationConstSettings.FULLPATH_INFORMATION_RESOURCE + currentDepth + ".prefab";
                     
                     var dirPath = Path.GetDirectoryName(prefabPath);
                     
@@ -150,10 +169,52 @@ namespace AutoyaFramework.Information {
                     GameObject.DestroyImmediate(targetPrefabSource);
                 }
             } else {
-                /*
-                    containerではない要素の比較の場合、単体のtagとしての比較を行うことになる。
-                    component単位で差分を見る？
-                 */
+                var reason = string.Empty;
+
+                
+                var useThisContent = false;
+                
+                // 既存のDefaultから探す
+                if (!defaultTagStrs.Contains(contentName)) {
+                    reason += "new tag,";
+                    useThisContent = true;
+                }
+
+                // diff by anchordPosition.
+                if (rectTrans.anchoredPosition != Vector2.zero) {
+                    reason += "position,";
+                    useThisContent = true;
+                }
+
+                // diff by anchor setting.
+                if (
+                    rectTrans.anchorMin.x == 0 &&
+                    rectTrans.anchorMin.y == 1 &&
+                    rectTrans.anchorMax.x == 0 &&
+                    rectTrans.anchorMax.y == 1 &&
+                    rectTrans.pivot.x == 0 &&
+                    rectTrans.pivot.y == 1
+                ) {
+                    // pass.
+                } else {
+                    reason += "anchor,";
+                    useThisContent = true;
+                }
+
+                // RectTransform以外にもComponentがついてる
+                var components = source.GetComponents<Component>();
+                if (components.Where(c => c.GetType() != typeof(RectTransform)).Any()) {
+                    if (!useThisContent && defaultTagStrs.Contains(contentName)) {
+                        // この時点でまだ使う決定がなされてない = 新種や位置違いのcontentではない。
+                        // componentの構成差を見る。
+                        
+                        useThisContent = CheckComponent(contentName, components, out reason);
+                        
+                        if (useThisContent) {
+                            Debug.LogError("let's create depthAsset prefab of content. reason:" + reason);
+                        }
+                    }
+                }
 
             }
             
@@ -161,6 +222,68 @@ namespace AutoyaFramework.Information {
                 var child = source.transform.GetChild(i);
                 AntimaterializeChildlen(child.gameObject, currentDepthSource);
             }
+        }
+        private static bool CheckComponent (string contentName, Component[] components, out string reason) {
+            reason = string.Empty;
+
+            var prefabPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/" + contentName;
+            var prefab = Resources.Load(prefabPath) as GameObject;
+
+            var prefabComponents = prefab.GetComponents<Component>();
+
+            // check component count.
+            if (prefabComponents.Length != components.Length) {
+                reason += "additional component,";
+                return true;
+            }
+            
+            foreach (var component in components) {
+                Debug.LogError("component is:" + component);
+                if (component is Text) {
+                    var text = component as Text;
+                    var prefabText = prefab.GetComponent<Text>();
+
+                    // フォント比較
+                    {
+                        var contentFont = text.font.name;
+                        var prefabFont = prefabText.font.name;
+                        
+                        if (contentFont != prefabFont) {
+                            reason += "font mismatch. default:" + prefabFont + " vs " + contentFont + ",";
+                            return true;
+                        }
+                    }
+
+                    // フォントサイズ比較
+                    {
+                        var contentFontSize = text.fontSize;
+                        var prefabFontSize = prefabText.fontSize;
+
+                        if (contentFontSize != prefabFontSize) {
+                            reason += "font size mismatch. default fontSize:" + prefabFontSize + " vs content fontSize:" + contentFontSize + ",";
+                            return true;
+                        }
+                    }
+                }
+
+                if (component is Image) {
+                    var image = component as Image;
+                    var prefabImage = prefab.GetComponent<Image>();
+
+                    // raycast比較
+                    {
+                        var contentRayCast = image.raycastTarget;
+                        var prefabRayCast = prefabImage.raycastTarget;
+                        
+                        if (contentRayCast != prefabRayCast) {
+                            reason += "raycast of image mismatch. default:" + prefabRayCast + " vs content:" + contentRayCast + ",";
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -218,7 +218,7 @@ namespace AutoyaFramework.Information {
 
         private IEnumerator LoadPrefabFromDefaultResources (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             // default path.
-            var defaultPath = InformationConstSettings.PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
+            var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
 
             var loadingPrefabName = string.Empty;
 
