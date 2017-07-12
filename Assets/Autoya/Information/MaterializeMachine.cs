@@ -79,17 +79,11 @@ namespace AutoyaFramework.Information {
 						yield break;
 					}
 
-					if (viewName != InformationConstSettings.VIEWNAME_DEFAULT) {
-						// add position parameter to depthAsset based position.
-						rectTrans.anchoredPosition += new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
-						
-						// keep depthAsset's size.
-					} else {
-						// set position. convert layout position to uGUI position system.
-						rectTrans.anchoredPosition = new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
-						// Debug.LogError("materialize rectTrans.anchoredPosition:" + rectTrans.anchoredPosition);
-						rectTrans.sizeDelta = currentTree.sizeDelta;
-					}
+					// set position. convert layout position to uGUI position system.
+					rectTrans.anchoredPosition = new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
+					
+					// use content size for display contents.
+					rectTrans.sizeDelta = currentTree.sizeDelta;
 					break;
 				}
 			}

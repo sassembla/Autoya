@@ -172,13 +172,40 @@ namespace AutoyaFramework.Information {
 			var viewWidth = handle.viewWidth;
 			var viewHeight = handle.viewHeight;
 
+
 			// set (x, y) start pos.
 			@this.anchoredPosition = new Vector2(@this.anchoredPosition.x + xOffset, @this.anchoredPosition.y + yOffset);
 			
 
+			if (viewName != InformationConstSettings.VIEWNAME_DEFAULT) {
+				GameObject loadedPrefab = null;
+				var cor = infoResLoader.LoadPrefab(
+					viewName, 
+					@this, 
+					prefab => {
+						loadedPrefab = prefab;
+					},
+					() => {
+
+					}
+				);
+
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+
+				if (loadedPrefab != null) {
+					var anchoredPos = loadedPrefab.GetComponent<RectTransform>().anchoredPosition;
+					Debug.LogError("prefab取得できた。ので、基準位置をいじる。 anchoredPos:" + anchoredPos);
+					// もし指定の値がある場合、その値をダイレクトに入れちゃって良いんじゃなかろうか。
+					// 実際には階層ごとの累積があるんだけど、そこをどうやって考慮すれば良いか考えよう。
+					@this.anchoredPosition = new Vector2(anchoredPos.x, -anchoredPos.y);
+				}
+			}
+
 			var contentWidth = 0f;
 			var contentHeight = 0f;
-
+			
 			// set kv.
 			switch (@this.parsedTag) {
 				case (int)HtmlTag.OL: {
@@ -373,7 +400,6 @@ namespace AutoyaFramework.Information {
 			
 			// set content size.
 			@this.sizeDelta = new Vector2(contentWidth, contentHeight);
-			yield break;
 		}
 
 		private float GetPercentOf (float baseParam, string percentStr) {
