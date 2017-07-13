@@ -175,33 +175,6 @@ namespace AutoyaFramework.Information {
 
 			// set (x, y) start pos.
 			@this.anchoredPosition = new Vector2(@this.anchoredPosition.x + xOffset, @this.anchoredPosition.y + yOffset);
-			
-
-			if (viewName != InformationConstSettings.VIEWNAME_DEFAULT) {
-				GameObject loadedPrefab = null;
-				var cor = infoResLoader.LoadPrefab(
-					viewName, 
-					@this, 
-					prefab => {
-						loadedPrefab = prefab;
-					},
-					() => {
-
-					}
-				);
-
-				while (cor.MoveNext()) {
-					yield return null;
-				}
-
-				if (loadedPrefab != null) {
-					var anchoredPos = loadedPrefab.GetComponent<RectTransform>().anchoredPosition;
-					Debug.LogError("prefab取得できた。ので、基準位置をいじる。 anchoredPos:" + anchoredPos);
-					// もし指定の値がある場合、その値をダイレクトに入れちゃって良いんじゃなかろうか。
-					// 実際には階層ごとの累積があるんだけど、そこをどうやって考慮すれば良いか考えよう。
-					@this.anchoredPosition = new Vector2(anchoredPos.x, -anchoredPos.y);
-				}
-			}
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -713,7 +686,25 @@ namespace AutoyaFramework.Information {
 				childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
 			}
 
-			yield break;
+			if (@this.parsedTag != (int)HtmlTag._ROOT && viewName != InformationConstSettings.VIEWNAME_DEFAULT) {
+				
+				foreach (var child in childlen) {
+					var cor = infoResLoader.LoadPrefab(
+						viewName, 
+						child, 
+						prefab => {
+							var prefabRectTrans = prefab.GetComponent<RectTransform>();
+							child.anchoredPosition = new Vector2(prefabRectTrans.anchoredPosition.x, -prefabRectTrans.anchoredPosition.y);
+						}, 
+						() => {
+							// do nothing on failed.
+						}
+					);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+				}
+			}
 		}
 
 

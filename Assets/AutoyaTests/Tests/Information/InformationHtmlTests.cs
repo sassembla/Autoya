@@ -105,7 +105,9 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 	[MTest] public void LoadSpecificView_MyView_NestedDiv_PContainerContained () {
 		var sample = @"
 <!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
+<p>
 <div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
+</p>
 ";
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
 	}
