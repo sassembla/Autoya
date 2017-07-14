@@ -148,6 +148,14 @@ something.
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
 	}
 
+	[MTest] public void UseMultiplePartInOneView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
+<q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='100'/>something<p>else</p></q>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+	}
 
 
 	private static int index;
