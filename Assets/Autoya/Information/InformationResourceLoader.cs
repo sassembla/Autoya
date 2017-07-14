@@ -206,7 +206,6 @@ namespace AutoyaFramework.Information {
                 obj = cor.asset as GameObject;
                 if (obj == null) {
                     // no prefab found.
-                    Debug.LogError("failed to load prefab:" + tree.prefabName + " path:" + loadingPrefabName);
                     onLoadFailed();
                     yield break;
                 }

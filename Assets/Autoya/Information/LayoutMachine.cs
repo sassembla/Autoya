@@ -174,11 +174,31 @@ namespace AutoyaFramework.Information {
 
 
 			// set (x, y) start pos.
-			@this.anchoredPosition = new Vector2(@this.anchoredPosition.x + xOffset, @this.anchoredPosition.y + yOffset);
+			@this.anchoredPosition = new Vector2(xOffset, yOffset);
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
 			
+			var prefabLoadCor = infoResLoader.LoadPrefab(
+				viewName, 
+				@this, 
+				prefab => {
+					var prefabRectTrans = prefab.GetComponent<RectTransform>();
+					var additionalAnchoredPosition = new Vector2(prefabRectTrans.anchoredPosition.x, -prefabRectTrans.anchoredPosition.y);
+					
+					// add local position of this prefab to this content's position.
+					@this.anchoredPosition += additionalAnchoredPosition;
+				}, 
+				() => {
+					// do nothing on failed. add zero position.
+				}
+			);
+
+			while (prefabLoadCor.MoveNext()) {
+				yield return null;
+			}
+
+
 			// set kv.
 			switch (@this.parsedTag) {
 				case (int)HtmlTag.OL: {
@@ -684,26 +704,6 @@ namespace AutoyaFramework.Information {
 			// if layoutLine content is exist, re-layout all in 1 line.
 			if (0 < layoutLine.Count) {
 				childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
-			}
-
-			if (@this.parsedTag != (int)HtmlTag._ROOT && viewName != InformationConstSettings.VIEWNAME_DEFAULT) {
-				
-				foreach (var child in childlen) {
-					var cor = infoResLoader.LoadPrefab(
-						viewName, 
-						child, 
-						prefab => {
-							var prefabRectTrans = prefab.GetComponent<RectTransform>();
-							child.anchoredPosition = new Vector2(prefabRectTrans.anchoredPosition.x, -prefabRectTrans.anchoredPosition.y);
-						}, 
-						() => {
-							// do nothing on failed.
-						}
-					);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-				}
 			}
 		}
 
