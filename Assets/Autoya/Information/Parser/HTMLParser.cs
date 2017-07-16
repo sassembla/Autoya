@@ -589,7 +589,7 @@ namespace AutoyaFramework.Information {
 			// get sampling str.
 			var tagFindingSampleStr = data.Substring(tagStartPos, allowedMaxTagLength).ToUpper();
 			
-			if (data[tagStartPos] == '!') {
+			if (tagStartPos < data.Length && data[tagStartPos] == '!') {
 				if (data[index + 2] == '-') {
 					return (int)HtmlTag._COMMENT;
 				}

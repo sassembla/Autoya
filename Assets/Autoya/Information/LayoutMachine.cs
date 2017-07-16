@@ -172,23 +172,18 @@ namespace AutoyaFramework.Information {
 			var viewWidth = handle.viewWidth;
 			var viewHeight = handle.viewHeight;
 
+			// create default rect transform.
+			var prefabRectTrans = new RectTransform();
 
-			// set (x, y) start pos.
+			// set (x, y) offset pos.
 			@this.anchoredPosition = new Vector2(xOffset, yOffset);
 
-			var contentWidth = 0f;
-			var contentHeight = 0f;
-			
 			var prefabLoadCor = infoResLoader.LoadPrefab(
 				viewName, 
 				@this, 
 				prefab => {
-					var prefabRectTrans = prefab.GetComponent<RectTransform>();
-					var additionalAnchoredPosition = new Vector2(prefabRectTrans.anchoredPosition.x, -prefabRectTrans.anchoredPosition.y);
-					
-					// add local position of this prefab to this content's position.
-					@this.anchoredPosition += additionalAnchoredPosition;
-				}, 
+					prefabRectTrans = prefab.GetComponent<RectTransform>();
+				},
 				() => {
 					// do nothing on failed. add zero position.
 				}
@@ -197,6 +192,14 @@ namespace AutoyaFramework.Information {
 			while (prefabLoadCor.MoveNext()) {
 				yield return null;
 			}
+
+			@this.anchoredPosition += prefabRectTrans.anchoredPosition;
+
+			var contentWidth = 0f;
+			var contentHeight = 0f;
+
+			
+			
 
 
 			// set kv.

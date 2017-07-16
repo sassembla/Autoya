@@ -95,7 +95,7 @@ namespace AutoyaFramework.Information {
                 this.parsedTag == (int)HtmlTag._TEXT_CONTENT
             ) {
                 var val = this.keyValueStore[Attribute._CONTENT];
-                throw new Exception("invalid text contains outside of all tag. val:" + val);
+                throw new Exception("invalid text contains outside of tag. val:" + val);
             }
             
 			t._childlen.Add(this);
