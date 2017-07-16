@@ -139,41 +139,60 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 // 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
 // 	}
 
+// 	[MTest] public void HttpsSchemeCommentAsDepthAssetListUrl () {
+// 		var sample = @"
+// <!--depth asset list url(https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/InformationResources/Resources/Views/MyView/DepthAssetList.txt)-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+// 	}
 
-	[MTest] public void HttpsSchemeCommentAsDepthAssetListUrl () {
+// 	[MTest] public void UseMultiplePartInOneView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
+// <q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='100'/>something<p>else</p></q>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+// 	}
+
+
+	[MTest] public void ShowLeftTopAncheredObj () {
 		var sample = @"
-<!--depth asset list url(https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/InformationResources/Resources/Views/MyView/DepthAssetList.txt)-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
+<!--depth asset list url(resources://Views/LeftTopAncheredView/DepthAssetList)-->
+<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
 ";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopAncheredView");
+	}
+	
+	[MTest] public void ShowPivottedObj () {
+		var sample = @"
+<!--depth asset list url(resources://Views/PivotView/DepthAssetList)-->
+<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0.5、0.5で、画像のposは0,0で、これだと画像はpivotを反映して表示する。-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "PivotView");
 	}
 
-	[MTest] public void UseMultiplePartInOneView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
-<q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='100'/>something<p>else</p></q>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-	}
 
-	[MTest] public void RelativeLayoutInView () {
-		/*
-			Unity上でrelative指定してあるコンテンツが正確に親コンテンツいっぱいに広がって表示されるかどうか。
-			size指定は無視される場合と無視されない場合がある。
+// 	[MTest] public void RelativeLayoutInView () {
+// 		/*
+// 			Unity上でrelative指定してあるコンテンツが正確に親コンテンツいっぱいに広がって表示されるかどうか。
+// 			size指定は無視される場合と無視されない場合がある。
 
-			・中にcontentsが無い場合、サイズ指定は適応される。親コンテンツのサイズは子のサイズで決まるので、綺麗に画像で埋まる。
-			・contentsがある場合、
-		 */
-		var sample = @"
-<!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
-<q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10'/></q>
-<q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10'/>aaaaa</q>
-<q>aaaaa</q>
-<body>aaaaaaaaaaaaaaaaaaaaaaaaaaaa</body>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-	}
+// 			・中にcontentsが無い場合、サイズ指定は適応される。親コンテンツのサイズは子のサイズで決まるので、綺麗に画像で埋まる。
+// 			・contentsがある場合、
+// 		 */
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
+// <q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10'/></q>
+// <q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10'/>aaaaa</q>
+// <q>aaaaa</q>
+// <body>aaaaaaaaaaaaaaaaaaaaaaaaaaaa</body>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+// 	}
 
 
 	private static int index;

@@ -175,9 +175,7 @@ namespace AutoyaFramework.Information {
 			// create default rect transform.
 			var prefabRectTrans = new RectTransform();
 
-			// set (x, y) offset pos.
-			@this.anchoredPosition = new Vector2(xOffset, yOffset);
-
+			
 			var prefabLoadCor = infoResLoader.LoadPrefab(
 				viewName, 
 				@this, 
@@ -396,9 +394,46 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 			}
+
+			/*
+				ここまでで、
+				contentWidth, height, pivot, anchorMax, anchorMinが手に入ってる。
+				場合分けが発生するのの原点は、まずpivotから解決してみよう。
+				
+				次にanchorを解決する、場合分けがあるはず。
+			 */
+			// pivotの値が左上 ~ 右下の範囲で存在していて、
+			// 例えばコンポーネントの原点が0,0でサイズが100x100の場合、コンポーネントを表示すべき位置は、100x100に対してpivot値を適応した位置が「物体の中心」であるように振る舞う。
+
 			
+			// 左上が中心点ってどういうこと -> HTML上は左上原点で、uGUI上は左下原点なので、ここでその差の吸収というか、歪みを受ける。
+			// uGUIの中心点は左下なので、このへんが食い違う。y軸の向きが違う。
+			
+			/*
+				pivotに値がある場合、
+				幅10、pivot0.5の場合、pivottedXに5が入る。ふむ。
+				これが0になってほしい。というかアンカー位置が座標を無視するんだな、だったらpivot無視して値に変換した方がいいのか。動かすとかなるとあれなのか。
+				・pivotの値を反映したまま、それをanchorにも影響させる、みたいなのが必要。
+			*/
+			
+			// get prefab default position.
+			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
+			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
+
+			// pivot値の上での位置原点を出す。この値が、このオブジェクトの原点がどこにあるか、を出すパラメータになる。
+			// prefabのtransformはこの原点値をもとに値を保存しているため、原点値を踏まえた座標位置にするためには、原点位置をあらかじめ足した値にする必要がある。
+			var pivottedX = pivot.x * contentWidth;// 0 ~ 1の範囲で、width上の点
+			var pivottedY = (1-pivot.y) * contentHeight;// 0 ~ 1の範囲で、height上の点。HTMLは左上原点なので変換が必要。
+			
+			// add pivot param.
+			prefabRectTransAnchorX += pivottedX;
+			prefabRectTransAnchorY += pivottedY;
+
 			// set position.
-			@this.anchoredPosition += prefabRectTrans.anchoredPosition;
+			@this.anchoredPosition = new Vector2(
+				xOffset + (prefabRectTransAnchorX - pivottedX), 
+				yOffset - (prefabRectTransAnchorY - pivottedY)
+			);
 
 			// set content size.
 			@this.sizeDelta = new Vector2(contentWidth, contentHeight);
@@ -681,7 +716,7 @@ namespace AutoyaFramework.Information {
 							childHandlePoint.nextLeftHandle + child.padding.left, 
 							childHandlePoint.nextTopHandle + child.padding.top
 						);
-						// Debug.LogError("child.rectTransform.anchoredPosition:" + child.vRectTransform.vAnchoredPosition);
+						// Debug.LogError("child.anchoredPosition:" + child.anchoredPosition);
 				
 						// set next handle.
 						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.sizeDelta.x + child.padding.right;
