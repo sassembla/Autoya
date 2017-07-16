@@ -193,14 +193,12 @@ namespace AutoyaFramework.Information {
 				yield return null;
 			}
 
-			@this.anchoredPosition += prefabRectTrans.anchoredPosition;
+			var anchorMin = prefabRectTrans.anchorMin;
+			var anchorMax = prefabRectTrans.anchorMax;
+			var pivot = prefabRectTrans.pivot;
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
-
-			
-			
-
 
 			// set kv.
 			switch (@this.parsedTag) {
@@ -226,6 +224,8 @@ namespace AutoyaFramework.Information {
 					}
 
 					var src = @this.keyValueStore[Attribute.SRC];
+					float imageWidth = 0;
+					float imageHeight = 0;
 
 					// determine image size from image's width & height.
 					if (@this.keyValueStore.ContainsKey(Attribute.WIDTH) && @this.keyValueStore.ContainsKey(Attribute.HEIGHT)) {
@@ -233,24 +233,24 @@ namespace AutoyaFramework.Information {
 						var height = @this.keyValueStore[Attribute.HEIGHT];
 
 						if (width.EndsWith("%")) {
-							contentWidth = GetPercentOf(viewWidth, width);
+							imageWidth = GetPercentOf(viewWidth, width);
 						} else {
-							contentWidth = Convert.ToInt32(width);
+							imageWidth = Convert.ToInt32(width);
 						}
 
 						if (height.EndsWith("%")) {
-							contentHeight = GetPercentOf(viewHeight, height);
+							imageHeight = GetPercentOf(viewHeight, height);
 						} else {
-							contentHeight = Convert.ToInt32(height);
+							imageHeight = Convert.ToInt32(height);
 						}
 
 					} else if (@this.keyValueStore.ContainsKey(Attribute.WIDTH)) {
 						// width only.
 						var width = @this.keyValueStore[Attribute.WIDTH];
 						if (width.EndsWith("%")) {
-							contentWidth = GetPercentOf(viewWidth, width);
+							imageWidth = GetPercentOf(viewWidth, width);
 						} else {
-							contentWidth = Convert.ToInt32(width);
+							imageWidth = Convert.ToInt32(width);
 						}
 
 						// need to download image.
@@ -260,11 +260,11 @@ namespace AutoyaFramework.Information {
 							src, 
 							(sprite) => {
 								downloaded = true;
-								contentHeight = (contentWidth / sprite.rect.size.x) * sprite.rect.size.y;
+								imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
 							},
 							() => {
 								downloaded = true;
-								contentHeight = 0;
+								imageHeight = 0;
 							}
 						);
 
@@ -276,9 +276,9 @@ namespace AutoyaFramework.Information {
 						// height only.
 						var height = @this.keyValueStore[Attribute.HEIGHT];
 						if (height.EndsWith("%")) {
-							contentHeight = GetPercentOf(viewHeight, height);
+							imageHeight = GetPercentOf(viewHeight, height);
 						} else {
-							contentHeight = Convert.ToInt32(height);
+							imageHeight = Convert.ToInt32(height);
 						}
 
 						// need to download image.
@@ -288,7 +288,7 @@ namespace AutoyaFramework.Information {
 							src, 
 							(sprite) => {
 								downloaded = true;
-								contentWidth = (contentHeight / sprite.rect.size.y) * sprite.rect.size.x;
+								contentWidth = (imageHeight / sprite.rect.size.y) * sprite.rect.size.x;
 							},
 							() => {
 								downloaded = true;
@@ -307,21 +307,24 @@ namespace AutoyaFramework.Information {
 							src, 
 							(sprite) => {
 								downloaded = true;
-								contentWidth = sprite.rect.size.x;
-								contentHeight = sprite.rect.size.y;
+								imageWidth = sprite.rect.size.x;
+								imageHeight = sprite.rect.size.y;
 							},
 							() => {
 								downloaded = true;
-								contentWidth = 0;
-								contentHeight = 0;
+								imageWidth = 0;
+								imageHeight = 0;
 							}
 						);
 
 						while (!downloaded) {
 							yield return null;
 						}
-
 					}
+
+					// set content size.
+					contentWidth = imageWidth;
+					contentHeight = imageHeight;
 					break;
 				}
 				case (int)HtmlTag.HR: {
@@ -394,6 +397,9 @@ namespace AutoyaFramework.Information {
 				}
 			}
 			
+			// set position.
+			@this.anchoredPosition += prefabRectTrans.anchoredPosition;
+
 			// set content size.
 			@this.sizeDelta = new Vector2(contentWidth, contentHeight);
 		}
