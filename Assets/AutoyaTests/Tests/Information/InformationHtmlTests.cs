@@ -156,8 +156,8 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 // 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
 // 	}
 
-
-	[MTest] public void ShowLeftTopAncheredObj () {
+	
+	[MTest] public void LeftTopAncheredView () {
 		var sample = @"
 <!--depth asset list url(resources://Views/LeftTopAncheredView/DepthAssetList)-->
 <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
@@ -165,8 +165,8 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 ";
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopAncheredView");
 	}
-	
-	[MTest] public void ShowPivottedObj () {
+
+	[MTest] public void PivotView () {
 		var sample = @"
 <!--depth asset list url(resources://Views/PivotView/DepthAssetList)-->
 <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0.5、0.5で、画像のposは0,0で、これだと画像はpivotを反映して表示する。-->
@@ -175,6 +175,15 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "PivotView");
 	}
 
+	[MTest] public void LeftTopPivotView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotView/DepthAssetList)-->
+<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotView");
+	}
+	
 
 // 	[MTest] public void RelativeLayoutInView () {
 // 		/*
