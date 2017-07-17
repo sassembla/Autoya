@@ -191,8 +191,38 @@ namespace AutoyaFramework.Information {
 				yield return null;
 			}
 
+
+			// 左にアンカーがついてる = 左のエッジを動かした時に100%の反映度合いでこのパーツのXが動く。
+			// 右のアンカーは真ん中についてるんで、真ん中 - 右端 - 親の右端、という関係が出来上がっていて、
+			// 親が伸びた量の半分だけ伸びる。伸びなければ初期の位置を維持する。
+
+			// で、このレイアウトの仕組みでは、中身からサイズが確定するので、逆説的に、伸びなければ値が入らない、というのが正しいことになる。
+
+			// つまり初期値を使えばいいんだけど、問題は、prefabRectTransAnchorXに7.5が入ってること。これ何。
+			
+
+			// get prefab default position.
+			// これを使わずにいけるはず。
+			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
+			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
+			Debug.LogError("prefabRectTransAnchorX:" + prefabRectTransAnchorX);// 0
+
 			var anchorMin = prefabRectTrans.anchorMin;
 			var anchorMax = prefabRectTrans.anchorMax;
+			Debug.LogError("anchorMin:" + anchorMin.x);// 0
+			Debug.LogError("anchorMax:" + anchorMax.x);// 0.5 で、これは割合で、アンカーがx軸上で親の左端から 親の真ん中にかけて存在する。
+
+			var offsetMin = prefabRectTrans.offsetMin;
+			var offsetMax = prefabRectTrans.offsetMax;
+			
+			// なんか値が取れるんだけど。この値はなんだろ。座標かな、
+			Debug.LogError("offsetMin:" + offsetMin.x);// 0
+			Debug.LogError("offsetMax:" + offsetMax.x);// 5
+
+			// で、結論として、rightが5であってほしいところ、10になっていて右にはみ出す。
+			// なぜ。
+
+			
 			var pivot = prefabRectTrans.pivot;
 
 			var contentWidth = 0f;
@@ -398,41 +428,30 @@ namespace AutoyaFramework.Information {
 			/*
 				ここまでで、
 				contentWidth, height, pivot, anchorMax, anchorMinが手に入ってる。
-				場合分けが発生するのの原点は、まずpivotから解決してみよう。
-				
-				次にanchorを解決する、場合分けがあるはず。
+				anchorを解決する
 			 */
-			// pivotの値が左上 ~ 右下の範囲で存在していて、
-			// 例えばコンポーネントの原点が0,0でサイズが100x100の場合、コンポーネントを表示すべき位置は、100x100に対してpivot値を適応した位置が「物体の中心」であるように振る舞う。
-
 			
 			// 左上が中心点ってどういうこと -> HTML上は左上原点で、uGUI上は左下原点なので、ここでその差の吸収というか、歪みを受ける。
 			// uGUIの中心点は左下なので、このへんが食い違う。y軸の向きが違う。
 			
-			/*
-				pivotに値がある場合、
-				幅10、pivot0.5の場合、pivottedXに5が入る。ふむ。
-				これが0になってほしい。というかアンカー位置が座標を無視するんだな、だったらpivot無視して値に変換した方がいいのか。動かすとかなるとあれなのか。
-				・pivotの値を反映したまま、それをanchorにも影響させる、みたいなのが必要。
-			*/
-			
-			// get prefab default position.
-			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
-			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
-
 			// pivot値の上での位置原点を出す。この値が、このオブジェクトの原点がどこにあるか、を出すパラメータになる。
 			// prefabのtransformはこの原点値をもとに値を保存しているため、原点値を踏まえた座標位置にするためには、原点位置をあらかじめ足した値にする必要がある。
 			var pivottedX = pivot.x * contentWidth;// 0 ~ 1の範囲で、width上の点
 			var pivottedY = (1-pivot.y) * contentHeight;// 0 ~ 1の範囲で、height上の点。HTMLは左上原点なので変換が必要。
 			
-			// add pivot param.
+			// prefab原点からはあらかじめpivot値が惹かれているので、ここで値を足す。
+			// このprefab原点からすでに値が引かれているのが混乱の原因なのか。この値排斥すると良さそう。
 			prefabRectTransAnchorX += pivottedX;
 			prefabRectTransAnchorY += pivottedY;
 
+			// ピボットがすんだ状態での原点を出す。pivotを引いているのは原点位置を合わせるため。
+			var pivottedPosX = xOffset + (prefabRectTransAnchorX - pivottedX);
+			var pivottedPosY = yOffset - (prefabRectTransAnchorY - pivottedY);
+
 			// set position.
 			@this.anchoredPosition = new Vector2(
-				xOffset + (prefabRectTransAnchorX - pivottedX), 
-				yOffset - (prefabRectTransAnchorY - pivottedY)
+				pivottedPosX, 
+				pivottedPosY
 			);
 
 			// set content size.
