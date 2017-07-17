@@ -220,14 +220,49 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 // 	}
 
 
-	
 	[MTest] public void LeftTopPivotXRelativeView () {
 		var sample = @"
 <!--depth asset list url(resources://Views/LeftTopPivotXRelativeView/DepthAssetList)-->
-<!--xアンカーが0-1なのでxに対してrelative-->
+<!--xアンカーが0-1なのでxに対してrelative、yアンカーは1-1-->
 <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
 ";
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeView");
+	}
+
+	[MTest] public void LeftTopPivotXRelativeWithBottomEdgeView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotXRelativeWithBottomEdgeView/DepthAssetList)-->
+<!--xアンカーが0-1なのでxに対してrelative、yアンカーは0-0-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeWithBottomEdgeView");
+	}
+
+	[MTest] public void LeftTopPivotYRelativeView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotYRelativeView/DepthAssetList)-->
+<!--yアンカーが0-1なのでyに対してrelative、xアンカーは0-0-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotYRelativeView");
+	}
+
+	[MTest] public void LeftTopPivotYRelativeWithRightEdgeView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotYRelativeWithRightEdgeView/DepthAssetList)-->
+<!--yアンカーが0-1なのでyに対してrelative、xアンカーは1-1-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotYRelativeWithRightEdgeView");
+	}
+
+	[MTest] public void LeftTopPivotRelativeWView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotRelativeWView/DepthAssetList)-->
+<!--アンカーがx,y共に0-1-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotRelativeWView");
 	}
 
 

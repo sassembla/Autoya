@@ -468,13 +468,20 @@ namespace AutoyaFramework.Information {
 
 			// 仮で、親の横幅を引き継ぐみたいなのをセットしてみる。
 			// この際、xサイズは0になり、padding.centerがwidthになる。
+			var resultWidth = contentWidth;
+			var resultHeight = contentHeight;
+
 			if (anchorMin.x == 0 && anchorMax.x == 1) {
 				@this.padding.width = contentWidth;
-				@this.sizeDelta = new Vector2(0, contentHeight);
-			} else {
-				// set content size.
-				@this.sizeDelta = new Vector2(contentWidth, contentHeight);
+				resultWidth = 0;
 			}
+			if (anchorMin.y == 0 && anchorMax.y == 1) {
+				@this.padding.height = contentHeight;
+				resultHeight = 0;
+			}
+			
+			// set content size.
+			@this.sizeDelta = new Vector2(resultWidth, resultHeight);
 		}
 
 		private float GetPercentOf (float baseParam, string percentStr) {
