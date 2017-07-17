@@ -206,22 +206,6 @@ namespace AutoyaFramework.Information {
 			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
 			// Debug.LogError("prefabRectTransAnchorX:" + prefabRectTransAnchorX);
 
-			// サイズがセットされるとダメ、ってことか。これは詰んでるな。
-			// そのサイズがせっとされてることにする、という機構が必要なのか。
-
-			/*
-				2倍サイズで出ちゃうので、そのぶんをどこかのパラメータから得ればいい、という感じにできるか？
-				親のサイズを現在のサイズというふうに誤解させればできる、、かな？
-				
-				anchorが0-1だったら、親コンテンツのサイズが使われる。で、親コンテンツは存在しないので、そのサイズをどこかで支払うことになる。
-				
-
-				最終的に条件はあれだが、サイズをpaddingで支払えばいいのか。
-				paddingは別のところでも使いそうだな〜。サイズ指定をどこでやろうかな。paddingに足せばいいのか。
-
-				どういう条件になるんだろう。まあ適当に0-1か。
-			 */
-
 			var anchorMin = prefabRectTrans.anchorMin;
 			var anchorMax = prefabRectTrans.anchorMax;
 			// Debug.LogError("anchorMin:" + anchorMin.x); 
@@ -230,10 +214,15 @@ namespace AutoyaFramework.Information {
 			
 			var offsetMin = prefabRectTrans.offsetMin;
 			var offsetMax = prefabRectTrans.offsetMax;
+			// なんか値が取れるんだけど。この値はなんだろ。座標かな、アンカーの座標か。
+			// Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
+			// Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
 			
-			// なんか値が取れるんだけど。この値はなんだろ。座標かな、
-			// Debug.LogError("offsetMinX:" + offsetMin.x);
-			// Debug.LogError("offsetMaxX:" + offsetMax.x);
+			// @this.localPos = なんらか計算系。anchoredPosとlocalPosがなんか連携してるっぽい。
+			// anchoredPosを変えると、localが変わる。
+			// localPosを変えてもanchorが変わらない(GUI上は変わらないだけかも)
+			// @this.localPos = Vector2.zero;// やっぱ連動してるな〜〜 いじるべきなのはこの値ではない。
+
 
 			var pivot = prefabRectTrans.pivot;
 
@@ -479,7 +468,7 @@ namespace AutoyaFramework.Information {
 				@this.padding.height = contentHeight;
 				resultHeight = 0;
 			}
-			
+
 			// set content size.
 			@this.sizeDelta = new Vector2(resultWidth, resultHeight);
 		}

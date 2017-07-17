@@ -84,6 +84,11 @@ namespace AutoyaFramework.Information {
 					
 					// use content size for display contents.
 					rectTrans.sizeDelta = currentTree.sizeDelta;
+					
+					// set local position.
+					// rectTrans.localPosition = currentTree.localPos;
+					// rectTrans.offsetMin = currentTree.offsetMin;
+					// rectTrans.offsetMax = currentTree.offsetMax;
 					break;
 				}
 			}

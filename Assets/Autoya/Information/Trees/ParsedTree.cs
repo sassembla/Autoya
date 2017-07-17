@@ -29,6 +29,8 @@ namespace AutoyaFramework.Information {
         // layout things.
         public Vector2 anchoredPosition = Vector2.zero;        
         public Vector2 sizeDelta = Vector2.zero;
+        public Vector2 offsetMin = Vector2.zero;
+        public Vector2 offsetMax = Vector2.zero;
         public Padding padding = new Padding();
 
         public ParsedTree () {
