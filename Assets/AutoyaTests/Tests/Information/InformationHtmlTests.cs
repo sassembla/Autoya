@@ -157,40 +157,40 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 // 	}
 
 
-// 	[MTest] public void LeftTopAncheredView () {
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/LeftTopAncheredView/DepthAssetList)-->
-// <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopAncheredView");
-// 	}
+	[MTest] public void LeftTopAncheredView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopAncheredView/DepthAssetList)-->
+<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopAncheredView");
+	}
 
-// 	[MTest] public void PivotView () {
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/PivotView/DepthAssetList)-->
-// <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0.5、0.5で、画像のposは0,0で、これだと画像はpivotを反映して表示する。-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "PivotView");
-// 	}
+	[MTest] public void PivotView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/PivotView/DepthAssetList)-->
+<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0.5、0.5で、画像のposは0,0で、これだと画像はpivotを反映して表示する。-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "PivotView");
+	}
 
-// 	[MTest] public void LeftTopPivotView () {
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/LeftTopPivotView/DepthAssetList)-->
-// <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotView");
-// 	}
+	[MTest] public void LeftTopPivotView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotView/DepthAssetList)-->
+<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotView");
+	}
 
-// 	[MTest] public void LeftTopPivotCenterAnchoredView () {
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/LeftTopPivotCenterAnchoredView/DepthAssetList)-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotCenterAnchoredView");
-// 	}
+	[MTest] public void LeftTopPivotCenterAnchoredView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotCenterAnchoredView/DepthAssetList)-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotCenterAnchoredView");
+	}
 
 	[MTest] public void CenterPivotCenterAnchoredView () {
 		var sample = @"
@@ -200,14 +200,36 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotCenterAnchoredView");
 	}
 
-	[MTest] public void CenterPivotRightAnchoredView () {
+	[MTest] public void CenterPivotLeftAnchoredView () {
 		var sample = @"
-<!--depth asset list url(resources://Views/CenterPivotRightAnchoredView/DepthAssetList)-->
-<!--アンカーのxが0.5 -> 1になっていて、右に寄り付く性質がある。-->
+<!--depth asset list url(resources://Views/CenterPivotLeftAnchoredView/DepthAssetList)-->
+<!--アンカーのxが0 -> 0.5になっていて、左に寄り付く性質がある。-->
 <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
 ";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotRightAnchoredView");
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotLeftAnchoredView");
 	}
+
+// 	unsupported pattern
+// 	[MTest] public void CenterPivotRightAnchoredView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/CenterPivotRightAnchoredView/DepthAssetList)-->
+// <!--アンカーのxが0.5 -> 1になっていて、右に寄り付く性質がある。このタイプのやつはまだよくわからん。viewのサイズを自己増幅させないといけない？-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotRightAnchoredView");
+// 	}
+
+
+	
+	[MTest] public void LeftTopPivotXRelativeView () {
+		var sample = @"
+<!--depth asset list url(resources://Views/LeftTopPivotXRelativeView/DepthAssetList)-->
+<!--xアンカーが0-1なのでxに対してrelative-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeView");
+	}
+
 
 	
 
@@ -232,12 +254,10 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 
 	private static int index;
 
-	private void DrawHtml (string html, int width=800, int height=1000, Action<double> progress=null, Action done=null, string viewName="Default") {
+	private void DrawHtml (string html, int width=800, int height=1000, Action<double> progress=null, Action done=null, string viewName=InformationConstSettings.VIEWNAME_DEFAULT) {
 		RunEnumeratorOnMainThread(
 			RunEnum(viewName, html, width, height, progress, done)
 		);
-
-		index+=width;
 	}
 
 	private IEnumerator RunEnum (string viewName, string html, int width, int height, Action<double> progress, Action done) {
@@ -293,14 +313,26 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 		);
 
 		var rect = root.GetComponent<RectTransform>();
-
-		// 横にずらす
 		rect.anchoredPosition = new Vector2(index, 0);
+
+		// サンプルを探す
+		if (viewName != InformationConstSettings.VIEWNAME_DEFAULT) {
+			var obj = GameObject.Find("Canvas/"+viewName);
+			if (obj != null) {
+				var rectTrans = obj.GetComponent<RectTransform>();
+				rectTrans.anchoredPosition = new Vector2(index, -680);
+			}
+		}
 
 		var canvas = GameObject.Find("Canvas");
 		if (canvas != null) {
 			root.transform.SetParent(canvas.transform);
 		}
+
+
+
+		index+=width;
+
 
 		while (coroutineCount != 0) {
 			yield return null;

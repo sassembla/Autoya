@@ -24,7 +24,7 @@ namespace AutoyaFramework.Information {
 		private float TotalHeight (ParsedTree tree) {
 			var childlen = tree.GetChildlen();
 			if (childlen.Count == 0) {
-				return tree.anchoredPosition.y + tree.sizeDelta.y;
+				return tree.anchoredPosition.y + tree.sizeDelta.y + tree.padding.PadHeight();
 			}
 
 			var last = childlen[childlen.Count - 1];

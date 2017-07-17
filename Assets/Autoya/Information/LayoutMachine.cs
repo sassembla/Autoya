@@ -138,7 +138,7 @@ namespace AutoyaFramework.Information {
 				default: {
 					// 回り込みを実現する。んだけど、これはどちらかというと多数派で、デフォルトっぽい。
 					// next content is planned to layout to the next of this content.
-					handle.nextLeftHandle = @this.anchoredPosition.x + @this.sizeDelta.x;// after padding.
+					handle.nextLeftHandle = @this.anchoredPosition.x + @this.sizeDelta.x + @this.padding.width;
 					break;
 				}
 
@@ -202,27 +202,39 @@ namespace AutoyaFramework.Information {
 			
 
 			// get prefab default position.
-			// これを使わずにいけるはず。
 			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
 			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
-			Debug.LogError("prefabRectTransAnchorX:" + prefabRectTransAnchorX);// 0
+			// Debug.LogError("prefabRectTransAnchorX:" + prefabRectTransAnchorX);
+
+			// サイズがセットされるとダメ、ってことか。これは詰んでるな。
+			// そのサイズがせっとされてることにする、という機構が必要なのか。
+
+			/*
+				2倍サイズで出ちゃうので、そのぶんをどこかのパラメータから得ればいい、という感じにできるか？
+				親のサイズを現在のサイズというふうに誤解させればできる、、かな？
+				
+				anchorが0-1だったら、親コンテンツのサイズが使われる。で、親コンテンツは存在しないので、そのサイズをどこかで支払うことになる。
+				
+
+				最終的に条件はあれだが、サイズをpaddingで支払えばいいのか。
+				paddingは別のところでも使いそうだな〜。サイズ指定をどこでやろうかな。paddingに足せばいいのか。
+
+				どういう条件になるんだろう。まあ適当に0-1か。
+			 */
 
 			var anchorMin = prefabRectTrans.anchorMin;
 			var anchorMax = prefabRectTrans.anchorMax;
-			Debug.LogError("anchorMin:" + anchorMin.x);// 0
-			Debug.LogError("anchorMax:" + anchorMax.x);// 0.5 で、これは割合で、アンカーがx軸上で親の左端から 親の真ん中にかけて存在する。
+			// Debug.LogError("anchorMin:" + anchorMin.x); 
+			// Debug.LogError("anchorMax:" + anchorMax.x);
 
+			
 			var offsetMin = prefabRectTrans.offsetMin;
 			var offsetMax = prefabRectTrans.offsetMax;
 			
 			// なんか値が取れるんだけど。この値はなんだろ。座標かな、
-			Debug.LogError("offsetMinX:" + offsetMin.x);// 0
-			Debug.LogError("offsetMaxX:" + offsetMax.x);// 5
+			// Debug.LogError("offsetMinX:" + offsetMin.x);
+			// Debug.LogError("offsetMaxX:" + offsetMax.x);
 
-			// rightが-5であってほしいところ、-10になっていて右にはみ出す。
-			// 結果的にはrightに-5が入って欲しいのでそのぶんを+すればよさげなんだけど、rightはなんかの結果値なのか？
-			// 全然わからないが、sizeDeltaが半分になるとよさげ？
-			
 			var pivot = prefabRectTrans.pivot;
 
 			var contentWidth = 0f;
@@ -454,16 +466,15 @@ namespace AutoyaFramework.Information {
 				pivottedPosY
 			);
 
-			var resultWidth = contentWidth;
-			// なんかやっぱ結果値としての幅みたいなのがレイアウト時と生成時で違う気がする。
-			// レイアウトの時はすでに「その値になるような結果」になってるんだけど、それを生成時に模倣しないといけない。
-			
-			// if (@this.parsedTag == (int)HtmlTag.IMG) {
-			// 	resultWidth -= (contentWidth/offsetMax.x);// ここだけ暫定
-			// }
-
-			// set content size.
-			@this.sizeDelta = new Vector2(resultWidth, contentHeight);
+			// 仮で、親の横幅を引き継ぐみたいなのをセットしてみる。
+			// この際、xサイズは0になり、padding.centerがwidthになる。
+			if (anchorMin.x == 0 && anchorMax.x == 1) {
+				@this.padding.width = contentWidth;
+				@this.sizeDelta = new Vector2(0, contentHeight);
+			} else {
+				// set content size.
+				@this.sizeDelta = new Vector2(contentWidth, contentHeight);
+			}
 		}
 
 		private float GetPercentOf (float baseParam, string percentStr) {
@@ -679,6 +690,7 @@ namespace AutoyaFramework.Information {
 					// if child is content and that width is 0, this is because, there is not enough width in this line.
 					// line is ended.
 					if (child.parsedTag == (int)HtmlTag._TEXT_CONTENT && child.sizeDelta.x == 0) {
+						Debug.LogWarning("あれ、ここでwidth0のコンテンツ出してるような");
 						sortLayoutLineAfterLining = true;
 					}
 
@@ -746,7 +758,7 @@ namespace AutoyaFramework.Information {
 						// Debug.LogError("child.anchoredPosition:" + child.anchoredPosition);
 				
 						// set next handle.
-						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.sizeDelta.x + child.padding.right;
+						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.sizeDelta.x + child.padding.PadWidth();
 					}
 				}
 
