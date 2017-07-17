@@ -102,7 +102,8 @@ namespace AutoyaFramework.Information {
 				
 				// fit size to wrap all child contents.
 				@this.sizeDelta = rightBottomPoint;
-				
+				Debug.LogError("parent sizeDelta:" + @this.sizeDelta);
+
 				// calculate table's contents.
 				if (@this.parsedTag == (int)HtmlTag.TABLE) {
 					/*
@@ -159,7 +160,7 @@ namespace AutoyaFramework.Information {
 				@this.anchoredPosition += @this.padding.LeftTopPoint();
 				
 				// handlePoint.nextLeftHandle += padding.right;
-				handle.nextTopHandle += @this.padding.top + @this.padding.bottom;
+				handle.nextTopHandle += @this.padding.top;// + @this.padding.bottom;
 			}
 			
 			yield break;
@@ -192,15 +193,6 @@ namespace AutoyaFramework.Information {
 			}
 
 
-			// 左にアンカーがついてる = 左のエッジを動かした時に100%の反映度合いでこのパーツのXが動く。
-			// 右のアンカーは真ん中についてるんで、真ん中 - 右端 - 親の右端、という関係が出来上がっていて、
-			// 親が伸びた量の半分だけ伸びる。伸びなければ初期の位置を維持する。
-
-			// で、このレイアウトの仕組みでは、中身からサイズが確定するので、逆説的に、伸びなければ値が入らない、というのが正しいことになる。
-
-			// つまり初期値を使えばいいんだけど、問題は、prefabRectTransAnchorXに7.5が入ってること。これ何。
-			
-
 			// get prefab default position.
 			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
 			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
@@ -215,15 +207,9 @@ namespace AutoyaFramework.Information {
 			var offsetMin = prefabRectTrans.offsetMin;
 			var offsetMax = prefabRectTrans.offsetMax;
 			// なんか値が取れるんだけど。この値はなんだろ。座標かな、アンカーの座標か。
-			// Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
-			// Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
+			Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
+			Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
 			
-			// @this.localPos = なんらか計算系。anchoredPosとlocalPosがなんか連携してるっぽい。
-			// anchoredPosを変えると、localが変わる。
-			// localPosを変えてもanchorが変わらない(GUI上は変わらないだけかも)
-			// @this.localPos = Vector2.zero;// やっぱ連動してるな〜〜 いじるべきなのはこの値ではない。
-
-
 			var pivot = prefabRectTrans.pivot;
 
 			var contentWidth = 0f;
@@ -426,12 +412,6 @@ namespace AutoyaFramework.Information {
 				}
 			}
 
-			/*
-				ここまでで、
-				contentWidth, height, pivot, anchorMax, anchorMinが手に入ってる。
-				anchorを解決する
-			 */
-			
 			// 左上が中心点ってどういうこと -> HTML上は左上原点で、uGUI上は左下原点なので、ここでその差の吸収というか、歪みを受ける。
 			// uGUIの中心点は左下なので、このへんが食い違う。y軸の向きが違う。
 			
@@ -440,29 +420,33 @@ namespace AutoyaFramework.Information {
 			var pivottedX = pivot.x * contentWidth;// 0 ~ 1の範囲で、width上の点
 			var pivottedY = (1-pivot.y) * contentHeight;// 0 ~ 1の範囲で、height上の点。HTMLは左上原点なので変換が必要。
 			
-			// prefab原点からはあらかじめpivot値が惹かれているので、ここで値を足す。
-			// このprefab原点からすでに値が引かれているのが混乱の原因なのか。この値排斥すると良さそう。
+			Debug.LogError("pivottedX:" + pivottedX);
+			Debug.LogError("pivottedY:" + pivottedY);
+
+			// prefab原点からはあらかじめpivot値が引かれているので、ここで値を足す。
+			// このprefab原点からすでに値が引かれているのが混乱の原因なのか。この値はそのうち排斥すると良さそう。
 			prefabRectTransAnchorX += pivottedX;
 			prefabRectTransAnchorY += pivottedY;
 
-			// ピボットがすんだ状態での原点を出す。pivotを引いているのは原点位置を合わせるため。
 			var pivottedPosX = xOffset + (prefabRectTransAnchorX - pivottedX);
 			var pivottedPosY = yOffset - (prefabRectTransAnchorY - pivottedY);
-
+			
 			// set position.
 			@this.anchoredPosition = new Vector2(
-				pivottedPosX, 
+				pivottedPosX,
 				pivottedPosY
 			);
 
 			// 仮で、親の横幅を引き継ぐみたいなのをセットしてみる。
 			// この際、xサイズは0になり、padding.centerがwidthになる。
+			// 実際には割合だと思うんだけど、まあ変な端数は特に使わないのでは?みたいな舐めきった気持ちで0-1限定にする。
 			var resultWidth = contentWidth;
 			var resultHeight = contentHeight;
 
 			if (anchorMin.x == 0 && anchorMax.x == 1) {
-				@this.padding.width = contentWidth;
-				resultWidth = 0;
+				@this.padding.width = contentWidth + offsetMin.x - (offsetMax.x*2);//マジックナンバー x2が入ると辻褄が合う。なぜ。
+				resultWidth = 0 - offsetMin.x + offsetMax.x;
+				// x0-1の値として、親サイズ-2とかそういう数値が入ってくるの平気かって思う。単一の値なんだけど、表すものが状況によって変わる。
 			}
 			if (anchorMin.y == 0 && anchorMax.y == 1) {
 				@this.padding.height = contentHeight;
@@ -830,7 +814,11 @@ namespace AutoyaFramework.Information {
 
 
 		public Vector2 PaddedRightBottomPoint (ParsedTree @this) {
-			return @this.anchoredPosition + @this.sizeDelta + new Vector2(@this.padding.PadWidth(), @this.padding.PadHeight());
+			Debug.LogError("PaddedRightBottomPoint @this.sizeDelta:" + @this.sizeDelta);
+
+			var rightBottom = @this.anchoredPosition + @this.sizeDelta + new Vector2(@this.padding.PadWidth(), @this.padding.PadHeight());
+			Debug.LogError("rightBottom:" + rightBottom);
+			return rightBottom;
 		}
 
 

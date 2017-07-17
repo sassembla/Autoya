@@ -3,8 +3,6 @@ using UnityEngine;
 namespace AutoyaFramework.Information {
     public class Padding {
         public float top;
-        public float right;
-        public float bottom; 
         public float left;
 
         public float width;
@@ -18,14 +16,14 @@ namespace AutoyaFramework.Information {
             width of padding.
         */
         public float PadWidth () {
-            return left + width + right;
+            return width;
         }
 
         /**
             hight of padding.
         */
         public float PadHeight () {
-            return top + height + bottom;
+            return height;
         }
     }
 }
