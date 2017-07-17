@@ -216,12 +216,12 @@ namespace AutoyaFramework.Information {
 			var offsetMax = prefabRectTrans.offsetMax;
 			
 			// なんか値が取れるんだけど。この値はなんだろ。座標かな、
-			Debug.LogError("offsetMin:" + offsetMin.x);// 0
-			Debug.LogError("offsetMax:" + offsetMax.x);// 5
+			Debug.LogError("offsetMinX:" + offsetMin.x);// 0
+			Debug.LogError("offsetMaxX:" + offsetMax.x);// 5
 
-			// で、結論として、rightが5であってほしいところ、10になっていて右にはみ出す。
-			// なぜ。
-
+			// rightが-5であってほしいところ、-10になっていて右にはみ出す。
+			// 結果的にはrightに-5が入って欲しいのでそのぶんを+すればよさげなんだけど、rightはなんかの結果値なのか？
+			// 全然わからないが、sizeDeltaが半分になるとよさげ？
 			
 			var pivot = prefabRectTrans.pivot;
 
@@ -454,8 +454,16 @@ namespace AutoyaFramework.Information {
 				pivottedPosY
 			);
 
+			var resultWidth = contentWidth;
+			// なんかやっぱ結果値としての幅みたいなのがレイアウト時と生成時で違う気がする。
+			// レイアウトの時はすでに「その値になるような結果」になってるんだけど、それを生成時に模倣しないといけない。
+			
+			// if (@this.parsedTag == (int)HtmlTag.IMG) {
+			// 	resultWidth -= (contentWidth/offsetMax.x);// ここだけ暫定
+			// }
+
 			// set content size.
-			@this.sizeDelta = new Vector2(contentWidth, contentHeight);
+			@this.sizeDelta = new Vector2(resultWidth, contentHeight);
 		}
 
 		private float GetPercentOf (float baseParam, string percentStr) {
