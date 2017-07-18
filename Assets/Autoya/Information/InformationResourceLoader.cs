@@ -11,8 +11,10 @@ using UnityEngine.UI;
 namespace AutoyaFramework.Information {
 
     [Serializable] public class DepthAssetList {
+        [SerializeField] public string viewName;
         [SerializeField] public DepthAssetInfo[] depthAssetNames;
-        public DepthAssetList (DepthAssetInfo[] depthAssetNames) {
+        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames) {
+            this.viewName = viewName;
             this.depthAssetNames = depthAssetNames;
 
         }
@@ -58,7 +60,7 @@ namespace AutoyaFramework.Information {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 
-
+        public string viewName = InformationConstSettings.VIEWNAME_DEFAULT;
 
         private readonly Action<IEnumerator> executor;
         public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate) {
@@ -245,7 +247,7 @@ namespace AutoyaFramework.Information {
 
             また、リストへのアクセスが来た際に、DL中であれば待たせる。
         */
-        public void GetDepthAssetList (string uriSource) {
+        public IEnumerator GetDepthAssetList (string uriSource) {
             if (isLoadingDepthAssetList) {
                 throw new Exception("multiple depth description found. only one description is valid.");
             }
@@ -259,13 +261,15 @@ namespace AutoyaFramework.Information {
 
 
             Action<DepthAssetList> succeeded = (depthAssetList) => {
+                Debug.LogError("読み込みが終わったんで名前がつく");
+                this.viewName = depthAssetList.viewName;
                 this.depthAssetList = depthAssetList;
                 isLoadingDepthAssetList = false;
             };
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new DepthAssetList(new DepthAssetInfo[0]);// set empty list.
+                this.depthAssetList = new DepthAssetList(viewName, new DepthAssetInfo[0]);// set empty list.
                 isLoadingDepthAssetList = false;
             };
 
@@ -290,8 +294,7 @@ namespace AutoyaFramework.Information {
                 }
                 default: {// other.
                     if (string.IsNullOrEmpty(scheme)) {
-                        Debug.LogError("empty uri found:" + uriSource);
-                        return;
+                        throw new Exception("empty uri found:" + uriSource);
                     }
 
                     // not empty. treat as resource file path.
@@ -300,8 +303,7 @@ namespace AutoyaFramework.Information {
                 }
             }
 
-            // run partially.
-            executor(coroutine);
+            return coroutine;
         }
 
 

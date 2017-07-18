@@ -9,20 +9,17 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
     public class MaterializeMachine {
-		private readonly string viewName;
 		private readonly InformationResourceLoader infoResLoader;
         private readonly InformationRootMonoBehaviour rootInputComponent;
         
 
         public MaterializeMachine(
-			string viewName, 
 			InformationResourceLoader infoResLoader,
 			LayoutedTree layoutedTree, 
 			GameObject rootGameObject, 
 			ViewBox view, 
 			Action<IEnumerator> executor
 		) {
-			this.viewName = viewName;
 			this.infoResLoader = infoResLoader;
 			
             this.rootInputComponent = rootGameObject.GetComponent<InformationRootMonoBehaviour>();
@@ -105,13 +102,13 @@ namespace AutoyaFramework.Information {
 			
 			GameObject prefab = null;
 			var cor = infoResLoader.LoadPrefab(
-				viewName,
+				infoResLoader.viewName,
 				currentTree,
 				newPrefab => {
 					prefab = newPrefab;
 				},
 				() => {
-					throw new Exception("failed to load prefab:" + currentTree.prefabName + " at viewName:" + viewName + " depth:" + string.Join("/", currentTree.depth));
+					throw new Exception("failed to load prefab:" + currentTree.prefabName + " at viewName:" + infoResLoader.viewName + " depth:" + string.Join("/", currentTree.depth));
 				}
 			);
 

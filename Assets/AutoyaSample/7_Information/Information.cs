@@ -40,7 +40,6 @@ public class Information : MonoBehaviour {
 
 		Autoya.Info_Show(
 			url,// html or markdonw data url.
-			"MyView",// name of view. related with uGUI created custom tag and depth name.
 			viewSize.x,// view width.
 			viewSize.y,// view height.
 			0,// y anchor.
