@@ -13,14 +13,19 @@ namespace AutoyaFramework.Information {
     */
     public class LayoutMachine {
 		private readonly InformationResourceLoader infoResLoader;
+		private readonly string viewName;
+
 		private readonly ViewBox view;
 
       	public LayoutMachine (
+			  string viewName, 
 			  ParsedTree @this, 
 			  InformationResourceLoader infoResLoader,
 			  ViewBox view, Action<IEnumerator> executor, 
 			  Action<LayoutedTree> layouted
 		) {
+			this.viewName = viewName;
+
 			this.infoResLoader = infoResLoader;
 
 			this.view = view;
@@ -53,11 +58,11 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				case (int)HtmlTag._DEPTH_ASSET_LIST_INFO: {
-					var cor = infoResLoader.GetDepthAssetList(@this.keyValueStore[Attribute.SRC]);
-					while (cor.MoveNext()) {
-						yield return null;
+					if (this.viewName == InformationConstSettings.VIEWNAME_DEFAULT) {
+						throw new Exception("can not set depthAssetList path with viewName 'Default'. please set your specific view name.");
 					}
-
+					infoResLoader.GetDepthAssetList(@this.keyValueStore[Attribute.SRC]);
+					// list downloading will be suceeded or failed.
 					break;
 				}
 				default: {
@@ -173,7 +178,7 @@ namespace AutoyaFramework.Information {
 
 			
 			var prefabLoadCor = infoResLoader.LoadPrefab(
-				infoResLoader.viewName, 
+				viewName, 
 				@this, 
 				prefab => {
 					prefabRectTrans = prefab.GetComponent<RectTransform>();
@@ -342,13 +347,13 @@ namespace AutoyaFramework.Information {
 				case (int)HtmlTag.HR: {
 					GameObject prefab = null;
 					var cor = infoResLoader.LoadPrefab(
-						infoResLoader.viewName,
+						viewName,
 						@this, 
 						newPrefab => {
 							prefab = newPrefab;
 						},
 						() => {
-							throw new Exception("failed to load hr prefab:" + @this.prefabName + " at viewName:" + infoResLoader.viewName);
+							throw new Exception("failed to load hr prefab:" + @this.prefabName + " at viewName:" + viewName);
 						}
 					);
 
@@ -483,13 +488,13 @@ namespace AutoyaFramework.Information {
         private IEnumerator LayoutTextContent (ParsedTree @this, float offset, string text, float contentWidth, float contentHeight, Action<ParsedTree[]> insert, Action<ContentAndWidthAndHeight> onCalculated) {
 			GameObject textPrefab = null;
 			var cor = infoResLoader.LoadPrefab(
-				infoResLoader.viewName,
+				viewName,
 				@this, 
 				newPrefab => {
 					textPrefab = newPrefab;
 				},
 				() => {
-					throw new Exception("failed to load _content prefab:" + @this.prefabName + " at viewName:" + infoResLoader.viewName);
+					throw new Exception("failed to load _content prefab:" + @this.prefabName + " at viewName:" + viewName);
 				}
 			);
 

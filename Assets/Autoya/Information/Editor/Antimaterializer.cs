@@ -83,7 +83,7 @@ namespace AutoyaFramework.Information {
             }
 
             var listFileName = "DepthAssetList.txt";
-            var depthAssetList = new DepthAssetList(viewName, depthAssetInfoList.ToArray());
+            var depthAssetList = new DepthAssetList(depthAssetInfoList.ToArray());
 
             var jsonStr = JsonUtility.ToJson(depthAssetList);
             using (var sw = new StreamWriter(Path.Combine(exportBasePath, listFileName))) {

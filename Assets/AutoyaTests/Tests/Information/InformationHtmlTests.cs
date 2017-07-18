@@ -418,6 +418,7 @@ some
 
 		var v = new ViewGenerator(executor);
 		var root = v.GenerateViewFromSource(
+			viewName, 
 			html, 
 			new ViewBox(width, height, 0), 
 			progress, 
