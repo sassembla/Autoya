@@ -157,139 +157,169 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 // 	}
 
 
-	[MTest] public void LeftTopAncheredView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopAncheredView/DepthAssetList)-->
-<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopAncheredView");
-	}
+	
 
-	[MTest] public void PivotView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/PivotView/DepthAssetList)-->
-<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0.5、0.5で、画像のposは0,0で、これだと画像はpivotを反映して表示する。-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "PivotView");
-	}
-
-	[MTest] public void LeftTopPivotView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotView/DepthAssetList)-->
-<!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotView");
-	}
-
-	[MTest] public void LeftTopPivotCenterAnchoredView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotCenterAnchoredView/DepthAssetList)-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotCenterAnchoredView");
-	}
-
-	[MTest] public void CenterPivotCenterAnchoredView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/CenterPivotCenterAnchoredView/DepthAssetList)-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotCenterAnchoredView");
-	}
-
-	[MTest] public void CenterPivotLeftAnchoredView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/CenterPivotLeftAnchoredView/DepthAssetList)-->
-<!--アンカーのxが0 -> 0.5になっていて、左に寄り付く性質がある。-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotLeftAnchoredView");
-	}
-
-// 	unsupported pattern
-// 	[MTest] public void CenterPivotRightAnchoredView () {
+// 	[MTest] public void LeftTopAncheredView () {
 // 		var sample = @"
-// <!--depth asset list url(resources://Views/CenterPivotRightAnchoredView/DepthAssetList)-->
-// <!--アンカーのxが0.5 -> 1になっていて、右に寄り付く性質がある。このタイプのやつはまだよくわからん。viewのサイズを自己増幅させないといけない？-->
+// <!--depth asset list url(resources://Views/LeftTopAncheredView/DepthAssetList)-->
+// <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
 // <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
 // ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotRightAnchoredView");
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopAncheredView");
+// 	}
+
+// 	[MTest] public void PivotView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/PivotView/DepthAssetList)-->
+// <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0.5、0.5で、画像のposは0,0で、これだと画像はpivotを反映して表示する。-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "PivotView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotView/DepthAssetList)-->
+// <!--サイズを指定して出す、画像の原点を左上アンカーでセットしてる。pivotは0,1なので左上-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotCenterAnchoredView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotCenterAnchoredView/DepthAssetList)-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotCenterAnchoredView");
+// 	}
+
+// 	[MTest] public void CenterPivotCenterAnchoredView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/CenterPivotCenterAnchoredView/DepthAssetList)-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotCenterAnchoredView");
+// 	}
+
+// 	[MTest] public void CenterPivotLeftAnchoredView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/CenterPivotLeftAnchoredView/DepthAssetList)-->
+// <!--アンカーのxが0 -> 0.5になっていて、左に寄り付く性質がある。-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotLeftAnchoredView");
+// 	}
+
+// // 	unsupported pattern
+// // 	[MTest] public void CenterPivotRightAnchoredView () {
+// // 		var sample = @"
+// // <!--depth asset list url(resources://Views/CenterPivotRightAnchoredView/DepthAssetList)-->
+// // <!--アンカーのxが0.5 -> 1になっていて、右に寄り付く性質がある。このタイプのやつはまだよくわからん。viewのサイズを自己増幅させないといけない？-->
+// // <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// // ";
+// // 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "CenterPivotRightAnchoredView");
+// // 	}
+
+
+// 	[MTest] public void LeftTopPivotXRelativeView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotXRelativeView/DepthAssetList)-->
+// <!--xアンカーが0-1なのでxに対してrelative、yアンカーは1-1-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotXRelativeWithBottomEdgeView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotXRelativeWithBottomEdgeView/DepthAssetList)-->
+// <!--xアンカーが0-1なのでxに対してrelative、yアンカーは0-0-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeWithBottomEdgeView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotYRelativeView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotYRelativeView/DepthAssetList)-->
+// <!--yアンカーが0-1なのでyに対してrelative、xアンカーは0-0-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotYRelativeView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotYRelativeWithRightEdgeView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotYRelativeWithRightEdgeView/DepthAssetList)-->
+// <!--yアンカーが0-1なのでyに対してrelative、xアンカーは1-1-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotYRelativeWithRightEdgeView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotRelativeView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotRelativeView/DepthAssetList)-->
+// <!--アンカーがx,y共に0-1-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotRelativeView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotXAnchoredWithXLeftMerginView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithXLeftMerginView/DepthAssetList)-->
+// <!--アンカーがxは0-1、左merginが2あり、一辺が10になる。-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='8' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithXLeftMerginView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotXAnchoredWithXRightMerginView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithXRightMerginView/DepthAssetList)-->
+// <!--アンカーがxは0-1、右merginが7あり、画像幅3+mergin7で、親のwidthが10になる。-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='3' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithXRightMerginView");
+// 	}
+
+// 	[MTest] public void LeftTopPivotXAnchoredWithXSideMerginView () {
+// 		var sample = @"
+// <!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithXSideMerginView/DepthAssetList)-->
+// <!--アンカーがxは0-1、右merginが3あり、左3があり、画像幅4で、親のwidthが10になる。-->
+// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='4' height='10' /></div></p>
+// ";
+// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithXSideMerginView");
 // 	}
 
 
-	[MTest] public void LeftTopPivotXRelativeView () {
+	[MTest] public void LeftTopPivotXAnchoredWithYTopMerginView () {
 		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotXRelativeView/DepthAssetList)-->
-<!--xアンカーが0-1なのでxに対してrelative、yアンカーは1-1-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+<!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithYTopMerginView/DepthAssetList)-->
+<!--アンカーがyは0-1、上merginが3あり、一辺が10になる。-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='7' /></div></p>
 ";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeView");
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithYTopMerginView");
 	}
 
-	[MTest] public void LeftTopPivotXRelativeWithBottomEdgeView () {
+	[MTest] public void LeftTopPivotXAnchoredWithYBottomMerginView () {
 		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotXRelativeWithBottomEdgeView/DepthAssetList)-->
-<!--xアンカーが0-1なのでxに対してrelative、yアンカーは0-0-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+<!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithYBottomMerginView/DepthAssetList)-->
+<!--アンカーがxは0-1、下merginが7あり、画像高さ3+merginの7で、親のheightが10になる。-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='3' /></div></p>
 ";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXRelativeWithBottomEdgeView");
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithYBottomMerginView");
 	}
 
-	[MTest] public void LeftTopPivotYRelativeView () {
+	[MTest] public void LeftTopPivotXAnchoredWithYSideMerginView () {
 		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotYRelativeView/DepthAssetList)-->
-<!--yアンカーが0-1なのでyに対してrelative、xアンカーは0-0-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
+<!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithYSideMerginView/DepthAssetList)-->
+<!--アンカーがxは0-1、上merginが3あり、下5があり、画像高さ2で、親のwidthが10になる。-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='2' /></div></p>
 ";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotYRelativeView");
-	}
-
-	[MTest] public void LeftTopPivotYRelativeWithRightEdgeView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotYRelativeWithRightEdgeView/DepthAssetList)-->
-<!--yアンカーが0-1なのでyに対してrelative、xアンカーは1-1-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotYRelativeWithRightEdgeView");
-	}
-
-	[MTest] public void LeftTopPivotRelativeView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotRelativeView/DepthAssetList)-->
-<!--アンカーがx,y共に0-1-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='10' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotRelativeView");
-	}
-
-	[MTest] public void LeftTopPivotXAnchoredWithXLeftMerginView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithXLeftMerginView/DepthAssetList)-->
-<!--アンカーがxは0-1、左merginが2あり、一辺が10になる。-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='8' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithXLeftMerginView");
-	}
-
-	[MTest] public void LeftTopPivotXAnchoredWithXRightMerginView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithXRightMerginView/DepthAssetList)-->
-<!--アンカーがxは0-1、右merginが7あり、画像幅3+merginの3で、親のwidthが10になる。-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='3' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithXRightMerginView");
-	}
-
-	[MTest] public void LeftTopPivotXAnchoredWithXSideMerginView () {
-		var sample = @"
-<!--depth asset list url(resources://Views/LeftTopPivotXAnchoredWithXSideMerginView/DepthAssetList)-->
-<!--アンカーがxは0-1、右merginが3あり、左3があり、画像幅4+merginの3で、親のwidthが10になる。-->
-<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='4' height='10' /></div></p>
-";
-		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithXSideMerginView");
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXAnchoredWithYSideMerginView");
 	}
 
 

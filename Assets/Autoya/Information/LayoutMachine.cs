@@ -206,9 +206,11 @@ namespace AutoyaFramework.Information {
 			
 			var offsetMin = prefabRectTrans.offsetMin;
 			var offsetMax = prefabRectTrans.offsetMax;
-			// なんか値が取れるんだけど。この値はなんだろ。座標かな、アンカーの座標か。
-			Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
-			Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
+			// なんか値が取れるんだけど。この値は、指定ポイントからの距離。
+			// Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
+			// Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
+			Debug.LogError("offsetMinY:" + offsetMin.y);// 左下のアンカーの座標
+			Debug.LogError("offsetMaxY:" + offsetMax.y);// 右上のアンカーの座標
 			
 			var pivot = prefabRectTrans.pivot;
 
@@ -437,9 +439,9 @@ namespace AutoyaFramework.Information {
 				pivottedPosY
 			);
 
-			// 仮で、親の横幅を引き継ぐみたいなのをセットしてみる。
-			// この際、xサイズは0になり、padding.centerがwidthになる。
-			// 実際には割合だと思うんだけど、まあ変な端数は特に使わないのでは?みたいな舐めきった気持ちで0-1限定にする。
+			// 仮で、anchorに0-1が入っているケースで、親の横幅を引き継ぐみたいなのをセットしてみる。
+			// この際、該当するanchor軸のサイズは親+2とか親-4とかの相対サイズになり、代わりにpadding.widthなどにパラメータを格納する。
+			// 実際には割合だと思うんだけど、まあ変な端数は特に使わないのでは?みたいな舐めきった気持ちで0-1限定にする。もしかしたらif外せるかも。
 			var resultWidth = contentWidth;
 			var resultHeight = contentHeight;
 
@@ -449,8 +451,8 @@ namespace AutoyaFramework.Information {
 				// x0-1の値として、親サイズ-2とかそういう数値が入ってくるの平気かって思う。単一の値なんだけど、表すものが状況によって変わる。
 			}
 			if (anchorMin.y == 0 && anchorMax.y == 1) {
-				@this.padding.height = contentHeight;
-				resultHeight = 0;
+				@this.padding.height = contentHeight + (offsetMin.y*2) - offsetMax.y;// yの場合はminにマジックナンバー x2が必要
+				resultHeight = 0 - offsetMin.y + offsetMax.y;
 			}
 
 			// set content size.
