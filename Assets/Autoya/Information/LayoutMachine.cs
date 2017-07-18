@@ -445,6 +445,7 @@ namespace AutoyaFramework.Information {
 			var resultWidth = contentWidth;
 			var resultHeight = contentHeight;
 
+			// これを一般化するのに、LeftTopPivotView_ROOTが役に立ちそう。
 			if (anchorMin.x == 0 && anchorMax.x == 1) {
 				@this.padding.width = contentWidth + offsetMin.x - (offsetMax.x*2);//マジックナンバー x2が入ると辻褄が合う。なぜ。
 				resultWidth = 0 - offsetMin.x + offsetMax.x;
