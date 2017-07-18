@@ -159,6 +159,7 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 	
 
 
+
 	/*
 		単体コンテンツでのアンカーセット
 	 */
@@ -338,6 +339,7 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 
 	/*
 		複数コンテンツでのアンカーがらみのレイアウトが難しい。
+		基本的にはCONTAINERに背景を入れたりできる。
 	 */
 	[MTest] public void TextOnImage () {
 		var sample = @"
