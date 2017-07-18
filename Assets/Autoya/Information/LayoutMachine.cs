@@ -102,7 +102,7 @@ namespace AutoyaFramework.Information {
 				
 				// fit size to wrap all child contents.
 				@this.sizeDelta = rightBottomPoint;
-				Debug.LogError("parent sizeDelta:" + @this.sizeDelta);
+				// Debug.LogError("parent sizeDelta:" + @this.sizeDelta);
 
 				// calculate table's contents.
 				if (@this.parsedTag == (int)HtmlTag.TABLE) {
@@ -206,11 +206,11 @@ namespace AutoyaFramework.Information {
 			
 			var offsetMin = prefabRectTrans.offsetMin;
 			var offsetMax = prefabRectTrans.offsetMax;
-			// なんか値が取れるんだけど。この値は、指定ポイントからの距離。
+			// この値は、親のどこのポイントにくっつくか、という指定ポイントからの距離。マイナスとかつく。
 			// Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
 			// Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
-			Debug.LogError("offsetMinY:" + offsetMin.y);// 左下のアンカーの座標
-			Debug.LogError("offsetMaxY:" + offsetMax.y);// 右上のアンカーの座標
+			// Debug.LogError("offsetMinY:" + offsetMin.y);// 左下のアンカーの座標
+			// Debug.LogError("offsetMaxY:" + offsetMax.y);// 右上のアンカーの座標
 			
 			var pivot = prefabRectTrans.pivot;
 
@@ -422,8 +422,8 @@ namespace AutoyaFramework.Information {
 			var pivottedX = pivot.x * contentWidth;// 0 ~ 1の範囲で、width上の点
 			var pivottedY = (1-pivot.y) * contentHeight;// 0 ~ 1の範囲で、height上の点。HTMLは左上原点なので変換が必要。
 			
-			Debug.LogError("pivottedX:" + pivottedX);
-			Debug.LogError("pivottedY:" + pivottedY);
+			// Debug.LogError("pivottedX:" + pivottedX);
+			// Debug.LogError("pivottedY:" + pivottedY);
 
 			// prefab原点からはあらかじめpivot値が引かれているので、ここで値を足す。
 			// このprefab原点からすでに値が引かれているのが混乱の原因なのか。この値はそのうち排斥すると良さそう。
@@ -433,11 +433,27 @@ namespace AutoyaFramework.Information {
 			var pivottedPosX = xOffset + (prefabRectTransAnchorX - pivottedX);
 			var pivottedPosY = yOffset - (prefabRectTransAnchorY - pivottedY);
 			
+			// if (prefabRectTrans.anchoredPosition != Vector2.zero) {
+			// 	// prefabを使っている場合、Offsetを無視する?んー違うな、、
+			// 	pivottedPosX = (prefabRectTransAnchorX - pivottedX);
+			// 	pivottedPosY = - (prefabRectTransAnchorY - pivottedY);
+			// }
+
+			/*
+				prefabに0以外の値が入っている場合、このオブジェクトの位置は、offsetを無視したものになる。オリジナルタグだと、みたいな感じでもいいのかな。
+				特定の条件下で、左上を原点とした位置にオブジェクトを移動させたい。
+				これらはマージンとかそのへんで加味してるからうごくやろ、と思ったけどそうでもないっぽい？
+				-> 一個のコンテンツだったら完璧に描画できる。
+
+				が、複数の連続するコンテンツだと辛い。
+			 */
+			
 			// set position.
 			@this.anchoredPosition = new Vector2(
 				pivottedPosX,
 				pivottedPosY
 			);
+			Debug.LogError("pivottedPosY:" + pivottedPosY + " yOffset:" + yOffset);
 
 			// 仮で、anchorに0-1が入っているケースで、親の横幅を引き継ぐみたいなのをセットしてみる。
 			// この際、該当するanchor軸のサイズは親+2とか親-4とかの相対サイズになり、代わりにpadding.widthなどにパラメータを格納する。
@@ -817,10 +833,10 @@ namespace AutoyaFramework.Information {
 
 
 		public Vector2 PaddedRightBottomPoint (ParsedTree @this) {
-			Debug.LogError("PaddedRightBottomPoint @this.sizeDelta:" + @this.sizeDelta);
+			// Debug.LogError("PaddedRightBottomPoint @this.sizeDelta:" + @this.sizeDelta);
 
 			var rightBottom = @this.anchoredPosition + @this.sizeDelta + new Vector2(@this.padding.PadWidth(), @this.padding.PadHeight());
-			Debug.LogError("rightBottom:" + rightBottom);
+			// Debug.LogError("rightBottom:" + rightBottom);
 			return rightBottom;
 		}
 

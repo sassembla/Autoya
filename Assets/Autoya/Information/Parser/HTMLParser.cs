@@ -606,6 +606,7 @@ namespace AutoyaFramework.Information {
 			var tagCandidateStr = tagFindingSampleStr.Substring(0, closeTagIndex);
 			
 			try {
+				// try-catchだと重いかもしれないので、なんか長さとかで足切りを考えるか。
 				var tag = (HtmlTag)Enum.Parse(typeof(HtmlTag), tagCandidateStr);
 				return (int)tag;
 			} catch {
