@@ -423,6 +423,7 @@ some
 			viewName, 
 			html, 
 			new ViewBox(width, height, 0), 
+            layoutedRect => {},
 			progress, 
 			done
 		);
