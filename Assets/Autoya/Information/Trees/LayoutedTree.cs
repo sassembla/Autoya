@@ -28,7 +28,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			var last = childlen[childlen.Count - 1];
-			return TotalHeight(last);
+			return last.anchoredPosition.y + Mathf.Abs(last.sizeDelta.y);
 		}
     }
 }

@@ -41,7 +41,7 @@ namespace AutoyaFramework.Information {
 			while (cor.MoveNext()) {
 				yield return null;
 			}
-
+	
 			var layoutedTree = new LayoutedTree(@this);
 			layouted(layoutedTree);
 		}
@@ -673,7 +673,7 @@ namespace AutoyaFramework.Information {
 					// if child is content and that width is 0, this is because, there is not enough width in this line.
 					// line is ended.
 					if (child.parsedTag == (int)HtmlTag._TEXT_CONTENT && child.sizeDelta.x == 0) {
-						Debug.LogWarning("あれ、ここでwidth0のコンテンツ出してるような");
+						// Debug.LogWarning("ここでwidth0のコンテンツ出してるの、そのうち無くせそうな気がする");
 						sortLayoutLineAfterLining = true;
 					}
 
