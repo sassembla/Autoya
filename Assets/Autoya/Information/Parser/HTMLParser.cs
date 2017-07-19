@@ -27,8 +27,12 @@ namespace AutoyaFramework.Information {
      */
     public class HTMLParser {
         public ParsedTree ParseRoot (string source) {
+			var lines = source.Split('\n');
+			for (var i = 0; i < lines.Length; i++) {
+				lines[i] = lines[i].TrimStart();
+			}
             var root = new ParsedTree();
-            return Parse(root, source.Replace("\n", string.Empty));
+            return Parse(root, string.Join(string.Empty, lines));
         }
 
 
@@ -589,7 +593,7 @@ namespace AutoyaFramework.Information {
 			// get sampling str.
 			var tagFindingSampleStr = data.Substring(tagStartPos, allowedMaxTagLength).ToUpper();
 			
-			if (data[tagStartPos] == '!') {
+			if (tagStartPos < data.Length && data[tagStartPos] == '!') {
 				if (data[index + 2] == '-') {
 					return (int)HtmlTag._COMMENT;
 				}
@@ -606,6 +610,7 @@ namespace AutoyaFramework.Information {
 			var tagCandidateStr = tagFindingSampleStr.Substring(0, closeTagIndex);
 			
 			try {
+				// try-catchだと重いかもしれないので、なんか長さとかで足切りを考えるか。
 				var tag = (HtmlTag)Enum.Parse(typeof(HtmlTag), tagCandidateStr);
 				return (int)tag;
 			} catch {

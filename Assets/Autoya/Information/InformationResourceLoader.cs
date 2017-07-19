@@ -99,11 +99,14 @@ namespace AutoyaFramework.Information {
                     if (tree.isContainer) {
                         depth = viewName + "/" + string.Join("/", tree.depth.Select(t => t.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER).ToArray());
                     } else {
+                        var depthBase = string.Empty;
+
                         for (var i = 0; i < tree.depth.Length-1; i++) {
                             var d = tree.depth[i];
-                            depth = depth + "/" + d.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER;
+                            depthBase = depthBase + "/" + d.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER;
                         }
-                        depth += "/" + tree.prefabName;
+                        depthBase += "/" + tree.prefabName;
+                        depth = viewName + depthBase;
                     }
                     
                     var getListCoroutine = DepthAssetList();
@@ -111,7 +114,7 @@ namespace AutoyaFramework.Information {
                         yield return null;
                     }
                     var list = getListCoroutine.Current;
-
+                    
                     var targetDepthAssetInfos = list.depthAssetNames.Where(d => d.depthAssetName == depth).ToArray();
                     if (targetDepthAssetInfos.Any()) {
                         var targetInfo = targetDepthAssetInfos[0];
@@ -203,7 +206,8 @@ namespace AutoyaFramework.Information {
                 obj = cor.asset as GameObject;
                 if (obj == null) {
                     // no prefab found.
-                    Debug.LogError("failed to load prefab:" + tree.prefabName + " path:" + loadingPrefabName);
+                    Debug.LogError("no prefab found in Resources:" + loadingPrefabName);
+
                     onLoadFailed();
                     yield break;
                 }
@@ -218,7 +222,7 @@ namespace AutoyaFramework.Information {
 
         private IEnumerator LoadPrefabFromDefaultResources (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             // default path.
-            var defaultPath = InformationConstSettings.PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
+            var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
 
             var loadingPrefabName = string.Empty;
 

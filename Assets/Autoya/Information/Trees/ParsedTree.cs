@@ -29,6 +29,8 @@ namespace AutoyaFramework.Information {
         // layout things.
         public Vector2 anchoredPosition = Vector2.zero;        
         public Vector2 sizeDelta = Vector2.zero;
+        public Vector2 offsetMin = Vector2.zero;
+        public Vector2 offsetMax = Vector2.zero;
         public Padding padding = new Padding();
 
         public ParsedTree () {
@@ -95,7 +97,7 @@ namespace AutoyaFramework.Information {
                 this.parsedTag == (int)HtmlTag._TEXT_CONTENT
             ) {
                 var val = this.keyValueStore[Attribute._CONTENT];
-                throw new Exception("invalid text contains outside of all tag. val:" + val);
+                throw new Exception("invalid text contains outside of tag. val:" + val);
             }
             
 			t._childlen.Add(this);

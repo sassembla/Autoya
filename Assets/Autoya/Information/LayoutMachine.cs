@@ -41,7 +41,7 @@ namespace AutoyaFramework.Information {
 			while (cor.MoveNext()) {
 				yield return null;
 			}
-
+	
 			var layoutedTree = new LayoutedTree(@this);
 			layouted(layoutedTree);
 		}
@@ -102,7 +102,8 @@ namespace AutoyaFramework.Information {
 				
 				// fit size to wrap all child contents.
 				@this.sizeDelta = rightBottomPoint;
-				
+				// Debug.LogError("parent sizeDelta:" + @this.sizeDelta);
+
 				// calculate table's contents.
 				if (@this.parsedTag == (int)HtmlTag.TABLE) {
 					/*
@@ -138,7 +139,7 @@ namespace AutoyaFramework.Information {
 				default: {
 					// 回り込みを実現する。んだけど、これはどちらかというと多数派で、デフォルトっぽい。
 					// next content is planned to layout to the next of this content.
-					handle.nextLeftHandle = @this.anchoredPosition.x + @this.sizeDelta.x;// after padding.
+					handle.nextLeftHandle = @this.anchoredPosition.x + @this.sizeDelta.x + @this.padding.width;
 					break;
 				}
 
@@ -159,7 +160,7 @@ namespace AutoyaFramework.Information {
 				@this.anchoredPosition += @this.padding.LeftTopPoint();
 				
 				// handlePoint.nextLeftHandle += padding.right;
-				handle.nextTopHandle += @this.padding.top + @this.padding.bottom;
+				handle.nextTopHandle += @this.padding.top;// + @this.padding.bottom;
 			}
 			
 			yield break;
@@ -172,9 +173,45 @@ namespace AutoyaFramework.Information {
 			var viewWidth = handle.viewWidth;
 			var viewHeight = handle.viewHeight;
 
-			// set (x, y) start pos.
-			@this.anchoredPosition = new Vector2(@this.anchoredPosition.x + xOffset, @this.anchoredPosition.y + yOffset);
+			// create default rect transform.
+			var prefabRectTrans = new RectTransform();
+			// Debug.LogError("prefabRectTrans:" + prefabRectTrans + " viewName:" + viewName);
 			
+			var prefabLoadCor = infoResLoader.LoadPrefab(
+				viewName, 
+				@this, 
+				prefab => {
+					prefabRectTrans = prefab.GetComponent<RectTransform>();
+				},
+				() => {
+					// do nothing on failed. add zero position.
+				}
+			);
+
+			while (prefabLoadCor.MoveNext()) {
+				yield return null;
+			}
+			
+			// get prefab default position.
+			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
+			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
+			// Debug.LogError("prefabRectTransAnchorX:" + prefabRectTransAnchorX);
+
+			var anchorMin = prefabRectTrans.anchorMin;
+			var anchorMax = prefabRectTrans.anchorMax;
+			// Debug.LogError("anchorMin:" + anchorMin.x); 
+			// Debug.LogError("anchorMax:" + anchorMax.x);
+
+			
+			var offsetMin = prefabRectTrans.offsetMin;
+			var offsetMax = prefabRectTrans.offsetMax;
+			// この値は、親のどこのポイントにくっつくか、という指定ポイントからの距離。マイナスとかつく。
+			// Debug.LogError("offsetMinX:" + offsetMin.x);// 左下のアンカーの座標
+			// Debug.LogError("offsetMaxX:" + offsetMax.x);// 右上のアンカーの座標
+			// Debug.LogError("offsetMinY:" + offsetMin.y);// 左下のアンカーの座標
+			// Debug.LogError("offsetMaxY:" + offsetMax.y);// 右上のアンカーの座標
+			
+			var pivot = prefabRectTrans.pivot;
 
 			var contentWidth = 0f;
 			var contentHeight = 0f;
@@ -203,6 +240,8 @@ namespace AutoyaFramework.Information {
 					}
 
 					var src = @this.keyValueStore[Attribute.SRC];
+					float imageWidth = 0;
+					float imageHeight = 0;
 
 					// determine image size from image's width & height.
 					if (@this.keyValueStore.ContainsKey(Attribute.WIDTH) && @this.keyValueStore.ContainsKey(Attribute.HEIGHT)) {
@@ -210,24 +249,24 @@ namespace AutoyaFramework.Information {
 						var height = @this.keyValueStore[Attribute.HEIGHT];
 
 						if (width.EndsWith("%")) {
-							contentWidth = GetPercentOf(viewWidth, width);
+							imageWidth = GetPercentOf(viewWidth, width);
 						} else {
-							contentWidth = Convert.ToInt32(width);
+							imageWidth = Convert.ToInt32(width);
 						}
 
 						if (height.EndsWith("%")) {
-							contentHeight = GetPercentOf(viewHeight, height);
+							imageHeight = GetPercentOf(viewHeight, height);
 						} else {
-							contentHeight = Convert.ToInt32(height);
+							imageHeight = Convert.ToInt32(height);
 						}
 
 					} else if (@this.keyValueStore.ContainsKey(Attribute.WIDTH)) {
 						// width only.
 						var width = @this.keyValueStore[Attribute.WIDTH];
 						if (width.EndsWith("%")) {
-							contentWidth = GetPercentOf(viewWidth, width);
+							imageWidth = GetPercentOf(viewWidth, width);
 						} else {
-							contentWidth = Convert.ToInt32(width);
+							imageWidth = Convert.ToInt32(width);
 						}
 
 						// need to download image.
@@ -237,11 +276,11 @@ namespace AutoyaFramework.Information {
 							src, 
 							(sprite) => {
 								downloaded = true;
-								contentHeight = (contentWidth / sprite.rect.size.x) * sprite.rect.size.y;
+								imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
 							},
 							() => {
 								downloaded = true;
-								contentHeight = 0;
+								imageHeight = 0;
 							}
 						);
 
@@ -253,9 +292,9 @@ namespace AutoyaFramework.Information {
 						// height only.
 						var height = @this.keyValueStore[Attribute.HEIGHT];
 						if (height.EndsWith("%")) {
-							contentHeight = GetPercentOf(viewHeight, height);
+							imageHeight = GetPercentOf(viewHeight, height);
 						} else {
-							contentHeight = Convert.ToInt32(height);
+							imageHeight = Convert.ToInt32(height);
 						}
 
 						// need to download image.
@@ -265,7 +304,7 @@ namespace AutoyaFramework.Information {
 							src, 
 							(sprite) => {
 								downloaded = true;
-								contentWidth = (contentHeight / sprite.rect.size.y) * sprite.rect.size.x;
+								contentWidth = (imageHeight / sprite.rect.size.y) * sprite.rect.size.x;
 							},
 							() => {
 								downloaded = true;
@@ -284,21 +323,24 @@ namespace AutoyaFramework.Information {
 							src, 
 							(sprite) => {
 								downloaded = true;
-								contentWidth = sprite.rect.size.x;
-								contentHeight = sprite.rect.size.y;
+								imageWidth = sprite.rect.size.x;
+								imageHeight = sprite.rect.size.y;
 							},
 							() => {
 								downloaded = true;
-								contentWidth = 0;
-								contentHeight = 0;
+								imageWidth = 0;
+								imageHeight = 0;
 							}
 						);
 
 						while (!downloaded) {
 							yield return null;
 						}
-
 					}
+
+					// set content size.
+					contentWidth = imageWidth;
+					contentHeight = imageHeight;
 					break;
 				}
 				case (int)HtmlTag.HR: {
@@ -370,10 +412,52 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 			}
+
+			// 左上が中心点ってどういうこと -> HTML上は左上原点で、uGUI上は左下原点なので、ここでその差の吸収というか、歪みを受ける。
+			// uGUIの中心点は左下なので、このへんが食い違う。y軸の向きが違う。
 			
+			// pivot値の上での位置原点を出す。この値が、このオブジェクトの原点がどこにあるか、を出すパラメータになる。
+			// prefabのtransformはこの原点値をもとに値を保存しているため、原点値を踏まえた座標位置にするためには、原点位置をあらかじめ足した値にする必要がある。
+			var pivottedX = pivot.x * contentWidth;// 0 ~ 1の範囲で、width上の点
+			var pivottedY = (1-pivot.y) * contentHeight;// 0 ~ 1の範囲で、height上の点。HTMLは左上原点なので変換が必要。
+			
+			// Debug.LogError("pivottedX:" + pivottedX);
+			// Debug.LogError("pivottedY:" + pivottedY);
+
+			// prefab原点からはあらかじめpivot値が引かれているので、ここで値を足す。
+			// このprefab原点からすでに値が引かれているのが混乱の原因なのか。この値はそのうち排斥すると良さそう。
+			prefabRectTransAnchorX += pivottedX;
+			prefabRectTransAnchorY += pivottedY;
+
+			var pivottedPosX = xOffset + (prefabRectTransAnchorX - pivottedX);
+			var pivottedPosY = yOffset - (prefabRectTransAnchorY - pivottedY);
+			
+			// set position.
+			@this.anchoredPosition = new Vector2(
+				pivottedPosX,
+				pivottedPosY
+			);
+			// Debug.LogError("pivottedPosY:" + pivottedPosY + " yOffset:" + yOffset);
+
+			// 仮で、anchorに0-1が入っているケースで、親の横幅を引き継ぐみたいなのをセットしてみる。
+			// この際、該当するanchor軸のサイズは親+2とか親-4とかの相対サイズになり、代わりにpadding.widthなどにパラメータを格納する。
+			// 実際には割合だと思うんだけど、まあ変な端数は特に使わないのでは?みたいな舐めきった気持ちで0-1限定にする。もしかしたらif外せるかも。
+			var resultWidth = contentWidth;
+			var resultHeight = contentHeight;
+
+			// これを一般化するのに、LeftTopPivotView_ROOTが役に立ちそう。
+			if (anchorMin.x == 0 && anchorMax.x == 1) {
+				@this.padding.width = contentWidth + offsetMin.x - (offsetMax.x*2);//マジックナンバー x2が入ると辻褄が合う。なぜ。
+				resultWidth = 0 - offsetMin.x + offsetMax.x;
+				// x0-1の値として、親サイズ-2とかそういう数値が入ってくるの平気かって思う。単一の値なんだけど、表すものが状況によって変わる。
+			}
+			if (anchorMin.y == 0 && anchorMax.y == 1) {
+				@this.padding.height = contentHeight + (offsetMin.y*2) - offsetMax.y;// yの場合はminにマジックナンバー x2が必要
+				resultHeight = 0 - offsetMin.y + offsetMax.y;
+			}
+
 			// set content size.
-			@this.sizeDelta = new Vector2(contentWidth, contentHeight);
-			yield break;
+			@this.sizeDelta = new Vector2(resultWidth, resultHeight);
 		}
 
 		private float GetPercentOf (float baseParam, string percentStr) {
@@ -589,6 +673,7 @@ namespace AutoyaFramework.Information {
 					// if child is content and that width is 0, this is because, there is not enough width in this line.
 					// line is ended.
 					if (child.parsedTag == (int)HtmlTag._TEXT_CONTENT && child.sizeDelta.x == 0) {
+						// Debug.LogWarning("ここでwidth0のコンテンツ出してるの、そのうち無くせそうな気がする");
 						sortLayoutLineAfterLining = true;
 					}
 
@@ -653,10 +738,10 @@ namespace AutoyaFramework.Information {
 							childHandlePoint.nextLeftHandle + child.padding.left, 
 							childHandlePoint.nextTopHandle + child.padding.top
 						);
-						// Debug.LogError("child.rectTransform.anchoredPosition:" + child.vRectTransform.vAnchoredPosition);
+						// Debug.LogError("child.anchoredPosition:" + child.anchoredPosition);
 				
 						// set next handle.
-						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.padding.left + child.sizeDelta.x + child.padding.right;
+						childHandlePoint.nextLeftHandle = childHandlePoint.nextLeftHandle + child.sizeDelta.x + child.padding.PadWidth();
 					}
 				}
 
@@ -686,8 +771,6 @@ namespace AutoyaFramework.Information {
 			if (0 < layoutLine.Count) {
 				childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
 			}
-
-			yield break;
 		}
 
 
@@ -734,7 +817,11 @@ namespace AutoyaFramework.Information {
 
 
 		public Vector2 PaddedRightBottomPoint (ParsedTree @this) {
-			return @this.anchoredPosition + @this.sizeDelta + new Vector2(@this.padding.PadWidth(), @this.padding.PadHeight());
+			// Debug.LogError("PaddedRightBottomPoint @this.sizeDelta:" + @this.sizeDelta);
+
+			var rightBottom = @this.anchoredPosition + @this.sizeDelta + new Vector2(@this.padding.PadWidth(), @this.padding.PadHeight());
+			// Debug.LogError("rightBottom:" + rightBottom);
+			return rightBottom;
 		}
 
 

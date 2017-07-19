@@ -22,28 +22,28 @@ namespace AutoyaFramework.Information {
 			this.infoResLoader = new InformationResourceLoader(executor, requestHeader, httpResponseHandlingDelegate);
 		}
 		
-		public GameObject GenerateViewFromSource (string viewName, string source, ViewBox view, Action<double> progress, Action loadDone) {
+		public GameObject GenerateViewFromSource (string viewName, string source, ViewBox view, Action<Rect>layoutDone, Action<double> progress, Action loadDone) {
 			// generate and return root object first.
 			var rootObj = new GameObject(viewName + HtmlTag._ROOT.ToString());
 			{
 				var rootRectTrans = rootObj.AddComponent<RectTransform>();
 				rootObj.AddComponent<InformationRootMonoBehaviour>();
 				
+				// set anchor to left top.
 				rootRectTrans.anchorMin = Vector2.up;
 				rootRectTrans.anchorMax = Vector2.up;
 				rootRectTrans.pivot = Vector2.up;
 				rootRectTrans.position = Vector2.zero;
 			}
 
-			GenerateView(rootObj, viewName, source, view, progress, loadDone);
+			GenerateView(rootObj, viewName, source, view, layoutDone, progress, loadDone);
 			return rootObj;
 		}
 		
 
-        private void GenerateView (GameObject rootObj, string viewName, string source, ViewBox view, Action<double> progress, Action loadDone) {
+        private void GenerateView (GameObject rootObj, string viewName, string source, ViewBox view, Action<Rect> layoutDone, Action<double> progress, Action loadDone) {
 			// parse html string to tree.
-			var serializedSource = source.Replace("\n", string.Empty);
-			var parsedRootTree = new HTMLParser().ParseRoot(serializedSource);
+			var parsedRootTree = new HTMLParser().ParseRoot(source);
 
 			// layout -> materialize.
 			new LayoutMachine(
@@ -53,6 +53,9 @@ namespace AutoyaFramework.Information {
 				view, 
 				executor, 
 				layoutedTree => {
+					// layout is done.
+					layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
+
 					/*
 						attributes and depth are ready for each tree.
 					 */
