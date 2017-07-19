@@ -27,8 +27,12 @@ namespace AutoyaFramework.Information {
      */
     public class HTMLParser {
         public ParsedTree ParseRoot (string source) {
+			var lines = source.Split('\n');
+			for (var i = 0; i < lines.Length; i++) {
+				lines[i] = lines[i].TrimStart();
+			}
             var root = new ParsedTree();
-            return Parse(root, source.Replace("\n", string.Empty));
+            return Parse(root, string.Join(string.Empty, lines));
         }
 
 

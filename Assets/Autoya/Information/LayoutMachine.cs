@@ -175,7 +175,7 @@ namespace AutoyaFramework.Information {
 
 			// create default rect transform.
 			var prefabRectTrans = new RectTransform();
-
+			// Debug.LogError("prefabRectTrans:" + prefabRectTrans + " viewName:" + viewName);
 			
 			var prefabLoadCor = infoResLoader.LoadPrefab(
 				viewName, 
@@ -191,8 +191,7 @@ namespace AutoyaFramework.Information {
 			while (prefabLoadCor.MoveNext()) {
 				yield return null;
 			}
-
-
+			
 			// get prefab default position.
 			var prefabRectTransAnchorX = prefabRectTrans.anchoredPosition.x;
 			var prefabRectTransAnchorY = prefabRectTrans.anchoredPosition.y;
@@ -433,27 +432,12 @@ namespace AutoyaFramework.Information {
 			var pivottedPosX = xOffset + (prefabRectTransAnchorX - pivottedX);
 			var pivottedPosY = yOffset - (prefabRectTransAnchorY - pivottedY);
 			
-			// if (prefabRectTrans.anchoredPosition != Vector2.zero) {
-			// 	// prefabを使っている場合、Offsetを無視する?んー違うな、、
-			// 	pivottedPosX = (prefabRectTransAnchorX - pivottedX);
-			// 	pivottedPosY = - (prefabRectTransAnchorY - pivottedY);
-			// }
-
-			/*
-				prefabに0以外の値が入っている場合、このオブジェクトの位置は、offsetを無視したものになる。オリジナルタグだと、みたいな感じでもいいのかな。
-				特定の条件下で、左上を原点とした位置にオブジェクトを移動させたい。
-				これらはマージンとかそのへんで加味してるからうごくやろ、と思ったけどそうでもないっぽい？
-				-> 一個のコンテンツだったら完璧に描画できる。
-
-				が、複数の連続するコンテンツだと辛い。
-			 */
-			
 			// set position.
 			@this.anchoredPosition = new Vector2(
 				pivottedPosX,
 				pivottedPosY
 			);
-			Debug.LogError("pivottedPosY:" + pivottedPosY + " yOffset:" + yOffset);
+			// Debug.LogError("pivottedPosY:" + pivottedPosY + " yOffset:" + yOffset);
 
 			// 仮で、anchorに0-1が入っているケースで、親の横幅を引き継ぐみたいなのをセットしてみる。
 			// この際、該当するanchor軸のサイズは親+2とか親-4とかの相対サイズになり、代わりにpadding.widthなどにパラメータを格納する。

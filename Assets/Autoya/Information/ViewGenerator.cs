@@ -29,6 +29,7 @@ namespace AutoyaFramework.Information {
 				var rootRectTrans = rootObj.AddComponent<RectTransform>();
 				rootObj.AddComponent<InformationRootMonoBehaviour>();
 				
+				// set anchor to left top.
 				rootRectTrans.anchorMin = Vector2.up;
 				rootRectTrans.anchorMax = Vector2.up;
 				rootRectTrans.pivot = Vector2.up;
@@ -42,8 +43,7 @@ namespace AutoyaFramework.Information {
 
         private void GenerateView (GameObject rootObj, string viewName, string source, ViewBox view, Action<double> progress, Action loadDone) {
 			// parse html string to tree.
-			var serializedSource = source.Replace("\n", string.Empty);
-			var parsedRootTree = new HTMLParser().ParseRoot(serializedSource);
+			var parsedRootTree = new HTMLParser().ParseRoot(source);
 
 			// layout -> materialize.
 			new LayoutMachine(

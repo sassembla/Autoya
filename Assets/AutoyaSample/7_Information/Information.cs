@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Information : MonoBehaviour {
 	public InputField inputField;
-	public string url = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/MyView.html";
+	public string url;
 
 	// sample information view content instance.
 	private GameObject informationView;
@@ -36,11 +36,11 @@ public class Information : MonoBehaviour {
 		var scrollViewContent = GameObject.Find("Content");
 		var scrollContentRect = scrollViewContent.GetComponent<RectTransform>();
 		
-		var viewSize = new Vector2(300,300);
-
+		var viewSize = new Vector2(400 ,300);
+		
 		Autoya.Info_Show(
 			url,// html or markdonw data url.
-			"MyView",// name of view. related with uGUI created custom tag and depth name.
+			"MyInfoView",// name of view. related with uGUI created custom tag and depth name.
 			viewSize.x,// view width.
 			viewSize.y,// view height.
 			0,// y anchor.

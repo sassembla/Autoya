@@ -206,6 +206,8 @@ namespace AutoyaFramework.Information {
                 obj = cor.asset as GameObject;
                 if (obj == null) {
                     // no prefab found.
+                    Debug.LogError("no prefab found in Resources:" + loadingPrefabName);
+
                     onLoadFailed();
                     yield break;
                 }
