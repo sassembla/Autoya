@@ -61,40 +61,17 @@ namespace AutoyaFramework.Information {
             }
             
             var depthAssetInfoList = new List<DepthAssetInfo>();
-            {
-                /*
-                    create depthAssetList.
-                */
-                var exportedFiles = FileController.FilePathsInFolder(exportBasePath);
-                
-
-                foreach (var exportedFilePath in exportedFiles) {
-                    // Debug.LogError("exportedFilePath:" + exportedFilePath);
-                    
-                    var depthAssetNameIndex = exportedFilePath.IndexOf("/Resources/Views/") + "/Resources/Views/".Length;
-                    var depthAssetNameWithExtension = exportedFilePath.Substring(depthAssetNameIndex);
-                    var depthAssetName = depthAssetNameWithExtension.Substring(0, depthAssetNameWithExtension.Length - Path.GetExtension(depthAssetNameWithExtension).Length);
-
-                    // Assets/InformationResources/Resources/Views/MyView/P_CONTAINER/P_CONTAINER.prefab
-                    var resourceBasePathIndex = exportedFilePath.IndexOf("/Resources/") + "/Resources/".Length;
-                    var resourcePathWithExtension = exportedFilePath.Substring(resourceBasePathIndex);
-                    var resourcePath = "resources://" + resourcePathWithExtension.Substring(0, resourcePathWithExtension.Length - Path.GetExtension(resourcePathWithExtension).Length);
-
-                    var depthAssetInfo = new DepthAssetInfo(depthAssetName, resourcePath);
-                    depthAssetInfoList.Add(depthAssetInfo);
-                }
-            }
-
-            var constraints = new List<BoxConstraint>();
-            // recursiveに、コンテンツを分解していく。
-            // ファイルを出力する
-            // ということをしていく。
             
-            // foreach () {
 
-            // }
-
-
+            // childrenがいろいろなタグの根本にあたる。
+            var constraints = new List<BoxConstraints>();
+            // recursiveに、コンテンツを分解していく。
+            for (var i = 0; i < target.transform.childCount; i++) {
+                var child = target.transform.GetChild(i);
+                
+                CollectConstraints(InformationConstSettings.FULLPATH_INFORMATION_RESOURCE + viewName, child.gameObject, constraints);
+            }
+            
             var listFileName = "DepthAssetList.txt";
             var depthAssetList = new DepthAssetList(viewName, depthAssetInfoList.ToArray(), constraints.ToArray());
 
@@ -103,6 +80,106 @@ namespace AutoyaFramework.Information {
                 sw.WriteLine(jsonStr);
             }
             AssetDatabase.Refresh();
+        }
+
+        /**
+            存在するパーツ単位でconstraintsを生成する
+         */
+        private static void CollectConstraints (string viewName, GameObject source, List<BoxConstraints> currentConstraints) {
+            // このレイヤーにあるものに対して、まずコピーを生成し、そのコピーに対して処理を行う。
+            var currentLayerInstance = GameObject.Instantiate(source);
+            currentLayerInstance.name = source.name;
+
+
+            var layerName = currentLayerInstance.name;
+            
+            var depth = viewName + "/" + layerName;
+
+            Debug.LogError("currentLayerInstance:" + currentLayerInstance);
+
+            var childrenDesc = new List<BoxConstraint>();
+            var children = new List<GameObject>();
+
+            // インスタンスに対して、子供達を取得し、それらのRectTransform以外のコンポーネントを全て消す。
+            foreach (Transform childTrans in currentLayerInstance.transform) {
+                var childObj = childTrans.gameObject;
+
+                var boxName = layerName + "_" + childObj.name;
+                childObj.name = boxName;
+
+                var childRectTrans = childObj.GetComponent<RectTransform>();
+
+                // この階層のdescにこのchildの情報を追加
+                var box = new BoxConstraint(boxName, new RectTransDesc(childRectTrans));
+                childrenDesc.Add(box);
+
+                // childを別のリストにまとめて、自身のchildとは分離
+                {
+                    // childの新規インスタンスを生成
+                    var childNewInstance = GameObject.Instantiate(childObj);
+
+                    // その名称を、boxNameへと変更。
+                    // layer_tag になる。
+                    childNewInstance.name = boxName;
+
+                    // 保持
+                    children.Add(childNewInstance);
+                }
+
+                // 元になったinstanceからrectTrans以外のcomponentを奪う
+                
+                foreach (var component in childObj.GetComponents<Component>().Reverse()) {
+                    if (component is RectTransform) {
+                        continue;
+                    }
+
+                    // remove not RectTransform component.
+                    GameObject.DestroyImmediate(component);
+                }
+
+            }
+            
+            // 自身のprefab化
+            var prefabPath = depth + ".prefab";
+            Debug.LogError("prefabPath:" + prefabPath);
+            var dirPath = Path.GetDirectoryName(prefabPath);
+            
+            /*
+                create prefab.
+             */
+            FileController.CreateDirectoryRecursively(dirPath);
+            PrefabUtility.CreatePrefab(prefabPath, currentLayerInstance);
+
+
+            // 自身の削除
+            GameObject.DestroyImmediate(currentLayerInstance);
+            
+
+
+            // descを追加
+            currentConstraints.Add(new BoxConstraints(layerName, childrenDesc.ToArray()));
+            
+
+
+            // 生成しておいた子供の位置情報を変更して継続
+            foreach (var child in children) {
+                var childRectTrans = child.GetComponent<RectTransform>();
+                // このchildから位置情報を奪い、さらに内部へと進む
+                childRectTrans.anchoredPosition = Vector2.zero;
+                childRectTrans.offsetMin = Vector2.zero;
+                childRectTrans.offsetMax = new Vector2(1, 1);
+                childRectTrans.anchorMin = Vector2.zero;
+                childRectTrans.anchorMax = new Vector2(1, 1);
+                childRectTrans.pivot = new Vector2(0, 1);
+
+                CollectConstraints(depth, child, currentConstraints);
+            }
+
+            // 全ての複製childの削除
+            for (var i = 0; i < children.Count; i++) {
+                var child = children[i];
+                GameObject.DestroyImmediate(child);
+            }
         }
 
         /**

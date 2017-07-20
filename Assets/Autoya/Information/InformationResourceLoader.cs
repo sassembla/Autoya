@@ -12,12 +12,12 @@ namespace AutoyaFramework.Information {
 
     [Serializable] public class DepthAssetList {
         [SerializeField] public string viewName;
-        [SerializeField] public DepthAssetInfo[] depthAssetNames;
-        [SerializeField] public BoxConstraint[] constraints;
+        [SerializeField] public DepthAssetInfo[] d;
+        [SerializeField] public BoxConstraints[] constraints;
         
-        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames, BoxConstraint[] constraints) {
+        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames, BoxConstraints[] constraints) {
             this.viewName = viewName;
-            this.depthAssetNames = depthAssetNames;
+            this.d = depthAssetNames;
             this.constraints = constraints;
         }
     }
@@ -30,20 +30,46 @@ namespace AutoyaFramework.Information {
             this.loadPath = loadPath;
         }
     }
+
+    [Serializable] public class BoxConstraints {
+        [SerializeField] public string layerName;
+        [SerializeField] public BoxConstraint[] constraints;
+
+        public BoxConstraints (string layerName, BoxConstraint[] constraints) {
+            this.layerName = layerName;
+            this.constraints = constraints;
+        }
+    }
+
     [Serializable] public class BoxConstraint {
-        [SerializeField] string boxName;
-        [SerializeField] RectTransDesc rect;
+        [SerializeField] public string boxName;
+        [SerializeField] public RectTransDesc rect;
+
+        public BoxConstraint (string boxName, RectTransDesc rect) {
+            this.boxName = boxName;
+            this.rect = rect;
+        }
     }
 
     [Serializable] public class RectTransDesc {
-        [SerializeField] Vector2 anchoredPosition;
-        [SerializeField] Vector2 sizeDelta;
-        [SerializeField] Vector2 offsetMin;
-        [SerializeField] Vector2 offsetMax;
-        [SerializeField] Vector2 pivot;
+        [SerializeField] public Vector2 anchoredPosition;
+        [SerializeField] public Vector2 sizeDelta;
+        [SerializeField] public Vector2 offsetMin;
+        [SerializeField] public Vector2 offsetMax;
+        [SerializeField] public Vector2 pivot;
 
-        [SerializeField] Vector2 anchorMin;
-        [SerializeField] Vector2 anchorMax;
+        [SerializeField] public Vector2 anchorMin;
+        [SerializeField] public Vector2 anchorMax;
+
+        public RectTransDesc (RectTransform rect) {
+            this.anchoredPosition = rect.anchoredPosition;
+            this.sizeDelta = rect.sizeDelta;
+            this.offsetMin = rect.offsetMin;
+            this.offsetMax = rect.offsetMax;
+            this.pivot = rect.pivot;
+            this.anchorMin = rect.anchorMin;
+            this.anchorMax = rect.anchorMax;
+        }
     }
 
     public class InformationResourceLoader {
@@ -110,7 +136,7 @@ namespace AutoyaFramework.Information {
                 // pass.
             } else {
                 // create default list for default assets.
-                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraint[0]);
+                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);
             }
 
             var viewName = this.depthAssetList.viewName;
@@ -144,7 +170,7 @@ namespace AutoyaFramework.Information {
                     }
                     var list = getListCoroutine.Current;
                     
-                    var targetDepthAssetInfos = list.depthAssetNames.Where(d => d.depthAssetName == depth).ToArray();
+                    var targetDepthAssetInfos = list.d.Where(d => d.depthAssetName == depth).ToArray();
                     if (targetDepthAssetInfos.Any()) {
                         var targetInfo = targetDepthAssetInfos[0];
                         coroutine = LoadPrefabByDepth(tree, targetInfo, onLoaded, onLoadFailed);
@@ -289,7 +315,7 @@ namespace AutoyaFramework.Information {
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraint[0]);// set empty list.
+                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);// set empty list.
                 isLoadingDepthAssetList = false;
             };
 
