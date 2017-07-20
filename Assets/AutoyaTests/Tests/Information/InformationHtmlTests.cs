@@ -20,143 +20,133 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 		};
 	}
 
-// 	[MTest] public void NoTagContained () {
-// 		var sample = @"";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
+	[MTest] public void NoTagContained () {
+		var sample = @"";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
 	
-// 	[MTest] public void NoValidTagContained () {
+	[MTest] public void NoValidTagContained () {
+		var sample = @"
+<!DOCTYPE html>
+"
+;
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
+
+	[MTest] public void EmptyContents () {
+		var sample = @"
+<head>something</head>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
+
+	[MTest] public void BodyContents () {
+var sample = @"
+<head>something</head>
+<body>else</body>
+";
+
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
+
+	// このテストはParserのテストに行くべき。
+// 	[MTest] public void LoadInvalidView () {
 // 		var sample = @"
-// <!DOCTYPE html>
-// "
-// ;
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
-
-// 	[MTest] public void EmptyContents () {
-// 		var sample = @"
-// <head>something</head>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
-
-// 	[MTest] public void BodyContents () {
-// var sample = @"
-// <head>something</head>
-// <body>else</body>
-// ";
-
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
-
-// 	// このテストはParserのテストに行くべき。
-// // 	[MTest] public void LoadInvalidView () {
-// // 		var sample = @"
-// // something.
-// // ";
-// // 		try {
-// // 			DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// // 			Assert(false, "should not come here.");
-// // 		} catch (Exception e) {
-// // 			// do nothng.
-// // 		}
-// // 	}
-
-// 	[MTest] public void LoadHtmlView () {
-// 		var sample = @"
-// <!DOCTYPE html>
-// <title>Small HTML 5</title>
-// <p>Hello world</p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
-
-// 	[MTest] public void LoadSmallHtmlView () {
-// 		var sample = @"
-// <!DOCTYPE html>
-// <head></head>
-// <body>
-// <p>something
-// <p>else</p>
-// </p>
-// </body>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
-
-// 	[MTest] public void CommentOnlyView () {
-// 		var sample = @"
-// <!--comment-->
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
-// 	}
-
-
-// 	[MTest] public void CommentWithContent () {
-// 		var sample = @"
-// <!--comment-->
-// <body>
 // something.
-// </body>
 // ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+// 		try {
+// 			DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+// 			Assert(false, "should not come here.");
+// 		} catch (Exception e) {
+// 			// do nothng.
+// 		}
 // 	}
 
-// 	[MTest] public void LoadSpecificView_MyView_NestedDiv_PContainerContained () {
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
-// <p>
-// <div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
-// </p>
-// <p>
-// <div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
-// </p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-// 	}
+	[MTest] public void LoadHtmlView () {
+		var sample = @"
+<!DOCTYPE html>
+<title>Small HTML 5</title>
+<p>Hello world</p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
+
+	[MTest] public void LoadSmallHtmlView () {
+		var sample = @"
+<!DOCTYPE html>
+<head></head>
+<body>
+<p>something
+<p>else</p>
+</p>
+</body>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
+
+	[MTest] public void CommentOnlyView () {
+		var sample = @"
+<!--comment-->
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
 
 
-// 	[MTest] public void LoadSpecificView_MyView_NestedDiv_PContainerContainedWithSameRoot () {
-// 		/*
-// 			同根の場合と同じように、2つ、同じ根をもつ連続したコンテンツがある時、その描画が綺麗にズレる。
-// 		 */
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
-// <p>
-// <div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
-// <div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
-// </p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-// 	}
+	[MTest] public void CommentWithContent () {
+		var sample = @"
+<!--comment-->
+<body>
+something.
+</body>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "Default");
+	}
+
+	[MTest] public void LoadSpecificView_MyView_NestedDiv_PContainerContained () {
+		var sample = @"
+<!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
+<p>
+<div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
+</p>
+<p>
+<div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
+</p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+	}
 
 
-// 	[MTest] public void HttpSchemeCommentAsDepthAssetListUrl () {
-// 		var sample = @"
-// <!--depth asset list url(http://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/InformationResources/Resources/Views/MyView/DepthAssetList.txt)-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-// 	}
+	[MTest] public void LoadSpecificView_MyView_NestedDiv_PContainerContainedWithSameRoot () {
+		/*
+			同根の場合と同じように、2つ、同じ根をもつ連続したコンテンツがある時、その描画が綺麗にズレる。
+		 */
+		var sample = @"
+<!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
+<p>
+<div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
+<div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div>
+</p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+	}
 
-// 	[MTest] public void HttpsSchemeCommentAsDepthAssetListUrl () {
-// 		var sample = @"
-// <!--depth asset list url(https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/InformationResources/Resources/Views/MyView/DepthAssetList.txt)-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-// 	}
 
-// 	[MTest] public void UseMultiplePartInOneView () {
-// この中のビュー定義もうない
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/MyView/DepthAssetList)-->
-// <p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
-// <q><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='100'/>something<p>else</p></q>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
-// 	}
-	
+	[MTest] public void HttpSchemeCommentAsDepthAssetListUrl () {
+		var sample = @"
+<!--depth asset list url(http://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/InformationResources/Resources/Views/MyView/DepthAssetList.txt)-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+	}
+
+	[MTest] public void HttpsSchemeCommentAsDepthAssetListUrl () {
+		var sample = @"
+<!--depth asset list url(https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/Information/InformationResources/Resources/Views/MyView/DepthAssetList.txt)-->
+<p><div><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' /><p>something</p></div></p>
+";
+		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "MyView");
+	}
+
 
 
 
@@ -336,35 +326,9 @@ public class InformationHtmlTests : MiyamasuTestRunner {
 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "LeftTopPivotXYMerginView");
 	}
 
-
-	/*
-		複数コンテンツでのアンカーがらみのレイアウトが難しい。
-		基本的にはCONTAINERに背景を入れたりできる。
-	 */
-	[MTest] public void TextOnImage () {
-		var sample = @"
-<!--depth asset list url(resources://Views/TextOnImage/DepthAssetList)-->
-<q>
-<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='100'/>
-some
-</q>
-";
-		
-		DrawHtml(sample, 200, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "TextOnImage");
-	}
-
-// 	[MTest] public void TextOnImage2 () {
-// 		Debug.LogError("途中");
-// 		var sample = @"
-// <!--depth asset list url(resources://Views/TextOnImage/DepthAssetList)-->
-// <q>
-// <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' width='100' height='100'/>
-// something
-// </q>
-// ";
-// 		DrawHtml(sample, 100, 100, progress => Debug.Log("progress:" + progress), () => Debug.Log("done."), "TextOnImage");
-// 	}
-
+    /*
+        コンテナを便利に扱いたい。独自タグの実装からビジュアル反映を綺麗にいい感じにやる、ってやつ。
+     */
 
 
 	private static int index;
@@ -420,7 +384,6 @@ some
 
 		var v = new ViewGenerator(executor);
 		var root = v.GenerateViewFromSource(
-			viewName, 
 			html, 
 			new ViewBox(width, height, 0), 
             layoutedRect => {},

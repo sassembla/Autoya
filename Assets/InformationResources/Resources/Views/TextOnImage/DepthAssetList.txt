@@ -1,1 +1,1 @@
-{"depthAssetNames":[{"depthAssetName":"TextOnImage/Q_CONTAINER/Q","loadPath":"resources://Views/TextOnImage/Q_CONTAINER/Q"}]}
+{"viewName":"TextOnImage","depthAssetNames":[{"depthAssetName":"TextOnImage/Q_CONTAINER/Q","loadPath":"resources://Views/TextOnImage/Q_CONTAINER/Q"}]}

@@ -39,7 +39,6 @@ namespace AutoyaFramework {
 				(conId, code, responseHeaders, html) => {
 					var v = new ViewGenerator(executor);
 					var root = v.GenerateViewFromSource(
-						viewName, 
 						html, 
 						new ViewBox(windowWidth, windowHeight, 0), //anchorPos
 						layoutDone,

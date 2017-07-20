@@ -22,9 +22,9 @@ namespace AutoyaFramework.Information {
 			this.infoResLoader = new InformationResourceLoader(executor, requestHeader, httpResponseHandlingDelegate);
 		}
 		
-		public GameObject GenerateViewFromSource (string viewName, string source, ViewBox view, Action<Rect>layoutDone, Action<double> progress, Action loadDone) {
+		public GameObject GenerateViewFromSource (string source, ViewBox view, Action<Rect>layoutDone, Action<double> progress, Action loadDone) {
 			// generate and return root object first.
-			var rootObj = new GameObject(viewName + HtmlTag._ROOT.ToString());
+			var rootObj = new GameObject(HtmlTag._ROOT.ToString());
 			{
 				var rootRectTrans = rootObj.AddComponent<RectTransform>();
 				rootObj.AddComponent<InformationRootMonoBehaviour>();
@@ -36,18 +36,17 @@ namespace AutoyaFramework.Information {
 				rootRectTrans.position = Vector2.zero;
 			}
 
-			GenerateView(rootObj, viewName, source, view, layoutDone, progress, loadDone);
+			GenerateView(rootObj, source, view, layoutDone, progress, loadDone);
 			return rootObj;
 		}
 		
 
-        private void GenerateView (GameObject rootObj, string viewName, string source, ViewBox view, Action<Rect> layoutDone, Action<double> progress, Action loadDone) {
+        private void GenerateView (GameObject rootObj, string source, ViewBox view, Action<Rect> layoutDone, Action<double> progress, Action loadDone) {
 			// parse html string to tree.
 			var parsedRootTree = new HTMLParser().ParseRoot(source);
 
 			// layout -> materialize.
 			new LayoutMachine(
-				viewName,
 				parsedRootTree,
 				infoResLoader,
 				view, 
@@ -87,7 +86,7 @@ namespace AutoyaFramework.Information {
 						executor(loadAct);
 					};
 					
-					new MaterializeMachine(viewName, infoResLoader, layoutedTree, rootObj, view, act);
+					new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
 				}
 			);
         }

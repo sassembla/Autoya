@@ -11,10 +11,11 @@ using UnityEngine.UI;
 namespace AutoyaFramework.Information {
 
     [Serializable] public class DepthAssetList {
+        [SerializeField] public string viewName;
         [SerializeField] public DepthAssetInfo[] depthAssetNames;
-        public DepthAssetList (DepthAssetInfo[] depthAssetNames) {
+        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames) {
+            this.viewName = viewName;
             this.depthAssetNames = depthAssetNames;
-
         }
     }
 
@@ -84,8 +85,18 @@ namespace AutoyaFramework.Information {
         /**
             load prefab from AssetBundle or Resources.
          */
-        public IEnumerator LoadPrefab (string viewName, ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
+        public IEnumerator LoadPrefab (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             IEnumerator coroutine = null;
+
+            if (this.depthAssetList != null) {
+                // pass.
+            } else {
+                // create default list for default assets.
+                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0]);
+            }
+
+            var viewName = this.depthAssetList.viewName;
+            
             switch (viewName) {
                 case InformationConstSettings.VIEWNAME_DEFAULT: {
                     coroutine = LoadPrefabFromDefaultResources(tree, onLoaded, onLoadFailed);
@@ -241,20 +252,13 @@ namespace AutoyaFramework.Information {
 
         private DepthAssetList depthAssetList;
         private bool isLoadingDepthAssetList = false;
-        /**
-            この機構はLayoutにおいても特に特異で、リストを使う際にDLが完了して入ればそれでいいので、非同期的に振る舞うことができる。
-            独自でexecutorを回す。
-
-            また、リストへのアクセスが来た際に、DL中であれば待たせる。
-        */
-        public void GetDepthAssetList (string uriSource) {
+        
+        public IEnumerator GetDepthAssetList (string uriSource) {
             if (isLoadingDepthAssetList) {
                 throw new Exception("multiple depth description found. only one description is valid.");
             }
 
-            IEnumerator coroutine;
-
-			var schemeEndIndex = uriSource.IndexOf("//");
+            var schemeEndIndex = uriSource.IndexOf("//");
             var scheme = uriSource.Substring(0, schemeEndIndex);
             
             isLoadingDepthAssetList = true;
@@ -267,43 +271,27 @@ namespace AutoyaFramework.Information {
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new DepthAssetList(new DepthAssetInfo[0]);// set empty list.
+                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0]);// set empty list.
                 isLoadingDepthAssetList = false;
             };
 
             switch (scheme) {
                 case "assetbundle:": {
                     var bundleName = uriSource;
-                    coroutine = LoadListFromAssetBundle(uriSource, succeeded, failed);
-                    break;
+                    return LoadListFromAssetBundle(uriSource, succeeded, failed);
                 }
                 case "https:":
                 case "http:": {
-                    coroutine = LoadListFromWeb(uriSource, succeeded, failed);
-                    break;
+                    return LoadListFromWeb(uriSource, succeeded, failed);
                 }
                 case "resources:": {
                     var resourcePath = uriSource.Substring("resources:".Length + 2);
-                    coroutine = LoadListFromResources(resourcePath, succeeded, failed);
-                    break;
-                }
-                case "/:": {
-                    throw new Exception("unsupported scheme found, :/");
+                    return LoadListFromResources(resourcePath, succeeded, failed);
                 }
                 default: {// other.
-                    if (string.IsNullOrEmpty(scheme)) {
-                        Debug.LogError("empty uri found:" + uriSource);
-                        return;
-                    }
-
-                    // not empty. treat as resource file path.
-                    coroutine = LoadListFromResources(uriSource, succeeded, failed);
-                    break;
+                    throw new Exception("unsupported scheme found, scheme:" + scheme);
                 }
             }
-
-            // run partially.
-            executor(coroutine);
         }
 
 
