@@ -1,1 +1,1 @@
-{"runOnPlay":false,"runOnCompiled":false}
+{"runOnPlay":true,"runOnCompiled":false}

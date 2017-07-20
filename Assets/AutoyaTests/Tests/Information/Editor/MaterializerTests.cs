@@ -145,5 +145,28 @@ namespace AutoyaFramework.Information {
 				}
 			);
 		}
+
+		public static void EditorSampleMaterialWithMoreDepth () {
+			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+			Run(testTargetSampleObjName,
+				() => {
+					Antimaterializer.Antimaterialize();
+					/*
+						で、吐き出したものが存在していて、そのツリー構造を読み込んで意図とあってれば良し。
+					 */
+
+					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
+					var jsonStr = jsonAsset.text;
+					
+					var list = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+					Debug.Assert(list.viewName == testTargetSampleObjName);
+
+					var boxConstraintes = list.constraints;
+					
+					// 本体 + img + txt_CONTAINER で3つあるかチェック
+					Debug.Assert(boxConstraintes.Length == 3, "boxConstraints:" + boxConstraintes.Length);
+				}
+			);
+		}
 	}
 }
