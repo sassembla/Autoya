@@ -45,8 +45,10 @@ namespace AutoyaFramework.Information {
 		[MenuItem("/Window/TestMaterialize")] public static void RunTests () {
 			EditorSampleMaterial();
 			EditorSampleMaterialWithDepth();
+			CheckIfSameCustomTagInOneView();
 		}
 
+		// 階層なしのものを分解する
 		private static void EditorSampleMaterial () {
 			var testTargetSampleObjName = "EditorSampleMaterial";
 			Run(testTargetSampleObjName,
@@ -68,6 +70,7 @@ namespace AutoyaFramework.Information {
 			);
 		}
 
+		// 階層付きのものを分解する
 		public static void EditorSampleMaterialWithDepth () {
 			var testTargetSampleObjName = "EditorSampleMaterialWithDepth";
 			Run(testTargetSampleObjName,
@@ -86,7 +89,7 @@ namespace AutoyaFramework.Information {
 					var boxConstraintes = list.constraints;
 					
 					// 本体 + imgで2つあるかチェック
-					Debug.Assert(boxConstraintes.Length == 2, "boxConstraintes:" + boxConstraintes.Length);
+					Debug.Assert(boxConstraintes.Length == 2, "boxConstraints:" + boxConstraintes.Length);
 
 
 					// prefabファイルが生成されているかチェック
@@ -99,8 +102,46 @@ namespace AutoyaFramework.Information {
 
 					// ここはAssetによりけりな感じ。
 					Debug.Assert(rectTrans.anchoredPosition == Vector2.zero);
+				}
+			);
+		}
 
+		public static void CheckIfSameCustomTagInOneView () {
+			var testTargetSampleObjName = "CheckIfSameCustomTagInOneView";
+			Run(testTargetSampleObjName,
+				() => {
+					Antimaterializer.Antimaterialize();
+					
+					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
+					var jsonStr = jsonAsset.text;
+					
+					var list = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+					Debug.Assert(list.viewName == testTargetSampleObjName);
 
+					var boxConstraintes = list.constraints;
+					
+					// 同一名称のカスタムタグが存在するという違反があるので、途中まで = 1件目のみを吐き出す。
+					Debug.Assert(boxConstraintes.Length == 1, "boxConstraints:" + boxConstraintes.Length);
+				}
+			);
+		}
+
+		public static void CheckIfSameCustomTagInOneView_0_1_0 () {
+			var testTargetSampleObjName = "CheckIfSameCustomTagInOneView_0_1_0";
+			Run(testTargetSampleObjName,
+				() => {
+					Antimaterializer.Antimaterialize();
+					
+					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
+					var jsonStr = jsonAsset.text;
+					
+					var list = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+					Debug.Assert(list.viewName == testTargetSampleObjName);
+
+					var boxConstraintes = list.constraints;
+					
+					// 同一名称のカスタムタグが存在するという違反があるので、途中まで = 2件目までを吐き出す。
+					Debug.Assert(boxConstraintes.Length == 2, "boxConstraints:" + boxConstraintes.Length);
 				}
 			);
 		}
