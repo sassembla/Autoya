@@ -13,9 +13,12 @@ namespace AutoyaFramework.Information {
     [Serializable] public class DepthAssetList {
         [SerializeField] public string viewName;
         [SerializeField] public DepthAssetInfo[] depthAssetNames;
-        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames) {
+        [SerializeField] public BoxConstraint[] constraints;
+        
+        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames, BoxConstraint[] constraints) {
             this.viewName = viewName;
             this.depthAssetNames = depthAssetNames;
+            this.constraints = constraints;
         }
     }
 
@@ -26,6 +29,21 @@ namespace AutoyaFramework.Information {
             this.depthAssetName = depthAssetName;
             this.loadPath = loadPath;
         }
+    }
+    [Serializable] public class BoxConstraint {
+        [SerializeField] string boxName;
+        [SerializeField] RectTransDesc rect;
+    }
+
+    [Serializable] public class RectTransDesc {
+        [SerializeField] Vector2 anchoredPosition;
+        [SerializeField] Vector2 sizeDelta;
+        [SerializeField] Vector2 offsetMin;
+        [SerializeField] Vector2 offsetMax;
+        [SerializeField] Vector2 pivot;
+
+        [SerializeField] Vector2 anchorMin;
+        [SerializeField] Vector2 anchorMax;
     }
 
     public class InformationResourceLoader {
@@ -92,7 +110,7 @@ namespace AutoyaFramework.Information {
                 // pass.
             } else {
                 // create default list for default assets.
-                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0]);
+                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraint[0]);
             }
 
             var viewName = this.depthAssetList.viewName;
@@ -271,7 +289,7 @@ namespace AutoyaFramework.Information {
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0]);// set empty list.
+                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraint[0]);// set empty list.
                 isLoadingDepthAssetList = false;
             };
 

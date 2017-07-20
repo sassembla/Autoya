@@ -34,7 +34,7 @@ namespace AutoyaFramework.Information {
                 今後、リストをWebからDLしたり、AssetBundleからロードしたりとかにも対応する。
              */
 
-            // 選択対象がHirearchy内のやつでないとだめ、とかどうやって絞ればいいんだろね。まあいいか。
+            // 選択対象がHirearchy内のやつでないとだめ、という限定がしたい。
             if (Selection.activeGameObject == null) {
                 Debug.Log("no game object selected. select GameObject in Canvas. e,g, Canvas/SOMETHING");
                 return;
@@ -60,30 +60,43 @@ namespace AutoyaFramework.Information {
                 AntimaterializeChildlen(child.gameObject, new List<string>{viewName});
             }
             
-            /*
-                create depthAssetList.
-             */
-            var exportedFiles = FileController.FilePathsInFolder(exportBasePath);
             var depthAssetInfoList = new List<DepthAssetInfo>();
-
-            foreach (var exportedFilePath in exportedFiles) {
-                // Debug.LogError("exportedFilePath:" + exportedFilePath);
+            {
+                /*
+                    create depthAssetList.
+                */
+                var exportedFiles = FileController.FilePathsInFolder(exportBasePath);
                 
-                var depthAssetNameIndex = exportedFilePath.IndexOf("/Resources/Views/") + "/Resources/Views/".Length;
-                var depthAssetNameWithExtension = exportedFilePath.Substring(depthAssetNameIndex);
-                var depthAssetName = depthAssetNameWithExtension.Substring(0, depthAssetNameWithExtension.Length - Path.GetExtension(depthAssetNameWithExtension).Length);
 
-                // Assets/InformationResources/Resources/Views/MyView/P_CONTAINER/P_CONTAINER.prefab
-                var resourceBasePathIndex = exportedFilePath.IndexOf("/Resources/") + "/Resources/".Length;
-                var resourcePathWithExtension = exportedFilePath.Substring(resourceBasePathIndex);
-                var resourcePath = "resources://" + resourcePathWithExtension.Substring(0, resourcePathWithExtension.Length - Path.GetExtension(resourcePathWithExtension).Length);
+                foreach (var exportedFilePath in exportedFiles) {
+                    // Debug.LogError("exportedFilePath:" + exportedFilePath);
+                    
+                    var depthAssetNameIndex = exportedFilePath.IndexOf("/Resources/Views/") + "/Resources/Views/".Length;
+                    var depthAssetNameWithExtension = exportedFilePath.Substring(depthAssetNameIndex);
+                    var depthAssetName = depthAssetNameWithExtension.Substring(0, depthAssetNameWithExtension.Length - Path.GetExtension(depthAssetNameWithExtension).Length);
 
-                var depthAssetInfo = new DepthAssetInfo(depthAssetName, resourcePath);
-                depthAssetInfoList.Add(depthAssetInfo);
+                    // Assets/InformationResources/Resources/Views/MyView/P_CONTAINER/P_CONTAINER.prefab
+                    var resourceBasePathIndex = exportedFilePath.IndexOf("/Resources/") + "/Resources/".Length;
+                    var resourcePathWithExtension = exportedFilePath.Substring(resourceBasePathIndex);
+                    var resourcePath = "resources://" + resourcePathWithExtension.Substring(0, resourcePathWithExtension.Length - Path.GetExtension(resourcePathWithExtension).Length);
+
+                    var depthAssetInfo = new DepthAssetInfo(depthAssetName, resourcePath);
+                    depthAssetInfoList.Add(depthAssetInfo);
+                }
             }
 
+            var constraints = new List<BoxConstraint>();
+            // recursiveに、コンテンツを分解していく。
+            // ファイルを出力する
+            // ということをしていく。
+            
+            // foreach () {
+
+            // }
+
+
             var listFileName = "DepthAssetList.txt";
-            var depthAssetList = new DepthAssetList(viewName, depthAssetInfoList.ToArray());
+            var depthAssetList = new DepthAssetList(viewName, depthAssetInfoList.ToArray(), constraints.ToArray());
 
             var jsonStr = JsonUtility.ToJson(depthAssetList);
             using (var sw = new StreamWriter(Path.Combine(exportBasePath, listFileName))) {
