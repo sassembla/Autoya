@@ -50,8 +50,7 @@ namespace AutoyaFramework.Information {
             for (var i = 0; i < children.Count; i++) {
                 var child = children[i];
                 var constraintName = GetLayerBoxName(tree.prefabName, child.prefabName);
-                Debug.LogError("layerBoxName:" + constraintName);
-
+                
                 // whereでの名前一致が辛い。まあでもいいか。
                 var matched = adoptedConstaints.Where(c => c.boxName == constraintName).ToArray();
                 if (!matched.Any()) {
@@ -79,10 +78,6 @@ namespace AutoyaFramework.Information {
 
                 // で、ここまでで処理は終わり、子の階層の処理を続ける。
                 TraverseTagRecursive(child);
-            }
-
-            foreach (var adoptedConstaint in adoptedConstaints) {
-                Debug.LogError("adoptedConstaint:" + adoptedConstaint.boxName);
             }
         }
 
