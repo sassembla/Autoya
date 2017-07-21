@@ -5,16 +5,16 @@ namespace AutoyaFramework.Information {
 		_UNKNOWN,
 
         _CONTENT,
-        _PARENTTAG,
-		
+		_BOX,
 		WIDTH, 
         HEIGHT,
         SRC,
         ALT,
         HREF,
 		START,
-		TITLE
+		TITLE,
+
     }
 
-    public class AttributeKVs : Dictionary<Attribute, string> {}
+    public class AttributeKVs : Dictionary<Attribute, object> {}
 }

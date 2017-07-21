@@ -107,14 +107,24 @@ namespace AutoyaFramework.Information {
 			return _children;
 		}
 
+        public bool ContainsChild (int parsedTag) {
+            return _children.FindIndex(c => c.parsedTag == parsedTag) != -1;
+        }
+        public ParsedTree GetChildOfTag (int parsedTag) {
+            return _children[_children.FindIndex(c => c.parsedTag == parsedTag)];
+        }
+
         public void SetChildren (List<ParsedTree> children) {
             this._children = children;
         }
 
-        public void AddChildren (ParsedTree child) {
+        public void AddChild (ParsedTree child) {
             this._children.Add(child);
         }
 
+        public void RemoveChild (ParsedTree child) {
+            this._children.Remove(child);
+        }
         public void ReplaceChildren (ParsedTree oldTree, ParsedTree newTree) {
             var index = this._children.FindIndex(current => current == oldTree);
             

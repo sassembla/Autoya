@@ -500,8 +500,40 @@ namespace AutoyaFramework.Information {
             executor(coroutine);
         }
 
+        private Dictionary<string, int> undefinedTagDict = new Dictionary<string, int>();
 
-        
+        public string GetTagFromIndex (int index) {
+			if (index < (int)HtmlTag._END) {
+				return ((HtmlTag)Enum.ToObject(typeof(HtmlTag), index)).ToString();
+			}
+
+			if (undefinedTagDict.ContainsValue(index)) {
+				return undefinedTagDict.FirstOrDefault(x => x.Value == index).Key;
+			}
+			
+			throw new Exception("failed to get tag from index. index:" + index);
+		}
+
+        public int FindOrCreateTag (string tagCandidateStr) {
+            try {
+				// try-catchだと重いかもしれないので、なんか長さとかで足切りを考えるか。
+				var tag = (HtmlTag)Enum.Parse(typeof(HtmlTag), tagCandidateStr);
+				return (int)tag;
+			} catch {
+				// collect undefined tag.
+
+				if (undefinedTagDict.ContainsKey(tagCandidateStr)) {
+					return undefinedTagDict[tagCandidateStr];
+				}
+
+				var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
+				undefinedTagDict[tagCandidateStr] = count;
+				return count;
+			}
+        }
+
+
+
 
 
 
@@ -509,7 +541,7 @@ namespace AutoyaFramework.Information {
         /*
             return imageLoad iEnum functions.   
          */
-        
+
         private IEnumerator LoadImageFromAssetBundle (string assetName, Action<Sprite> loaded, Action loadFailed) {
             yield return null;
             Debug.LogError("LoadImageFromAssetBundle bundleName:" + assetName);

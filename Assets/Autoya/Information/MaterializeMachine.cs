@@ -127,7 +127,7 @@ namespace AutoyaFramework.Information {
 						var key = kvs.Key;
 						switch (key) {
 							case Attribute.HREF: {
-								var href = kvs.Value;
+								var href = kvs.Value as string;
 
 								// add button component.
 								AddButton(obj, () => rootInputComponent.OnLinkTapped(currentTree.rawTagName, href));
@@ -142,7 +142,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				case (int)HtmlTag.img: {
-					var src = currentTree.keyValueStore[Attribute.SRC];
+					var src = currentTree.keyValueStore[Attribute.SRC] as string;
 					
 					infoResLoader.LoadImageAsync(
 						src, 
@@ -163,16 +163,14 @@ namespace AutoyaFramework.Information {
 					foreach (var kvs in currentTree.keyValueStore) {
 						switch (kvs.Key) {
 							case Attribute._CONTENT:{
-								var text = kvs.Value;
+								var text = kvs.Value as string;
 								if (!string.IsNullOrEmpty(text)) {
 									var textComponent = obj.GetComponent<Text>();
 									textComponent.text = text;
 								}
 								break;
 							}
-							case Attribute._PARENTTAG: {
-								break;
-							}
+							
 							default: {
 								// ignore.
 								break;
@@ -184,7 +182,10 @@ namespace AutoyaFramework.Information {
 				}
 				
 				default: {
-					// do nothing.
+					if (currentTree.keyValueStore.ContainsKey(Attribute._BOX)) {
+						var transformParams = currentTree.keyValueStore[Attribute._BOX] as RectTransDesc;
+						Debug.LogError("transformParams:" + transformParams);
+					}
 					break;
 				}
 			}

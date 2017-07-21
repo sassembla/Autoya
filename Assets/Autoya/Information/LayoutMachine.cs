@@ -212,37 +212,38 @@ namespace AutoyaFramework.Information {
 			var contentWidth = 0f;
 			var contentHeight = 0f;
 
-			// set kv.
+			// by kv.
 			switch (@this.parsedTag) {
-				case (int)HtmlTag.ol: {
-					foreach (var kv in @this.keyValueStore) {
-						var key = kv.Key;
-						switch (key) {
-							case Attribute.START: {
-								// do nothing yet.
-								break;
-							}
-						}
-					}
-					break;
-				}
-				case (int)HtmlTag.a: {
-					// do nothing.
-					break;
-				}
+				// case (int)HtmlTag.ol: {
+				// 	foreach (var kv in @this.keyValueStore) {
+				// 		var key = kv.Key;
+				// 		switch (key) {
+				// 			case Attribute.START: {
+				// 				// do nothing yet.
+				// 				break;
+				// 			}
+				// 		}
+				// 	}
+				// 	break;
+				// }
+				// case (int)HtmlTag.a: {
+				// 	// do nothing.
+				// 	break;
+				// }
 				case (int)HtmlTag.img: {
 					if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
 						throw new Exception("image should define src param.");
 					}
 
-					var src = @this.keyValueStore[Attribute.SRC];
+					var src = @this.keyValueStore[Attribute.SRC] as string;
 					float imageWidth = 0;
 					float imageHeight = 0;
-
+					
+					Debug.LogWarning("このへんの、widthとかからサイズ指定する流れは全て消える。");
 					// determine image size from image's width & height.
 					if (@this.keyValueStore.ContainsKey(Attribute.WIDTH) && @this.keyValueStore.ContainsKey(Attribute.HEIGHT)) {
-						var width = @this.keyValueStore[Attribute.WIDTH];
-						var height = @this.keyValueStore[Attribute.HEIGHT];
+						var width = @this.keyValueStore[Attribute.WIDTH] as string;
+						var height = @this.keyValueStore[Attribute.HEIGHT] as string;
 
 						if (width.EndsWith("%")) {
 							imageWidth = GetPercentOf(viewWidth, width);
@@ -258,7 +259,7 @@ namespace AutoyaFramework.Information {
 
 					} else if (@this.keyValueStore.ContainsKey(Attribute.WIDTH)) {
 						// width only.
-						var width = @this.keyValueStore[Attribute.WIDTH];
+						var width = @this.keyValueStore[Attribute.WIDTH] as string;
 						if (width.EndsWith("%")) {
 							imageWidth = GetPercentOf(viewWidth, width);
 						} else {
@@ -286,7 +287,7 @@ namespace AutoyaFramework.Information {
 
 					} else if (@this.keyValueStore.ContainsKey(Attribute.HEIGHT)) {
 						// height only.
-						var height = @this.keyValueStore[Attribute.HEIGHT];
+						var height = @this.keyValueStore[Attribute.HEIGHT] as string;
 						if (height.EndsWith("%")) {
 							imageHeight = GetPercentOf(viewHeight, height);
 						} else {
@@ -371,7 +372,7 @@ namespace AutoyaFramework.Information {
 				case (int)HtmlTag._TEXT_CONTENT: {
 					// set text if exist.
 					if (@this.keyValueStore.ContainsKey(Attribute._CONTENT)) {
-						var text = @this.keyValueStore[Attribute._CONTENT];
+						var text = @this.keyValueStore[Attribute._CONTENT] as string;
 						
 						var cor = LayoutTextContent(
 							@this, 
@@ -399,6 +400,7 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				default: {
+					// あとで消す。
 					if (0 < @this.keyValueStore.Count) {
 						Debug.LogWarning("tag:" + @this.rawTagName + "'s attributes are ignored. ignored attr:" + string.Join(", ", @this.keyValueStore.Keys.Select(v => v.ToString()).ToArray()));
 					}

@@ -6,8 +6,13 @@ using UnityEngine;
 namespace AutoyaFramework.Information {
     public class ParsedTreeCustomizer {
         private Dictionary<string, BoxConstraint[]> constraintsDict;
-		public ParsedTreeCustomizer (BoxConstraints[] constraints) {
+        private readonly InformationResourceLoader infoResLoader;
+		public ParsedTreeCustomizer (InformationResourceLoader infoResLoader) {
+            this.infoResLoader = infoResLoader;
             this.constraintsDict = new Dictionary<string, BoxConstraint[]>();
+
+            var constraints = infoResLoader.DepthAssetList().constraints;
+
             foreach (var constraint in constraints) {
                 constraintsDict[constraint.layerName.ToLower()] = constraint.constraints;
             }
@@ -43,40 +48,55 @@ namespace AutoyaFramework.Information {
             var children = tree.GetChildren();
 
             var box = new List<ParsedTree>();
-            /*
-                あ、種類の数を調べて、みたいな感じか。
-                まずは重たいかもしれないけど一致を見る
-             */
             for (var i = 0; i < children.Count; i++) {
                 var child = children[i];
-                var constraintName = GetLayerBoxName(tree.prefabName, child.prefabName);
                 
+                var newConstraintName = GetLayerBoxName(tree.prefabName, child.prefabName);
+
                 // whereでの名前一致が辛い。まあでもいいか。
-                var matched = adoptedConstaints.Where(c => c.boxName == constraintName).ToArray();
+                var matched = adoptedConstaints.Where(c => c.boxName == newConstraintName).ToArray();
                 if (!matched.Any()) {
-                    throw new Exception("該当するboxが見つからない、誤ったタグ。:" + child.prefabName);
+                    throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + child.prefabName);
                 }
 
                 // pass.
 
-                // このchildは、boxの内部へと移動される。どうやるのがいいのかな〜〜 入れ替え？ layout時に必要なデータをもたせといた方がいいのか。is でチェックできると楽か。 それとも単に名前と内容だけを扱うか。
+                var newTagId = infoResLoader.FindOrCreateTag(newConstraintName);
+                
+                // もしすでにtreeに同名の子供がいたら、そいつにこの子も追加する話になる。
+                if (tree.ContainsChild(newTagId)) {
+                    // すでにchildが存在してるので、このchildはそこに追加する。
+                    // treeから離脱
+                    tree.RemoveChild(child);
 
-                // 単に名前とかだけを使おう。まずはここで、このchildをこいつの子にして、
-                var boxTree = new ParsedTree();
-                tree.ReplaceChildren(child, boxTree);
+                    var boxTree = tree.GetChildOfTag(newTagId);
+                    boxTree.AddChild(child);
+                } else {
+                    // 新規に中間treeを作成する。
+                    var newBoxTreeAttr = new AttributeKVs(){
+                        {Attribute._BOX, matched[0].rect}
+                    };
+                    var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr, newConstraintName);
+                    
+                    // 作成課程で必ず子になってしまうので一時削除
+                    tree.RemoveChild(boxTree);
 
-                // 子の親をboxにする
-                boxTree.AddChildren(child);
-
+                    // すでに入っているchildとboxTreeを交換
+                    tree.ReplaceChildren(child, boxTree);
+                    
+                    // boxTreeにchildを追加
+                    boxTree.AddChild(child);
+                }
+                
                 /*
                     これで、
                     layer/child
                         ->
-                    layer/box/child
-                    になる。たぶん。要素の数だけ階層が増える。
+                    layer/box/child x N
+                    になる。boxの数だけ増える。
                  */
 
-                // で、ここまでで処理は終わり、子の階層の処理を続ける。
+                // 子の階層の処理を続ける。
                 TraverseTagRecursive(child);
             }
         }

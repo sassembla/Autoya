@@ -141,7 +141,7 @@ namespace AutoyaFramework.Information {
 						readingPointLength = length;
 					}
 
-					var rawTagName = GetTagFromIndex(foundTag);
+					var rawTagName = infoResLoader.GetTagFromIndex(foundTag);
 					
 					// set tag.
 					var tag = foundTag;
@@ -438,7 +438,7 @@ namespace AutoyaFramework.Information {
 			return X.
 		 */
 		private string GetTagContent (string data, int offset, int foundTagIndex, int endPos) {
-			var foundTagStr = GetTagFromIndex(foundTagIndex);
+			var foundTagStr = infoResLoader.GetTagFromIndex(foundTagIndex);
 			var foundTagLength = ("<" + foundTagStr.ToLower() + ">").Length;
 			var startPos = offset + foundTagLength;
 			var contentStr = data.Substring(startPos, endPos - startPos);
@@ -462,7 +462,7 @@ namespace AutoyaFramework.Information {
 			return startPoint.
 		 */
 		private int GetStartPointOfCloseTag (string data, int offset, int foundTagIndex) {
-			var foundTagStr = GetTagFromIndex(foundTagIndex);
+			var foundTagStr = infoResLoader.GetTagFromIndex(foundTagIndex);
 			var closeTagStr = "</"+ foundTagStr.ToLower() + ">";
 			var nearestHeaderCloseTagIndex = data.IndexOf(closeTagStr, offset);
 			if (nearestHeaderCloseTagIndex == -1) {
@@ -476,7 +476,7 @@ namespace AutoyaFramework.Information {
 			return closePoint.
 		 */
 		private int GetClosePointOfTag (string data, int offset, int foundTagIndex) {
-			var foundTagStr = GetTagFromIndex(foundTagIndex);
+			var foundTagStr = infoResLoader.GetTagFromIndex(foundTagIndex);
 			var closeTagStr = "</"+ foundTagStr.ToLower() + ">";
 			return GetStartPointOfCloseTag(data, offset, foundTagIndex) + closeTagStr.Length;
 		}
@@ -556,7 +556,7 @@ namespace AutoyaFramework.Information {
 				try {
 					keyEnum = (Attribute)Enum.Parse(typeof(Attribute), keyStr, true);
 				} catch (Exception e) {
-					throw new Exception("at tag:" + GetTagFromIndex(tagIndex) + ", found attribute:" + keyStr + " is not supported yet, e:" + e);
+					throw new Exception("at tag:" + infoResLoader.GetTagFromIndex(tagIndex) + ", found attribute:" + keyStr + " is not supported yet, e:" + e);
 				}
 				
 				var valStartIndex = eqIndex + 1;
@@ -565,7 +565,7 @@ namespace AutoyaFramework.Information {
 				var valEndIndex = source.IndexOf(delim, valStartIndex + 1);
 				if (valEndIndex == -1) {
 					// no delim end found.
-					throw new Exception("attribute at tag:" + GetTagFromIndex(tagIndex) + " contains illigal description. source:" + originalAttrSource);
+					throw new Exception("attribute at tag:" + infoResLoader.GetTagFromIndex(tagIndex) + " contains illigal description. source:" + originalAttrSource);
 				}
 
 				var val = source.Substring(valStartIndex + 1, valEndIndex - (valStartIndex + 1));
@@ -586,20 +586,6 @@ namespace AutoyaFramework.Information {
 
 			return kvDict;
 		}
-
-		private string GetTagFromIndex (int index) {
-			if (index < (int)HtmlTag._END) {
-				return ((HtmlTag)Enum.ToObject(typeof(HtmlTag), index)).ToString();
-			}
-
-			if (undefinedTagDict.ContainsValue(index)) {
-				return undefinedTagDict.FirstOrDefault(x => x.Value == index).Key;
-			}
-			
-			throw new Exception("failed to get tag from index. index:" + index);
-		}
-
-		private Dictionary<string, int> undefinedTagDict = new Dictionary<string, int>();
 
 		private int IsTag (string data, int index) {
 			var tagStartPos = index + 1/* "<" */;
@@ -637,22 +623,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			var tagCandidateStr = tagFindingSampleStr.Substring(0, closeTagIndex);
-			
-			try {
-				// try-catchだと重いかもしれないので、なんか長さとかで足切りを考えるか。
-				var tag = (HtmlTag)Enum.Parse(typeof(HtmlTag), tagCandidateStr);
-				return (int)tag;
-			} catch {
-				// collect undefined tag.
-
-				if (undefinedTagDict.ContainsKey(tagCandidateStr)) {
-					return undefinedTagDict[tagCandidateStr];
-				}
-
-				var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
-				undefinedTagDict[tagCandidateStr] = count;
-				return count;
-			}
+			return infoResLoader.FindOrCreateTag(tagCandidateStr);
 		}
     }
 }
