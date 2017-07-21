@@ -98,7 +98,7 @@ namespace AutoyaFramework.Information {
 						
 						
 						// html tag will be parsed without creating html tag.
-						case (int)HtmlTag.HTML: {
+						case (int)HtmlTag.html: {
 							var endTagStartPos = GetStartPointOfCloseTag(data, charIndex, foundTag);
 
 							// only content string should be parse.
@@ -115,8 +115,8 @@ namespace AutoyaFramework.Information {
 						}
 
 						// ignore these tags.
-						case (int)HtmlTag.HEAD:
-						case (int)HtmlTag.TITLE:{
+						case (int)HtmlTag.head:
+						case (int)HtmlTag.title:{
 							charIndex = GetClosePointOfTag(data, charIndex, foundTag);
 							readPoint = charIndex;
 							continue;
@@ -620,7 +620,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			// get sampling str.
-			var tagFindingSampleStr = data.Substring(tagStartPos, allowedMaxTagLength).ToUpper();
+			var tagFindingSampleStr = data.Substring(tagStartPos, allowedMaxTagLength).ToLower();
 			
 			if (tagStartPos < data.Length && data[tagStartPos] == '!') {
 				if (data[index + 2] == '-') {

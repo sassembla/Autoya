@@ -6,32 +6,32 @@ namespace AutoyaFramework.Information {
 		the tag which is not contained in this enum will be resolved at runtime.
 	 */
     public enum HtmlTag {
-		HTML,
-		HEAD,
-		BODY,
+		html,
+		head,
+		body,
 
-		TITLE,
+		title,
 
-        A,
-		BLOCKQUOTE,
+        a,
+		blockquote,
 		
 		// value itself tags.
-		BR,
-		HR,
-		IMG, 
+		br,
+		hr,
+		img, 
 		
 		// table.
-		TABLE,
-		THEAD,
-		TBODY,
-		TR,
-		TH,
-		TD,
+		table,
+		thead,
+		tbody,
+		tr,
+		th,
+		td,
 
 		// list.
-        UL, 
-        OL,
-        LI, 
+        ul, 
+        ol,
+        li, 
 		
 		// system.
 		_ROOT,

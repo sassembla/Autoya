@@ -16,7 +16,7 @@ namespace AutoyaFramework.Information {
      */
     public class ParsedTree {
         // tree params.
-        private List<ParsedTree> _childlen = new List<ParsedTree>();
+        private List<ParsedTree> _children = new List<ParsedTree>();
         
         // tag params.
         public readonly int parsedTag;
@@ -60,10 +60,10 @@ namespace AutoyaFramework.Information {
                 }
 
                 // value tags,
-                case (int)HtmlTag.BODY:
-                case (int)HtmlTag.IMG:
-                case (int)HtmlTag.BR:
-                case (int)HtmlTag.HR:
+                case (int)HtmlTag.body:
+                case (int)HtmlTag.img:
+                case (int)HtmlTag.br:
+                case (int)HtmlTag.hr:
 
                 // and system tags are only prefab.
                 case (int)HtmlTag._ROOT:
@@ -100,15 +100,30 @@ namespace AutoyaFramework.Information {
                 throw new Exception("invalid text contains outside of tag. val:" + val);
             }
             
-			t._childlen.Add(this);
+			t._children.Add(this);
 		}
 
-        public List<ParsedTree> GetChildlen () {
-			return _childlen;
+        public List<ParsedTree> GetChildren () {
+			return _children;
 		}
 
-        public void SetChildlen (List<ParsedTree> childlen) {
-            this._childlen = childlen;
+        public void SetChildren (List<ParsedTree> children) {
+            this._children = children;
+        }
+
+        public void AddChildren (ParsedTree child) {
+            this._children.Add(child);
+        }
+
+        public void ReplaceChildren (ParsedTree oldTree, ParsedTree newTree) {
+            var index = this._children.FindIndex(current => current == oldTree);
+            
+            if (index == -1) {
+                throw new Exception("failed to replace old tree to new tree. oldTree:" + oldTree.rawTagName + " did not found from children of:" + this.rawTagName);
+            }
+
+            this._children.RemoveAt(index);
+            this._children.Insert(index, newTree);
         }
     }
 }

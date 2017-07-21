@@ -13,16 +13,16 @@ namespace AutoyaFramework.Information {
 			source.keyValueStore, 
 			source.rawTagName
 		) {
-			var childlen = source.GetChildlen();
+			var childlen = source.GetChildren();
 
-			this.SetChildlen(childlen);
+			this.SetChildren(childlen);
 
 			// get total height of layouted tree.
 			this.totalHeight = TotalHeight(source);
 		}
 
 		private float TotalHeight (ParsedTree tree) {
-			var childlen = tree.GetChildlen();
+			var childlen = tree.GetChildren();
 			if (childlen.Count == 0) {
 				return tree.anchoredPosition.y + tree.sizeDelta.y + tree.padding.PadHeight();
 			}

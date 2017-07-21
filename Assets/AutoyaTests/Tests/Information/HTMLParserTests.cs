@@ -11,9 +11,9 @@ using System.Collections;
 using AutoyaFramework;
 
 /**
-	test for markdown based view.
+	test for html parser.
  */
-public class ParserTests : MiyamasuTestRunner {
+public class HTMLParserTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
     private InformationResourceLoader loader;
@@ -44,7 +44,7 @@ public class ParserTests : MiyamasuTestRunner {
             () => parsedRoot != null, 1, "too late."
         );
         
-        var children = parsedRoot.GetChildlen();
+        var children = parsedRoot.GetChildren();
 
         Assert(children.Count == 1, "not match. children.Count:" + children.Count);
     }
@@ -66,5 +66,5 @@ public class ParserTests : MiyamasuTestRunner {
         );
 
         Assert(!loader.IsLoadingDepthAssetList, "still loading.");
-    }    
+    }
 }

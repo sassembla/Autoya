@@ -53,7 +53,7 @@ namespace AutoyaFramework.Information {
 					// do nothing.
 					break;
 				}
-				case (int)HtmlTag.BR: {
+				case (int)HtmlTag.br: {
 					// has no child. no visual. do nothing.
 					break;
 				}
@@ -88,8 +88,8 @@ namespace AutoyaFramework.Information {
             /*
                 materialize childlen.
              */
-            var childCount = currentTree.GetChildlen().Count;
-			foreach (var child in currentTree.GetChildlen()) {
+            var childCount = currentTree.GetChildren().Count;
+			foreach (var child in currentTree.GetChildren()) {
                 var cor = MaterializeRecursively(gameObj, child);
 				while (cor.MoveNext()) {
 					yield return null;
@@ -122,7 +122,7 @@ namespace AutoyaFramework.Information {
 
 			// set parameters.
 			switch (currentTree.parsedTag) {
-				case (int)HtmlTag.A: {
+				case (int)HtmlTag.a: {
 					foreach (var kvs in currentTree.keyValueStore) {
 						var key = kvs.Key;
 						switch (key) {
@@ -141,7 +141,7 @@ namespace AutoyaFramework.Information {
 					}
 					break;
 				}
-				case (int)HtmlTag.IMG: {
+				case (int)HtmlTag.img: {
 					var src = currentTree.keyValueStore[Attribute.SRC];
 					
 					infoResLoader.LoadImageAsync(

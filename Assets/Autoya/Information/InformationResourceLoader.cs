@@ -168,11 +168,7 @@ namespace AutoyaFramework.Information {
                         depth = viewName + depthBase;
                     }
                     
-                    var getListCoroutine = DepthAssetList();
-                    while (getListCoroutine.MoveNext()) {
-                        yield return null;
-                    }
-                    var list = getListCoroutine.Current;
+                    var list = DepthAssetList();
                     
                     var targetDepthAssetInfos = list.d.Where(d => d.depthAssetName == depth).ToArray();
                     if (targetDepthAssetInfos.Any()) {
@@ -349,20 +345,12 @@ namespace AutoyaFramework.Information {
         }
 
 
-        private IEnumerator<DepthAssetList> DepthAssetList () {
+        public DepthAssetList DepthAssetList () {
             if (this.depthAssetList == null) {
-                yield return null;
+                return new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);
             }
 
-            while (IsLoadingDepthAssetList) {
-                yield return null;
-            }
-
-            if (this.depthAssetList == null) {
-                throw new Exception("failed to get depthAssetList. depthAssetList is null.");
-            }
-
-            yield return this.depthAssetList;
+            return this.depthAssetList;
         }
 
         private IEnumerator LoadListFromAssetBundle (string url, Action<DepthAssetList> succeeded, Action failed) {

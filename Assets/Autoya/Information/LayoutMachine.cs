@@ -73,7 +73,7 @@ namespace AutoyaFramework.Information {
 
 			// parent anchor layout is done. will be resized by child with padding, then padding parent itself.
 
-			var childlen = @this.GetChildlen();
+			var childlen = @this.GetChildren();
 			if (0 < childlen.Count) {
 				var cor = LayoutChildlen(@this, handle, childlen);
 				while (cor.MoveNext()) {
@@ -102,7 +102,7 @@ namespace AutoyaFramework.Information {
 				// Debug.LogError("parent sizeDelta:" + @this.sizeDelta);
 
 				// calculate table's contents.
-				if (@this.parsedTag == (int)HtmlTag.TABLE) {
+				if (@this.parsedTag == (int)HtmlTag.table) {
 					/*
 						all contents size calculation inside this table is done.
 						count up row,
@@ -112,17 +112,17 @@ namespace AutoyaFramework.Information {
 					var tableLayoutRecord = new TableLayoutRecord();
 					
 					// countup rows.
-					foreach (var tableChild in @this.GetChildlen()) {
+					foreach (var tableChild in @this.GetChildren()) {
 						CollectTableContentRowCountRecursively(@this, tableChild, tableLayoutRecord);
 					}
 
 					// find longest content.
-					foreach (var tableChild in @this.GetChildlen()) {
+					foreach (var tableChild in @this.GetChildren()) {
 						CollectTableContentRowMaxWidthsRecursively(@this, tableChild, tableLayoutRecord);
 					}
 
 					// resize & reset position of this table contents by calculated record.
-					foreach (var tableChild in @this.GetChildlen()) {
+					foreach (var tableChild in @this.GetChildren()) {
 						SetupTableContentPositionRecursively(@this, tableChild, tableLayoutRecord);
 					}
 				}
@@ -214,7 +214,7 @@ namespace AutoyaFramework.Information {
 
 			// set kv.
 			switch (@this.parsedTag) {
-				case (int)HtmlTag.OL: {
+				case (int)HtmlTag.ol: {
 					foreach (var kv in @this.keyValueStore) {
 						var key = kv.Key;
 						switch (key) {
@@ -226,11 +226,11 @@ namespace AutoyaFramework.Information {
 					}
 					break;
 				}
-				case (int)HtmlTag.A: {
+				case (int)HtmlTag.a: {
 					// do nothing.
 					break;
 				}
-				case (int)HtmlTag.IMG: {
+				case (int)HtmlTag.img: {
 					if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
 						throw new Exception("image should define src param.");
 					}
@@ -339,7 +339,7 @@ namespace AutoyaFramework.Information {
 					contentHeight = imageHeight;
 					break;
 				}
-				case (int)HtmlTag.HR: {
+				case (int)HtmlTag.hr: {
 					GameObject prefab = null;
 					var cor = infoResLoader.LoadPrefab(
 						@this, 
@@ -393,8 +393,8 @@ namespace AutoyaFramework.Information {
 					}
 					break;
 				}
-				case (int)HtmlTag.TH:
-				case (int)HtmlTag.TD: {
+				case (int)HtmlTag.th:
+				case (int)HtmlTag.td: {
 					// has KV_KEY._CONTENT_WIDTH value, but ignore.
 					break;
 				}
@@ -600,7 +600,7 @@ namespace AutoyaFramework.Information {
 				var child = childlen[i];
 
 				// consume br as linefeed.
-				if (child.parsedTag == (int)HtmlTag.BR) {
+				if (child.parsedTag == (int)HtmlTag.br) {
 					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
 
 					// forget current line.
@@ -613,7 +613,7 @@ namespace AutoyaFramework.Information {
 				}
 				
 				// consume hr 1/2 as horizontal rule.
-				if (child.parsedTag == (int)HtmlTag.HR) {
+				if (child.parsedTag == (int)HtmlTag.hr) {
 					childHandlePoint = SortByLayoutLine(layoutLine, childHandlePoint);
 
 					// forget current line.
@@ -647,7 +647,7 @@ namespace AutoyaFramework.Information {
 				{
 					
 					// consume hr 2/2 as horizontal rule.
-					if (child.parsedTag == (int)HtmlTag.HR) {
+					if (child.parsedTag == (int)HtmlTag.hr) {
 						// set next line.
 						childHandlePoint.nextLeftHandle = 0;
 						i++;
@@ -676,9 +676,9 @@ namespace AutoyaFramework.Information {
 					/*
 						nested bq.
 					*/
-					if (@this.parsedTag == (int)HtmlTag.BLOCKQUOTE) {
+					if (@this.parsedTag == (int)HtmlTag.blockquote) {
 						// nested bq.
-						if (child.parsedTag == (int)HtmlTag.BLOCKQUOTE) {
+						if (child.parsedTag == (int)HtmlTag.blockquote) {
 							sortLayoutLineBeforeLining = true;
 						}
 					}
@@ -686,15 +686,15 @@ namespace AutoyaFramework.Information {
 					/*
 						nested list's child list should be located to new line.
 					*/
-					if (@this.parsedTag == (int)HtmlTag.LI) {
+					if (@this.parsedTag == (int)HtmlTag.li) {
 						// nested list.
-						if (child.parsedTag == (int)HtmlTag.OL || child.parsedTag == (int)HtmlTag.UL) {
+						if (child.parsedTag == (int)HtmlTag.ol || child.parsedTag == (int)HtmlTag.ul) {
 							sortLayoutLineBeforeLining = true;
 						}
 					}
 
 					// list's child should be ordered vertically.
-					if (@this.parsedTag == (int)HtmlTag.OL || @this.parsedTag == (int)HtmlTag.UL) {
+					if (@this.parsedTag == (int)HtmlTag.ol || @this.parsedTag == (int)HtmlTag.ul) {
 						sortLayoutLineAfterLining = true;
 					}
 					
@@ -711,9 +711,9 @@ namespace AutoyaFramework.Information {
 
 					// table
 					{
-						if (child.parsedTag == (int)HtmlTag.THEAD) {// table head is single line.
+						if (child.parsedTag == (int)HtmlTag.thead) {// table head is single line.
 							sortLayoutLineAfterLining = true;
-						} else if (child.parsedTag == (int)HtmlTag.TR) {// table row.
+						} else if (child.parsedTag == (int)HtmlTag.tr) {// table row.
 							sortLayoutLineAfterLining = true;
 						}
 					}
@@ -872,33 +872,33 @@ namespace AutoyaFramework.Information {
 
 		private void CollectTableContentRowCountRecursively (ParsedTree @this, ParsedTree child, TableLayoutRecord tableLayoutRecord) {
 			// count up table header count.
-			if (child.parsedTag == (int)HtmlTag.TH) {
+			if (child.parsedTag == (int)HtmlTag.th) {
 				tableLayoutRecord.IncrementRow();
 			}
 
-			foreach (var nestedChild in child.GetChildlen()) {
+			foreach (var nestedChild in child.GetChildren()) {
 				CollectTableContentRowCountRecursively(child, nestedChild, tableLayoutRecord);
 			}
 		}
 
 		private void CollectTableContentRowMaxWidthsRecursively (ParsedTree @this, ParsedTree child, TableLayoutRecord tableLayoutRecord) {
 			var total = 0f;
-			foreach (var nestedChild in child.GetChildlen()) {
+			foreach (var nestedChild in child.GetChildren()) {
 				CollectTableContentRowMaxWidthsRecursively(child, nestedChild, tableLayoutRecord);
-				if (child.parsedTag == (int)HtmlTag.TH || child.parsedTag == (int)HtmlTag.TD) {
+				if (child.parsedTag == (int)HtmlTag.th || child.parsedTag == (int)HtmlTag.td) {
 					var nestedChildContentWidth = nestedChild.sizeDelta.x;
 					total += nestedChildContentWidth;
 				}
 			}
 
-			if (child.parsedTag == (int)HtmlTag.TH || child.parsedTag == (int)HtmlTag.TD) {
+			if (child.parsedTag == (int)HtmlTag.th || child.parsedTag == (int)HtmlTag.td) {
 				tableLayoutRecord.UpdateMaxWidth(total);
 			}
 		}
 
 		private void SetupTableContentPositionRecursively (ParsedTree @this, ParsedTree child, TableLayoutRecord tableLayoutRecord) {
 			// overwrite parent content width of TH and TD.
-			if (child.parsedTag == (int)HtmlTag.THEAD || child.parsedTag == (int)HtmlTag.TBODY || child.parsedTag == (int)HtmlTag.THEAD || child.parsedTag == (int)HtmlTag.TR) {
+			if (child.parsedTag == (int)HtmlTag.thead || child.parsedTag == (int)HtmlTag.tbody || child.parsedTag == (int)HtmlTag.thead || child.parsedTag == (int)HtmlTag.tr) {
 				var width = tableLayoutRecord.TotalWidth();
 				child.sizeDelta = new Vector2(width, child.sizeDelta.y);
 			}
@@ -908,14 +908,14 @@ namespace AutoyaFramework.Information {
 				x position -> 0, 1st row's longest content len, 2nd row's longest content len,...
 				width -> 1st row's longest content len, 2nd row's longest content len,...
 			*/
-			if (child.parsedTag == (int)HtmlTag.TH || child.parsedTag == (int)HtmlTag.TD) {
+			if (child.parsedTag == (int)HtmlTag.th || child.parsedTag == (int)HtmlTag.td) {
 				var offsetAndWidth = tableLayoutRecord.GetOffsetAndWidth();
 				
 				child.anchoredPosition = new Vector2(offsetAndWidth.offset, child.anchoredPosition.y);
 				child.sizeDelta = new Vector2(offsetAndWidth.width, child.sizeDelta.y);
 			}
 			
-			foreach (var nestedChild in child.GetChildlen()) {
+			foreach (var nestedChild in child.GetChildren()) {
 				SetupTableContentPositionRecursively(child, nestedChild, tableLayoutRecord);	
 			}
 		}
