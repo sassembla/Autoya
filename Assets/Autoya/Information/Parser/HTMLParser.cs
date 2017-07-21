@@ -24,15 +24,21 @@ namespace AutoyaFramework.Information {
     /**
         パーサ。
         stringからParsedTreeを生成する。
+		depthAssetListが発見されたら、DLを開始する。
      */
     public class HTMLParser {
-        public ParsedTree ParseRoot (string source) {
+		private InformationResourceLoader infoResLoader;
+
+        public IEnumerator ParseRoot (string source, InformationResourceLoader infoResLoader, Action<ParsedTree> parsed) {
+			this.infoResLoader = infoResLoader;
+
 			var lines = source.Split('\n');
 			for (var i = 0; i < lines.Length; i++) {
 				lines[i] = lines[i].TrimStart();
 			}
+
             var root = new ParsedTree();
-            return Parse(root, string.Join(string.Empty, lines));
+            return Parse(root, string.Join(string.Empty, lines), parsed);
         }
 
 
@@ -42,7 +48,7 @@ namespace AutoyaFramework.Information {
 
 			そのうち単一のArrayとしてindexのみで処理するように書き換えると楽。
 		 */
-        private ParsedTree Parse (ParsedTree parentTree, string data) {
+        private IEnumerator Parse (ParsedTree parentTree, string data, Action<ParsedTree> parsed) {
 			// Debug.LogError("data:" + data + " parentTree:" + parentTree.parsedTag);
 			var charIndex = 0;
 			var readPoint = 0;
@@ -65,7 +71,11 @@ namespace AutoyaFramework.Information {
 							// <!--SOMETHING-->
 							var endPos = -1;
 							var contentStr = GetContentOfCommentTag(data, charIndex, out endPos);
-							ParseAsComment(parentTree, contentStr);
+							
+							var cor = ParseAsComment(parentTree, contentStr);
+							while (cor.MoveNext()) {
+								yield return null;
+							}
 							
 							charIndex = endPos;
 							readPoint = charIndex;
@@ -94,7 +104,11 @@ namespace AutoyaFramework.Information {
 							// only content string should be parse.
 							var contentStr = GetTagContent(data, charIndex, foundTag, endTagStartPos);
 
-							Parse(parentTree, contentStr);
+							var cor = Parse(parentTree, contentStr, parsedTree => {});
+							while (cor.MoveNext()) {
+								yield return null;
+							}
+
 							charIndex = endTagStartPos;
 							readPoint = charIndex;
 							continue;
@@ -245,7 +259,10 @@ namespace AutoyaFramework.Information {
 									tagPoint.SetParent(parentTree);
 									
 									// Debug.LogError("contents1:" + contents);
-									Parse(tagPoint, contents);
+									var cor = Parse(tagPoint, contents, parsedTree => {});
+									while (cor.MoveNext()) {
+										yield return null;
+									}
 
 									// one tag start & end is detected.
 									
@@ -314,7 +331,10 @@ namespace AutoyaFramework.Information {
 									tree.SetParent(parentTree);
 									
 									// Debug.LogError("contents2:" + contents);
-									Parse(tree, contents);
+									var cor = Parse(tree, contents, parsedTree => {});
+									while (cor.MoveNext()) {
+										yield return null;
+									}
 
 									tempCharIndex = endTagIndex + endTag.Length;
 									tempReadPoint = tempCharIndex;
@@ -349,17 +369,17 @@ namespace AutoyaFramework.Information {
 				}
 			}
 
-            return parentTree;
+            parsed(parentTree);
         }
 
 		/**
 			parse comment as specific parameters for Information feature.
-			get depthAssetList url.
+			get depthAssetList url if exists.
 		 */
-		private void ParseAsComment (ParsedTree parent, string data) {
+		private IEnumerator ParseAsComment (ParsedTree parent, string data) {
 			if (parent.parsedTag != (int)HtmlTag._ROOT) {
 				// ignored.
-				return;
+				yield break;
 			}
 
 			// parse as params only root/comment tag with specific format.
@@ -373,15 +393,24 @@ namespace AutoyaFramework.Information {
 					throw new Exception("failed to get uri from depth asset list url. error:" + e);
 				}
 				
-				var depthAssetListUrlTree = new ParsedTree(
-					(int)HtmlTag._DEPTH_ASSET_LIST_INFO,
-					parent,
-					new AttributeKVs{
-						{Attribute.SRC, depthAssetListUrl}
-					},
-					HtmlTag._DEPTH_ASSET_LIST_INFO.ToString()
-				);
-				depthAssetListUrlTree.SetParent(parent);
+				/*
+					start loading of depthAssetList.
+				 */
+				var cor = infoResLoader.LoadDepthAssetList(depthAssetListUrl);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+
+				Debug.LogWarning("_DEPTH_ASSET_LIST_INFO そのうち定義自体を消せそう。");
+				// var depthAssetListUrlTree = new ParsedTree(
+				// 	(int)HtmlTag._DEPTH_ASSET_LIST_INFO,
+				// 	parent,
+				// 	new AttributeKVs{
+				// 		{Attribute.SRC, depthAssetListUrl}
+				// 	},
+				// 	HtmlTag._DEPTH_ASSET_LIST_INFO.ToString()
+				// );
+				// depthAssetListUrlTree.SetParent(parent);
 			}
 		}
 

@@ -54,11 +54,11 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 				case (int)HtmlTag._DEPTH_ASSET_LIST_INFO: {
-					var cor = infoResLoader.GetDepthAssetList(@this.keyValueStore[Attribute.SRC]);
+					// var cor = infoResLoader.GetDepthAssetList(@this.keyValueStore[Attribute.SRC]);
 
-					while (cor.MoveNext()) {
-						yield return null;
-					}
+					// while (cor.MoveNext()) {
+					// 	yield return null;
+					// }
 					
 					break;
 				}

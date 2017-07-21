@@ -40,55 +40,64 @@ namespace AutoyaFramework.Information {
 			return rootObj;
 		}
 		
-
+		/**
+			parse -> layout -> materialize
+		 */
         private void GenerateView (GameObject rootObj, string source, ViewBox view, Action<Rect> layoutDone, Action<double> progress, Action loadDone) {
 			// parse html string to tree.
-			var parsedRootTree = new HTMLParser().ParseRoot(source);
+			var cor = new HTMLParser().ParseRoot(
+				source, 
+				infoResLoader, 
+				parsedRootTree => {
 
-			// layout -> materialize.
-			new LayoutMachine(
-				parsedRootTree,
-				infoResLoader,
-				view, 
-				executor, 
-				layoutedTree => {
-					// layout is done.
-					layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
+					// layout -> materialize.
+					new LayoutMachine(
+						parsedRootTree,
+						infoResLoader,
+						view, 
+						executor, 
+						layoutedTree => {
+							// layout is done.
+							layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
 
-					/*
-						attributes and depth are ready for each tree.
-					 */
-					var total = 0.0;
-					var done = 0.0;
+							/*
+								attributes and depth are ready for each tree.
+							*/
+							var total = 0.0;
+							var done = 0.0;
 
-					Action<IEnumerator> act = iEnum => {
-						total++;
-						var loadAct = LoadingDone(
-							iEnum, 
-							() => {
-								done++;
+							Action<IEnumerator> act = iEnum => {
+								total++;
+								var loadAct = LoadingDone(
+									iEnum, 
+									() => {
+										done++;
 
-								if (progress != null) {
-									var progressRate = done / total;
-									
-									if (done == total) {
-										progressRate = 1.0;
+										if (progress != null) {
+											var progressRate = done / total;
+											
+											if (done == total) {
+												progressRate = 1.0;
+											}
+
+											progress(progressRate);
+
+											if (done == total) {
+												loadDone();
+											}
+										}
 									}
-
-									progress(progressRate);
-
-									if (done == total) {
-										loadDone();
-									}
-								}
-							}
-						);
-						executor(loadAct);
-					};
-					
-					new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
+								);
+								executor(loadAct);
+							};
+							
+							new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
+						}
+					);
 				}
 			);
+
+			executor(cor);
         }
 
 		private static IEnumerator LoadingDone (IEnumerator loadingCoroutine, Action loadDone) {

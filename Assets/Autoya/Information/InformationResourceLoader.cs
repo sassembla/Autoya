@@ -22,15 +22,6 @@ namespace AutoyaFramework.Information {
         }
     }
 
-    [Serializable] public class DepthAssetInfo {
-        [SerializeField] public string depthAssetName;
-        [SerializeField] public string loadPath;
-        public DepthAssetInfo (string depthAssetName, string loadPath) {
-            this.depthAssetName = depthAssetName;
-            this.loadPath = loadPath;
-        }
-    }
-
     [Serializable] public class BoxConstraints {
         [SerializeField] public string layerName;
         [SerializeField] public BoxConstraint[] constraints;
@@ -69,6 +60,19 @@ namespace AutoyaFramework.Information {
             this.pivot = rect.pivot;
             this.anchorMin = rect.anchorMin;
             this.anchorMax = rect.anchorMax;
+        }
+    }
+
+
+
+    // そのうち消せる。
+    [Serializable] public class DepthAssetInfo {
+        [SerializeField] public string depthAssetName;
+        [SerializeField] public string loadPath;
+        public DepthAssetInfo (string depthAssetName, string loadPath) {
+            Debug.LogError("" + HtmlTag._DEPTH_ASSET_LIST_INFO);// 連鎖で消すためのやつ。
+            this.depthAssetName = depthAssetName;
+            this.loadPath = loadPath;
         }
     }
 
@@ -295,28 +299,34 @@ namespace AutoyaFramework.Information {
         
 
         private DepthAssetList depthAssetList;
-        private bool isLoadingDepthAssetList = false;
+        public bool IsLoadingDepthAssetList {
+            get; private set;
+        }
         
-        public IEnumerator GetDepthAssetList (string uriSource) {
-            if (isLoadingDepthAssetList) {
+        public IEnumerator LoadDepthAssetList (string uriSource) {
+            return GetDepthAssetList(uriSource);
+        }
+        
+        private IEnumerator GetDepthAssetList (string uriSource) {
+            if (IsLoadingDepthAssetList) {
                 throw new Exception("multiple depth description found. only one description is valid.");
             }
 
             var schemeEndIndex = uriSource.IndexOf("//");
             var scheme = uriSource.Substring(0, schemeEndIndex);
             
-            isLoadingDepthAssetList = true;
+            IsLoadingDepthAssetList = true;
 
 
             Action<DepthAssetList> succeeded = (depthAssetList) => {
                 this.depthAssetList = depthAssetList;
-                isLoadingDepthAssetList = false;
+                IsLoadingDepthAssetList = false;
             };
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
                 this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);// set empty list.
-                isLoadingDepthAssetList = false;
+                IsLoadingDepthAssetList = false;
             };
 
             switch (scheme) {
@@ -344,7 +354,7 @@ namespace AutoyaFramework.Information {
                 yield return null;
             }
 
-            while (isLoadingDepthAssetList) {
+            while (IsLoadingDepthAssetList) {
                 yield return null;
             }
 
