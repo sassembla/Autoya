@@ -39,7 +39,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunEnumeratorOnMainThread(cor);
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -69,7 +69,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunEnumeratorOnMainThread(cor);
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -101,7 +101,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunEnumeratorOnMainThread(cor);
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -124,7 +124,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         // ShowRecursive(customizedTree, loader);
     }
 
-    private void ShowRecursive (ParsedTree tree, InformationResourceLoader loader) {
+    public static void ShowRecursive (ParsedTree tree, InformationResourceLoader loader) {
         Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.parsedTag));
         foreach (var child in tree.GetChildren()) {
             ShowRecursive(child, loader);

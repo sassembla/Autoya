@@ -151,6 +151,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
                 default: {
+                    
                     /*
                         if viewName is not Default, enable to load depthAsset prefabs.
                      */
@@ -167,7 +168,9 @@ namespace AutoyaFramework.Information {
                         depthBase += "/" + tree.prefabName;
                         depth = viewName + depthBase;
                     }
-                    
+                    Debug.LogError("viewName:" + viewName + " depth:" + depth);
+
+                    // depthがもうリストにないから見つけられないみたいなやつか。よし、消そう。
                     var list = DepthAssetList();
                     
                     var targetDepthAssetInfos = list.d.Where(d => d.depthAssetName == depth).ToArray();
@@ -217,7 +220,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
                 default: {// other.
-                    throw new Exception("unsupported scheme found, :/");
+                    throw new Exception("unsupported scheme found, scheme:" + scheme);
                 }
             }
 
