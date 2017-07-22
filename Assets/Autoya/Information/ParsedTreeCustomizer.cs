@@ -32,7 +32,6 @@ namespace AutoyaFramework.Information {
             foreach (var child in tree.GetChildren()) {
                 if (IsCustomTag(child.prefabName)) {
                     // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグ。");
-                    // 構造に足す。
                     ExpandCustomTag(child);
                 } else {
                     // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグではない");
@@ -41,6 +40,9 @@ namespace AutoyaFramework.Information {
             }
         }
 
+        /**
+            カスタムタグの内容を分解し、存在するchildの代わりにboxを挿入する。
+         */
         private void ExpandCustomTag (ParsedTree tree) {
             var adoptedConstaints = GetConstraints(tree.prefabName);
 
@@ -51,17 +53,17 @@ namespace AutoyaFramework.Information {
             for (var i = 0; i < children.Count; i++) {
                 var child = children[i];
                 
-                var newConstraintName = GetLayerBoxName(tree.prefabName, child.prefabName);
+                var newBoxName = GetLayerBoxName(tree.prefabName, child.prefabName);
 
                 // whereでの名前一致が辛い。まあでもいいか。
-                var matched = adoptedConstaints.Where(c => c.boxName == newConstraintName).ToArray();
-                if (!matched.Any()) {
+                var matchedBoxies = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
+                if (!matchedBoxies.Any()) {
                     throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + child.prefabName);
                 }
 
                 // pass.
 
-                var newTagId = infoResLoader.FindOrCreateTag(newConstraintName);
+                var newTagId = infoResLoader.FindOrCreateTag(newBoxName);
                 
                 // もしすでにtreeに同名の子供がいたら、そいつにこの子も追加する話になる。
                 if (tree.ContainsChild(newTagId)) {
@@ -74,9 +76,9 @@ namespace AutoyaFramework.Information {
                 } else {
                     // 新規に中間treeを作成する。
                     var newBoxTreeAttr = new AttributeKVs(){
-                        {Attribute._BOX, matched[0].rect}
+                        {Attribute._BOX, matchedBoxies[0].rect}
                     };
-                    var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr, newConstraintName);
+                    var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr, newBoxName);
                     
                     // 作成課程で必ず子になってしまうので一時削除
                     tree.RemoveChild(boxTree);

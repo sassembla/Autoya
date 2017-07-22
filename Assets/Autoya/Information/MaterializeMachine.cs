@@ -107,7 +107,7 @@ namespace AutoyaFramework.Information {
 					prefab = newPrefab;
 				},
 				() => {
-					throw new Exception("failed to load prefab:" + currentTree.prefabName + " depth:" + string.Join("/", currentTree.depth));
+					throw new Exception("failed to load prefab:" + currentTree.prefabName);
 				}
 			);
 
@@ -183,7 +183,7 @@ namespace AutoyaFramework.Information {
 				
 				default: {
 					if (currentTree.keyValueStore.ContainsKey(Attribute._BOX)) {
-						var transformParams = currentTree.keyValueStore[Attribute._BOX] as RectTransDesc;
+						var transformParams = currentTree.keyValueStore[Attribute._BOX] as BoxPos;
 						Debug.LogError("transformParams:" + transformParams);
 					}
 					break;

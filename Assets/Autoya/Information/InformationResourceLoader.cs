@@ -10,39 +10,38 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
 
-    [Serializable] public class DepthAssetList {
+    [Serializable] public class CustomTagList {
         [SerializeField] public string viewName;
-        [SerializeField] public DepthAssetInfo[] d;
-        [SerializeField] public BoxConstraints[] constraints;
+        [SerializeField] public LayerInfo[] constraints;
         
-        public DepthAssetList (string viewName, DepthAssetInfo[] depthAssetNames, BoxConstraints[] constraints) {
+        public CustomTagList (string viewName, LayerInfo[] constraints) {
             this.viewName = viewName;
-            this.d = depthAssetNames;
             this.constraints = constraints;
         }
     }
 
-    [Serializable] public class BoxConstraints {
+    [Serializable] public class LayerInfo {
         [SerializeField] public string layerName;
         [SerializeField] public BoxConstraint[] constraints;
-
-        public BoxConstraints (string layerName, BoxConstraint[] constraints) {
+        [SerializeField] public string loadPath;
+        public LayerInfo (string layerName, BoxConstraint[] constraints, string loadPath) {
             this.layerName = layerName;
             this.constraints = constraints;
+            this.loadPath = loadPath;
         }
     }
 
     [Serializable] public class BoxConstraint {
         [SerializeField] public string boxName;
-        [SerializeField] public RectTransDesc rect;
+        [SerializeField] public BoxPos rect;
 
-        public BoxConstraint (string boxName, RectTransDesc rect) {
+        public BoxConstraint (string boxName, BoxPos rect) {
             this.boxName = boxName;
             this.rect = rect;
         }
     }
 
-    [Serializable] public class RectTransDesc {
+    [Serializable] public class BoxPos {
         [SerializeField] public Vector2 anchoredPosition;
         [SerializeField] public Vector2 sizeDelta;
         [SerializeField] public Vector2 offsetMin;
@@ -52,7 +51,7 @@ namespace AutoyaFramework.Information {
         [SerializeField] public Vector2 anchorMin;
         [SerializeField] public Vector2 anchorMax;
 
-        public RectTransDesc (RectTransform rect) {
+        public BoxPos (RectTransform rect) {
             this.anchoredPosition = rect.anchoredPosition;
             this.sizeDelta = rect.sizeDelta;
             this.offsetMin = rect.offsetMin;
@@ -60,19 +59,6 @@ namespace AutoyaFramework.Information {
             this.pivot = rect.pivot;
             this.anchorMin = rect.anchorMin;
             this.anchorMax = rect.anchorMax;
-        }
-    }
-
-
-
-    // そのうち消せる。
-    [Serializable] public class DepthAssetInfo {
-        [SerializeField] public string depthAssetName;
-        [SerializeField] public string loadPath;
-        public DepthAssetInfo (string depthAssetName, string loadPath) {
-            Debug.LogError("" + HtmlTag._DEPTH_ASSET_LIST_INFO);// 連鎖で消すためのやつ。
-            this.depthAssetName = depthAssetName;
-            this.loadPath = loadPath;
         }
     }
 
@@ -140,7 +126,7 @@ namespace AutoyaFramework.Information {
                 // pass.
             } else {
                 // create default list for default assets.
-                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);
+                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new LayerInfo[0]);
             }
 
             var viewName = this.depthAssetList.viewName;
@@ -151,41 +137,10 @@ namespace AutoyaFramework.Information {
                     break;
                 }
                 default: {
+                    Debug.LogError("viewName:" + viewName);
                     
-                    /*
-                        if viewName is not Default, enable to load depthAsset prefabs.
-                     */
-                    var depth = string.Empty;
-                    if (tree.isContainer) {
-                        depth = viewName + "/" + string.Join("/", tree.depth.Select(t => t.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER).ToArray());
-                    } else {
-                        var depthBase = string.Empty;
-
-                        for (var i = 0; i < tree.depth.Length-1; i++) {
-                            var d = tree.depth[i];
-                            depthBase = depthBase + "/" + d.ToString() + InformationConstSettings.NAME_PREFAB_CONTAINER;
-                        }
-                        depthBase += "/" + tree.prefabName;
-                        depth = viewName + depthBase;
-                    }
-                    Debug.LogError("viewName:" + viewName + " depth:" + depth);
-
-                    // depthがもうリストにないから見つけられないみたいなやつか。よし、消そう。
-                    var list = DepthAssetList();
-                    
-                    var targetDepthAssetInfos = list.d.Where(d => d.depthAssetName == depth).ToArray();
-                    if (targetDepthAssetInfos.Any()) {
-                        var targetInfo = targetDepthAssetInfos[0];
-                        coroutine = LoadPrefabByDepth(tree, targetInfo, onLoaded, onLoadFailed);
-                        break;
-                    }
-
-                    // Debug.Log("depth:" + depth + " not found. loading default depth,");
-
-                    /*
-                        depthAsset is not contained in depthAssetList. load Default asset from Resources.
-                     */
-                    coroutine = LoadPrefabFromDefaultResources(tree, onLoaded, onLoadFailed);
+                    // これだけになるはず。カスタムタグなので、ビューの名前だけで弾ける。
+                    coroutine = LoadPrefabByDepth(tree, onLoaded, onLoadFailed);
                     break;
                 }
             }
@@ -195,38 +150,49 @@ namespace AutoyaFramework.Information {
             }
 		}
 
-        private IEnumerator LoadPrefabByDepth (ParsedTree tree, DepthAssetInfo info, Action<GameObject> onLoaded, Action onLoadFailed) {
+        private IEnumerator LoadPrefabByDepth (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             IEnumerator coroutine = null;
 
-            var assetName = info.depthAssetName;
-            var uriSource = info.loadPath;
-
-            var schemeEndIndex = uriSource.IndexOf("//");
-            if (schemeEndIndex == -1) {
-                throw new Exception("failed to get scheme from loadPath:" + uriSource);
+            Debug.LogError("tree:" + tree.prefabName);
+            Debug.LogError("ここまできた。で、DL情報はAntimaterializerでconstraintsに入れるようにしよう。デフォResources tree.keyValueStore:" + tree.keyValueStore);
+            var kvs = tree.keyValueStore;
+            foreach (var kv in kvs) {
+                Debug.LogError("k:" + kv.Key);
             }
-            var scheme = uriSource.Substring(0, schemeEndIndex);
             
-            switch (scheme) {
-                case "assetbundle:": {
-                    Debug.LogError("まだ未実装");
-                    // var bundleName = uriSource;
-                    // coroutine = LoadListFromAssetBundle(uriSource, succeeded, failed);
-                    break;
-                }
-                case "resources:": {
-                    var resourcePath = uriSource.Substring("resources:".Length + 2);
-                    coroutine = LoadPrefabFromResources(resourcePath, tree, onLoaded, onLoadFailed);
-                    break;
-                }
-                default: {// other.
-                    throw new Exception("unsupported scheme found, scheme:" + scheme);
-                }
-            }
+            Debug.LogError("prefabのロードを行わないといけない、layoutをせねば、みたいな。んーーでももうrectTransformのパラメータが手に入ってるんだよな。なので、カスタム情報だけが取れればそれでいいのか。");
 
-            while (coroutine.MoveNext()) {
-                yield return null;
-            }
+
+            // var assetName = info.depthAssetName;
+            // var uriSource = info.loadPath;
+
+            // var schemeEndIndex = uriSource.IndexOf("//");
+            // if (schemeEndIndex == -1) {
+            //     throw new Exception("failed to get scheme from loadPath:" + uriSource);
+            // }
+            // var scheme = uriSource.Substring(0, schemeEndIndex);
+            
+            // switch (scheme) {
+            //     case "assetbundle:": {
+            //         Debug.LogError("まだ未実装");
+            //         // var bundleName = uriSource;
+            //         // coroutine = LoadListFromAssetBundle(uriSource, succeeded, failed);
+            //         break;
+            //     }
+            //     case "resources:": {
+            //         var resourcePath = uriSource.Substring("resources:".Length + 2);
+            //         coroutine = LoadPrefabFromResources(resourcePath, tree, onLoaded, onLoadFailed);
+            //         break;
+            //     }
+            //     default: {// other.
+            //         throw new Exception("unsupported scheme found, scheme:" + scheme);
+            //     }
+            // }
+
+            // while (coroutine.MoveNext()) {
+            //     yield return null;
+            // }
+            yield break;
         }
 
         private IEnumerator LoadPrefabFromResources (string loadingPrefabName, ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
@@ -297,7 +263,7 @@ namespace AutoyaFramework.Information {
         }
         
 
-        private DepthAssetList depthAssetList;
+        private CustomTagList depthAssetList;
         public bool IsLoadingDepthAssetList {
             get; private set;
         }
@@ -317,14 +283,14 @@ namespace AutoyaFramework.Information {
             IsLoadingDepthAssetList = true;
 
 
-            Action<DepthAssetList> succeeded = (depthAssetList) => {
+            Action<CustomTagList> succeeded = (depthAssetList) => {
                 this.depthAssetList = depthAssetList;
                 IsLoadingDepthAssetList = false;
             };
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);// set empty list.
+                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new LayerInfo[0]);// set empty list.
                 IsLoadingDepthAssetList = false;
             };
 
@@ -348,21 +314,21 @@ namespace AutoyaFramework.Information {
         }
 
 
-        public DepthAssetList DepthAssetList () {
+        public CustomTagList DepthAssetList () {
             if (this.depthAssetList == null) {
-                return new DepthAssetList(InformationConstSettings.VIEWNAME_DEFAULT, new DepthAssetInfo[0], new BoxConstraints[0]);
+                return new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new LayerInfo[0]);
             }
 
             return this.depthAssetList;
         }
 
-        private IEnumerator LoadListFromAssetBundle (string url, Action<DepthAssetList> succeeded, Action failed) {
+        private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action failed) {
             Debug.LogError("not yet applied. LoadListFromAssetBundle url:" + url);
             failed();
             yield break;
         }
         
-        private IEnumerator LoadListFromWeb (string url, Action<DepthAssetList> loadSucceeded, Action loadFailed) {
+        private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action loadFailed) {
             var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
             var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
@@ -417,7 +383,7 @@ namespace AutoyaFramework.Information {
                     request.error,
                     (conId, unusedData) => {
                         var jsonStr = request.downloadHandler.text;
-                        var newDepthAssetList = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+                        var newDepthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
 
                         loadSucceeded(newDepthAssetList);
                     }, 
@@ -429,7 +395,7 @@ namespace AutoyaFramework.Information {
             }
         }
         
-        private IEnumerator LoadListFromResources (string path, Action<DepthAssetList> succeeded, Action failed) {
+        private IEnumerator LoadListFromResources (string path, Action<CustomTagList> succeeded, Action failed) {
             var requestCor = Resources.LoadAsync(path);
 
             while (!requestCor.isDone) {
@@ -442,7 +408,7 @@ namespace AutoyaFramework.Information {
             }
 
             var jsonStr = (requestCor.asset as TextAsset).text;
-            var depthAssetList = JsonUtility.FromJson<DepthAssetList>(jsonStr);
+            var depthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
             succeeded(depthAssetList);
 		}
 

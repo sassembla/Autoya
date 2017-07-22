@@ -27,8 +27,26 @@ namespace AutoyaFramework.Information {
 			this.view = view;
 			
 			// start execute.
-			executor(StartLayout(@this, view, layouted));
+			executor(StartLayout2(@this, view, layouted));
         }
+
+		private IEnumerator StartLayout2 (ParsedTree @this, ViewBox view, Action<LayoutedTree> layouted) {
+			/*
+				えーっと、やらなければいけないこと全部盛りだと、
+
+				・上からサイズを設定する
+				・サイズを規定できる場合は規定する
+				・子供にサイズを渡す
+				・transformとかのパラメータを保持する
+				とかか。
+				で、
+				カスタムタグは原点は左上0で、ボックスの配置を行う必要はあるんでサイズは固定で、っていう感じになるか。box自体の配置は親に対する関係と同一でないといけない。これ守れてる気がしないな。
+				テスト描こう。
+			
+			 */
+
+			yield break;
+		}
 
 		private IEnumerator StartLayout (ParsedTree @this, ViewBox view, Action<LayoutedTree> layouted) {
 			var handle = new HandlePoint(0, 0, view.width, view.height);
@@ -163,7 +181,9 @@ namespace AutoyaFramework.Information {
 			yield break;
 		}
         
-		
+		/**
+			layoutの時点で必要なのは、そのコンテンツをどこに置くか、ってところなので、これはもう別途書くか。
+		 */
         private IEnumerator LayoutTagContent (ParsedTree @this, HandlePoint handle, Action<ParsedTree[]> insert) {
 			var xOffset = handle.nextLeftHandle;
 			var yOffset = handle.nextTopHandle;
@@ -490,7 +510,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			if (textComponent.font == null) {
-				throw new Exception("font is null. prefab:" + @this.prefabName + " of depth:" + @this.depth.Length + " まだ適当。");
+				throw new Exception("font is null. prefab:" + @this.prefabName);
 			}
 
 			// set content first.

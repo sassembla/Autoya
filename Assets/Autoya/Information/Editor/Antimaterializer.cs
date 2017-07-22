@@ -52,163 +52,185 @@ namespace AutoyaFramework.Information {
             // remove all files in exportBasePath.
             FileController.RemakeDirectory(exportBasePath);
             
-            Debug.LogWarning("そのうち消す");
-            var depthAssetInfoList = new List<DepthAssetInfo>();
-            
             // childrenがいろいろなタグの根本にあたる。
-            var constraints = new List<BoxConstraints>();
+            var constraints = new List<LayerInfo>();
             // recursiveに、コンテンツを分解していく。
             for (var i = 0; i < target.transform.childCount; i++) {
                 var child = target.transform.GetChild(i);
                 
-                CollectConstraints(InformationConstSettings.FULLPATH_INFORMATION_RESOURCE + viewName, child.gameObject, constraints);
+                CollectConstraints(viewName, child.gameObject, constraints);
             }
             
-            var listFileName = "DepthAssetList.txt";
-            var depthAssetList = new DepthAssetList(viewName, depthAssetInfoList.ToArray(), constraints.ToArray());
+            if (!constraints.Any()) {
+                Debug.Log("cancelled antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath + " because this layer is empty. please add 1 or more asset on layer.");
+                return;
+            }
 
+            var listFileName = "DepthAssetList.txt";
+            var depthAssetList = new CustomTagList(viewName, constraints.ToArray());
+
+            
             var jsonStr = JsonUtility.ToJson(depthAssetList);
             using (var sw = new StreamWriter(Path.Combine(exportBasePath, listFileName))) {
                 sw.WriteLine(jsonStr);
             }
             AssetDatabase.Refresh();
+            Debug.Log("fiished antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath);
         }
 
         /**
             存在するパーツ単位でconstraintsを生成する
          */
-        private static void CollectConstraints (string viewName, GameObject source, List<BoxConstraints> currentConstraints) {
-            var error = false;
-            
+        private static void CollectConstraints (string viewName, GameObject source, List<LayerInfo> currentConstraints) {
             // このレイヤーにあるものに対して、まずコピーを生成し、そのコピーに対して処理を行う。
             var currentLayerInstance = GameObject.Instantiate(source);
             currentLayerInstance.name = source.name;
+            
+            using (new GameObjectDeleteUsing(currentLayerInstance)) {
+                ModifyLayerInstance(viewName, currentLayerInstance, currentConstraints);
+            }
+        }
+
+        private static void ModifyLayerInstance (string viewName, GameObject currentLayerInstance, List<LayerInfo> currentConstraints) {
+            // このインスタンスのポジションを0,0 leftTopAnchor、左上pivotにする。
+            var rectTrans = currentLayerInstance.GetComponent<RectTransform>();
+            rectTrans.anchoredPosition = new Vector2(0,0);
+            rectTrans.anchorMin = new Vector2(0,1);
+            rectTrans.anchorMax = new Vector2(0,1);
+            rectTrans.pivot = new Vector2(0,1);
 
 
             var layerName = currentLayerInstance.name;
+            var childrenConstraintDict = new Dictionary<string, BoxPos>();
+            var copiedChildList = new List<GameObject>();
             
-            var depth = viewName + "/" + layerName;
+            /*
+                元々のchildrenを別GameObjectとして分離
+            */
+            {
+                foreach (Transform component in currentLayerInstance.transform) {
+                    var childGameObject = component.gameObject;
 
+                    var newChildGameObject = GameObject.Instantiate(childGameObject);
+                    newChildGameObject.name = childGameObject.name;
+
+                    copiedChildList.Add(newChildGameObject);
+                }
+            }
             
-            var childrenDescDict = new Dictionary<string, RectTransDesc>();
-            
-            
-            var children = new List<GameObject>();
-            using (new ViewChildrenUsing(children)) {
-
-                // インスタンスに対して、子供達を取得し、それらのRectTransform以外のコンポーネントを全て消す。
-                foreach (Transform childTrans in currentLayerInstance.transform) {
-                    var childObj = childTrans.gameObject;
-                    var originalChildName = childObj.name;
-
-                    var boxName = layerName + "_" + childObj.name;
-                    childObj.name = boxName;
-
-                    var childRectTrans = childObj.GetComponent<RectTransform>();
-
-                    // この階層のdescにこのchildの情報を追加
-                    if (childrenDescDict.ContainsKey(boxName)) {
-                        Debug.LogWarning("customTag:" + originalChildName + " is already exist in layer:" + layerName + ". please set other name for each customTag on this layer.");
-                        error = true;
-                    }
-
-                    childrenDescDict[boxName] = new RectTransDesc(childRectTrans);
-
-                    // childを別のリストにまとめて、自身のchildとは分離
-                    {
-                        // childの新規インスタンスを生成
-                        var childNewInstance = GameObject.Instantiate(childObj);
-
-                        // その名称を、boxNameへと変更。
-                        // layer_tag になる。
-                        childNewInstance.name = boxName;
-
-                        // 保持
-                        children.Add(childNewInstance);
-                    }
-
-                    // 元になったinstanceからrectTrans以外のcomponentを奪う
-                    
-                    foreach (var component in childObj.GetComponents<Component>().Reverse()) {
-                        if (component is RectTransform) {
-                            continue;
+            using(new GameObjectDeleteUsing(copiedChildList.ToArray())) {
+                /*
+                    box情報を生成
+                */
+                { 
+                    foreach (Transform component in currentLayerInstance.transform) {
+                        var boxObject = component.gameObject;
+                        var boxRectTrans = boxObject.GetComponent<RectTransform>();
+                        
+                        var boxName = layerName + "_" + boxObject.name;
+                        
+                        if (childrenConstraintDict.ContainsKey(boxName)) {
+                            throw new Exception("another box:" + boxName + " is already exist in layer:" + layerName + ". please set other name for each customTag on this layer.");
                         }
 
-                        // remove not RectTransform component.
-                        GameObject.DestroyImmediate(component);
+                        childrenConstraintDict[boxName] = new BoxPos(boxRectTrans);
                     }
-
                 }
-                
-                // 自身のprefab化
-                var prefabPath = depth + ".prefab";
-                var dirPath = Path.GetDirectoryName(prefabPath);
+
+                /*
+                    boxの名前変更と中のRectTransform以外のcomponentの削除
+                */
+                {
+                    foreach (Transform component in currentLayerInstance.transform) {
+                        var boxObject = component.gameObject;
+                        
+                        // 名前のセット(box_オブジェクト名)
+                        var boxName = layerName + "_" + boxObject.name;
+                        boxObject.name = boxName;
+
+                        // 不要なコンポーネントの削除
+                        foreach (var boxComponent in component.gameObject.GetComponents<Component>().Reverse()) {
+                            if (boxComponent is RectTransform) {
+                                continue;
+                            }
+
+                            // remove not RectTransform component.
+                            GameObject.DestroyImmediate(boxComponent);
+                        }
+                    }
+                }
                 
                 /*
                     create prefab.
                 */
-                FileController.CreateDirectoryRecursively(dirPath);
-                PrefabUtility.CreatePrefab(prefabPath, currentLayerInstance);
+                {
+                    var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + layerName + ".prefab";
+                    var dirPath = Path.GetDirectoryName(prefabPath);
+                    
+                    FileController.CreateDirectoryRecursively(dirPath);
+                    PrefabUtility.CreatePrefab(prefabPath, currentLayerInstance);
 
-
-                // 自身の削除
-                GameObject.DestroyImmediate(currentLayerInstance);
-                
-
-
-                // descを追加
-                currentConstraints.Add(new BoxConstraints(layerName, childrenDescDict.Select((kv, index) => new BoxConstraint(kv.Key, kv.Value)).ToArray()));
-                
-
-
-                // 生成しておいた子供の位置情報を変更して継続
-                foreach (var child in children) {
-                    var childRectTrans = child.GetComponent<RectTransform>();
-                    // このchildから位置情報を奪い、さらに内部へと進む
-                    childRectTrans.anchoredPosition = Vector2.zero;
-                    childRectTrans.offsetMin = Vector2.zero;
-                    childRectTrans.offsetMax = new Vector2(1, 1);
-                    childRectTrans.anchorMin = Vector2.zero;
-                    childRectTrans.anchorMax = new Vector2(1, 1);
-                    childRectTrans.pivot = new Vector2(0, 1);
+                    // layerの削除
+                    GameObject.DestroyImmediate(currentLayerInstance);
                 }
 
-                if (error) {
-                    Debug.LogWarning("cancelled by error. see above.");
-                    return;
+                /*
+                    このレイヤーのboxの情報を追加
+                */
+                {
+                    var newChildConstraint = childrenConstraintDict.Select(
+                            kv => new BoxConstraint(kv.Key, kv.Value)
+                        ).ToArray();
+
+                    // var resourcePath = "resources://" + resourcePathWithExtension.Substring(0, resourcePathWithExtension.Length - Path.GetExtension(resourcePathWithExtension).Length);
+                    // このロードパスの対象がもっとたくさんあるような気がする。
+                    var loadPath = "test";
+
+                    var newConstraints = new LayerInfo(
+                        layerName, 
+                        newChildConstraint,
+                        loadPath
+                    );
+
+                    currentConstraints.Add(newConstraints);
                 }
 
-                // if no error, continue running.
-                foreach (var child in children) {
-                    CollectConstraints(depth, child, currentConstraints);
+                /*
+                    取り出しておいたchildに対して再帰
+                */
+                foreach (var disposableChild in copiedChildList) {
+                    CollectConstraints(viewName, disposableChild, currentConstraints);
                 }
             }
         }
 
-        private class ViewChildrenUsing : IDisposable {
-			private List<GameObject> children;
-			
-			public ViewChildrenUsing (List<GameObject> children) {
-				this.children = children;
-			}
 
-			private bool disposedValue = false;
+        private class GameObjectDeleteUsing : IDisposable {
+            private GameObject[] children;
+            
+            public GameObjectDeleteUsing (params GameObject[] target) {
+                this.children = target;
+            }
 
-			protected virtual void Dispose (bool disposing) {
-				if (!disposedValue) {
-					if (disposing) {
-						for (var i = 0; i < children.Count; i++) {
+            private bool disposedValue = false;
+
+            protected virtual void Dispose (bool disposing) {
+                if (!disposedValue) {
+                    if (disposing) {
+                        for (var i = 0; i < children.Length; i++) {
                             var child = children[i];
                             GameObject.DestroyImmediate(child);
                         }
-					}
-					disposedValue = true;
-				}
-			}
+                    }
+                    disposedValue = true;
+                }
+            }
 
-			void IDisposable.Dispose () {
-				Dispose(true);
-			}
-		}
+            void IDisposable.Dispose () {
+                Dispose(true);
+            }
+        }
     }
+
+    
 }

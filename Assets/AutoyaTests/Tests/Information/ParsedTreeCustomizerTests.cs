@@ -124,6 +124,8 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         // ShowRecursive(customizedTree, loader);
     }
 
+    
+
     public static void ShowRecursive (ParsedTree tree, InformationResourceLoader loader) {
         Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.parsedTag));
         foreach (var child in tree.GetChildren()) {

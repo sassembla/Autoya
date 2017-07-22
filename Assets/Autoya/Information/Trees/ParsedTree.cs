@@ -20,7 +20,6 @@ namespace AutoyaFramework.Information {
         
         // tag params.
         public readonly int parsedTag;
-        public readonly string[] depth;
         public readonly string rawTagName;
         public readonly string prefabName;
         public readonly AttributeKVs keyValueStore;
@@ -35,7 +34,6 @@ namespace AutoyaFramework.Information {
 
         public ParsedTree () {
             this.parsedTag = (int)HtmlTag._ROOT;
-            this.depth = new string[0];
             this.keyValueStore = new AttributeKVs();
             this.rawTagName = HtmlTag._ROOT.ToString();
 
@@ -44,7 +42,6 @@ namespace AutoyaFramework.Information {
 
         public ParsedTree (int parsedTag, ParsedTree parent, AttributeKVs kv, string rawTagName) {
             this.parsedTag = parsedTag;
-            this.depth = parent.depth.Concat(new string[]{rawTagName}).ToArray();
             this.keyValueStore = kv;
             this.rawTagName = rawTagName;
 
@@ -84,7 +81,6 @@ namespace AutoyaFramework.Information {
 
         public ParsedTree (ParsedTree source, AttributeKVs kv) {
             this.parsedTag = source.parsedTag;
-            this.depth = source.depth;
             this.keyValueStore = kv;
             this.rawTagName = source.rawTagName;
 

@@ -49,7 +49,7 @@ namespace AutoyaFramework.Information {
 			そのうち単一のArrayとしてindexのみで処理するように書き換えると楽。
 		 */
         private IEnumerator Parse (ParsedTree parentTree, string data, Action<ParsedTree> parsed) {
-			// Debug.LogError("data:" + data + " parentTree:" + parentTree.parsedTag);
+			// Debug.LogError("data:" + data + " parentTree:" + infoResLoader.GetTagFromIndex(parentTree.parsedTag));
 			var charIndex = 0;
 			var readPoint = 0;
 			
@@ -397,20 +397,12 @@ namespace AutoyaFramework.Information {
 					start loading of depthAssetList.
 				 */
 				var cor = infoResLoader.LoadDepthAssetList(depthAssetListUrl);
+
 				while (cor.MoveNext()) {
 					yield return null;
 				}
-
-				Debug.LogWarning("_DEPTH_ASSET_LIST_INFO そのうち定義自体を消せそう。");
-				// var depthAssetListUrlTree = new ParsedTree(
-				// 	(int)HtmlTag._DEPTH_ASSET_LIST_INFO,
-				// 	parent,
-				// 	new AttributeKVs{
-				// 		{Attribute.SRC, depthAssetListUrl}
-				// 	},
-				// 	HtmlTag._DEPTH_ASSET_LIST_INFO.ToString()
-				// );
-				// depthAssetListUrlTree.SetParent(parent);
+				
+				// loaded.
 			}
 		}
 
