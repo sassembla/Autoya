@@ -32,6 +32,7 @@ namespace AutoyaFramework.Information {
 
         // 新規レイアウト処理
         public float viewWidth;
+        public float viewHeight;
 
 
         // layout things.

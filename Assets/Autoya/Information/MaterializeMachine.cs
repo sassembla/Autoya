@@ -15,7 +15,7 @@ namespace AutoyaFramework.Information {
 
         public MaterializeMachine(
 			InformationResourceLoader infoResLoader,
-			LayoutedTree layoutedTree, 
+			ParsedTree layoutedTree, 
 			GameObject rootGameObject, 
 			ViewBox view, 
 			Action<IEnumerator> executor
@@ -27,16 +27,17 @@ namespace AutoyaFramework.Information {
 			executor(Execute(layoutedTree, rootGameObject, view));
         }
 
-		private IEnumerator Execute (LayoutedTree layoutedTree, GameObject rootGameObject, ViewBox view) {
+		private IEnumerator Execute (ParsedTree layoutedTree, GameObject rootGameObject, ViewBox view) {
             var cor = MaterializeRecursively(rootGameObject, layoutedTree);
 			while (cor.MoveNext()) {
 				yield return null;
 			}
+			
+			Debug.LogError("封印中");
+			// var totalHeight = layoutedTree.totalHeight;
 
-			var totalHeight = layoutedTree.totalHeight;
-
-            var rootRectTrans = rootGameObject.GetComponent<RectTransform>();
-            rootRectTrans.sizeDelta = new Vector2(view.width, totalHeight);
+            // var rootRectTrans = rootGameObject.GetComponent<RectTransform>();
+            // rootRectTrans.sizeDelta = new Vector2(view.width, totalHeight);
 
 			yield break;
 		}

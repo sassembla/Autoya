@@ -54,7 +54,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         ParsedTreeCustomizerTests.ShowRecursive(tree, loader);
 
-        LayoutedTree layouted = null;
+        ParsedTree layouted = null;
         var layoutMachine = new LayoutMachine(
             tree, 
             loader, 

@@ -154,6 +154,46 @@ namespace AutoyaFramework.Information {
             }
 		}
 
+        public IEnumerator<GameObject> LoadTextPrefab (string textPrefabName) {
+            GameObject loadedPrefab = null;
+
+            Action<GameObject> onLoaded = obj => {
+                loadedPrefab = obj;
+            };
+
+            Action onLoadFailed = () => {
+                Debug.LogError("特に把握できない理由が得られる");
+            };
+
+            var viewName = DepthAssetList().viewName;
+            
+            switch (viewName) {
+                case InformationConstSettings.VIEWNAME_DEFAULT: {
+                    // default path.
+                    var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
+
+                    var loadingPrefabName = defaultPath + textPrefabName;
+                    
+                    var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
+                    while (cor.MoveNext()) {
+                        yield return null;
+                    }
+                    break;
+                }
+                default: {
+                    Debug.LogError("viewName:" + viewName + " がdefaultでないものに対して");
+                    
+                    break;
+                }
+            }
+            
+            yield return loadedPrefab;
+        }
+
+
+
+
+
         private IEnumerator LoadPrefabByDepth (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             IEnumerator coroutine = null;
 
@@ -199,7 +239,7 @@ namespace AutoyaFramework.Information {
             yield break;
         }
 
-        private IEnumerator LoadPrefabFromResources (string loadingPrefabName, ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
+        private IEnumerator LoadPrefabFromResources (string loadingPrefabName, Action<GameObject> onLoaded, Action onLoadFailed) {
             
             // cached.
             if (prefabCache.ContainsKey(loadingPrefabName)) {
@@ -260,7 +300,7 @@ namespace AutoyaFramework.Information {
 				loadingPrefabName = defaultPath + tree.prefabName;
 			}
 
-            var cor = LoadPrefabFromResources(loadingPrefabName, tree, onLoaded, onLoadFailed);
+            var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
             while (cor.MoveNext()) {
                 yield return null;
             }

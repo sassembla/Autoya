@@ -20,7 +20,7 @@ namespace AutoyaFramework.Information {
 			  ParsedTree @this, 
 			  InformationResourceLoader infoResLoader,
 			  ViewBox view, Action<IEnumerator> executor, 
-			  Action<LayoutedTree> layouted
+			  Action<ParsedTree> layouted
 		) {
 			this.infoResLoader = infoResLoader;
 			this.view = view;
@@ -29,7 +29,7 @@ namespace AutoyaFramework.Information {
 			executor(StartLayout2(@this, layouted));
         }
 
-		private IEnumerator StartLayout2 (ParsedTree @this, Action<LayoutedTree> layouted) {
+		private IEnumerator StartLayout2 (ParsedTree @this, Action<ParsedTree> layouted) {
 			/*
 				えーっと、やらなければいけないこと全部盛りだと、
 
@@ -66,8 +66,7 @@ namespace AutoyaFramework.Information {
 				yield return null;
 			}
 
-			var layoutedTree = new LayoutedTree(@this);
-			layouted(layoutedTree);
+			layouted(@this);
 
 			yield break;
 		}
@@ -126,7 +125,13 @@ namespace AutoyaFramework.Information {
 						// こいつ自身がテキストコンテンツの場合、ここでタグの内容のサイズを推し量って返してOKになる。
 						var text = @this.keyValueStore[Attribute._CONTENT] as string;
 						Debug.LogError("テキストコンテンツ:" + text + " のレイアウトをやって、サイズを出して返す。従来の方法がいろんなタグが入っても破綻しないので従来の方法を使おう。リファクタしよう。");
-
+						
+						var cor = LayoutTextContent(@this, text, viewCursor);
+						while (cor.MoveNext()) {
+							yield return null;
+						}
+						
+						var result = cor.Current;
 						// viewCursorを書き換える
 						break;
 					}
@@ -186,6 +191,10 @@ namespace AutoyaFramework.Information {
 								yield return null;
 							}
 
+							Debug.LogError("ここで、子供コンテナのビューが帰ってくる。どんなのが帰ってくるのを想定すればいいんだろう。");
+							/*
+								コンテナのビューは、列の規則によって並びをまとめる必要がある。
+							 */
 							var newViewCursor = cor.Current;
 
 							if (viewCursor.viewWidth < newViewCursor.offsetX + child.viewWidth) {
@@ -298,7 +307,139 @@ namespace AutoyaFramework.Information {
 			yield return childLastCursor;
 		}
 
+		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, string text, ViewCursor cursor) {
+			var prefabName = textTree.prefabName;
 
+
+			var cor = infoResLoader.LoadTextPrefab(prefabName);
+
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+
+			var prefab = cor.Current;
+
+			// use prefab's text component for using it's text setting.
+			var textComponent = prefab.GetComponent<Text>();
+			if (textComponent == null) {
+				throw new Exception("failed to get Text component from prefab:" + prefabName + " of text content:" + text);
+			}
+
+			if (textComponent.font == null) {
+				throw new Exception("font is null. prefab:" + prefabName);
+			}
+
+			// set content to prefab.
+			textComponent.text = text;
+			{
+				var generator = new TextGenerator();
+				Debug.LogError("viewWidth:" + cursor.viewWidth);
+				var setting = textComponent.GetGenerationSettings(new Vector2(cursor.viewWidth, 1000));
+				
+				generator.Populate(text, setting);
+
+
+				// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
+				var lineCount = generator.lineCount;
+				Debug.LogError("lineCount:" + lineCount);
+				Debug.LogError("width:" + textComponent.preferredWidth);// この部分が66になるのが正しいので、最終行が66で終わるのが正しい、という感じのテストを組むか。
+				// 末尾のポイントを返す
+				
+
+				// 0行だったら、入らなかったということなので自分が入る位置を指定して頑張る的な。
+				if (lineCount == 0) {
+					// // 入らなかったので、前の行のラストの高さを+して、再計算。
+					// var newViewCursor = new ViewCursor();
+					// var nextLineCor = LayoutTextContent();
+					yield break;
+				}
+
+				// 1行しかなかったら、yは変わらない。
+				
+				var totalHeight = 0;
+				foreach (var line in generator.lines) {
+					totalHeight += line.height;
+				}
+				
+				textTree.viewWidth = textComponent.preferredWidth;
+				textTree.viewHeight = totalHeight;
+
+				// var newCursor = new ViewCursor();// 次のためのoffsetとWidthを返す？
+				yield return cursor;
+
+				generator.Invalidate();
+
+			}
+			textComponent.text = string.Empty;
+
+
+			// while (true) {
+			// 	// if rest text is included by one line, line collection is done.
+			// 	if (generator.lineCount == 1) {
+			// 		lines.Add(nextText);
+			// 		break;
+			// 	}
+
+			// 	// Debug.LogError("nextText:" + nextText + " generator.lines.Count:" + generator.lines.Count);
+
+			// 	// 複数行が出たので、continue, 
+
+			// 	// 折り返しが発生したところから先のtextを取得し、その前までをコンテンツとしてセットする必要がある。
+			// 	var nextTextLineInfo = generator.lines[1];
+			// 	var startIndex = nextTextLineInfo.startCharIdx;
+				
+			// 	lines.Add(nextText.Substring(0, startIndex));
+
+			// 	nextText = nextText.Substring(startIndex);
+			// 	textComponent.text = nextText;
+
+			// 	// populate again.
+			// 	generator.Invalidate();
+
+			// 	// populate splitted text again.
+			// 	generator.Populate(textComponent.text, textComponent.GetGenerationSettings(new Vector2(contentWidth, contentHeight)));
+			// 	if (generator.lineCount == 0) {
+			// 		throw new Exception("no line detected 2. nextText:" + nextText);
+			// 	}
+			// }
+			
+			// textComponent.text = lines[0];
+			// var preferredWidth = textComponent.preferredWidth;
+			
+			// if (contentWidth < preferredWidth) {
+			// 	preferredWidth = contentWidth;
+			// }
+
+			// // reset.
+			// textComponent.text = string.Empty;
+
+			// /*
+			// 	insert new line contents after this content.
+			//  */
+			// if (1 < lines.Count) {
+			// 	var newContentTexts = lines.GetRange(1, lines.Count-1);
+				
+			// 	// foreach (var s in newContentTexts) {
+			// 	// 	Debug.LogError("s:" + s);
+			// 	// }
+
+			// 	var newVGameObjects = newContentTexts.Select(
+			// 		t => new ParsedTree(
+			// 			@this,
+			// 			new AttributeKVs(){
+			// 				{Attribute._CONTENT, t}
+			// 			}
+			// 		)
+			// 	).ToArray();
+			// 	insert(newVGameObjects);
+			// }
+
+			// // Debug.LogError("preferredWidth:" + preferredWidth);
+			
+			// onCalculated(new ContentAndWidthAndHeight(lines[0], preferredWidth, generator.lines[0].height));
+
+			// yield break;
+		}
 
 
 
@@ -331,16 +472,15 @@ namespace AutoyaFramework.Information {
 
 
 
-		private IEnumerator StartLayout (ParsedTree @this, ViewBox view, Action<LayoutedTree> layouted) {
+		private IEnumerator StartLayout (ParsedTree @this, ViewBox view, Action<ParsedTree> layouted) {
 			var handle = new OldHandlePoint(0, 0, view.width, view.height);
 
 			var cor = LayoutRecursive((int)HtmlTag._ROOT, @this, handle, (i) => {});
 			while (cor.MoveNext()) {
 				yield return null;
 			}
-	
-			var layoutedTree = new LayoutedTree(@this);
-			layouted(layoutedTree);
+			
+			layouted(@this);
 		}
 
         /**
@@ -586,7 +726,7 @@ namespace AutoyaFramework.Information {
 					if (@this.keyValueStore.ContainsKey(Attribute._CONTENT)) {
 						var text = @this.keyValueStore[Attribute._CONTENT] as string;
 						
-						var cor = LayoutTextContent(
+						var cor = LayoutText_Content(
 							@this, 
 							xOffset, 
 							text, 
@@ -678,7 +818,7 @@ namespace AutoyaFramework.Information {
 		/**
 			stringが入るコンテナのサイズを生成して返す
 		 */
-        private IEnumerator LayoutTextContent (ParsedTree @this, float offset, string text, float contentWidth, float contentHeight, Action<ParsedTree[]> insert, Action<ContentAndWidthAndHeight> onCalculated) {
+        private IEnumerator LayoutText_Content (ParsedTree @this, float offset, string text, float contentWidth, float contentHeight, Action<ParsedTree[]> insert, Action<ContentAndWidthAndHeight> onCalculated) {
 			GameObject textPrefab = null;
 
 			var cor = infoResLoader.LoadPrefab(

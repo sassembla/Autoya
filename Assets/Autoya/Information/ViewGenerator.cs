@@ -57,8 +57,9 @@ namespace AutoyaFramework.Information {
 						view, 
 						executor, 
 						layoutedTree => {
+							Debug.LogWarning("封印中");
 							// layout is done.
-							layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
+							// layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
 
 							/*
 								attributes and depth are ready for each tree.
@@ -91,7 +92,7 @@ namespace AutoyaFramework.Information {
 								executor(loadAct);
 							};
 							
-							new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
+							// new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
 						}
 					);
 				}
