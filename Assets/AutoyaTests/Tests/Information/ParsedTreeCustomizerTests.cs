@@ -121,7 +121,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         // 増えてる階層に関してのチェックを行う。2種のcustomTagがあるので2つ増える。
         Assert(contentsCount +2 == newContentsCount, "not match. newContentsCount:" + newContentsCount);
 
-        // ShowRecursive(customizedTree, loader);
+        ShowRecursive(customizedTree, loader);
     }
 
     

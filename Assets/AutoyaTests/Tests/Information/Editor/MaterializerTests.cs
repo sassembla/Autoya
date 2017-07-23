@@ -36,10 +36,10 @@ namespace AutoyaFramework.Information {
 
 			// テストのために作り出したview以下のものも消す
 			var viewAssetPath = "Assets/InformationResources/Resources/Views/" + testTargetSampleObjName;
-			if (Directory.Exists(viewAssetPath)) {
-				Directory.Delete(viewAssetPath, true);
-				AssetDatabase.Refresh();
-			}
+			// if (Directory.Exists(viewAssetPath)) {
+			// 	Directory.Delete(viewAssetPath, true);
+			// 	AssetDatabase.Refresh();
+			// }
 		}
 
 		[MenuItem("/Window/TestMaterialize")] public static void RunTests () {

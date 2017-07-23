@@ -115,6 +115,10 @@ namespace AutoyaFramework.Information {
 			}
         }
 
+        public GameObject LoadPrefabSync (string path) {
+            return Resources.Load(path) as GameObject;
+        }
+
 
         /**
             load prefab from AssetBundle or Resources.
@@ -499,6 +503,18 @@ namespace AutoyaFramework.Information {
 				undefinedTagDict[tagCandidateStr] = count;
 				return count;
 			}
+        }
+
+        public bool IsCustomTag (int parsedTag) {
+            if (parsedTag < (int)HtmlTag._END) {
+				return false;
+			}
+
+			if (undefinedTagDict.ContainsValue(parsedTag)) {
+				return true;
+			}
+
+            throw new Exception("failed to determine tag from parsedTag. parsedTag:" + parsedTag);
         }
 
 

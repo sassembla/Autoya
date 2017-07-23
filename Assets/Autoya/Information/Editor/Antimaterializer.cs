@@ -93,6 +93,7 @@ namespace AutoyaFramework.Information {
 
         private static void ModifyLayerInstance (string viewName, GameObject currentLayerInstance, List<LayerInfo> currentConstraints) {
             // このインスタンスのポジションを0,0 leftTopAnchor、左上pivotにする。
+            // レイヤーのインスタンスは、インスタンス化時に必ず親のサイズにフィットするように変形される。
             var rectTrans = currentLayerInstance.GetComponent<RectTransform>();
             rectTrans.anchoredPosition = new Vector2(0,0);
             rectTrans.anchorMin = new Vector2(0,1);
@@ -161,7 +162,7 @@ namespace AutoyaFramework.Information {
                 }
                 
                 /*
-                    create prefab.
+                    layerのprefabを作成
                 */
                 {
                     var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + layerName + ".prefab";
@@ -178,12 +179,13 @@ namespace AutoyaFramework.Information {
                     このレイヤーのboxの情報を追加
                 */
                 {
-                    var newChildConstraint = childrenConstraintDict.Select(
-                            kv => new BoxConstraint(kv.Key, kv.Value)
-                        ).ToArray();
+                    var newChildConstraint = childrenConstraintDict
+                        .Select(kv => new BoxConstraint(kv.Key, kv.Value))
+                        .ToArray();
 
                     // var resourcePath = "resources://" + resourcePathWithExtension.Substring(0, resourcePathWithExtension.Length - Path.GetExtension(resourcePathWithExtension).Length);
-                    // このロードパスの対象がもっとたくさんあるような気がする。
+                    Debug.LogWarning("このロードパスの対象がもっとたくさんあるような気がする。");
+                    Debug.LogWarning("layerのprefabにbox情報が入ってるんで、結局posは必要ないっぽい。");
                     var loadPath = "test";
 
                     var newConstraints = new LayerInfo(

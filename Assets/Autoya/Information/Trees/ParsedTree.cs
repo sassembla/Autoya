@@ -25,12 +25,27 @@ namespace AutoyaFramework.Information {
         public readonly AttributeKVs keyValueStore;
         public readonly bool isContainer;
 
+
+
+
+
+
+        // 新規レイアウト処理
+        public float viewWidth;
+
+
         // layout things.
         public Vector2 anchoredPosition = Vector2.zero;        
         public Vector2 sizeDelta = Vector2.zero;
         public Vector2 offsetMin = Vector2.zero;
         public Vector2 offsetMax = Vector2.zero;
+        public Vector2 anchorMin = Vector2.zero;
+        public Vector2 anchorMax = Vector2.zero;
+        public Vector2 pivot = Vector2.zero;
+
         public Padding padding = new Padding();
+
+
 
         public ParsedTree () {
             this.parsedTag = (int)HtmlTag._ROOT;

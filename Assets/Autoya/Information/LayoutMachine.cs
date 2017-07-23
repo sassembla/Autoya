@@ -23,14 +23,13 @@ namespace AutoyaFramework.Information {
 			  Action<LayoutedTree> layouted
 		) {
 			this.infoResLoader = infoResLoader;
-
 			this.view = view;
 			
 			// start execute.
-			executor(StartLayout2(@this, view, layouted));
+			executor(StartLayout2(@this, layouted));
         }
 
-		private IEnumerator StartLayout2 (ParsedTree @this, ViewBox view, Action<LayoutedTree> layouted) {
+		private IEnumerator StartLayout2 (ParsedTree @this, Action<LayoutedTree> layouted) {
 			/*
 				えーっと、やらなければいけないこと全部盛りだと、
 
@@ -44,12 +43,218 @@ namespace AutoyaFramework.Information {
 				テスト描こう。
 			
 			 */
+			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
+			/*
+			        public readonly int parsedTag;
+					public readonly string rawTagName;
+					public readonly string prefabName;
+					public readonly AttributeKVs keyValueStore;
+					public readonly bool isContainer;
+					を使って、
+			 */
 
+			/*
+					public Vector2 anchoredPosition = Vector2.zero;        
+					public Vector2 sizeDelta = Vector2.zero;
+					public Vector2 offsetMin = Vector2.zero;
+					public Vector2 offsetMax = Vector2.zero;
+					public Padding padding = new Padding();
+					を埋めていく。
+			 */
+			DoLayout(@this, viewCursor);
 			yield break;
 		}
 
+		private ViewCursor DoLayout (ParsedTree @this, ViewCursor viewCursor) {
+			
+
+			// カスタムタグかどうかで分岐
+			if (infoResLoader.IsCustomTag(@this.parsedTag)) {
+				// 自分自身のサイズを確定
+				/*
+					原点もアンカーも固定されていて、親サイズに対してそのまま出せばいい。
+				*/
+				@this.viewWidth = viewCursor.viewWidth;
+
+				// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。prefabを作った時にすでに位置が含まれている。
+
+				var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
+
+				Debug.LogError("path:" + path);
+				var layerPrefab = Resources.Load<GameObject>(path);
+				/*
+					カスタムタグだったら、prefabをロードして、原点位置は0,0、
+						サイズは親サイズ、という形で生成する。
+					カスタムタグのprefabにはboxが含まれていて、boxありのそのまま生成される。
+					・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
+					・この際のchildのサイズは、必ずboxのものになる。このへんがキモかな。
+				 */
+
+				var customTagPrefab = infoResLoader.LoadPrefabSync(path);
+
+				foreach (var boxTree in @this.GetChildren()) {
+					var d = LayoutBox(viewCursor, boxTree);
+					// この情報はboxのレイアウト済みの情報なんで、なにかしら変更を受けてやることがあるのかな〜〜どうだろ。
+				}
+			} else {
+				// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
+				// 自動的にコンテナがくることがあり得る。まあしょうがない。
+				// で。その分解はparserで済んでると思う。
+				// customTagの機構はタグの機構の完全上位みたいになってるような気がする。まあフローが違うからそうか。
+
+				/*
+					このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
+				 */
+				var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.rawTagName;
+				Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag);
+
+				/*
+					子供のタグを整列させる処理。
+					横に整列、縦に並ぶ、などが実行される。
+				 */
+				var linedObject = new List<ParsedTree>();
+				foreach (var child in @this.GetChildren()) {
+					linedObject.Add(child);
+
+					// 子供ごとにレイアウト結果を受け取る
+					var newViewCursor = DoLayout(child, viewCursor);
+
+					if (viewCursor.viewWidth < newViewCursor.offsetX + child.viewWidth) {
+						Debug.LogWarning("右端を超えたので、この項目を取り外してそれまでのラインを整列させる。 みたいなことをする。");
+						
+						// 最後の一つを削除
+						linedObject.RemoveAt(linedObject.Count - 1);
+
+						// 整列処理をし、結果を受け取る
+						var linedEndCursor = DoLining(linedObject);
+
+						// クリア
+						linedObject.Clear();
+
+						// 次の行のトップとしてこの要素を追加
+						linedObject.Add(child);
+					}
+				}
+
+				// 最終行を処理
+				if (linedObject.Any()) {
+					var lastChildCursor = DoLining(linedObject);
+				}
+
+				Debug.LogWarning("すべての子供のコンテンツの位置が定まったので、自身のサイズを調整する(ほぼ変わらないはず。)");
+
+
+			}
+			
+			
+			// 最終的に親へとカーソルを返す
+			return viewCursor;
+		}
+
+		private ViewCursor DoLining (List<ParsedTree> linedChildren) {
+			// linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、最大のyを返す。
+			
+			Debug.LogWarning("空のviewCursorを返す、ライニング処理の末尾");
+			return new ViewCursor();
+		}
+
+		/**
+			この関数に含まれるのはboxで、ここに含まれるのはすべてカスタムタグの内容。
+		 */
+		private ViewCursor LayoutBox (ViewCursor layerViewCursor, ParsedTree box) {
+			/*
+				box自身のレイアウトに関して、prefabの値を引き継ぐ以外は特になにもするべきことがないのでは的な。
+				位置情報はprefabのそのままなので、うーん、まずは値を保持してセットするようにしてみよう。
+			 */
+			
+			// こいつ自身のkvにいろいろ入っているのでは
+			// このタグを入れる時点ですでに反映されていてもいいのかもしれないが、一応後方 = 遅延させて値を持っておく手段に倒しておく。
+			var layoutParam = box.keyValueStore[Attribute._BOX] as BoxPos;
+			
+			// 自分自身へのサイズやピボットのセット
+			box.offsetMin = layoutParam.offsetMin;
+			box.offsetMax = layoutParam.offsetMax;
+			
+			box.anchoredPosition = layoutParam.anchoredPosition;
+			box.sizeDelta = layoutParam.sizeDelta;
+
+			box.anchorMin = layoutParam.anchorMin;
+			box.anchorMax = layoutParam.anchorMax;
+			box.pivot = layoutParam.pivot;
+
+			// ここで問題になりそうなのが、サイズか。この時点では仮想的に持ってるから、果たしてboxから実数的なサイズが算出できるのかしら的な。
+			// だったらprefabに入れといてそれをパラメータ的にいじった方がいいか。でも階層ごとに、その階層だけ変なことになるっていうのが待っている。
+			// 統一的に頑張るならここでprefab作ってなんかしよう。サイズを得るための設定とか
+			foreach (var child in box.GetChildren()) {
+				// ここでのコンテンツはboxの中身のコンテンツなので、必ず縦に並ぶ。列切り替えが発生しない。
+				// 幅と高さを与えるが、高さは変更されて帰ってくる可能性が高い。
+				// コンテンツが一切ない場合でもこの高さを維持する。
+				// コンテンツがこの高さを切ってもこの高さを維持する。
+				var e = LayoutBoxedContent(layerViewCursor, child, box.sizeDelta);
+			}
+
+			Debug.LogWarning("ここで返却される可能性があるのは、子供が複数いるときに、その高さが異なる = 縦に伸びる、みたいなケースで、その時、次に用意してあるboxの位置をずらす。");
+			
+			// 適当にまず返す
+			return layerViewCursor;
+		}
+
+		private ViewCursor LayoutBoxedContent (ViewCursor boxViewCursor, ParsedTree child, Vector2 size) {
+			/*
+				boxの内容たちで、特定のタグに限られている。で、幅や高さは与えられた要素になる。
+				高さに関しては、画像か文字かで適応のし方が異なる。
+
+				・文字
+					幅はもらったものを受け取り、高さは結果を使用する。
+				
+				・画像
+					幅はもらったものを使い、高さは結果を使用する。アスペクト比を見たりする。
+
+			 */
+			var childView = new ViewCursor(0, 0, size.x, size.y);
+			var v = DoLayout(child, childView);
+			
+			/*
+				ここで返されるべきなのは、子供のサイズぶん縦に広がったビュー。
+			 */
+			return boxViewCursor;
+		}
+
+
+
+
+
+
+
+
+
+
+		private struct ViewCursor {
+			public float offsetX;
+			public float offsetY;
+			public float viewWidth;
+			public float viewHeight;
+			public ViewCursor (float offsetX, float offsetY, float viewWidth, float viewHeight) {
+				this.offsetX = offsetX;
+				this.offsetY = offsetY;
+				this.viewWidth = viewWidth;
+				this.viewHeight = viewHeight;
+			}
+
+			public ViewCursor (ViewCursor viewCursor) {
+				this.offsetX = viewCursor.offsetX;
+				this.offsetY = viewCursor.offsetX;
+				this.viewWidth = viewCursor.viewWidth;
+				this.viewHeight = viewCursor.viewHeight;
+			}
+		}
+
+
+
+
+
 		private IEnumerator StartLayout (ParsedTree @this, ViewBox view, Action<LayoutedTree> layouted) {
-			var handle = new HandlePoint(0, 0, view.width, view.height);
+			var handle = new OldHandlePoint(0, 0, view.width, view.height);
 
 			var cor = LayoutRecursive((int)HtmlTag._ROOT, @this, handle, (i) => {});
 			while (cor.MoveNext()) {
@@ -65,7 +270,7 @@ namespace AutoyaFramework.Information {
 
 			set position and size of content.
 		*/
-		private IEnumerator LayoutRecursive (int parentTag, ParsedTree @this, HandlePoint handle, Action<ParsedTree[]> insert) {
+		private IEnumerator LayoutRecursive (int parentTag, ParsedTree @this, OldHandlePoint handle, Action<ParsedTree[]> insert) {
 			switch (@this.parsedTag) {
 				case (int)HtmlTag._ROOT: {
 					// do nothing.
@@ -184,7 +389,7 @@ namespace AutoyaFramework.Information {
 		/**
 			layoutの時点で必要なのは、そのコンテンツをどこに置くか、ってところなので、これはもう別途書くか。
 		 */
-        private IEnumerator LayoutTagContent (ParsedTree @this, HandlePoint handle, Action<ParsedTree[]> insert) {
+        private IEnumerator LayoutTagContent (ParsedTree @this, OldHandlePoint handle, Action<ParsedTree[]> insert) {
 			var xOffset = handle.nextLeftHandle;
 			var yOffset = handle.nextTopHandle;
 			var viewWidth = handle.viewWidth;
@@ -605,9 +810,9 @@ namespace AutoyaFramework.Information {
 		}
 
         	
-        private IEnumerator LayoutChildlen (ParsedTree @this, HandlePoint handle, List<ParsedTree> childlen) {
+        private IEnumerator LayoutChildlen (ParsedTree @this, OldHandlePoint handle, List<ParsedTree> childlen) {
 			// locate child content in relative. create new (0,0) handle.
-			var childHandlePoint = new HandlePoint(0, 0, handle.viewWidth, handle.viewHeight);
+			var childHandlePoint = new OldHandlePoint(0, 0, handle.viewWidth, handle.viewHeight);
 			
 			// layout -> resize -> padding of childlen.
 		
@@ -794,7 +999,7 @@ namespace AutoyaFramework.Information {
         /**
 			create line of contents -> sort all content by Y base line.
 		*/
-		private HandlePoint SortByLayoutLine (List<ParsedTree> layoutLine, HandlePoint childHandlePoint) {
+		private OldHandlePoint SortByLayoutLine (List<ParsedTree> layoutLine, OldHandlePoint childHandlePoint) {
 			// find tallest content in layoutLine.
 			var targetHeightObjArray = layoutLine.OrderByDescending(c => c.sizeDelta.y + c.padding.PadHeight()).ToArray();
 			

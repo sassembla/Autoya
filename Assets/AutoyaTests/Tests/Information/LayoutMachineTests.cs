@@ -70,30 +70,30 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
     }
 
-    [MTest] public void LayoutHTMLWithCustomTag () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<customtag>something</customtag>
-<p>else</p>
-        ";
-        var tree = CreateCustomizedTree(sample);
+//     [MTest] public void LayoutHTMLWithCustomTag () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <customtag>something</customtag>
+// <p>else</p>
+//         ";
+//         var tree = CreateCustomizedTree(sample);
 
-        LayoutedTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            tree, 
-            loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
+//         LayoutedTree layouted = null;
+//         var layoutMachine = new LayoutMachine(
+//             tree, 
+//             loader, 
+//             new ViewBox(100,100,0), 
+//             Autoya.Mainthread_Commit, 
+//             layoutedTree => {
+//                 layouted = layoutedTree;
+//             }
+//         );
 
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
+//         WaitUntil(
+//             () => layouted != null, 5, "timeout."
+//         );
 
-        ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
-    }
+//         ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
+//     }
 
 }
