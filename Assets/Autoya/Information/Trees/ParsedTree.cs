@@ -66,13 +66,12 @@ namespace AutoyaFramework.Information {
             switch (parsedTag) {
                 // this is content of container = parent tag.
                 case (int)HtmlTag._TEXT_CONTENT: {
-                    this.prefabName = parent.rawTagName;
+                    this.prefabName = parent.rawTagName.ToUpper();
                     this.isContainer = false;
                     break;
                 }
 
                 // value tags,
-                case (int)HtmlTag.body:
                 case (int)HtmlTag.img:
                 case (int)HtmlTag.br:
                 case (int)HtmlTag.hr:

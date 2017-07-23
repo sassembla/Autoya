@@ -105,9 +105,11 @@ namespace AutoyaFramework.Information {
 				/*
 					このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
 				 */
-				var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.rawTagName;
-				Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag);
+				var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.prefabName;
+				Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName);
 
+				// んで、prefabの名前はあってると思う。
+				
 				/*
 					子供のタグを整列させる処理。
 					横に整列、縦に並ぶ、などが実行される。

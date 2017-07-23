@@ -51,6 +51,8 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 <body>something</body>
         ";
         var tree = CreateCustomizedTree(sample);
+        
+        ParsedTreeCustomizerTests.ShowRecursive(tree, loader);
 
         LayoutedTree layouted = null;
         var layoutMachine = new LayoutMachine(
@@ -67,7 +69,6 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             () => layouted != null, 5, "timeout."
         );
 
-        ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
     }
 
 //     [MTest] public void LayoutHTMLWithCustomTag () {
