@@ -61,12 +61,18 @@ namespace AutoyaFramework.Information {
 					public Padding padding = new Padding();
 					を埋めていく。
 			 */
-			DoLayout(@this, viewCursor);
+			var cor = DoLayout(@this, viewCursor);
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+
+			var layoutedTree = new LayoutedTree(@this);
+			layouted(layoutedTree);
+
 			yield break;
 		}
 
-		private ViewCursor DoLayout (ParsedTree @this, ViewCursor viewCursor) {
-			
+		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor) {
 
 			// カスタムタグかどうかで分岐
 			if (infoResLoader.IsCustomTag(@this.parsedTag)) {
@@ -93,8 +99,13 @@ namespace AutoyaFramework.Information {
 				var customTagPrefab = infoResLoader.LoadPrefabSync(path);
 
 				foreach (var boxTree in @this.GetChildren()) {
-					var d = LayoutBox(viewCursor, boxTree);
-					// この情報はboxのレイアウト済みの情報なんで、なにかしら変更を受けてやることがあるのかな〜〜どうだろ。
+					var cor = LayoutBox(viewCursor, boxTree);
+
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+					var resultCor = cor.Current;
+					Debug.LogWarning("カスタムタグのレイアウトが終わった。で、親のサイズが変わる(高さが高くなった)可能性がある。");
 				}
 			} else {
 				// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
@@ -110,60 +121,117 @@ namespace AutoyaFramework.Information {
 
 				// んで、prefabの名前はあってると思う。
 				
-				/*
-					子供のタグを整列させる処理。
-					横に整列、縦に並ぶ、などが実行される。
-				 */
-				var linedObject = new List<ParsedTree>();
-				foreach (var child in @this.GetChildren()) {
-					linedObject.Add(child);
+				switch (@this.parsedTag) {
+					case (int)HtmlTag._TEXT_CONTENT: {
+						// こいつ自身がテキストコンテンツの場合、ここでタグの内容のサイズを推し量って返してOKになる。
+						var text = @this.keyValueStore[Attribute._CONTENT] as string;
+						Debug.LogError("テキストコンテンツ:" + text + " のレイアウトをやって、サイズを出して返す。従来の方法がいろんなタグが入っても破綻しないので従来の方法を使おう。リファクタしよう。");
 
-					// 子供ごとにレイアウト結果を受け取る
-					var newViewCursor = DoLayout(child, viewCursor);
+						// viewCursorを書き換える
+						break;
+					}
+					case (int)HtmlTag.img: {
+						if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
+							throw new Exception("image should define src param.");
+						}
 
-					if (viewCursor.viewWidth < newViewCursor.offsetX + child.viewWidth) {
-						Debug.LogWarning("右端を超えたので、この項目を取り外してそれまでのラインを整列させる。 みたいなことをする。");
-						
-						// 最後の一つを削除
-						linedObject.RemoveAt(linedObject.Count - 1);
+						var src = @this.keyValueStore[Attribute.SRC] as string;
+						Debug.LogError("srcから画像をDLしてきて、widthに対して適応させる。 src:" + src);
 
-						// 整列処理をし、結果を受け取る
-						var linedEndCursor = DoLining(linedObject);
+						// determine image size from image's parent's width.
+						var imageWidth = viewCursor.viewWidth;
+						var imageHeight = 0f;
 
-						// クリア
-						linedObject.Clear();
+						// need to download image.
+						// no height set yet. set height to default aspect ratio.
+						var downloaded = false;
+						infoResLoader.LoadImageAsync(
+							src, 
+							(sprite) => {
+								downloaded = true;
+								imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
+							},
+							() => {
+								downloaded = true;
+								imageHeight = 0;
+							}
+						);
 
-						// 次の行のトップとしてこの要素を追加
-						linedObject.Add(child);
+						while (!downloaded) {
+							yield return null;
+						}
+
+						// これでサイズ取得が終わったので、viewCursorの高さを上書き指定して返す。
+						if (viewCursor.viewHeight < imageHeight) {
+							viewCursor.viewHeight = imageHeight;
+						}
+
+						break;
+					}
+					default: {
+						// CONTENTではないので、CONTAINER。
+
+						/*
+							子供のタグを整列させる処理。
+							横に整列、縦に並ぶ、などが実行される。
+						*/
+						var linedObject = new List<ParsedTree>();
+						foreach (var child in @this.GetChildren()) {
+							linedObject.Add(child);
+
+							// 子供ごとにレイアウト結果を受け取る
+							var cor = DoLayout(child, viewCursor);
+
+							while (cor.MoveNext()) {
+								yield return null;
+							}
+
+							var newViewCursor = cor.Current;
+
+							if (viewCursor.viewWidth < newViewCursor.offsetX + child.viewWidth) {
+								Debug.LogWarning("右端を超えたので、この項目を取り外してそれまでのラインを整列させる。 みたいなことをする。");
+								
+								// 最後の一つを削除
+								linedObject.RemoveAt(linedObject.Count - 1);
+
+								// 整列処理をし、結果を受け取る
+								var linedEndCursor = DoLining(linedObject);
+
+								// クリア
+								linedObject.Clear();
+
+								// 次の行のトップとしてこの要素を追加
+								linedObject.Add(child);
+							}
+						}
+
+						// 最終行を処理
+						if (linedObject.Any()) {
+							var lastChildCursor = DoLining(linedObject);
+						}
+
+						Debug.LogWarning("すべての子供のコンテンツの位置が定まったので、自身のサイズを調整する(ほぼ変わらないはず。)");
+						break;
 					}
 				}
-
-				// 最終行を処理
-				if (linedObject.Any()) {
-					var lastChildCursor = DoLining(linedObject);
-				}
-
-				Debug.LogWarning("すべての子供のコンテンツの位置が定まったので、自身のサイズを調整する(ほぼ変わらないはず。)");
-
-
 			}
-			
-			
-			// 最終的に親へとカーソルを返す
-			return viewCursor;
+
+			Debug.LogWarning("最終的にviewCursorの値を調整したものを返す。");
+			yield return viewCursor;
 		}
 
 		private ViewCursor DoLining (List<ParsedTree> linedChildren) {
 			// linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、最大のyを返す。
 			
-			Debug.LogWarning("空のviewCursorを返す、ライニング処理の末尾");
-			return new ViewCursor();
+
+			Debug.LogError("仮で適当な値を返す");
+			return new ViewCursor(0,0, 0,0);
 		}
 
 		/**
 			この関数に含まれるのはboxで、ここに含まれるのはすべてカスタムタグの内容。
 		 */
-		private ViewCursor LayoutBox (ViewCursor layerViewCursor, ParsedTree box) {
+		private IEnumerator<ViewCursor> LayoutBox (ViewCursor layerViewCursor, ParsedTree box) {
 			/*
 				box自身のレイアウトに関して、prefabの値を引き継ぐ以外は特になにもするべきことがないのでは的な。
 				位置情報はprefabのそのままなので、うーん、まずは値を保持してセットするようにしてみよう。
@@ -192,16 +260,19 @@ namespace AutoyaFramework.Information {
 				// 幅と高さを与えるが、高さは変更されて帰ってくる可能性が高い。
 				// コンテンツが一切ない場合でもこの高さを維持する。
 				// コンテンツがこの高さを切ってもこの高さを維持する。
-				var e = LayoutBoxedContent(layerViewCursor, child, box.sizeDelta);
+				var cor = LayoutBoxedContent(layerViewCursor, child, box.sizeDelta);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+				var resultCursor = cor.Current;
 			}
-
-			Debug.LogWarning("ここで返却される可能性があるのは、子供が複数いるときに、その高さが異なる = 縦に伸びる、みたいなケースで、その時、次に用意してあるboxの位置をずらす。");
 			
 			// 適当にまず返す
-			return layerViewCursor;
+			Debug.LogWarning("適当に返す。本来ここで返却される可能性があるのは、子供が複数いるときに、その高さが異なる = 縦に伸びる、みたいなケースで、その時、次に用意してあるboxの位置をずらす。");
+			yield return layerViewCursor;
 		}
 
-		private ViewCursor LayoutBoxedContent (ViewCursor boxViewCursor, ParsedTree child, Vector2 size) {
+		private IEnumerator<ViewCursor> LayoutBoxedContent (ViewCursor boxViewCursor, ParsedTree child, Vector2 size) {
 			/*
 				boxの内容たちで、特定のタグに限られている。で、幅や高さは与えられた要素になる。
 				高さに関しては、画像か文字かで適応のし方が異なる。
@@ -214,12 +285,17 @@ namespace AutoyaFramework.Information {
 
 			 */
 			var childView = new ViewCursor(0, 0, size.x, size.y);
-			var v = DoLayout(child, childView);
+			var cor = DoLayout(child, childView);
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+
+			var childLastCursor = cor.Current;
 			
 			/*
-				ここで返されるべきなのは、子供のサイズぶん縦に広がったビュー。
+				ここで返されるべきなのは、子供のサイズぶん縦に広がったbox自身のビュー。
 			 */
-			return boxViewCursor;
+			yield return childLastCursor;
 		}
 
 
@@ -231,7 +307,7 @@ namespace AutoyaFramework.Information {
 
 
 
-		private struct ViewCursor {
+		private class ViewCursor {// structに変えたほうがいい気がするがyieldで返したい。空を返すのも勿体無い？
 			public float offsetX;
 			public float offsetY;
 			public float viewWidth;
@@ -468,100 +544,9 @@ namespace AutoyaFramework.Information {
 					
 					Debug.LogWarning("このへんの、widthとかからサイズ指定する流れは全て消える。");
 					// determine image size from image's width & height.
-					if (@this.keyValueStore.ContainsKey(Attribute.WIDTH) && @this.keyValueStore.ContainsKey(Attribute.HEIGHT)) {
-						var width = @this.keyValueStore[Attribute.WIDTH] as string;
-						var height = @this.keyValueStore[Attribute.HEIGHT] as string;
-
-						if (width.EndsWith("%")) {
-							imageWidth = GetPercentOf(viewWidth, width);
-						} else {
-							imageWidth = Convert.ToInt32(width);
-						}
-
-						if (height.EndsWith("%")) {
-							imageHeight = GetPercentOf(viewHeight, height);
-						} else {
-							imageHeight = Convert.ToInt32(height);
-						}
-
-					} else if (@this.keyValueStore.ContainsKey(Attribute.WIDTH)) {
-						// width only.
-						var width = @this.keyValueStore[Attribute.WIDTH] as string;
-						if (width.EndsWith("%")) {
-							imageWidth = GetPercentOf(viewWidth, width);
-						} else {
-							imageWidth = Convert.ToInt32(width);
-						}
-
-						// need to download image.
-						// no height set yet. set height to default aspect ratio.
-						var downloaded = false;
-						infoResLoader.LoadImageAsync(
-							src, 
-							(sprite) => {
-								downloaded = true;
-								imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
-							},
-							() => {
-								downloaded = true;
-								imageHeight = 0;
-							}
-						);
-
-						while (!downloaded) {
-							yield return null;
-						}
-
-					} else if (@this.keyValueStore.ContainsKey(Attribute.HEIGHT)) {
-						// height only.
-						var height = @this.keyValueStore[Attribute.HEIGHT] as string;
-						if (height.EndsWith("%")) {
-							imageHeight = GetPercentOf(viewHeight, height);
-						} else {
-							imageHeight = Convert.ToInt32(height);
-						}
-
-						// need to download image.
-						// no width set yet. set height to default aspect ratio.
-						var downloaded = false;
-						infoResLoader.LoadImageAsync(
-							src, 
-							(sprite) => {
-								downloaded = true;
-								contentWidth = (imageHeight / sprite.rect.size.y) * sprite.rect.size.x;
-							},
-							() => {
-								downloaded = true;
-								contentWidth = 0;
-							}
-						);
-
-						while (!downloaded) {
-							yield return null;
-						}
-
-					} else {
-						// no width, no height. use default size of image.
-						var downloaded = false;
-						infoResLoader.LoadImageAsync(
-							src, 
-							(sprite) => {
-								downloaded = true;
-								imageWidth = sprite.rect.size.x;
-								imageHeight = sprite.rect.size.y;
-							},
-							() => {
-								downloaded = true;
-								imageWidth = 0;
-								imageHeight = 0;
-							}
-						);
-
-						while (!downloaded) {
-							yield return null;
-						}
-					}
-
+					
+					// 消した。
+					
 					// set content size.
 					contentWidth = imageWidth;
 					contentHeight = imageHeight;

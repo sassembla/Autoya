@@ -6,10 +6,7 @@ namespace AutoyaFramework.Information {
 
         _CONTENT,
 		_BOX,
-		WIDTH, 
-        HEIGHT,
         SRC,
-        ALT,
         HREF,
 		START,
 		TITLE,
