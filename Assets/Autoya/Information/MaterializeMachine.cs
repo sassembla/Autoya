@@ -50,10 +50,6 @@ namespace AutoyaFramework.Information {
                     gameObj = parent;
 					break;
 				}
-				case (int)HtmlTag._DEPTH_ASSET_LIST_INFO: {
-					// do nothing.
-					break;
-				}
 				case (int)HtmlTag.br: {
 					// has no child. no visual. do nothing.
 					break;

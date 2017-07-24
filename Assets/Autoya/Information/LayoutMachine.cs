@@ -71,174 +71,288 @@ namespace AutoyaFramework.Information {
 			yield break;
 		}
 
-		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<ParsedTree, bool> insertion=null) {
 
 			// カスタムタグかどうかで分岐
 			if (infoResLoader.IsCustomTag(@this.parsedTag)) {
-				// 自分自身のサイズを確定
-				/*
-					原点もアンカーも固定されていて、親サイズに対してそのまま出せばいい。
-				*/
-				@this.viewWidth = viewCursor.viewWidth;
+				var cor = DoCustomTagContainerLayout(@this, viewCursor);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
 
-				// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。
+				Debug.LogError("カスタムタグの計算結果を返す");
+				yield return viewCursor;
+			} else if (@this.isContainer) {
+				var cor = DoContainerLayout(@this, viewCursor);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
 
-				var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
+				Debug.LogError("コンテナの計算結果を返す");
+				yield return viewCursor;
+			} else {
+				var cor = DoContentLayout(@this, viewCursor, insertion);
+				while (cor.MoveNext()) {
+					yield return null;
+				}
 
-				Debug.LogError("path:" + path);
-				var layerPrefab = Resources.Load<GameObject>(path);
-				/*
-					カスタムタグだったら、prefabをロードして、原点位置は0,0、
-						サイズは親サイズ、という形で生成する。
-					
-					・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
-					・この際のchildのサイズは、必ずboxのものになる。このへんがキモかな。
-				 */
+				Debug.LogError("コンテンツの計算結果を返す");
+				yield return viewCursor;
+			}
+		}
+		
+		/**
+			カスタムタグのレイアウトを行う。
+			customTag_CONTAINER/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
+			ここだけ相対的なレイアウトが崩れる。
+		 */
+		private IEnumerator<ViewCursor> DoCustomTagContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
+			/*
+				原点もアンカーも固定されていて、親サイズに対してそのまま出せばいい。
+			*/
+			@this.viewWidth = viewCursor.viewWidth;
 
-				// 仮でシンクロ読み
-				var customTagPrefab = infoResLoader.LoadPrefabSync(path);
-				Debug.LogError("customTagPrefab:" + customTagPrefab);
+			// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。
 
-				var children = @this.GetChildren();
+			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
+
+			Debug.LogError("path:" + path);
+			var layerPrefab = Resources.Load<GameObject>(path);
+			/*
+				カスタムタグだったら、prefabをロードして、原点位置は0,0、
+					サイズは親サイズ、という形で生成する。
 				
-				foreach (var boxTree in children) {
-					var cor = LayoutBox(viewCursor, boxTree);
+				・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
+				・この際のchildのサイズは、必ずboxのものになる。このへんがキモかな。
+			*/
+
+			// 仮でシンクロ読み
+			var customTagPrefab = infoResLoader.LoadPrefabSync(path);
+			Debug.LogError("customTagPrefab:" + customTagPrefab);
+
+			var children = @this.GetChildren();
+
+			foreach (var boxTree in children) {
+				var cor = LayoutBox(viewCursor, boxTree);
+
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+
+				var resultCor = cor.Current;
+				Debug.LogWarning("カスタムタグのboxのレイアウトが終わった。で、親のサイズが変わる(高さが高くなった)可能性がある。幅は変化しない。");
+			}
+
+			yield return viewCursor;
+		}
+
+
+		private IEnumerator<ViewCursor> DoContentLayout (ParsedTree @this, ViewCursor viewCursor, Action<ParsedTree, bool> insertion=null) {
+			// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
+			// 自動的にコンテナがくることがあり得る。まあしょうがない。
+			// で。その分解はparserで済んでると思う。
+			// customTagの機構はタグの機構の完全上位みたいになってるような気がする。まあフローが違うからそうか。
+
+			/*
+				このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
+				*/
+			var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.prefabName;
+			Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName + " isContainer:" + @this.isContainer);
+
+			// んで、prefabの名前はあってると思う。
+			
+			switch (@this.parsedTag) {
+				case (int)HtmlTag._TEXT_CONTENT: {
+					// こいつ自身がテキストコンテンツの場合、ここでタグの内容のサイズを推し量って返してOKになる。
+					var text = @this.keyValueStore[Attribute._CONTENT] as string;
+					
+					var cor = LayoutTextContent(@this, text, viewCursor, insertion);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+					
+					var result = cor.Current;
+					// viewCursorを書き換える
+					break;
+				}
+				case (int)HtmlTag.img: {
+					if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
+						throw new Exception("image should define src param.");
+					}
+
+					var src = @this.keyValueStore[Attribute.SRC] as string;
+					Debug.LogError("srcから画像をDLしてきて、widthに対して適応させる。 src:" + src);
+
+					// determine image size from image's parent's width.
+					var imageWidth = viewCursor.viewWidth;
+					var imageHeight = 0f;
+
+					// need to download image.
+					// no height set yet. set height to default aspect ratio.
+					var downloaded = false;
+					infoResLoader.LoadImageAsync(
+						src, 
+						(sprite) => {
+							downloaded = true;
+							imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
+						},
+						() => {
+							downloaded = true;
+							imageHeight = 0;
+						}
+					);
+
+					while (!downloaded) {
+						yield return null;
+					}
+
+					// これでサイズ取得が終わったので、viewCursorの高さを上書き指定して返す。
+					if (viewCursor.viewHeight < imageHeight) {
+						viewCursor.viewHeight = imageHeight;
+					}
+
+					break;
+				}
+				default: {
+					Debug.LogWarning("謎のコンテンツ。");
+					break;
+				}
+			}
+
+			Debug.LogError("最終的にviewCursorの値を調整したものを返す。");
+			yield return viewCursor;
+		}
+
+		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
+			/*
+				このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
+			*/
+			var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.prefabName;
+			Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName);
+
+			// んで、prefabの名前はあってると思う。
+			
+			
+			// CONTENTではないので、CONTAINER。
+
+			/*
+				子供のタグを整列させる処理。
+				横に整列、縦に並ぶ、などが実行される。
+
+				初期カーソルは親と同じ。
+			*/
+			var childView = viewCursor;
+			var linedObject = new List<ParsedTree>();
+			
+			var containerChildren = @this.GetChildren();
+			var childCount = containerChildren.Count;
+			var currentRequestNextLine = false;
+			for (var i = 0; i < childCount; i++) {
+				var child = containerChildren[i];
+				linedObject.Add(child);
+				
+				currentLineRetry: {
+					// 子供ごとにレイアウトし、結果を受け取る
+					var cor = DoLayout(
+						child, 
+						childView, 
+						(newChild, requestNextLine) => {
+
+							if (requestNextLine) {
+								// 現在レイアウト中のコンテンツから改行要請が来たので、コンテンツを改行する = viewCursorの位置を行頭に持っていく。
+								currentRequestNextLine = requestNextLine;
+								return;
+							}
+
+							// 次に処理するコンテンツを差し込む。
+							containerChildren.Insert(i+1, newChild);
+						}
+					);
 
 					while (cor.MoveNext()) {
 						yield return null;
 					}
-					var resultCor = cor.Current;
-					Debug.LogWarning("カスタムタグのレイアウトが終わった。で、親のサイズが変わる(高さが高くなった)可能性がある。");
-				}
-			} else {
-				// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
-				// 自動的にコンテナがくることがあり得る。まあしょうがない。
-				// で。その分解はparserで済んでると思う。
-				// customTagの機構はタグの機構の完全上位みたいになってるような気がする。まあフローが違うからそうか。
 
-				/*
-					このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
-				 */
-				var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.prefabName;
-				Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName);
+					// ここまでは、開始時のoffsetとsizeを保持している。
 
-				// んで、prefabの名前はあってると思う。
-				
-				switch (@this.parsedTag) {
-					case (int)HtmlTag._TEXT_CONTENT: {
-						// こいつ自身がテキストコンテンツの場合、ここでタグの内容のサイズを推し量って返してOKになる。
-						var text = @this.keyValueStore[Attribute._CONTENT] as string;
-						Debug.LogError("テキストコンテンツ:" + text + " のレイアウトをやって、サイズを出して返す。従来の方法がいろんなタグが入っても破綻しないので従来の方法を使おう。リファクタしよう。");
+					if (currentRequestNextLine) {
+						Debug.LogError("テキストコンテンツが0行を叩き出したので、このコンテンツ自体をもう一度レイアウトする。");
+						Debug.LogError("ここでライニングが発生する。");
 						
-						var cor = LayoutTextContent(@this, text, viewCursor);
-						while (cor.MoveNext()) {
-							yield return null;
-						}
-						
-						var result = cor.Current;
-						// viewCursorを書き換える
-						break;
+
+						// 最後の一つを削除
+						linedObject.RemoveAt(linedObject.Count - 1);
+
+						// 整列処理をし、結果を受け取る
+						var lineHeight = DoLining(linedObject);
+
+						// クリア
+						linedObject.Clear();
+
+						// 次の行のトップとして、現在の要素を追加
+						linedObject.Add(child);
+
+						// リセット
+						currentRequestNextLine = false;
+
+						// childViewには、この行の開始時のoffsetYが残っている。
+						// lineHeightには先ほど締め切ったラインの高さがあるので、その値を足すと、次の行のoffsetになる。
+						var currentHeight = childView.offsetY + lineHeight;
+
+						// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+						childView = childView.NextLine(currentHeight, viewCursor.viewWidth);
+
+						// もう一度処理する。
+						goto currentLineRetry;
 					}
-					case (int)HtmlTag.img: {
-						if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
-							throw new Exception("image should define src param.");
-						}
 
-						var src = @this.keyValueStore[Attribute.SRC] as string;
-						Debug.LogError("srcから画像をDLしてきて、widthに対して適応させる。 src:" + src);
-
-						// determine image size from image's parent's width.
-						var imageWidth = viewCursor.viewWidth;
-						var imageHeight = 0f;
-
-						// need to download image.
-						// no height set yet. set height to default aspect ratio.
-						var downloaded = false;
-						infoResLoader.LoadImageAsync(
-							src, 
-							(sprite) => {
-								downloaded = true;
-								imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
-							},
-							() => {
-								downloaded = true;
-								imageHeight = 0;
-							}
-						);
-
-						while (!downloaded) {
-							yield return null;
-						}
-
-						// これでサイズ取得が終わったので、viewCursorの高さを上書き指定して返す。
-						if (viewCursor.viewHeight < imageHeight) {
-							viewCursor.viewHeight = imageHeight;
-						}
-
-						break;
-					}
-					default: {
-						// CONTENTではないので、CONTAINER。
-
-						/*
-							子供のタグを整列させる処理。
-							横に整列、縦に並ぶ、などが実行される。
+					// レイアウトが済んだchildの位置を受け取る。
+					childView = cor.Current;
+					
+					/*
+						レイアウト結果がどこからくるかというと、
+						子供が増えるという可能性があって、(textContentが分裂して帰ってくる)
+						その可能性を加味してやらんといかんのか。なるほど。
 						*/
-						var linedObject = new List<ParsedTree>();
-						foreach (var child in @this.GetChildren()) {
-							linedObject.Add(child);
+					
+					if (viewCursor.viewWidth < childView.offsetX + childView.viewWidth) {
+						Debug.LogWarning("ちょうどこのコンテンツを書いた時に右端を超えたので、この項目を取り外してそれまでのラインを整列させる。 みたいなことをする。");
+						
+						// 最後の一つを削除
+						linedObject.RemoveAt(linedObject.Count - 1);
 
-							// 子供ごとにレイアウト結果を受け取る
-							var cor = DoLayout(child, viewCursor);
+						// 整列処理をし、結果を受け取る
+						var linedEndCursor = DoLining(linedObject);
 
-							while (cor.MoveNext()) {
-								yield return null;
-							}
+						// クリア
+						linedObject.Clear();
 
-							Debug.LogError("ここで、子供コンテナのビューが帰ってくる。どんなのが帰ってくるのを想定すればいいんだろう。");
-							/*
-								コンテナのビューは、列の規則によって並びをまとめる必要がある。
-							 */
-							var newViewCursor = cor.Current;
-
-							if (viewCursor.viewWidth < newViewCursor.offsetX + child.viewWidth) {
-								Debug.LogWarning("右端を超えたので、この項目を取り外してそれまでのラインを整列させる。 みたいなことをする。");
-								
-								// 最後の一つを削除
-								linedObject.RemoveAt(linedObject.Count - 1);
-
-								// 整列処理をし、結果を受け取る
-								var linedEndCursor = DoLining(linedObject);
-
-								// クリア
-								linedObject.Clear();
-
-								// 次の行のトップとしてこの要素を追加
-								linedObject.Add(child);
-							}
-						}
-
-						// 最終行を処理
-						if (linedObject.Any()) {
-							var lastChildCursor = DoLining(linedObject);
-						}
-
-						Debug.LogWarning("すべての子供のコンテンツの位置が定まったので、自身のサイズを調整する(ほぼ変わらないはず。)");
-						break;
+						// 次の行のトップとしてこの要素を追加
+						linedObject.Add(child);
 					}
 				}
 			}
 
-			Debug.LogWarning("最終的にviewCursorの値を調整したものを返す。");
+			// 最終行を処理
+			if (linedObject.Any()) {
+				var lastChildCursor = DoLining(linedObject);
+			}
+
+			Debug.LogWarning("すべての子供のコンテンツの位置が定まったので、自身のサイズを調整する(ほぼ変わらないはず。)");
+			
+			Debug.LogError("最終的にviewCursorの値を調整したものを返す。");
 			yield return viewCursor;
 		}
 
-		private ViewCursor DoLining (List<ParsedTree> linedChildren) {
-			// linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、最大のyを返す。
+		private float DoLining (List<ParsedTree> linedChildren) {
+			/*
+				linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、最大のyを返す。
+				整列が終わったら、それぞれのコンテンツのオフセットをいじる。サイズとかは変化しない。
+			 */
 			
 
-			Debug.LogError("仮で適当な値を返す");
-			return new ViewCursor(0,0, 0,0);
+			Debug.LogError("まだ何もしてない。仮で適当な値を返す");
+			return 0f;
 		}
 
 		/**
@@ -265,18 +379,17 @@ namespace AutoyaFramework.Information {
 			box.anchorMax = layoutParam.anchorMax;
 			box.pivot = layoutParam.pivot;
 
-			// ここで問題になりそうなのが、サイズか。この時点では仮想的に持ってるから、果たしてboxから実数的なサイズが算出できるのかしら的な。
-			// だったらprefabに入れといてそれをパラメータ的にいじった方がいいか。でも階層ごとに、その階層だけ変なことになるっていうのが待っている。
-			// 統一的に頑張るならここでprefab作ってなんかしよう。サイズを得るための設定とか
 			foreach (var child in box.GetChildren()) {
 				// ここでのコンテンツはboxの中身のコンテンツなので、必ず縦に並ぶ。列切り替えが発生しない。
 				// 幅と高さを与えるが、高さは変更されて帰ってくる可能性が高い。
+
 				// コンテンツが一切ない場合でもこの高さを維持する。
 				// コンテンツがこの高さを切ってもこの高さを維持する。
-				var cor = LayoutBoxedContent(layerViewCursor, child, box.sizeDelta);
+				var cor = LayoutBoxedContent(child, box.sizeDelta);
 				while (cor.MoveNext()) {
 					yield return null;
 				}
+
 				var resultCursor = cor.Current;
 			}
 			
@@ -285,33 +398,59 @@ namespace AutoyaFramework.Information {
 			yield return layerViewCursor;
 		}
 
-		private IEnumerator<ViewCursor> LayoutBoxedContent (ViewCursor boxViewCursor, ParsedTree child, Vector2 size) {
+		private IEnumerator<ViewCursor> LayoutBoxedContent (ParsedTree boxedContainer, Vector2 size) {
 			/*
-				boxの内容たちで、特定のタグに限られている。で、幅や高さは与えられた要素になる。
-				高さに関しては、画像か文字かで適応のし方が異なる。
+				boxの要素。表示位置が0固定されたコンテナになっている。
+				ここで、このboxedContainerの子要素を列挙する。
 
-				・文字
-					幅はもらったものを受け取り、高さは結果を使用する。
-				
-				・画像
-					幅はもらったものを使い、高さは結果を使用する。アスペクト比を見たりする。
-
+				幅が上位から決定されていて、このビューに何が入ろうと幅は変化しない。
+				高さに関しては、内容のレイアウト結果に応じて変化する。
 			 */
-			var childView = new ViewCursor(0, 0, size.x, size.y);
-			var cor = DoLayout(child, childView);
-			while (cor.MoveNext()) {
-				yield return null;
+			
+			var children = boxedContainer.GetChildren();
+			var childViewCursor = new ViewCursor(0, 0, size.x, size.y);
+
+			for (var i = 0; i < children.Count; i++) {
+				var cor = DoLayout(boxedContainer, childViewCursor, (newChild, requestNextLine) => children.Insert(i+1, newChild));
+				
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+
+				// 更新
+				childViewCursor = cor.Current;
+				
+				if (childViewCursor.offsetX + childViewCursor.viewWidth < size.x) {
+					continue;
+				}
+
+				if (childViewCursor.offsetX + childViewCursor.viewWidth <= size.x) {
+					Debug.LogError("改行して次！");
+					continue;
+				}
+
+				if (size.x < childViewCursor.offsetX + childViewCursor.viewWidth) {
+					// 長さが超えてるので、
+				}
+
+				/*
+					子はカスタムタグコンテナか、コンテナか、コンテンツ。それらのミックスが入る。なるほど。
+					幅が固定されているので、常にliningが走っている状態になる。
+
+					例えばここにくる全てのchildがcontentとかだと、ライニングは一定の規模で発生する。
+				 */
+
 			}
 
-			var childLastCursor = cor.Current;
-			
-			/*
-				ここで返されるべきなのは、子供のサイズぶん縦に広がったbox自身のビュー。
-			 */
-			yield return childLastCursor;
+			Debug.LogError("高さの合計値を計算して、元のheightとどっちが大きいか比較して返す。今は適当。");
+			yield return new ViewCursor(0, 0, size.x, size.y);
 		}
 
-		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, string text, ViewCursor cursor) {
+		/**
+			テキストコンテンツのレイアウトを行う。
+			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
+		 */
+		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, string text, ViewCursor textViewCursor, Action<ParsedTree, bool> insertion) {
 			var prefabName = textTree.prefabName;
 
 
@@ -335,114 +474,68 @@ namespace AutoyaFramework.Information {
 
 			// set content to prefab.
 			textComponent.text = text;
-			{
-				var generator = new TextGenerator();
-				Debug.LogError("viewWidth:" + cursor.viewWidth);
-				var setting = textComponent.GetGenerationSettings(new Vector2(cursor.viewWidth, 1000));
+			var generator = new TextGenerator();
+
+			
+			Debug.LogWarning("適当な高さをどうやって与えようか考え中。10000は適当。");
+			while (true) {
+				var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, 10000));
 				
 				generator.Populate(text, setting);
 
+				{
+					// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
+					var lineCount = generator.lineCount;
+					Debug.LogError("lineCount:" + lineCount);
+					Debug.LogError("width:" + textComponent.preferredWidth);// この部分が66になるのが正しいので、最終行が66で終わるのが正しい、という感じのテストを組むか。
+					// 末尾のポイントを返す
+					
+					// 0行だったら、入らなかったということなので自分が入る位置を指定して頑張る的な。
+					if (lineCount == 0 && !string.IsNullOrEmpty(textComponent.text)) {
+						Debug.LogError("文字数が1以上あるのに1文字も入らない場合、もう文字が入らないことを意味する。で、入れるために何かする。");
+						insertion(null, true);
+						yield break;
+					}
 
-				// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
-				var lineCount = generator.lineCount;
-				Debug.LogError("lineCount:" + lineCount);
-				Debug.LogError("width:" + textComponent.preferredWidth);// この部分が66になるのが正しいので、最終行が66で終わるのが正しい、という感じのテストを組むか。
-				// 末尾のポイントを返す
-				
+					// 1行以上のラインがある。
 
-				// 0行だったら、入らなかったということなので自分が入る位置を指定して頑張る的な。
-				if (lineCount == 0) {
-					// // 入らなかったので、前の行のラストの高さを+して、再計算。
-					// var newViewCursor = new ViewCursor();
-					// var nextLineCor = LayoutTextContent();
-					yield break;
+					/*
+						ここで、offsetXが0ではない場合、行の中間から行を書き出している。
+						かつ2行以上ある場合、1行目は右端まで到達していて、
+						2行目以降はoffsetが0から書かれる必要がある。
+
+						コンテンツを分離し、それを叶える。
+					 */
+					if (1 < lineCount && 0 < textViewCursor.offsetX) {
+						Debug.LogError("1行目まででコンテンツを分割する。後続のコンテンツを切り離し、insertionを走らせる。次に送るテキストの内容がまだ適当");
+						
+						var restContent = textTree.keyValueStore[Attribute._CONTENT] as string;
+
+						var nextLineContent = new ParsedTree(restContent, textTree.rawTagName, textTree.prefabName);
+						insertion(nextLineContent, false);
+						yield break;
+					}
+
+
+					Debug.LogError("1行のコンテンツか、複数行の途中から始まっていないコンテンツ");
+
+					var totalHeight = 0;
+					foreach (var line in generator.lines) {
+						totalHeight += line.height;
+					}
+
+					// 続く。
+					textTree.viewWidth = textComponent.preferredWidth;
+					textTree.viewHeight = totalHeight;
+
+					// yield return textViewCursor;// これやっていいのか疑問がある。
 				}
-
-				// 1行しかなかったら、yは変わらない。
-				
-				var totalHeight = 0;
-				foreach (var line in generator.lines) {
-					totalHeight += line.height;
-				}
-				
-				textTree.viewWidth = textComponent.preferredWidth;
-				textTree.viewHeight = totalHeight;
-
-				// var newCursor = new ViewCursor();// 次のためのoffsetとWidthを返す？
-				yield return cursor;
 
 				generator.Invalidate();
-
+				break;
 			}
+
 			textComponent.text = string.Empty;
-
-
-			// while (true) {
-			// 	// if rest text is included by one line, line collection is done.
-			// 	if (generator.lineCount == 1) {
-			// 		lines.Add(nextText);
-			// 		break;
-			// 	}
-
-			// 	// Debug.LogError("nextText:" + nextText + " generator.lines.Count:" + generator.lines.Count);
-
-			// 	// 複数行が出たので、continue, 
-
-			// 	// 折り返しが発生したところから先のtextを取得し、その前までをコンテンツとしてセットする必要がある。
-			// 	var nextTextLineInfo = generator.lines[1];
-			// 	var startIndex = nextTextLineInfo.startCharIdx;
-				
-			// 	lines.Add(nextText.Substring(0, startIndex));
-
-			// 	nextText = nextText.Substring(startIndex);
-			// 	textComponent.text = nextText;
-
-			// 	// populate again.
-			// 	generator.Invalidate();
-
-			// 	// populate splitted text again.
-			// 	generator.Populate(textComponent.text, textComponent.GetGenerationSettings(new Vector2(contentWidth, contentHeight)));
-			// 	if (generator.lineCount == 0) {
-			// 		throw new Exception("no line detected 2. nextText:" + nextText);
-			// 	}
-			// }
-			
-			// textComponent.text = lines[0];
-			// var preferredWidth = textComponent.preferredWidth;
-			
-			// if (contentWidth < preferredWidth) {
-			// 	preferredWidth = contentWidth;
-			// }
-
-			// // reset.
-			// textComponent.text = string.Empty;
-
-			// /*
-			// 	insert new line contents after this content.
-			//  */
-			// if (1 < lines.Count) {
-			// 	var newContentTexts = lines.GetRange(1, lines.Count-1);
-				
-			// 	// foreach (var s in newContentTexts) {
-			// 	// 	Debug.LogError("s:" + s);
-			// 	// }
-
-			// 	var newVGameObjects = newContentTexts.Select(
-			// 		t => new ParsedTree(
-			// 			@this,
-			// 			new AttributeKVs(){
-			// 				{Attribute._CONTENT, t}
-			// 			}
-			// 		)
-			// 	).ToArray();
-			// 	insert(newVGameObjects);
-			// }
-
-			// // Debug.LogError("preferredWidth:" + preferredWidth);
-			
-			// onCalculated(new ContentAndWidthAndHeight(lines[0], preferredWidth, generator.lines[0].height));
-
-			// yield break;
 		}
 
 
@@ -470,6 +563,14 @@ namespace AutoyaFramework.Information {
 				this.viewWidth = viewCursor.viewWidth;
 				this.viewHeight = viewCursor.viewHeight;
 			}
+
+			public ViewCursor NextLine (float lineEndHeight, float viewWidth) {
+				this.offsetX = 0;
+				this.offsetY = lineEndHeight;
+
+				this.viewWidth = viewWidth;
+				return this;
+			}
 		}
 
 
@@ -496,15 +597,6 @@ namespace AutoyaFramework.Information {
 			switch (@this.parsedTag) {
 				case (int)HtmlTag._ROOT: {
 					// do nothing.
-					break;
-				}
-				case (int)HtmlTag._DEPTH_ASSET_LIST_INFO: {
-					// var cor = infoResLoader.GetDepthAssetList(@this.keyValueStore[Attribute.SRC]);
-
-					// while (cor.MoveNext()) {
-					// 	yield return null;
-					// }
-					
 					break;
 				}
 				default: {

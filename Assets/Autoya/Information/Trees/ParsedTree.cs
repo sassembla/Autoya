@@ -35,6 +35,8 @@ namespace AutoyaFramework.Information {
         public float viewHeight;
 
 
+
+
         // layout things.
         public Vector2 anchoredPosition = Vector2.zero;        
         public Vector2 sizeDelta = Vector2.zero;
@@ -52,8 +54,19 @@ namespace AutoyaFramework.Information {
             this.parsedTag = (int)HtmlTag._ROOT;
             this.keyValueStore = new AttributeKVs();
             this.rawTagName = HtmlTag._ROOT.ToString();
-
             this.prefabName = HtmlTag._ROOT.ToString();
+            this.isContainer = true;
+        }
+
+        public ParsedTree (string textContent, string rawTagName, string prefabName) {// as text_content.
+            this.parsedTag = (int)HtmlTag._TEXT_CONTENT;
+            
+            this.keyValueStore = new AttributeKVs();
+            keyValueStore[Attribute._CONTENT] = textContent;
+            
+            this.rawTagName = rawTagName;
+            this.prefabName = prefabName;
+            this.isContainer = false;
         }
 
         public ParsedTree (int parsedTag, ParsedTree parent, AttributeKVs kv, string rawTagName) {
@@ -62,31 +75,33 @@ namespace AutoyaFramework.Information {
             this.rawTagName = rawTagName;
 
             /*
-                determine which tag should be load.
+                determine which tag should be loaded.
              */
             switch (parsedTag) {
-                // this is content of container = parent tag.
+                // this is content of container. use parnt tag for materialize.
                 case (int)HtmlTag._TEXT_CONTENT: {
                     this.prefabName = parent.rawTagName.ToUpper();
                     this.isContainer = false;
                     break;
                 }
 
-                // value tags,
+                // pure value tags,
                 case (int)HtmlTag.img:
                 case (int)HtmlTag.br:
-                case (int)HtmlTag.hr:
-
-                // and system tags are only prefab.
-                case (int)HtmlTag._ROOT:
-                case (int)HtmlTag._DEPTH_ASSET_LIST_INFO: {
+                case (int)HtmlTag.hr: {
                     this.prefabName =  rawTagName.ToUpper();
                     this.isContainer = false;
                     break;
                 }
 
+                // and root tag is container.
+                case (int)HtmlTag._ROOT: {
+                    throw new Exception("invalid root tag found.");
+                }
+
                 // other tags are container.
                 default: {
+                    Debug.LogWarning("ここで、カスタムコンテンツがここに落ちちゃうのはまずい。カスタムイメージとカスタムテキストのコンテンツをそのうち用意する。");
                     this.prefabName = rawTagName.ToUpper() + InformationConstSettings.NAME_PREFAB_CONTAINER;
                     this.isContainer = true;
                     break;

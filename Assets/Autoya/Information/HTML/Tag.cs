@@ -37,7 +37,6 @@ namespace AutoyaFramework.Information {
 		_ROOT,
 		_COMMENT,
 		_NO_TAG_FOUND,
-		_DEPTH_ASSET_LIST_INFO,
 		_IGNORED_EXCLAMATION_TAG,		
 		_TEXT_CONTENT,
         
