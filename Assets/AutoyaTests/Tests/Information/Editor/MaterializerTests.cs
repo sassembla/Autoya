@@ -36,10 +36,10 @@ namespace AutoyaFramework.Information {
 
 			// テストのために作り出したview以下のものも消す
 			var viewAssetPath = "Assets/InformationResources/Resources/Views/" + testTargetSampleObjName;
-			// if (Directory.Exists(viewAssetPath)) {
-			// 	Directory.Delete(viewAssetPath, true);
-			// 	AssetDatabase.Refresh();
-			// }
+			if (Directory.Exists(viewAssetPath)) {
+				Directory.Delete(viewAssetPath, true);
+				AssetDatabase.Refresh();
+			}
 		}
 
 		[MenuItem("/Window/TestMaterialize")] public static void RunTests () {
@@ -50,7 +50,7 @@ namespace AutoyaFramework.Information {
 			ExportedCustomTagPrefabHasZeroPos();
 			ExportedCustomTagPrefabHasLeftTopFixedAnchor();
 			ExportedCustomTagPrefabHasOriginalSize();
-			ExportedCustomTagBoxHasOriginalAnchor();
+			ExportedCustomTagNotContainedBox();
 			ExportedCustomTagChildHasZeroPos();
 		}
 
@@ -190,33 +190,17 @@ namespace AutoyaFramework.Information {
 			);
 		}
 
-		public static void ExportedCustomTagBoxHasOriginalAnchor () {
+		public static void ExportedCustomTagNotContainedBox () {
 			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
 			Run(testTargetSampleObjName,
 				() => {
-					var original = GameObject.Find("MyImgAndTextItem");
-					var originalChildlen = new List<RectTransform>();
-					foreach (Transform childTrans in original.transform) {
-						var rectTrans = childTrans.gameObject.GetComponent<RectTransform>();
-						originalChildlen.Add(rectTrans);
-					}
-					
 					Antimaterializer.Antimaterialize();
 					
 					var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
 					if (prefab != null) {
-						var childlen = new List<RectTransform>();
-						foreach (Transform childTrans in prefab.transform) {
-							var rectTrans = childTrans.gameObject.GetComponent<RectTransform>();
-							childlen.Add(rectTrans);
-						}
+						var childCount = prefab.transform.childCount;
 						
-						Debug.Assert(originalChildlen.Count == childlen.Count, "not match.");
-						for (var i = 0; i < originalChildlen.Count; i++) {
-							Debug.Assert(originalChildlen[i].anchoredPosition == childlen[i].anchoredPosition, "not match.");
-							Debug.Assert(originalChildlen[i].offsetMin == childlen[i].offsetMin, "not match.");
-							Debug.Assert(originalChildlen[i].offsetMax == childlen[i].offsetMax, "not match.");
-						}
+						Debug.Assert(childCount == 0, "not match. childCount:" + childCount);
 					}
 				}
 			);

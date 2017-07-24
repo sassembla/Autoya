@@ -81,7 +81,7 @@ namespace AutoyaFramework.Information {
 				*/
 				@this.viewWidth = viewCursor.viewWidth;
 
-				// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。prefabを作った時にすでに位置が含まれている。
+				// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。
 
 				var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
 
@@ -90,14 +90,18 @@ namespace AutoyaFramework.Information {
 				/*
 					カスタムタグだったら、prefabをロードして、原点位置は0,0、
 						サイズは親サイズ、という形で生成する。
-					カスタムタグのprefabにはboxが含まれていて、boxありのそのまま生成される。
+					
 					・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
 					・この際のchildのサイズは、必ずboxのものになる。このへんがキモかな。
 				 */
 
+				// 仮でシンクロ読み
 				var customTagPrefab = infoResLoader.LoadPrefabSync(path);
+				Debug.LogError("customTagPrefab:" + customTagPrefab);
 
-				foreach (var boxTree in @this.GetChildren()) {
+				var children = @this.GetChildren();
+				
+				foreach (var boxTree in children) {
 					var cor = LayoutBox(viewCursor, boxTree);
 
 					while (cor.MoveNext()) {

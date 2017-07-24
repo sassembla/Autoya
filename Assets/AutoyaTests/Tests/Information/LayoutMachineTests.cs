@@ -71,6 +71,31 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
     }
 
+    [MTest] public void LayoutHTMLWithMixedContent () {
+        var sample = @"
+<body>something<img src='https://somewhere' /></body>
+        ";
+        var tree = CreateCustomizedTree(sample);
+        
+        ParsedTreeCustomizerTests.ShowRecursive(tree, loader);
+
+        ParsedTree layouted = null;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                layouted = layoutedTree;
+            }
+        );
+
+        WaitUntil(
+            () => layouted != null, 5, "timeout."
+        );
+
+    }
+
 //     [MTest] public void LayoutHTMLWithCustomTag () {
 //         var sample = @"
 // <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->

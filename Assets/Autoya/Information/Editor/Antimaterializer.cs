@@ -139,30 +139,26 @@ namespace AutoyaFramework.Information {
                 }
 
                 /*
-                    boxの名前変更と中のRectTransform以外のcomponentの削除
+                    layer内のboxの削除(レイアウトの動的な伸張、変更を実行時に動的に行ないたいため、jsonにして吐き出す。実態がないほうがいい)
                 */
                 {
-                    foreach (Transform component in currentLayerInstance.transform) {
-                        var boxObject = component.gameObject;
-                        
-                        // 名前のセット(box_オブジェクト名)
-                        var boxName = layerName + "_" + boxObject.name;
-                        boxObject.name = boxName;
+                    var list = new List<GameObject>();
 
-                        // 不要なコンポーネントの削除
-                        foreach (var boxComponent in component.gameObject.GetComponents<Component>().Reverse()) {
-                            if (boxComponent is RectTransform) {
-                                continue;
-                            }
+                    for (var i = 0; i < currentLayerInstance.transform.childCount; i++) {
+                        list.Add(currentLayerInstance.transform.GetChild(i).gameObject);
+                    }
 
-                            // remove not RectTransform component.
-                            GameObject.DestroyImmediate(boxComponent);
-                        }
+                    // 取り出してから消す
+                    foreach (var childObj in list) {
+                        GameObject.DestroyImmediate(childObj);
                     }
                 }
                 
                 /*
                     layerのprefabを作成
+
+                    このprefabはレイアウトを行う前提の箱として使われる。
+                    特定の名前の要素(prefabになる前の子供ゲームオブジェクト名のタグ要素)のみをレイアウトする。
                 */
                 {
                     var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + layerName + ".prefab";
@@ -171,7 +167,7 @@ namespace AutoyaFramework.Information {
                     FileController.CreateDirectoryRecursively(dirPath);
                     PrefabUtility.CreatePrefab(prefabPath, currentLayerInstance);
 
-                    // layerの削除
+                    // layer自体の削除
                     GameObject.DestroyImmediate(currentLayerInstance);
                 }
 
