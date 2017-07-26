@@ -10,10 +10,10 @@ namespace AutoyaFramework.Information {
 	/**
 		ビューの生成を行う。
 	 */
-    public class ViewGenerator {
+    public class UUebViewGenerator {
 		private readonly Action<IEnumerator> executor;
 		private readonly InformationResourceLoader infoResLoader;
-		public ViewGenerator (
+		public UUebViewGenerator (
 			Action<IEnumerator> executor,
 			Autoya.HttpRequestHeaderDelegate requestHeader=null,
 			Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null

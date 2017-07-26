@@ -26,10 +26,6 @@ namespace AutoyaFramework.Information {
         public readonly bool isContainer;
 
 
-
-
-
-
         // 新規レイアウト処理
 
         public float offsetX;
@@ -50,20 +46,6 @@ namespace AutoyaFramework.Information {
             this.viewWidth = source.viewWidth;
             this.viewHeight = source.viewHeight;
         }
-
-
-
-        // layout things.
-        public Vector2 anchoredPosition = Vector2.zero;        
-        public Vector2 sizeDelta = Vector2.zero;
-        public Vector2 offsetMin = Vector2.zero;
-        public Vector2 offsetMax = Vector2.zero;
-        public Vector2 anchorMin = Vector2.zero;
-        public Vector2 anchorMax = Vector2.zero;
-        public Vector2 pivot = Vector2.zero;
-
-        public Padding padding = new Padding();
-
 
 
         public ParsedTree () {
@@ -156,9 +138,6 @@ namespace AutoyaFramework.Information {
             return _children[_children.FindIndex(c => c.parsedTag == parsedTag)];
         }
 
-        public void SetChildren (List<ParsedTree> children) {
-            this._children = children;
-        }
 
         public void AddChild (ParsedTree child) {
             this._children.Add(child);

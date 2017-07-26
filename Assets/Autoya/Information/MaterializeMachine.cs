@@ -73,11 +73,12 @@ namespace AutoyaFramework.Information {
 						yield break;
 					}
 
-					// set position. convert layout position to uGUI position system.
-					rectTrans.anchoredPosition = new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
+					Debug.LogError("まだマテリアライズ封印中。");
+					// // set position. convert layout position to uGUI position system.
+					// rectTrans.anchoredPosition = new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
 					
-					// use content size for display contents.
-					rectTrans.sizeDelta = currentTree.sizeDelta;
+					// // use content size for display contents.
+					// rectTrans.sizeDelta = currentTree.sizeDelta;
 					break;
 				}
 			}

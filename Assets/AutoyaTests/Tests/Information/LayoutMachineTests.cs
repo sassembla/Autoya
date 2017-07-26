@@ -51,7 +51,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 <body>something</body>";
         var tree = CreateCustomizedTree(sample);
         
-        ParsedTreeCustomizerTests.ShowRecursive(tree, loader);
+        
 
         ParsedTree layouted = null;
         var layoutMachine = new LayoutMachine(
@@ -70,13 +70,237 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
     }
 
+    [MTest] public void LayoutHTMLHasValidView () {
+        var sample = @"
+<body>something</body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 16, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+
+    }
+
+    [MTest] public void LayoutHTMLWithSmallTextHasValidView () {
+        var sample = @"
+<body>over 100px string should be multi lined text with good separation. need some length.</body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 112, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+        
+    }
+
+    [MTest] public void LayoutHTMLWithImage () {
+        var sample = @"
+<body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 100, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+    }
+
+    [MTest] public void LayoutHTMLWithSmallImage () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/></body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 10, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+
+    }
+
+    [MTest] public void LayoutHTMLWithSmallImageAndText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>text</body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 16, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+    }
+
+    [MTest] public void LayoutHTMLWithSmallImageAndSmallText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 112, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+    }
+
+    [MTest] public void LayoutHTMLWithWideImageAndText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                ShowLayoutRecursive(layoutedTree);
+                done = true;
+                Assert(layoutedTree.viewHeight == 26, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+    }
+    [MTest] public void LayoutHTMLWithTextAndWideImage () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/100x10/000/fff'/></body>";
+        var tree = CreateCustomizedTree(sample);
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                ShowLayoutRecursive(layoutedTree);
+                done = true;
+                Assert(layoutedTree.viewHeight == 16, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+    }
+
+
+    [MTest] public void LayoutHTMLWithTextAndWideImageAndText () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/100x10/000/fff'/>else</body>";
+        var tree = CreateCustomizedTree(sample);
+        
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            tree, 
+            loader, 
+            new ViewBox(100,100,0), 
+            Autoya.Mainthread_Commit, 
+            layoutedTree => {
+                ShowLayoutRecursive(layoutedTree);
+                done = true;
+                Assert(layoutedTree.viewHeight == 16+16, "not match.");
+            }
+        );
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+    }
+
+    // image + textで、テキストが折り返す/折り返さない
+    /*
+        イメージとテキストで、行中からの別コンテンツと、高さの違うコンテンツに関してのテストが書ける。
+    
+     */
+
 //     [MTest] public void LayoutHTMLWithMixedContent () {
 //         var sample = @"
 // <body>something<img src='https://somewhere' /></body>
 //         ";
 //         var tree = CreateCustomizedTree(sample);
         
-//         ParsedTreeCustomizerTests.ShowRecursive(tree, loader);
+//         
 
 //         ParsedTree layouted = null;
 //         var layoutMachine = new LayoutMachine(
@@ -121,4 +345,10 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 //         ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
 //     }
 
+    private void ShowLayoutRecursive (ParsedTree tree) {
+        Debug.Log("tree:" + tree.prefabName + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+        foreach (var child in tree.GetChildren()) {
+            ShowLayoutRecursive(child);
+        }
+    }
 }
