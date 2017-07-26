@@ -132,9 +132,14 @@ namespace AutoyaFramework.Information {
 					を埋めていく。
 			 */
 			var cor = DoLayout(@this, viewCursor);
+			
 			while (cor.MoveNext()) {
 				yield return null;
 			}
+
+			viewCursor = cor.Current;
+			// ここでviewHeightが出せる。
+			Debug.LogError("root result viewCursor:" + viewCursor);
 
 			layouted(@this);
 
@@ -313,6 +318,10 @@ namespace AutoyaFramework.Information {
 			var containerChildren = @this.GetChildren();
 			var childCount = containerChildren.Count;
 			
+			if (childCount == 0) {
+				yield break;
+			}
+
 			for (var i = 0; i < childCount; i++) {
 				var child = containerChildren[i];
 				
@@ -405,8 +414,12 @@ namespace AutoyaFramework.Information {
 				// ここでは高さを取得、使用しない。
 				DoLining(linedObject);
 			}
-			Debug.LogError("after container layout:" + viewCursor);
-			yield return ViewCursor.Wrap(viewCursor, containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight);
+
+			viewCursor = ViewCursor.Wrap(viewCursor, containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight);
+			
+			// 自分自身のサイズを再規定
+			@this.SetPosFromViewCursor(viewCursor);
+			yield return viewCursor;
 		}
 
 		/**

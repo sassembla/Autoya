@@ -44,6 +44,13 @@ namespace AutoyaFramework.Information {
             return new ViewCursor(offsetX, offsetY, viewWidth, viewHeight);
         }
 
+        public void SetPosFromViewCursor (ViewCursor source) {
+            this.offsetX = source.offsetX;
+            this.offsetY = source.offsetY;
+            this.viewWidth = source.viewWidth;
+            this.viewHeight = source.viewHeight;
+        }
+
 
 
         // layout things.
