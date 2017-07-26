@@ -8,6 +8,69 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
 
+
+	public class ViewCursor {
+		public float offsetX;
+		public float offsetY;
+		public float viewWidth;
+		public float viewHeight;
+		
+		public ViewCursor (float offsetX, float offsetY, float viewWidth, float viewHeight) {
+			this.offsetX = offsetX;
+			this.offsetY = offsetY;
+			this.viewWidth = viewWidth;
+			this.viewHeight = viewHeight;
+		}
+
+		public ViewCursor (ViewCursor viewCursor) {
+			this.offsetX = viewCursor.offsetX;
+			this.offsetY = viewCursor.offsetX;
+			this.viewWidth = viewCursor.viewWidth;
+			this.viewHeight = viewCursor.viewHeight;
+		}
+
+		/**
+			次の行の起点となるviewCursorを返す
+		 */
+		public static ViewCursor NextLine (ViewCursor baseCursor, float lineEndHeight, float viewWidth) {
+			baseCursor.offsetX = 0;
+			baseCursor.offsetY = lineEndHeight;
+
+			baseCursor.viewWidth = viewWidth;
+			return baseCursor;
+		}
+
+		/**
+			次の要素の起点となるviewCursorを返す
+		 */
+        public static ViewCursor Update(ViewCursor childView, ViewCursor viewCursor){
+			// オフセットを直前のオフセット + 幅のポイントにずらす。
+            childView.offsetX = childView.offsetX + childView.viewWidth;
+
+			// コンテンツが取り得る幅を、大元の幅 - 現在のオフセットから計算。
+			childView.viewWidth = viewCursor.viewWidth - childView.offsetX;
+
+			// offsetYは変わらず、高さに関しては特に厳密な計算をしない。
+			childView.viewHeight = viewCursor.viewHeight;
+			return childView;
+        }
+
+		/**
+			sourceのwidthを使い、
+			lastChildのあるポイントからの最大高さを返す。
+		 */
+		public static ViewCursor Wrap(ViewCursor source, float lastChildEndY){
+			Debug.LogError("lastChildEndY:" + lastChildEndY);
+			source.viewHeight = lastChildEndY;
+			return source;
+		}
+
+		override public string ToString () {
+			return "offsetX:" + offsetX + " offsetY:" + offsetY + " viewWidth:" + viewWidth + " viewHeight:" + viewHeight;
+		}
+    }	
+
+
     /**
         レイアウトを実行するクラス。
     */
@@ -29,6 +92,12 @@ namespace AutoyaFramework.Information {
 			executor(StartLayout2(@this, layouted));
         }
 
+		private enum InsertType {
+			Continue,
+			InsertContentToNextLine,
+			RetryWithNextLine,
+		};
+
 		private IEnumerator StartLayout2 (ParsedTree @this, Action<ParsedTree> layouted) {
 			/*
 				えーっと、やらなければいけないこと全部盛りだと、
@@ -44,6 +113,7 @@ namespace AutoyaFramework.Information {
 			
 			 */
 			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
+			Debug.LogError("root:" + viewCursor);
 			/*
 			        public readonly int parsedTag;
 					public readonly string rawTagName;
@@ -71,7 +141,7 @@ namespace AutoyaFramework.Information {
 			yield break;
 		}
 
-		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<ParsedTree, bool> insertion=null) {
+		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 
 			// カスタムタグかどうかで分岐
 			if (infoResLoader.IsCustomTag(@this.parsedTag)) {
@@ -88,16 +158,14 @@ namespace AutoyaFramework.Information {
 					yield return null;
 				}
 
-				Debug.LogError("コンテナの計算結果を返す");
-				yield return viewCursor;
+				yield return cor.Current;
 			} else {
 				var cor = DoContentLayout(@this, viewCursor, insertion);
 				while (cor.MoveNext()) {
 					yield return null;
 				}
 
-				Debug.LogError("コンテンツの計算結果を返す");
-				yield return viewCursor;
+				yield return cor.Current;
 			}
 		}
 		
@@ -145,9 +213,9 @@ namespace AutoyaFramework.Information {
 
 			yield return viewCursor;
 		}
+		
 
-
-		private IEnumerator<ViewCursor> DoContentLayout (ParsedTree @this, ViewCursor viewCursor, Action<ParsedTree, bool> insertion=null) {
+		private IEnumerator<ViewCursor> DoContentLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 			// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
 			// 自動的にコンテナがくることがあり得る。まあしょうがない。
 			// で。その分解はparserで済んでると思う。
@@ -161,6 +229,7 @@ namespace AutoyaFramework.Information {
 
 			// んで、prefabの名前はあってると思う。
 			
+			var contentViewCursor = viewCursor;
 			switch (@this.parsedTag) {
 				case (int)HtmlTag._TEXT_CONTENT: {
 					// こいつ自身がテキストコンテンツの場合、ここでタグの内容のサイズを推し量って返してOKになる。
@@ -170,9 +239,8 @@ namespace AutoyaFramework.Information {
 					while (cor.MoveNext()) {
 						yield return null;
 					}
-					
-					var result = cor.Current;
-					// viewCursorを書き換える
+					Debug.LogError("この時点でのviewが:" + cor.Current);
+					contentViewCursor = cor.Current;
 					break;
 				}
 				case (int)HtmlTag.img: {
@@ -210,7 +278,7 @@ namespace AutoyaFramework.Information {
 					if (viewCursor.viewHeight < imageHeight) {
 						viewCursor.viewHeight = imageHeight;
 					}
-
+					Debug.LogError("まだ画像のviewCursorを反映してない");
 					break;
 				}
 				default: {
@@ -218,12 +286,12 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 			}
-
-			Debug.LogError("最終的にviewCursorの値を調整したものを返す。");
-			yield return viewCursor;
+			
+			yield return contentViewCursor;
 		}
 
 		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
+			Debug.LogError("before container layout:" + viewCursor);
 			/*
 				このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
 			*/
@@ -231,8 +299,6 @@ namespace AutoyaFramework.Information {
 			Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName);
 
 			// んで、prefabの名前はあってると思う。
-			
-			
 			// CONTENTではないので、CONTAINER。
 
 			/*
@@ -241,31 +307,35 @@ namespace AutoyaFramework.Information {
 
 				初期カーソルは親と同じ。
 			*/
-			var childView = viewCursor;
+			var childView = new ViewCursor(viewCursor);
 			var linedObject = new List<ParsedTree>();
 			
 			var containerChildren = @this.GetChildren();
 			var childCount = containerChildren.Count;
-			var currentRequestNextLine = false;
+			
 			for (var i = 0; i < childCount; i++) {
 				var child = containerChildren[i];
-				linedObject.Add(child);
 				
 				currentLineRetry: {
+					linedObject.Add(child);
+
+					// set insertion type.
+					var currentInsertType = InsertType.Continue;
+
 					// 子供ごとにレイアウトし、結果を受け取る
 					var cor = DoLayout(
 						child, 
 						childView, 
-						(newChild, requestNextLine) => {
+						(insertType, newChild) => {
+							currentInsertType = insertType;
 
-							if (requestNextLine) {
-								// 現在レイアウト中のコンテンツから改行要請が来たので、コンテンツを改行する = viewCursorの位置を行頭に持っていく。
-								currentRequestNextLine = requestNextLine;
-								return;
+							switch (insertType) {
+								case InsertType.InsertContentToNextLine: {
+									// 次に処理するコンテンツを差し込む。
+									containerChildren.Insert(i+1, newChild);
+									break;
+								}
 							}
-
-							// 次に処理するコンテンツを差し込む。
-							containerChildren.Insert(i+1, newChild);
 						}
 					);
 
@@ -273,86 +343,94 @@ namespace AutoyaFramework.Information {
 						yield return null;
 					}
 
-					// ここまでは、開始時のoffsetとsizeを保持している。
+					switch (currentInsertType) {
+						case InsertType.RetryWithNextLine: {
+							Debug.LogError("テキストコンテンツが0行を叩き出したので、このコンテンツ自体をもう一度レイアウトする。");
+							
+							// 最後の一つ=この処理の開始時にいれていたものを削除
+							linedObject.RemoveAt(linedObject.Count - 1);
 
-					if (currentRequestNextLine) {
-						Debug.LogError("テキストコンテンツが0行を叩き出したので、このコンテンツ自体をもう一度レイアウトする。");
-						Debug.LogError("ここでライニングが発生する。");
-						
+							// 含まれているものの整列処理をし、列の高さを受け取る
+							var newLineOffsetY = DoLining(linedObject);
 
-						// 最後の一つを削除
-						linedObject.RemoveAt(linedObject.Count - 1);
+							// 整列と高さ取得が完了したのでリセット
+							linedObject.Clear();
 
-						// 整列処理をし、結果を受け取る
-						var lineHeight = DoLining(linedObject);
+							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+							childView = ViewCursor.NextLine(childView, newLineOffsetY, viewCursor.viewWidth);
 
-						// クリア
-						linedObject.Clear();
+							// もう一度この行を処理する。
+							goto currentLineRetry;
+						}
+						case InsertType.InsertContentToNextLine: {
+							// ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。
+							var newLineOffsetY = DoLining(linedObject);
 
-						// 次の行のトップとして、現在の要素を追加
-						linedObject.Add(child);
+							// 整列と高さ取得が完了したのでリセット
+							linedObject.Clear();
 
-						// リセット
-						currentRequestNextLine = false;
-
-						// childViewには、この行の開始時のoffsetYが残っている。
-						// lineHeightには先ほど締め切ったラインの高さがあるので、その値を足すと、次の行のoffsetになる。
-						var currentHeight = childView.offsetY + lineHeight;
-
-						// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
-						childView = childView.NextLine(currentHeight, viewCursor.viewWidth);
-
-						// もう一度処理する。
-						goto currentLineRetry;
+							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+							childView = ViewCursor.NextLine(childView, newLineOffsetY, viewCursor.viewWidth);
+							continue;
+						}
 					}
 
 					// レイアウトが済んだchildの位置を受け取る。
-					childView = cor.Current;
-					
-					/*
-						レイアウト結果がどこからくるかというと、
-						子供が増えるという可能性があって、(textContentが分裂して帰ってくる)
-						その可能性を加味してやらんといかんのか。なるほど。
-						*/
-					
-					if (viewCursor.viewWidth < childView.offsetX + childView.viewWidth) {
-						Debug.LogWarning("ちょうどこのコンテンツを書いた時に右端を超えたので、この項目を取り外してそれまでのラインを整列させる。 みたいなことをする。");
-						
-						// 最後の一つを削除
+					var currentChildView = cor.Current;
+					Debug.LogError("currentChildView:" + currentChildView);
+					if (viewCursor.viewWidth < currentChildView.offsetX + currentChildView.viewWidth) {
+						// 最後の一つ = 現在のコンテンツを列から削除
 						linedObject.RemoveAt(linedObject.Count - 1);
 
 						// 整列処理をし、結果を受け取る
-						var linedEndCursor = DoLining(linedObject);
+						var newLineOffsetY = DoLining(linedObject);
 
-						// クリア
+						// 整列と高さ取得が完了したのでリセット
 						linedObject.Clear();
 
-						// 次の行のトップとしてこの要素を追加
-						linedObject.Add(child);
+						// ちょうどこのラインの処理が終わった時に右端の限界を超えたので、このコンテンツの位置を新しい行の行頭にずらす。
+						childView = child.SetPos(0, newLineOffsetY, currentChildView.viewWidth, currentChildView.viewHeight);
+					} else {
+						// 無事枠内に入っているので、childViewを子供の最新のchildViewに更新。
+						childView = currentChildView;
 					}
+
+					// 次のchildの開始ポイントをセットする。
+					childView = ViewCursor.Update(childView, viewCursor);
 				}
 			}
 
-			// 最終行を処理
+			// 最後の列はそのまま1列扱いになるので、整列。
 			if (linedObject.Any()) {
-				var lastChildCursor = DoLining(linedObject);
+				// ここでは高さを取得、使用しない。
+				DoLining(linedObject);
 			}
-
-			Debug.LogWarning("すべての子供のコンテンツの位置が定まったので、自身のサイズを調整する(ほぼ変わらないはず。)");
-			
-			Debug.LogError("最終的にviewCursorの値を調整したものを返す。");
-			yield return viewCursor;
+			Debug.LogError("after container layout:" + viewCursor);
+			yield return ViewCursor.Wrap(viewCursor, containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight);
 		}
 
+		/**
+			linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、最大のyを返す。
+			整列が終わったら、それぞれのコンテンツのオフセットをいじる。サイズとかは変化しない。
+		*/
 		private float DoLining (List<ParsedTree> linedChildren) {
-			/*
-				linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、最大のyを返す。
-				整列が終わったら、それぞれのコンテンツのオフセットをいじる。サイズとかは変化しない。
-			 */
-			
+			var tallestHeight = 0f;
 
-			Debug.LogError("まだ何もしてない。仮で適当な値を返す");
-			return 0f;
+			for (var i = 0; i < linedChildren.Count; i++) {
+				var child = linedChildren[i];
+				if (tallestHeight < child.viewHeight) {
+					tallestHeight = child.viewHeight;
+				}
+			}
+			
+			// 高さを位置として反映させる。
+			for (var i = 0; i < linedChildren.Count; i++) {
+				var child = linedChildren[i];
+				var diff = tallestHeight - child.viewHeight;
+				child.offsetY = child.offsetY + diff;
+			}
+
+			return linedChildren[0].offsetY + tallestHeight;
 		}
 
 		/**
@@ -411,7 +489,14 @@ namespace AutoyaFramework.Information {
 			var childViewCursor = new ViewCursor(0, 0, size.x, size.y);
 
 			for (var i = 0; i < children.Count; i++) {
-				var cor = DoLayout(boxedContainer, childViewCursor, (newChild, requestNextLine) => children.Insert(i+1, newChild));
+				var cor = DoLayout(
+					boxedContainer, 
+					childViewCursor, 
+					(type, newChild) => {
+						Debug.LogError("type:" + type);
+						children.Insert(i + 1, newChild);
+					}
+				);
 				
 				while (cor.MoveNext()) {
 					yield return null;
@@ -450,7 +535,7 @@ namespace AutoyaFramework.Information {
 			テキストコンテンツのレイアウトを行う。
 			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
 		 */
-		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, string text, ViewCursor textViewCursor, Action<ParsedTree, bool> insertion) {
+		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, string text, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
 			var prefabName = textTree.prefabName;
 
 
@@ -472,72 +557,123 @@ namespace AutoyaFramework.Information {
 				throw new Exception("font is null. prefab:" + prefabName);
 			}
 
-			// set content to prefab.
-			textComponent.text = text;
-			var generator = new TextGenerator();
-
-			
 			Debug.LogWarning("適当な高さをどうやって与えようか考え中。10000は適当。");
-			while (true) {
-				var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, 10000));
+			
+			// set content to prefab.
+			
+			var generator = new TextGenerator();
+			
+			textComponent.text = text;
+			var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, 10000));
+			generator.Populate(text, setting);
+
+			using (new Lock(textComponent, generator)) {
+				// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
+				var lineCount = generator.lineCount;
+				Debug.LogError("lineCount:" + lineCount);
+				Debug.LogError("width:" + textComponent.preferredWidth);// この部分が66になるのが正しいので、最終行が66で終わるのが正しい、という感じのテストを組むか。
 				
-				generator.Populate(text, setting);
-
-				{
-					// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
-					var lineCount = generator.lineCount;
-					Debug.LogError("lineCount:" + lineCount);
-					Debug.LogError("width:" + textComponent.preferredWidth);// この部分が66になるのが正しいので、最終行が66で終わるのが正しい、という感じのテストを組むか。
-					// 末尾のポイントを返す
-					
-					// 0行だったら、入らなかったということなので自分が入る位置を指定して頑張る的な。
-					if (lineCount == 0 && !string.IsNullOrEmpty(textComponent.text)) {
-						Debug.LogError("文字数が1以上あるのに1文字も入らない場合、もう文字が入らないことを意味する。で、入れるために何かする。");
-						insertion(null, true);
-						yield break;
-					}
-
-					// 1行以上のラインがある。
-
-					/*
-						ここで、offsetXが0ではない場合、行の中間から行を書き出している。
-						かつ2行以上ある場合、1行目は右端まで到達していて、
-						2行目以降はoffsetが0から書かれる必要がある。
-
-						コンテンツを分離し、それを叶える。
-					 */
-					if (1 < lineCount && 0 < textViewCursor.offsetX) {
-						Debug.LogError("1行目まででコンテンツを分割する。後続のコンテンツを切り離し、insertionを走らせる。次に送るテキストの内容がまだ適当");
-						
-						var restContent = textTree.keyValueStore[Attribute._CONTENT] as string;
-
-						var nextLineContent = new ParsedTree(restContent, textTree.rawTagName, textTree.prefabName);
-						insertion(nextLineContent, false);
-						yield break;
-					}
-
-
-					Debug.LogError("1行のコンテンツか、複数行の途中から始まっていないコンテンツ");
-
-					var totalHeight = 0;
-					foreach (var line in generator.lines) {
-						totalHeight += line.height;
-					}
-
-					// 続く。
-					textTree.viewWidth = textComponent.preferredWidth;
-					textTree.viewHeight = totalHeight;
-
-					// yield return textViewCursor;// これやっていいのか疑問がある。
+				// 0行だったら、入らなかったということなので、改行をしてもらってリトライを行う。
+				if (lineCount == 0 && !string.IsNullOrEmpty(textComponent.text)) {
+					insertion(InsertType.RetryWithNextLine, null);
+					yield break;
 				}
 
-				generator.Invalidate();
-				break;
-			}
+				// 1行以上のラインがある。
 
-			textComponent.text = string.Empty;
+				/*
+					ここで、offsetXが0ではない場合、行の中間から行を書き出している。
+					かつ2行以上ある場合、1行目は右端まで到達していて、
+					2行目以降はoffsetが0から書かれる必要がある。
+
+					コンテンツを分離し、それを叶える。
+				*/
+				var isStartAtZeroOffset = textViewCursor.offsetX == 0;
+				var isMultilined = 1 < lineCount;
+
+				if (isStartAtZeroOffset) {
+					if (isMultilined) {
+						// 複数行が頭から出ている状態で、改行を含んでいる。最終行が中途半端なところにあるのが確定しているので、切り離して別コンテンツとして処理する必要がある。
+						var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
+
+						// 最終行
+						var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
+
+						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
+						var nextLineContent = new ParsedTree(lastLineContent, textTree.rawTagName, textTree.prefabName);
+						insertion(InsertType.InsertContentToNextLine, nextLineContent);
+
+						// 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
+
+						// 最終一つ前までの高さを出して、
+						var totalHeight = 0;
+						for (var i = 0; i < generator.lineCount-1; i++) {
+							var line = generator.lines[i];
+							totalHeight += line.height;
+						}
+
+						// このビューのポジションとしてセット
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, totalHeight);
+						yield return newViewCursor;
+					} else {
+						// 行頭の単一行
+						var width = textComponent.preferredWidth;
+						var height = generator.lines[0].height;
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+						yield return newViewCursor;
+					}
+				} else {
+					if (isMultilined) {
+						// 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
+						var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
+						textTree.keyValueStore[Attribute._CONTENT] = currentLineContent;
+
+						var restContent = text.Substring(generator.lines[1].startCharIdx);
+						var nextLineContent = new ParsedTree(restContent, textTree.rawTagName, textTree.prefabName);
+
+						// 次のコンテンツを新しい行から開始する。
+						insertion(InsertType.InsertContentToNextLine, nextLineContent);
+
+						var width = textComponent.preferredWidth;
+						var height = generator.lines[0].height;
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+						yield return newViewCursor;
+					} else {
+						// 行の途中に追加された単一行で、いい感じに入った。
+						var width = textComponent.preferredWidth;
+						var height = generator.lines[0].height;
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+						yield return newViewCursor;
+					}
+				}
+			}
 		}
 
+		private class Lock : IDisposable {
+            private Text textComponent;
+			private TextGenerator gen;
+            public Lock (Text textComponent, TextGenerator gen) {
+                this.textComponent = textComponent;
+				this.gen = gen;
+            }
+
+            private bool disposedValue = false;
+
+            protected virtual void Dispose (bool disposing) {
+                if (!disposedValue) {
+                    if (disposing) {
+                        // dispose.
+						textComponent.text = string.Empty;
+						gen.Invalidate();
+                    }
+                    disposedValue = true;
+                }
+            }
+
+            void IDisposable.Dispose () {
+                Dispose(true);
+            }
+        }
 
 
 
@@ -545,33 +681,7 @@ namespace AutoyaFramework.Information {
 
 
 
-		private class ViewCursor {// structに変えたほうがいい気がするがyieldで返したい。空を返すのも勿体無い？
-			public float offsetX;
-			public float offsetY;
-			public float viewWidth;
-			public float viewHeight;
-			public ViewCursor (float offsetX, float offsetY, float viewWidth, float viewHeight) {
-				this.offsetX = offsetX;
-				this.offsetY = offsetY;
-				this.viewWidth = viewWidth;
-				this.viewHeight = viewHeight;
-			}
-
-			public ViewCursor (ViewCursor viewCursor) {
-				this.offsetX = viewCursor.offsetX;
-				this.offsetY = viewCursor.offsetX;
-				this.viewWidth = viewCursor.viewWidth;
-				this.viewHeight = viewCursor.viewHeight;
-			}
-
-			public ViewCursor NextLine (float lineEndHeight, float viewWidth) {
-				this.offsetX = 0;
-				this.offsetY = lineEndHeight;
-
-				this.viewWidth = viewWidth;
-				return this;
-			}
-		}
+		
 
 
 

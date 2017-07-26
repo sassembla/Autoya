@@ -31,9 +31,18 @@ namespace AutoyaFramework.Information {
 
 
         // 新規レイアウト処理
+
+        public float offsetX;
+        public float offsetY;
         public float viewWidth;
         public float viewHeight;
-
+        public ViewCursor SetPos (float offsetX, float offsetY, float viewWidth, float viewHeight) {
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.viewWidth = viewWidth;
+            this.viewHeight = viewHeight;
+            return new ViewCursor(offsetX, offsetY, viewWidth, viewHeight);
+        }
 
 
 

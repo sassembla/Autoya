@@ -48,8 +48,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
     [MTest] public void LayoutHTML () {
         var sample = @"
-<body>something</body>
-        ";
+<body>something</body>";
         var tree = CreateCustomizedTree(sample);
         
         ParsedTreeCustomizerTests.ShowRecursive(tree, loader);
