@@ -37,13 +37,15 @@ namespace AutoyaFramework.Information {
 			baseCursor.offsetY = nextLineOffsetY;
 
 			baseCursor.viewWidth = viewWidth;
+			// 次の行の高さに関しては特に厳密な計算をしない。
+			baseCursor.viewHeight = 0;
 			return baseCursor;
 		}
 
 		/**
 			次の要素の起点となるviewCursorを返す
 		 */
-        public static ViewCursor GetNextCursor(ViewCursor childView, float viewWidth){
+        public static ViewCursor NextRightCursor(ViewCursor childView, float viewWidth){
 
 			// 横並べ処理。
 
@@ -310,7 +312,6 @@ namespace AutoyaFramework.Information {
 			Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName);
 
 			// んで、prefabの名前はあってると思う。
-			// CONTENTではないので、CONTAINER。
 
 			/*
 				子供のタグを整列させる処理。
@@ -380,7 +381,7 @@ namespace AutoyaFramework.Information {
 						}
 						case InsertType.InsertContentToNextLine: {
 							// Debug.LogError("ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。");
-							
+
 							// ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。
 							var newLineOffsetY = DoLining(linedElements);
 
@@ -401,8 +402,10 @@ namespace AutoyaFramework.Information {
 					var layoutedChildView = cor.Current;
 					// Debug.LogError("layoutedChildView:" + layoutedChildView);
 					
-					// レイアウト直後に幅を超えている場合、ライニングを行う。
-					if (viewCursor.viewWidth <= layoutedChildView.offsetX + layoutedChildView.viewWidth) {
+					var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, viewCursor.viewWidth);
+
+					// レイアウト直後に次のポイントの開始位置が幅を超えている場合、現行の行のライニングを行う。
+					if (viewCursor.viewWidth <= nextChildViewCursor.offsetX) {
 						// ライニング
 						var nextLineOffsetY = DoLining(linedElements);
 
@@ -413,10 +416,10 @@ namespace AutoyaFramework.Information {
 						childView = ViewCursor.NextLine(childView, nextLineOffsetY, viewCursor.viewWidth);
 					} else {
 						// 次のchildの開始ポイントを現在のchildの右にセット
-						childView = ViewCursor.GetNextCursor(layoutedChildView, viewCursor.viewWidth);
+						childView = nextChildViewCursor;
 					}
 
-					Debug.LogError("next childView:" + childView);
+					Debug.LogError("child:" + child.prefabName + " done, next childView:" + childView);
 				}
 
 				// 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
