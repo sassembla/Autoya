@@ -272,7 +272,7 @@ namespace AutoyaFramework.Information {
 							if (viewCursor.viewWidth < imageWidth) {
 								imageWidth = viewCursor.viewWidth;
 							}
-
+							
 							imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
 							downloaded = true;
 						},
@@ -390,6 +390,7 @@ namespace AutoyaFramework.Information {
 
 							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
 							childView = ViewCursor.NextLine(childView, newLineOffsetY, viewCursor.viewWidth);
+							Debug.LogError("child:" + child.prefabName + " done," + child.ShowContent() + " next childView:" + childView);
 							continue;
 						}
 					}
@@ -419,7 +420,7 @@ namespace AutoyaFramework.Information {
 						childView = nextChildViewCursor;
 					}
 
-					Debug.LogError("child:" + child.prefabName + " done, next childView:" + childView);
+					Debug.LogError("child:" + child.prefabName + " done," + child.ShowContent() + " next childView:" + childView);
 				}
 
 				// 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
@@ -432,7 +433,7 @@ namespace AutoyaFramework.Information {
 			}
 			
 			var lastChildEndY = containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight;
-			Debug.Log("lastChildEndY:" + lastChildEndY + " これが更新されない場合、レイアウトされたパーツにサイズが入ってない。");
+			// Debug.Log("lastChildEndY:" + lastChildEndY + " これが更新されない場合、レイアウトされたパーツにサイズが入ってない。");
 			viewCursor = ViewCursor.Wrap(viewCursor, lastChildEndY);
 			
 			// 自分自身のサイズを再規定
@@ -607,8 +608,8 @@ namespace AutoyaFramework.Information {
 			using (new Lock(textComponent, generator)) {
 				// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
 				var lineCount = generator.lineCount;
-				Debug.LogError("lineCount:" + lineCount);
-				Debug.LogError("default preferred width:" + textComponent.preferredWidth);
+				// Debug.LogError("lineCount:" + lineCount);
+				// Debug.LogError("default preferred width:" + textComponent.preferredWidth);
 				
 				// 0行だったら、入らなかったということなので、改行をしてもらってリトライを行う。
 				if (lineCount == 0 && !string.IsNullOrEmpty(textComponent.text)) {
@@ -639,12 +640,13 @@ namespace AutoyaFramework.Information {
 						// 複数行が頭から出ている状態で、改行を含んでいる。最終行が中途半端なところにあるのが確定しているので、切り離して別コンテンツとして処理する必要がある。
 						var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
 						
-						Debug.LogError("bodyContent:" + bodyContent);
+						// 内容の反映
+						textTree.keyValueStore[Attribute._CONTENT] = bodyContent;
 
 						// 最終行
 						var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
 
-						Debug.LogError("lastLineContent:" + lastLineContent);
+						// Debug.LogError("lastLineContent:" + lastLineContent);
 						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
 						var nextLineContent = new ParsedTree(lastLineContent, textTree.rawTagName, textTree.prefabName);
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
@@ -660,7 +662,7 @@ namespace AutoyaFramework.Information {
 
 						// このビューのポジションとしてセット
 						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
-						Debug.LogError("newViewCursor:" + newViewCursor);
+						// Debug.LogError("newViewCursor:" + newViewCursor);
 						yield return newViewCursor;
 					} else {
 						// 行頭の単一行
@@ -671,7 +673,7 @@ namespace AutoyaFramework.Information {
 					}
 				} else {
 					if (isMultilined) {
-						Debug.LogError("行中での折り返しのある文字ヒット");
+						// Debug.LogError("行中での折り返しのある文字ヒット");
 						var currentLineHeight = generator.lines[0].height;
 
 						// 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
@@ -690,7 +692,7 @@ namespace AutoyaFramework.Information {
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
 						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
-						Debug.LogError("newViewCursor:" + newViewCursor);
+						// Debug.LogError("newViewCursor:" + newViewCursor);
 						yield return newViewCursor;
 					} else {
 						// 行の途中に追加された単一行で、いい感じに入った。

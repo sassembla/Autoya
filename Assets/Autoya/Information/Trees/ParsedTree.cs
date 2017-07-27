@@ -156,5 +156,18 @@ namespace AutoyaFramework.Information {
             this._children.RemoveAt(index);
             this._children.Insert(index, newTree);
         }
+
+        public string ShowContent() {
+            if (isContainer) return "\"container.\"";
+
+            switch (prefabName) {
+                case "IMG": {
+                    return "\"img.\"";
+                }
+                default: {
+                    return "\"" + (keyValueStore[Attribute._CONTENT] as string) + "\"";
+                }
+            }
+        }
     }
 }
