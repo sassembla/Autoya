@@ -60,6 +60,10 @@ namespace AutoyaFramework.Information {
             this.anchorMin = rect.anchorMin;
             this.anchorMax = rect.anchorMax;
         }
+        
+        override public string ToString () {
+            return "anchoredPosition:" + this.anchoredPosition + " sizeDelta:" + this.sizeDelta + " offsetMin:" + this.offsetMin + " offsetMax:" + this.offsetMax + " pivot:" +this.pivot + " anchorMin:" + this.anchorMin + " anchorMax:" + this.anchorMax;
+        }
     }
 
     public class InformationResourceLoader {

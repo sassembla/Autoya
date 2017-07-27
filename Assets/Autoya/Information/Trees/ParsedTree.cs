@@ -26,12 +26,12 @@ namespace AutoyaFramework.Information {
         public readonly bool isContainer;
 
 
-        // 新規レイアウト処理
-
+        // レイアウト処理
         public float offsetX;
         public float offsetY;
         public float viewWidth;
         public float viewHeight;
+
         public ViewCursor SetPos (float offsetX, float offsetY, float viewWidth, float viewHeight) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
@@ -54,6 +54,21 @@ namespace AutoyaFramework.Information {
             this.rawTagName = HtmlTag._ROOT.ToString();
             this.prefabName = HtmlTag._ROOT.ToString();
             this.isContainer = true;
+        }
+
+        public static Rect GetChildViewRectFromParentRectTrans (float parentWidth, float parentHeight, BoxPos pos) {
+            // アンカーからwidthとheightを出す。
+            var anchorWidth = (parentWidth * pos.anchorMin.x) + (parentWidth * (1 - pos.anchorMax.x));
+            var anchorHeight = (parentHeight * pos.anchorMin.y) + (parentHeight * (1 - pos.anchorMax.y));
+
+            var viewWidth = parentWidth - anchorWidth - pos.offsetMin.x + pos.offsetMax.x;
+            var viewHeight = parentHeight - anchorHeight - pos.offsetMin.y + pos.offsetMax.y;
+
+            // 左上原点を出す。
+            var offsetX = (parentWidth * pos.anchorMin.x) + pos.offsetMin.x;
+            var offsetY = (parentHeight * (1-pos.anchorMax.y)) - (pos.offsetMax.y);
+
+            return new Rect(offsetX, offsetY, viewWidth, viewHeight);
         }
 
         public ParsedTree (string textContent, string rawTagName, string prefabName) {// as text_content.
@@ -105,14 +120,6 @@ namespace AutoyaFramework.Information {
                     break;
                 }
             }
-        }
-
-        public ParsedTree (ParsedTree source, AttributeKVs kv) {
-            this.parsedTag = source.parsedTag;
-            this.keyValueStore = kv;
-            this.rawTagName = source.rawTagName;
-
-            this.prefabName = source.prefabName;
         }
         
         public void SetParent (ParsedTree t) {

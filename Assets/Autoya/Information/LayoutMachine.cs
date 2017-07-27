@@ -161,6 +161,7 @@ namespace AutoyaFramework.Information {
 				Debug.LogError("カスタムタグの計算結果を返す");
 				yield return viewCursor;
 			} else if (@this.isContainer) {
+				Debug.LogError("コンテナ");
 				var cor = DoContainerLayout(@this, viewCursor);
 				while (cor.MoveNext()) {
 					yield return null;
@@ -168,6 +169,7 @@ namespace AutoyaFramework.Information {
 
 				yield return cor.Current;
 			} else {
+				Debug.LogError("コンテンツ");
 				var cor = DoContentLayout(@this, viewCursor, insertion);
 				while (cor.MoveNext()) {
 					yield return null;
@@ -192,7 +194,7 @@ namespace AutoyaFramework.Information {
 
 			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
 
-			Debug.LogError("path:" + path);
+			Debug.LogError("customTag path:" + path);
 			var layerPrefab = Resources.Load<GameObject>(path);
 			/*
 				カスタムタグだったら、prefabをロードして、原点位置は0,0、
@@ -202,10 +204,7 @@ namespace AutoyaFramework.Information {
 				・この際のchildのサイズは、必ずboxのものになる。このへんがキモかな。
 			*/
 
-			// 仮でシンクロ読み
-			var customTagPrefab = infoResLoader.LoadPrefabSync(path);
-			Debug.LogError("customTagPrefab:" + customTagPrefab);
-
+			// html上でのchildをセットしに行く。該当するboxがあるんだろうか的なチェックはカスタマイズ時に済んでいる。ので、ここでは作ればいいだけ。
 			var children = @this.GetChildren();
 
 			foreach (var boxTree in children) {
@@ -218,6 +217,8 @@ namespace AutoyaFramework.Information {
 				var resultCor = cor.Current;
 				Debug.LogWarning("カスタムタグのboxのレイアウトが終わった。で、親のサイズが変わる(高さが高くなった)可能性がある。幅は変化しない。");
 			}
+
+			Debug.LogError("ここでカスタムタグ自体のサイズを変更する。");
 
 			yield return viewCursor;
 		}
@@ -473,26 +474,14 @@ namespace AutoyaFramework.Information {
 		 */
 		private IEnumerator<ViewCursor> LayoutBox (ViewCursor layerViewCursor, ParsedTree box) {
 			/*
-				box自身のレイアウトに関して、prefabの値を引き継ぐ以外は特になにもするべきことがないのでは的な。
-				位置情報はprefabのそのままなので、うーん、まずは値を保持してセットするようにしてみよう。
+				位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
 			 */
-			
-			// こいつ自身のkvにいろいろ入っているのでは
-			// このタグを入れる時点ですでに反映されていてもいいのかもしれないが、一応後方 = 遅延させて値を持っておく手段に倒しておく。
 			var layoutParam = box.keyValueStore[Attribute._BOX] as BoxPos;
 			
-			// 
-			Debug.LogError("自分自身へのサイズやピボットのセット、ここで行うのしんどいのでは。boxの時か〜。");
-			// box.offsetMin = layoutParam.offsetMin;
-			// box.offsetMax = layoutParam.offsetMax;
-			
-			// box.anchoredPosition = layoutParam.anchoredPosition;
-			// box.sizeDelta = layoutParam.sizeDelta;
+			var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(layerViewCursor.viewWidth, layerViewCursor.viewHeight, layoutParam);
+			Debug.LogError("viewRect:" + viewRect);
 
-			// box.anchorMin = layoutParam.anchorMin;
-			// box.anchorMax = layoutParam.anchorMax;
-			// box.pivot = layoutParam.pivot;
-
+			var boxViewCursor = new ViewCursor(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
 
 			foreach (var child in box.GetChildren()) {
 				// ここでのコンテンツはboxの中身のコンテンツなので、必ず縦に並ぶ。列切り替えが発生しない。
@@ -500,7 +489,7 @@ namespace AutoyaFramework.Information {
 
 				// コンテンツが一切ない場合でもこの高さを維持する。
 				// コンテンツがこの高さを切ってもこの高さを維持する。
-				var cor = LayoutBoxedContent(child, box.viewWidth);
+				var cor = LayoutBoxedContent(child, boxViewCursor);
 				while (cor.MoveNext()) {
 					yield return null;
 				}
@@ -513,21 +502,25 @@ namespace AutoyaFramework.Information {
 			yield return layerViewCursor;
 		}
 
-		private IEnumerator<ViewCursor> LayoutBoxedContent (ParsedTree boxedContainer, float width) {
+		private IEnumerator<ViewCursor> LayoutBoxedContent (ParsedTree boxedContainer, ViewCursor boxedContentViewCursor) {
 			/*
 				boxの要素。表示位置が0固定されたコンテナになっている。
 				ここで、このboxedContainerの子要素を列挙する。
 
 				幅が上位から決定されていて、このビューに何が入ろうと幅は変化しない。
-				高さに関しては、内容のレイアウト結果に応じて変化する。
+				高さに関しては、htmlに含まれる内容に応じて変化する。
 			 */
-			
 			var children = boxedContainer.GetChildren();
-			var childViewCursor = new ViewCursor(0, 0, width, 0);
 
-			for (var i = 0; i < children.Count; i++) {
+			var childViewCursor = boxedContentViewCursor;
+			var childCount = children.Count;
+			Debug.LogError("LayoutBoxedContent あら、この子が何にも無い。ミスったかな。 childCount:" + childCount);
+
+			for (var i = 0; i < childCount; i++) {
+				var child = children[i];
+
 				var cor = DoLayout(
-					boxedContainer, 
+					child,
 					childViewCursor, 
 					(type, newChild) => {
 						Debug.LogError("type:" + type);
@@ -540,21 +533,21 @@ namespace AutoyaFramework.Information {
 				}
 
 				// 更新
-				childViewCursor = cor.Current;
+				// childViewCursor = cor.Current;
 				
-				if (childViewCursor.offsetX + childViewCursor.viewWidth < width) {
-					continue;
-				}
+				// if (childViewCursor.offsetX + childViewCursor.viewWidth < width) {
+				// 	continue;
+				// }
 
-				if (childViewCursor.offsetX + childViewCursor.viewWidth <= width) {
-					Debug.LogError("改行して次！");
-					continue;
-				}
+				// if (childViewCursor.offsetX + childViewCursor.viewWidth <= width) {
+				// 	Debug.LogError("改行して次！");
+				// 	continue;
+				// }
 
-				if (width < childViewCursor.offsetX + childViewCursor.viewWidth) {
-					// 長さが超えてるので、
-					Debug.LogError("幅が超えてるので、、、なんかする。");
-				}
+				// if (width < childViewCursor.offsetX + childViewCursor.viewWidth) {
+				// 	// 長さが超えてるので、
+				// 	Debug.LogError("幅が超えてるので、、、なんかする。");
+				// }
 
 				/*
 					子はカスタムタグコンテナか、コンテナか、コンテンツ。それらのミックスが入る。なるほど。
@@ -566,7 +559,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			Debug.LogError("高さの合計値を計算して、元のheightとどっちが大きいか比較して返す。今は適当。");
-			yield return new ViewCursor(0, 0, width, 0);
+			yield return new ViewCursor(0, 0, boxedContentViewCursor.viewWidth, 0);
 		}
 
 		/**
