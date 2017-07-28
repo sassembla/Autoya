@@ -68,21 +68,22 @@ namespace AutoyaFramework.Information {
                 // もしすでにtreeに同名の子供がいたら、そいつにこの子も追加する話になる。
                 if (tree.ContainsChild(newTagId)) {
                     // すでにchildが存在してるので、このchildはそこに追加する。
-                    // treeから離脱
+                    
+                    // 現在参加しているtreeから離脱
                     tree.RemoveChild(child);
 
                     var boxTree = tree.GetChildOfTag(newTagId);
+
+                    // boxTreeにchildを追加
                     boxTree.AddChild(child);
                 } else {
+                    Debug.LogError("add box.");
                     // 新規に中間treeを作成する。
                     var newBoxTreeAttr = new AttributeKVs(){
                         {Attribute._BOX, matchedBoxies[0].rect}
                     };
                     var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr, newBoxName);
                     
-                    // 作成課程で必ず子になってしまうので一時削除
-                    tree.RemoveChild(boxTree);
-
                     // すでに入っているchildとboxTreeを交換
                     tree.ReplaceChildren(child, boxTree);
                     

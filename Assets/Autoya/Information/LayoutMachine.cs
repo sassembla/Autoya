@@ -195,7 +195,7 @@ namespace AutoyaFramework.Information {
 			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
 
 			Debug.LogError("customTag path:" + path);
-			var layerPrefab = Resources.Load<GameObject>(path);
+
 			/*
 				カスタムタグだったら、prefabをロードして、原点位置は0,0、
 					サイズは親サイズ、という形で生成する。
@@ -476,6 +476,7 @@ namespace AutoyaFramework.Information {
 			/*
 				位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
 			 */
+			Debug.LogError("変形工程でエラーがある?");
 			var layoutParam = box.keyValueStore[Attribute._BOX] as BoxPos;
 			
 			var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(layerViewCursor.viewWidth, layerViewCursor.viewHeight, layoutParam);

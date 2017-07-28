@@ -462,7 +462,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
 <body>
-<customtag>something</customtag>
+<customtag><customtext>something</customtext></customtag>
 else
 </body>
         ";

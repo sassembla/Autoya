@@ -46,101 +46,97 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
 	}
 
-//     [MTest] public void ParseDefaultTag () {
-//         var sampleHtml = @"
-// <body>something</body>
-//         ";
+    [MTest] public void ParseDefaultTag () {
+        var sampleHtml = @"
+<body>something</body>
+        ";
 
-//         ParsedTree parsedRoot = null;
-//         var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
-//             parsedRoot = parsed;
-//         });
-//         RunEnumeratorOnMainThread(cor);
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+            parsedRoot = parsed;
+        });
+        RunEnumeratorOnMainThread(cor);
         
-//         WaitUntil(
-//             () => parsedRoot != null, 1, "too late."
-//         );
+        WaitUntil(
+            () => parsedRoot != null, 1, "too late."
+        );
         
-//         // parsedRootを与えて、custimizedRootを返してくる
-//         // treeの内容が変わらないはず
-//         var contentsCount = CountContentsRecursive(parsedRoot);
-//         Assert(contentsCount == 3/*root + body + content*/, "not match. contentsCount:" + contentsCount);
+        // parsedRootを与えて、custimizedRootを返してくる
+        // treeの内容が変わらないはず
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        Assert(contentsCount == 3/*root + body + content*/, "not match. contentsCount:" + contentsCount);
 
-//         customizer = new ParsedTreeCustomizer(loader);
-//         var customizedTree = customizer.Customize(parsedRoot);
+        customizer = new ParsedTreeCustomizer(loader);
+        var customizedTree = customizer.Customize(parsedRoot);
 
-//         var newContentsCount = CountContentsRecursive(customizedTree);
-//         Assert(newContentsCount == 3, "not match. newContentsCount:" + newContentsCount);
+        var newContentsCount = CountContentsRecursive(customizedTree);
+        Assert(newContentsCount == 3, "not match. newContentsCount:" + newContentsCount);
+    }
 
-//     }
+    [MTest] public void WithCustamTag () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/WithCustamTag/DepthAssetList)-->
+<customtag>something</customtag>
+<p>else</p>
+        ";
 
-//     [MTest] public void WithCustamTag () {
-//         var sampleHtml = @"
-// <!--depth asset list url(resources://Views/WithCustamTag/DepthAssetList)-->
-// <customtag>something</customtag>
-// <p>else</p>
-//         ";
-
-//         ParsedTree parsedRoot = null;
-//         var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
-//             parsedRoot = parsed;
-//         });
-//         RunEnumeratorOnMainThread(cor);
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+            parsedRoot = parsed;
+        });
+        RunEnumeratorOnMainThread(cor);
         
-//         WaitUntil(
-//             () => parsedRoot != null, 5, "too late."
-//         );
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
         
-//         var contentsCount = CountContentsRecursive(parsedRoot);
-//         Assert(contentsCount == 5, "not match.");
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        Assert(contentsCount == 5, "not match.");
 
-//         // カスタマイズタグを変形させて中身を伸長する
-//         customizer = new ParsedTreeCustomizer(loader);
-//         var customizedTree = customizer.Customize(parsedRoot);
+        // カスタマイズタグを変形させて中身を伸長する
+        customizer = new ParsedTreeCustomizer(loader);
+        var customizedTree = customizer.Customize(parsedRoot);
 
-//         // 階層が増えてるはず
-//         var newContentsCount = CountContentsRecursive(customizedTree);
-//         Assert(contentsCount < newContentsCount, "actual:" + newContentsCount);
+        // 階層が増えてるはず
+        var newContentsCount = CountContentsRecursive(customizedTree);
+        Assert(contentsCount < newContentsCount, "actual:" + newContentsCount);
 
-//         // 増えてる階層に関してのチェックを行う
-//         Assert(contentsCount +1 == newContentsCount, "actual:" + newContentsCount);
-//     }
+        // 増えてる階層に関してのチェックを行う
+        Assert(contentsCount +1 == newContentsCount, "actual:" + newContentsCount);
+    }
 
-//     [MTest] public void WithDeepCustamTag () {
-//         var sampleHtml = @"
-// <!--depth asset list url(resources://Views/WithDeepCustamTag/DepthAssetList)-->
-// <customtag>something<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
-// <p>else</p>
-//         ";
+    [MTest] public void WithDeepCustamTag () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/WithDeepCustamTag/DepthAssetList)-->
+<customtag>something<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
+<p>else</p>
+        ";
 
-//         ParsedTree parsedRoot = null;
-//         var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
-//             parsedRoot = parsed;
-//         });
-//         RunEnumeratorOnMainThread(cor);
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+            parsedRoot = parsed;
+        });
+        RunEnumeratorOnMainThread(cor);
         
-//         WaitUntil(
-//             () => parsedRoot != null, 5, "too late."
-//         );
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
         
-//         var contentsCount = CountContentsRecursive(parsedRoot);
-//         Assert(contentsCount == 7, "not match. contentsCount:" + contentsCount);
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        Assert(contentsCount == 7, "not match. contentsCount:" + contentsCount);
 
-//         // カスタマイズタグを変形させて中身を伸長する
-//         customizer = new ParsedTreeCustomizer(loader);
-//         var customizedTree = customizer.Customize(parsedRoot);
+        // カスタマイズタグを変形させて中身を伸長する
+        customizer = new ParsedTreeCustomizer(loader);
+        var customizedTree = customizer.Customize(parsedRoot);
 
-//         // 階層が増えてるはず
-//         var newContentsCount = CountContentsRecursive(customizedTree);
-//         Assert(contentsCount < newContentsCount, "less. newContentsCount:" + newContentsCount);
+        // 階層が増えてるはず
+        var newContentsCount = CountContentsRecursive(customizedTree);
+        Assert(contentsCount < newContentsCount, "less. newContentsCount:" + newContentsCount);
 
-//         // 増えてる階層に関してのチェックを行う。2種のcustomTagがあるので2つ増える。
-//         Assert(contentsCount +2 == newContentsCount, "not match. newContentsCount:" + newContentsCount);
+        // 増えてる階層に関してのチェックを行う。2種のcustomTagがあるので2つ増える。
+        Assert(contentsCount +2 == newContentsCount, "not match. newContentsCount:" + newContentsCount);
 
-//         ShowRecursive(customizedTree, loader);
-//     }
-
-    
-
+        ShowRecursive(customizedTree, loader);
+    }
     
 }
