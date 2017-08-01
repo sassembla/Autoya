@@ -1,3 +1,15 @@
+## [1.12.0] - 2017-07-25
+### Added
+- XiaomiMiPay - Add Xiaomi Mi Game Pay app store purchasing for Android devices in China. Add the "Unity Channel" support library and service. Unity Channel helps non-China developers access the Unity-supported Chinese app store market by featuring app store user login and payment management. Use Unity Channel directly for login to Xiaomi. Unity IAP internally uses Unity Channel for Xiaomi payment. [Preliminary documentation](https://docs.google.com/document/d/1VjKatN5ZAn6xZ1KT_PIvgylmAKcXvKvf4jgJqi3OuuY) is available. See also [Xiaomi's portal](https://unity.mi.com/) and [Unity's partner guide](https://unity3d.com/partners/xiaomi/guide).
+
+### Fixed
+- FacebookStore - Fix login and initialization corner-case abnormally calling RetrieveProducts internally
+- Tizen Store - Fix purchasing regression introduced after 1.11.1
+- Mac App Store - Fixes "libmono.0.dylib not found" errors at launch if built via Unity 2017.1. See also Known Issues, below.
+
+### Known Issues
+- Mac App Store - Incompatible with Unity 2017.1.0f3: exception will be thrown during purchasing. Fixed in Unity 2017.1.0p1.
+
 ## [1.11.4] - 2017-06-21
 ### Fixed
 - Apple platforms - Fix a blocking bug when building from Unity 5.3.

@@ -37,9 +37,7 @@ namespace AutoyaFramework.Information {
 		_ROOT,
 		_COMMENT,
 		_NO_TAG_FOUND,
-		_IGNORED_EXCLAMATION_TAG,		
-		_TEXT_CONTENT,
-        
+		_IGNORED_EXCLAMATION_TAG,
 		_END,// use for enum count.
 	}
 }

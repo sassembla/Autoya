@@ -11,6 +11,15 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
     
+    public enum TreeType {
+        Container,
+        Content_Text,
+        Content_Img,
+        Content_Link,
+        CustomLayer,
+        CustomBox,
+        CustomContent
+    }
     /**
         parsed tree structure.
      */
@@ -20,10 +29,8 @@ namespace AutoyaFramework.Information {
         
         // tag params.
         public readonly int parsedTag;
-        public readonly string rawTagName;
-        public readonly string prefabName;
         public readonly AttributeKVs keyValueStore;
-        public readonly bool isContainer;
+        public readonly TreeType treeType;
 
 
         // レイアウト処理
@@ -51,11 +58,12 @@ namespace AutoyaFramework.Information {
         public ParsedTree () {
             this.parsedTag = (int)HtmlTag._ROOT;
             this.keyValueStore = new AttributeKVs();
-            this.rawTagName = HtmlTag._ROOT.ToString();
-            this.prefabName = HtmlTag._ROOT.ToString();
-            this.isContainer = true;
+            this.treeType = TreeType.Container;
         }
 
+        /**
+            uGUIのパラメータからRectを出す。
+         */
         public static Rect GetChildViewRectFromParentRectTrans (float parentWidth, float parentHeight, BoxPos pos) {
             // アンカーからwidthとheightを出す。
             var anchorWidth = (parentWidth * pos.anchorMin.x) + (parentWidth * (1 - pos.anchorMax.x));
@@ -71,61 +79,71 @@ namespace AutoyaFramework.Information {
             return new Rect(offsetX, offsetY, viewWidth, viewHeight);
         }
 
-        public ParsedTree (string textContent, string rawTagName, string prefabName) {// as text_content.
-            this.parsedTag = (int)HtmlTag._TEXT_CONTENT;
+        public ParsedTree (string textContent, int baseTag) {// as text_content.
+            this.parsedTag = baseTag;
             
             this.keyValueStore = new AttributeKVs();
             keyValueStore[Attribute._CONTENT] = textContent;
             
-            this.rawTagName = rawTagName;
-            this.prefabName = prefabName;
-            this.isContainer = false;
+            this.treeType = TreeType.Content_Text;
         }
 
-        public ParsedTree (int parsedTag, ParsedTree parent, AttributeKVs kv, string rawTagName) {
+        public ParsedTree (int parsedTag, ParsedTree parent, AttributeKVs kv) {
             this.parsedTag = parsedTag;
             this.keyValueStore = kv;
-            this.rawTagName = rawTagName;
+            this.treeType = TreeType.Container;
 
             /*
-                determine which tag should be loaded.
+                カスタムタグは、レイヤーとボックスに分かれるんだけど、まあそういうこともあっていろいろ詳しくやっとくのがいいか。
+
+                コンテンツである場合、というのが真っ先に切り分けられる。
+                この場合、ロードするprefabの名前は、tagから復元できる。
+                で、同様にコンテナである場合、それを明示しておければいいような気がする。
+
+                コンテンツとコンテナにそれぞれ自明なことは、
+                ・コンテナ
+                    コンテンツに特性を渡す。
+                
+                ・コンテンツ
+                    コンテナの特性を受ける。
+
+                ・カスタムタグ
+                    レイヤーとして要素を持つ。boxを保持する
+                    
+                ・box
+                    コンテナとして動作する。中に特定のレイヤーが入る。
+
+                ・カスタムコンテナ
+                    カスタムコンテンツを持つコンテナ。
+
+                ・カスタムコンテンツ
+                    親がカスタムコンテナなコンテンツ。
+
+                この6種が存在する。
+                で、これはprefabのロード方法に直結する。
+
+                ・コンテナ or コンテンツ
+                    コンテナは、カスタムコンテナ以外一切特徴がない。ので、無視していい。名前があっても構わんわけだ。
+                    コンテンツはtagを見てどのtagのコンテンツかを見て対象のprefabをロードする必要がある。
+
+                ・デフォルト or カスタム
+                    カスタムコンテナはレイヤー+boxに分解される前提で、レイヤーのみprefabを読み込む。
+
+                よし。
+                ・レイヤーだったら
+                    prefabを読み込む
+                
+                ・コンテンツだったら
+                    prefabを読み込む
+                
+                というだけだ。
              */
-            switch (parsedTag) {
-                // this is content of container. use parnt tag for materialize.
-                case (int)HtmlTag._TEXT_CONTENT: {
-                    this.prefabName = parent.rawTagName.ToUpper();
-                    this.isContainer = false;
-                    break;
-                }
-
-                // pure value tags,
-                case (int)HtmlTag.img:
-                case (int)HtmlTag.br:
-                case (int)HtmlTag.hr: {
-                    this.prefabName =  rawTagName.ToUpper();
-                    this.isContainer = false;
-                    break;
-                }
-
-                // and root tag is container.
-                case (int)HtmlTag._ROOT: {
-                    throw new Exception("invalid root tag found.");
-                }
-
-                // other tags are container.
-                default: {
-                    Debug.LogWarning("ここで、カスタムコンテンツがここに落ちちゃうのはまずい。カスタムイメージとカスタムテキストのコンテンツをそのうち用意する。");
-                    this.prefabName = rawTagName.ToUpper() + InformationConstSettings.NAME_PREFAB_CONTAINER;
-                    this.isContainer = true;
-                    break;
-                }
-            }
         }
         
         public void SetParent (ParsedTree t) {
             if (
                 t.parsedTag == (int)HtmlTag._ROOT && 
-                this.parsedTag == (int)HtmlTag._TEXT_CONTENT
+                this.treeType == TreeType.Content_Text
             ) {
                 var val = this.keyValueStore[Attribute._CONTENT];
                 throw new Exception("invalid text contains outside of tag. val:" + val);
@@ -157,7 +175,7 @@ namespace AutoyaFramework.Information {
             var index = this._children.FindIndex(current => current == oldTree);
             
             if (index == -1) {
-                throw new Exception("failed to replace old tree to new tree. oldTree:" + oldTree.rawTagName + " did not found from children of:" + this.rawTagName);
+                throw new Exception("failed to replace old tree to new tree. oldTree:" + oldTree.parsedTag + " did not found from children of:" + this.parsedTag);
             }
 
             this._children.RemoveAt(index);
@@ -165,16 +183,7 @@ namespace AutoyaFramework.Information {
         }
 
         public string ShowContent() {
-            if (isContainer) return "\"container.\"";
-
-            switch (prefabName) {
-                case "IMG": {
-                    return "\"img.\"";
-                }
-                default: {
-                    return "\"" + (keyValueStore[Attribute._CONTENT] as string) + "\"";
-                }
-            }
+            return this.treeType.ToString();
         }
     }
 }

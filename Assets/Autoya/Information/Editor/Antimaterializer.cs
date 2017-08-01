@@ -155,13 +155,14 @@ namespace AutoyaFramework.Information {
                 }
                 
                 /*
-                    layerのprefabを作成
+                    このprefabはlayer = レイアウトを行う前提の箱として使われる。
+                    box = 特定の名前の要素(prefabになる前の子供ゲームオブジェクト名のタグ要素)のみをレイアウトする。
+                    その中身にはなんでも入っていい。
 
-                    このprefabはレイアウトを行う前提の箱として使われる。
-                    特定の名前の要素(prefabになる前の子供ゲームオブジェクト名のタグ要素)のみをレイアウトする。
+                    prefab名は大文字 になる。
                 */
                 {
-                    var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + layerName + ".prefab";
+                    var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + layerName.ToUpper() + ".prefab";
                     var dirPath = Path.GetDirectoryName(prefabPath);
                     
                     FileController.CreateDirectoryRecursively(dirPath);

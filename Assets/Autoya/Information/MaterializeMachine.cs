@@ -96,8 +96,6 @@ namespace AutoyaFramework.Information {
 		}
 
 		private IEnumerator MaterializeTagContent (ParsedTree currentTree, Action<GameObject> onLoaded) {
-			Debug.Assert(!string.IsNullOrEmpty(currentTree.prefabName), "prefabName is null or empty.");
-			
 			GameObject prefab = null;
 			var cor = infoResLoader.LoadPrefab(
 				currentTree,
@@ -105,7 +103,7 @@ namespace AutoyaFramework.Information {
 					prefab = newPrefab;
 				},
 				() => {
-					throw new Exception("failed to load prefab:" + currentTree.prefabName);
+					throw new Exception("failed to load prefab:" + currentTree.parsedTag);
 				}
 			);
 
@@ -114,13 +112,13 @@ namespace AutoyaFramework.Information {
 			}
 			
 			var obj = InformationResourceLoader.LoadGameObject(prefab);
-			if (currentTree.isContainer) {
-				obj.name = currentTree.prefabName;
+			if (currentTree.treeType == TreeType.Container) {
+				obj.name = infoResLoader.GetTagFromIndex(currentTree.parsedTag);
 			}
 
 			// set parameters.
-			switch (currentTree.parsedTag) {
-				case (int)HtmlTag.a: {
+			switch (currentTree.treeType) {
+				case TreeType.Content_Link: {
 					foreach (var kvs in currentTree.keyValueStore) {
 						var key = kvs.Key;
 						switch (key) {
@@ -128,7 +126,7 @@ namespace AutoyaFramework.Information {
 								var href = kvs.Value as string;
 
 								// add button component.
-								AddButton(obj, () => rootInputComponent.OnLinkTapped(currentTree.rawTagName, href));
+								AddButton(obj, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(currentTree.parsedTag), href));
 								break;
 							}
 							default: {
@@ -139,7 +137,7 @@ namespace AutoyaFramework.Information {
 					}
 					break;
 				}
-				case (int)HtmlTag.img: {
+				case TreeType.Content_Img: {
 					var src = currentTree.keyValueStore[Attribute.SRC] as string;
 					
 					infoResLoader.LoadImageAsync(
@@ -153,11 +151,11 @@ namespace AutoyaFramework.Information {
 					);
 					
 					// add button component.
-					AddButton(obj, () => rootInputComponent.OnLinkTapped(currentTree.rawTagName, src));
+					AddButton(obj, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(currentTree.parsedTag), src));
 					break;
 				}
 				
-				case (int)HtmlTag._TEXT_CONTENT: {
+				case TreeType.Content_Text: {
 					foreach (var kvs in currentTree.keyValueStore) {
 						switch (kvs.Key) {
 							case Attribute._CONTENT:{

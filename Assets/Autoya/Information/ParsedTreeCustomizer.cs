@@ -30,7 +30,7 @@ namespace AutoyaFramework.Information {
 
         private void TraverseTagRecursive (ParsedTree tree) {
             foreach (var child in tree.GetChildren()) {
-                if (IsCustomTag(child.prefabName)) {
+                if (IsCustomTag(child.parsedTag)) {
                     // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグ。");
                     ExpandCustomTag(child);
                 } else {
@@ -44,8 +44,11 @@ namespace AutoyaFramework.Information {
             カスタムタグの内容を分解し、存在するchildの代わりにboxを挿入する。
          */
         private void ExpandCustomTag (ParsedTree tree) {
-            var adoptedConstaints = GetConstraints(tree.prefabName);
-
+            var adoptedConstaints = GetConstraints(tree.parsedTag);
+            // foreach (var s in adoptedConstaints) {
+            //     Debug.LogError("s:" + s.boxName);
+            // }
+            
             // このtree自体がカスタムタグなので、存在する子供に対してboxConstraintをチェックしていく。
             var children = tree.GetChildren();
 
@@ -53,12 +56,13 @@ namespace AutoyaFramework.Information {
             for (var i = 0; i < children.Count; i++) {
                 var child = children[i];
                 
-                var newBoxName = GetLayerBoxName(tree.prefabName, child.prefabName);
-
+                var newBoxName = GetLayerBoxName(tree.parsedTag, child.parsedTag);
+                // Debug.LogError("newBoxName:" + newBoxName);
+                
                 // whereでの名前一致が辛い。まあでもいいか。
                 var matchedBoxies = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
                 if (!matchedBoxies.Any()) {
-                    throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + child.prefabName);
+                    throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + infoResLoader.GetTagFromIndex(tree.parsedTag));
                 }
 
                 // pass.
@@ -82,7 +86,7 @@ namespace AutoyaFramework.Information {
                     var newBoxTreeAttr = new AttributeKVs(){
                         {Attribute._BOX, matchedBoxies[0].rect}
                     };
-                    var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr, newBoxName);
+                    var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr);
                     
                     // すでに入っているchildとboxTreeを交換
                     tree.ReplaceChildren(child, boxTree);
@@ -106,8 +110,8 @@ namespace AutoyaFramework.Information {
 
 
 
-        private bool IsCustomTag (string prefabName) {
-            var key = prefabName.ToLower();
+        private bool IsCustomTag (int parsedTag) {
+            var key = infoResLoader.GetTagFromIndex(parsedTag);
             if (constraintsDict.ContainsKey(key)) {
                 var constraints = constraintsDict[key];
                 for (var i = 0; i < constraints.Length; i++) {
@@ -120,12 +124,13 @@ namespace AutoyaFramework.Information {
         }
 
         
-        private string GetLayerBoxName (string layerPrefabName, string boxingPrefabName) {
-            return layerPrefabName.ToLower() + "_" + boxingPrefabName.ToLower();
+        private string GetLayerBoxName (int layerTag, int boxTag) {
+            return infoResLoader.GetTagFromIndex(layerTag) + "_" + infoResLoader.GetTagFromIndex(boxTag);
         }
 
-        private BoxConstraint[] GetConstraints (string prefabName) {
-            return constraintsDict[prefabName.ToLower()];
+        private BoxConstraint[] GetConstraints (int parsedTag) {
+            var key = infoResLoader.GetTagFromIndex(parsedTag);
+            return constraintsDict[key];
         }
     }
 }

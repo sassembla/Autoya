@@ -1,6 +1,6 @@
 namespace AutoyaFramework.Information {
     public class InformationConstSettings {
-      public const int TAG_MAX_LEN = 12;
+      public const int TAG_MAX_LEN = 100;
       public const double TIMEOUT_SEC = 5.0;
 
       public const string NAME_PREFAB_CONTAINER = "_CONTAINER";

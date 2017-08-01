@@ -64,6 +64,7 @@ namespace AutoyaFramework.Information {
 				
 				if (chr == '<') {
 					var foundTag = IsTag(data, charIndex);
+					// Debug.LogError("foundTag:" + infoResLoader.GetTagFromIndex(foundTag));
 
 					switch (foundTag) {
 						// get depthAssetList from commented url.
@@ -193,12 +194,8 @@ namespace AutoyaFramework.Information {
 
 											if (!string.IsNullOrEmpty(str)) {
 												var contentTagPoint = new ParsedTree(
-													(int)HtmlTag._TEXT_CONTENT, 
-													parentTree,
-													new AttributeKVs(){
-														{Attribute._CONTENT, str}
-													}, 
-													string.Empty
+													str,
+													parentTree.parsedTag
 												);
 												contentTagPoint.SetParent(parentTree);
 											}
@@ -207,8 +204,7 @@ namespace AutoyaFramework.Information {
 										var tagPoint2 = new ParsedTree(
 											tag, 
 											parentTree,
-											kv, 
-											rawTagName
+											kv
 										);
 										tagPoint2.SetParent(parentTree);
 
@@ -237,12 +233,8 @@ namespace AutoyaFramework.Information {
 
 										if (!string.IsNullOrEmpty(str)) {
 											var contentTagPoint = new ParsedTree(
-												(int)HtmlTag._TEXT_CONTENT, 
-												parentTree,
-												new AttributeKVs(){
-													{Attribute._CONTENT, str}
-												}, 
-												string.Empty
+												str,
+												parentTree.parsedTag
 											);
 											contentTagPoint.SetParent(parentTree);
 										}
@@ -253,8 +245,7 @@ namespace AutoyaFramework.Information {
 									var tagPoint = new ParsedTree(
 										tag, 
 										parentTree,
-										kv, 
-										rawTagName
+										kv
 									);
 									tagPoint.SetParent(parentTree);
 									
@@ -309,12 +300,8 @@ namespace AutoyaFramework.Information {
 
 										if (!string.IsNullOrEmpty(str)) {
 											var contentTagPoint = new ParsedTree(
-												(int)HtmlTag._TEXT_CONTENT, 
-												parentTree,
-												new AttributeKVs(){
-													{Attribute._CONTENT, str}
-												}, 
-												string.Empty
+												str,
+												parentTree.parsedTag
 											);
 											contentTagPoint.SetParent(parentTree);
 										}
@@ -325,8 +312,7 @@ namespace AutoyaFramework.Information {
 									var tree = new ParsedTree(
 										tag, 
 										parentTree,
-										kv, 
-										rawTagName
+										kv
 									);
 									tree.SetParent(parentTree);
 									
@@ -358,12 +344,8 @@ namespace AutoyaFramework.Information {
 				// Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
 				if (!string.IsNullOrEmpty(restStr)) {
 					var contentTree = new ParsedTree(
-						(int)HtmlTag._TEXT_CONTENT, 
-						parentTree, 
-						new AttributeKVs(){
-							{Attribute._CONTENT, restStr}
-						}, 
-						string.Empty
+						restStr,
+						parentTree.parsedTag
 					);
 					contentTree.SetParent(parentTree);
 				}
@@ -403,6 +385,12 @@ namespace AutoyaFramework.Information {
 				}
 				
 				// loaded.
+				/*
+					この時点で、そのタグが実際にはなんなのか、という照会ができるだけの情報が整ったことになる。
+					で、ここから先でTreeが完成する。ので、タグごとにどんなprefab使えばいいかは出せるようになった気がする。
+
+					具体的には、parsedTag決定時に、親parsedTagから、prefabNameが決定する。
+				 */
 			}
 		}
 
@@ -475,8 +463,9 @@ namespace AutoyaFramework.Information {
 
 		
 		private int FindEndTag (string endTagStr, string startTagStr, string data, int offset) {
-			var cascadedStartTagIndexies = GetIndexiesOf(startTagStr, data, offset);
-			var endTagCandidateIndexies = GetIndexiesOf(endTagStr, data, offset);
+			// Debug.LogError("endTagStr:" + endTagStr + " startTagStr:" + startTagStr);
+			var cascadedStartTagIndexies = GetStartTagIndexiesOf(startTagStr, data, offset);
+			var endTagCandidateIndexies = GetEndTagIndexiesOf(endTagStr, data, offset);
 
 			// finding pair of start-end tags.
 			for (var i = 0; i < endTagCandidateIndexies.Length; i++) {
@@ -502,10 +491,28 @@ namespace AutoyaFramework.Information {
 				}
 			}
 			
-			throw new Exception("parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset);
+			throw new Exception("parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset + " data:" + data);
 		}
         
-		private int[] GetIndexiesOf (string tagStr, string data, int offset) {
+		private int[] GetStartTagIndexiesOf (string tagStr, string data, int offset) {
+			var resultList = new List<int>();
+			var result = -1;
+			while (true) {
+				result = data.IndexOf(tagStr, offset);
+				if (result == -1) {
+					break;
+				}
+
+				if (data[result + tagStr.Length] == ' ' || data[result + tagStr.Length] == '>') {
+					resultList.Add(result);
+				}
+
+				offset = result + 1;
+			}
+			return resultList.ToArray();
+		}
+
+		private int[] GetEndTagIndexiesOf (string tagStr, string data, int offset) {
 			var resultList = new List<int>();
 			var result = -1;
 			while (true) {
@@ -599,7 +606,7 @@ namespace AutoyaFramework.Information {
 
 			// get sampling str.
 			var tagFindingSampleStr = data.Substring(tagStartPos, allowedMaxTagLength).ToLower();
-			
+			// Debug.LogError("tagFindingSampleStr:" + tagFindingSampleStr);
 			if (tagStartPos < data.Length && data[tagStartPos] == '!') {
 				if (data[index + 2] == '-') {
 					return (int)HtmlTag._COMMENT;

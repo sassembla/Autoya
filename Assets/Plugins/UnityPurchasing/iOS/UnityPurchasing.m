@@ -569,4 +569,3 @@ void unityPurchasingSetApplicationUsername(const char *username) {
         return;
     UnityPurchasing_getInstance().applicationUsername = [NSString stringWithUTF8String:username];
 }
-

@@ -150,33 +150,59 @@ namespace AutoyaFramework.Information {
 		}
 
 		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
+			var resultViewCursor = new ViewCursor(viewCursor);
 
-			// カスタムタグかどうかで分岐
-			if (infoResLoader.IsCustomTag(@this.parsedTag)) {
-				var cor = DoCustomTagContainerLayout(@this, viewCursor);
-				while (cor.MoveNext()) {
-					yield return null;
+			Debug.LogWarning("最終的にienumを渡してcor.moveNextするところをくくり出してもいいかも。");
+			switch (@this.treeType) {
+				case TreeType.CustomLayer: {
+					var cor = DoCustomTagContainerLayout(@this, viewCursor);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
+
+					Debug.LogError("カスタムタグの計算結果を返す");
+					break;
 				}
+				case TreeType.Container: {
+					Debug.LogError("コンテナ");
+					var cor = DoContainerLayout(@this, viewCursor);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
 
-				Debug.LogError("カスタムタグの計算結果を返す");
-				yield return viewCursor;
-			} else if (@this.isContainer) {
-				Debug.LogError("コンテナ");
-				var cor = DoContainerLayout(@this, viewCursor);
-				while (cor.MoveNext()) {
-					yield return null;
+					resultViewCursor = cor.Current;
+					break;
 				}
+				case TreeType.Content_Img: {
+					Debug.LogError("画像");
+					var cor = DoImgLayout(@this, viewCursor, insertion);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
 
-				yield return cor.Current;
-			} else {
-				Debug.LogError("コンテンツ");
-				var cor = DoContentLayout(@this, viewCursor, insertion);
-				while (cor.MoveNext()) {
-					yield return null;
+					resultViewCursor = cor.Current;
+					break;
 				}
+				case TreeType.Content_Text: {
+					Debug.LogError("テキスト");
+					var cor = LayoutTextContent(@this, viewCursor, insertion);
+					while (cor.MoveNext()) {
+						yield return null;
+					}
 
-				yield return cor.Current;
+					resultViewCursor = cor.Current;
+					break;
+				}
+				case TreeType.Content_Link: {
+					Debug.LogError("Content_Link まだ。テキストと同様なんだけど分解されない系。");
+					break;
+				}
+				default: {
+					throw new Exception("unexpected tree type:" + @this.treeType);
+				}
 			}
+
+			yield return resultViewCursor;
 		}
 		
 		/**
@@ -192,7 +218,7 @@ namespace AutoyaFramework.Information {
 
 			// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。
 
-			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + @this.rawTagName;
+			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
 
 			Debug.LogError("customTag path:" + path);
 
@@ -224,7 +250,7 @@ namespace AutoyaFramework.Information {
 		}
 		
 
-		private IEnumerator<ViewCursor> DoContentLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
+		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 			// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
 			// 自動的にコンテナがくることがあり得る。まあしょうがない。
 			// で。その分解はparserで済んでると思う。
@@ -233,87 +259,58 @@ namespace AutoyaFramework.Information {
 			/*
 				このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
 			*/
-			var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.prefabName;
+			var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
 			// Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName + " isContainer:" + @this.isContainer + " viewCursor:" + viewCursor);
 
 			// んで、prefabの名前はあってると思う。
 			
 			var contentViewCursor = viewCursor;
-			switch (@this.parsedTag) {
-				case (int)HtmlTag._TEXT_CONTENT: {
-					// こいつ自身がテキストコンテンツの場合、ここでタグの内容のサイズを推し量って返してOKになる。
-					var text = @this.keyValueStore[Attribute._CONTENT] as string;
-					
-					var cor = LayoutTextContent(@this, text, viewCursor, insertion);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-					contentViewCursor = cor.Current;
-					break;
-				}
-				case (int)HtmlTag.img: {
-					if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
-						throw new Exception("image should define src param.");
-					}
-
-					var src = @this.keyValueStore[Attribute.SRC] as string;
-					
-					// need to download image.
-					
-					var downloaded = false;
-
-					var imageWidth = 0f;
-					var imageHeight = 0f;
-
-					infoResLoader.LoadImageAsync(
-						src, 
-						(sprite) => {
-							imageWidth = sprite.rect.size.x;
-							
-							if (viewCursor.viewWidth < imageWidth) {
-								imageWidth = viewCursor.viewWidth;
-							}
-							
-							imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
-							downloaded = true;
-						},
-						() => {
-							imageHeight = 0;
-							downloaded = true;
-						}
-					);
-
-					while (!downloaded) {
-						yield return null;
-					}
-
-					// 画像のアスペクト比に則ったサイズを返す。高さのみ変更がされる。
-					contentViewCursor.viewWidth = imageWidth;
-					contentViewCursor.viewHeight = imageHeight;
-
-					// 自己のサイズに反映
-					@this.SetPosFromViewCursor(contentViewCursor);
-					break;
-				}
-				default: {
-					Debug.LogWarning("謎のコンテンツ。");
-					break;
-				}
+			if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
+				throw new Exception("image should define src param.");
 			}
+
+			var src = @this.keyValueStore[Attribute.SRC] as string;
+			
+			// need to download image.
+			
+			var downloaded = false;
+
+			var imageWidth = 0f;
+			var imageHeight = 0f;
+
+			infoResLoader.LoadImageAsync(
+				src, 
+				(sprite) => {
+					imageWidth = sprite.rect.size.x;
+					
+					if (viewCursor.viewWidth < imageWidth) {
+						imageWidth = viewCursor.viewWidth;
+					}
+					
+					imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
+					downloaded = true;
+				},
+				() => {
+					imageHeight = 0;
+					downloaded = true;
+				}
+			);
+
+			while (!downloaded) {
+				yield return null;
+			}
+
+			// 画像のアスペクト比に則ったサイズを返す。高さのみ変更がされる。
+			contentViewCursor.viewWidth = imageWidth;
+			contentViewCursor.viewHeight = imageHeight;
+
+			// 自己のサイズに反映
+			@this.SetPosFromViewCursor(contentViewCursor);
 			
 			yield return contentViewCursor;
 		}
 
 		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
-			// Debug.LogError("before container layout:" + viewCursor);
-			/*
-				このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
-			*/
-			var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + @this.prefabName;
-			Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName);
-
-			// んで、prefabの名前はあってると思う。
-
 			/*
 				子供のタグを整列させる処理。
 				横に整列、縦に並ぶ、などが実行される。
@@ -391,7 +388,7 @@ namespace AutoyaFramework.Information {
 
 							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
 							childView = ViewCursor.NextLine(childView, newLineOffsetY, viewCursor.viewWidth);
-							Debug.LogError("child:" + child.prefabName + " done," + child.ShowContent() + " next childView:" + childView);
+							Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
 							continue;
 						}
 					}
@@ -421,7 +418,7 @@ namespace AutoyaFramework.Information {
 						childView = nextChildViewCursor;
 					}
 
-					Debug.LogError("child:" + child.prefabName + " done," + child.ShowContent() + " next childView:" + childView);
+					Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
 				}
 
 				// 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
@@ -476,7 +473,6 @@ namespace AutoyaFramework.Information {
 			/*
 				位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
 			 */
-			Debug.LogError("変形工程でエラーがある?");
 			var layoutParam = box.keyValueStore[Attribute._BOX] as BoxPos;
 			
 			var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(layerViewCursor.viewWidth, layerViewCursor.viewHeight, layoutParam);
@@ -515,7 +511,6 @@ namespace AutoyaFramework.Information {
 
 			var childViewCursor = boxedContentViewCursor;
 			var childCount = children.Count;
-			Debug.LogError("LayoutBoxedContent あら、この子が何にも無い。ミスったかな。 childCount:" + childCount);
 
 			for (var i = 0; i < childCount; i++) {
 				var child = children[i];
@@ -567,10 +562,12 @@ namespace AutoyaFramework.Information {
 			テキストコンテンツのレイアウトを行う。
 			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
 		 */
-		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, string text, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
-			var prefabName = textTree.prefabName;
+		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
+			var text = textTree.keyValueStore[Attribute._CONTENT] as string;
+			
+			var prefabName = infoResLoader.GetTagFromIndex(textTree.parsedTag);
 
-
+			Debug.LogError("LayoutTextContent prefabName:" + prefabName);
 			var cor = infoResLoader.LoadTextPrefab(prefabName);
 
 			while (cor.MoveNext()) {
@@ -642,7 +639,7 @@ namespace AutoyaFramework.Information {
 
 						// Debug.LogError("lastLineContent:" + lastLineContent);
 						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
-						var nextLineContent = new ParsedTree(lastLineContent, textTree.rawTagName, textTree.prefabName);
+						var nextLineContent = new ParsedTree(lastLineContent, textTree.parsedTag);
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
 						// 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
@@ -680,7 +677,7 @@ namespace AutoyaFramework.Information {
 						var currentLineWidth = textComponent.preferredWidth;
 
 						var restContent = text.Substring(generator.lines[1].startCharIdx);
-						var nextLineContent = new ParsedTree(restContent, textTree.rawTagName, textTree.prefabName);
+						var nextLineContent = new ParsedTree(restContent, textTree.parsedTag);
 
 						// 次のコンテンツを新しい行から開始する。
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);

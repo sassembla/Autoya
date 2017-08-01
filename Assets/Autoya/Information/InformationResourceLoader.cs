@@ -36,7 +36,7 @@ namespace AutoyaFramework.Information {
         [SerializeField] public BoxPos rect;
 
         public BoxConstraint (string boxName, BoxPos rect) {
-            this.boxName = boxName;
+            this.boxName = boxName.ToLower();
             this.rect = rect;
         }
     }
@@ -97,10 +97,22 @@ namespace AutoyaFramework.Information {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 
-
+        public int GetAdditionalTagCount () {
+            return undefinedTagDict.Count;
+        }
 
         private readonly Action<IEnumerator> executor;
         public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate) {
+            defaultTagStrIntPair = new Dictionary<string, int>();
+            defaultTagIntStrPair = new Dictionary<int, string>();
+            foreach (var tag in Enum.GetValues(typeof(HtmlTag))) {
+                var tagStr = tag.ToString();
+                var index = (int)tag;
+
+                defaultTagStrIntPair[tagStr] = index;
+                defaultTagIntStrPair[index] = tagStr;
+            }
+
             this.executor = executor;
 
             /*
@@ -201,7 +213,7 @@ namespace AutoyaFramework.Information {
         private IEnumerator LoadPrefabByDepth (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             IEnumerator coroutine = null;
 
-            Debug.LogError("tree:" + tree.prefabName);
+            Debug.LogError("tree:" + tree.parsedTag);
             Debug.LogError("ここまできた。で、DL情報はAntimaterializerでconstraintsに入れるようにしよう。デフォResources tree.keyValueStore:" + tree.keyValueStore);
             var kvs = tree.keyValueStore;
             foreach (var kv in kvs) {
@@ -297,13 +309,18 @@ namespace AutoyaFramework.Information {
             var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
 
             var loadingPrefabName = string.Empty;
-
-            if (tree.isContainer) {
-                loadingPrefabName = defaultPath + InformationConstSettings.NAME_PREFAB_CONTAINER;
-			} else {
-				loadingPrefabName = defaultPath + tree.prefabName;
-			}
-
+            Debug.LogError("ちょっと動きを見て見ないとわからん。");
+            switch (tree.treeType) {
+                case TreeType.Container: {
+                    loadingPrefabName = defaultPath + InformationConstSettings.NAME_PREFAB_CONTAINER;
+                    break;
+                }
+                default: {
+                    loadingPrefabName = defaultPath + GetTagFromIndex(tree.parsedTag);
+                    break;
+                }
+            }
+            
             var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
             while (cor.MoveNext()) {
                 yield return null;
@@ -317,10 +334,6 @@ namespace AutoyaFramework.Information {
         }
         
         public IEnumerator LoadDepthAssetList (string uriSource) {
-            return GetDepthAssetList(uriSource);
-        }
-        
-        private IEnumerator GetDepthAssetList (string uriSource) {
             if (IsLoadingDepthAssetList) {
                 throw new Exception("multiple depth description found. only one description is valid.");
             }
@@ -517,11 +530,14 @@ namespace AutoyaFramework.Information {
             executor(coroutine);
         }
 
+        private readonly Dictionary<string, int> defaultTagStrIntPair;
+        private readonly Dictionary<int, string> defaultTagIntStrPair;
+
         private Dictionary<string, int> undefinedTagDict = new Dictionary<string, int>();
 
         public string GetTagFromIndex (int index) {
-			if (index < (int)HtmlTag._END) {
-				return ((HtmlTag)Enum.ToObject(typeof(HtmlTag), index)).ToString();
+			if (index < defaultTagStrIntPair.Count) {
+				return defaultTagIntStrPair[index];
 			}
 
 			if (undefinedTagDict.ContainsValue(index)) {
@@ -532,21 +548,19 @@ namespace AutoyaFramework.Information {
 		}
 
         public int FindOrCreateTag (string tagCandidateStr) {
-            try {
-				// try-catchだと重いかもしれないので、なんか長さとかで足切りを考えるか。
-				var tag = (HtmlTag)Enum.Parse(typeof(HtmlTag), tagCandidateStr);
-				return (int)tag;
-			} catch {
-				// collect undefined tag.
-
-				if (undefinedTagDict.ContainsKey(tagCandidateStr)) {
-					return undefinedTagDict[tagCandidateStr];
-				}
-
-				var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
-				undefinedTagDict[tagCandidateStr] = count;
-				return count;
+            if (defaultTagStrIntPair.ContainsKey(tagCandidateStr)) {
+				return defaultTagStrIntPair[tagCandidateStr];
 			}
+            // collect undefined tag.
+            // Debug.LogError("tagCandidateStr:" + tagCandidateStr);
+
+            if (undefinedTagDict.ContainsKey(tagCandidateStr)) {
+                return undefinedTagDict[tagCandidateStr];
+            }
+            
+            var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
+            undefinedTagDict[tagCandidateStr] = count;
+            return count;
         }
 
         public bool IsCustomTag (int parsedTag) {
