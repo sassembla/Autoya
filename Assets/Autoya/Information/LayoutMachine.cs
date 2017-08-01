@@ -117,23 +117,7 @@ namespace AutoyaFramework.Information {
 			
 			 */
 			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
-			/*
-			        public readonly int parsedTag;
-					public readonly string rawTagName;
-					public readonly string prefabName;
-					public readonly AttributeKVs keyValueStore;
-					public readonly bool isContainer;
-					を使って、
-			 */
-
-			/*
-					public Vector2 anchoredPosition = Vector2.zero;        
-					public Vector2 sizeDelta = Vector2.zero;
-					public Vector2 offsetMin = Vector2.zero;
-					public Vector2 offsetMax = Vector2.zero;
-					public Padding padding = new Padding();
-					を埋めていく。
-			 */
+			
 			var cor = DoLayout(@this, viewCursor);
 			
 			while (cor.MoveNext()) {
@@ -185,7 +169,7 @@ namespace AutoyaFramework.Information {
 				}
 				case TreeType.Content_Text: {
 					Debug.LogError("テキスト");
-					var cor = LayoutTextContent(@this, viewCursor, insertion);
+					var cor = DoTextLayout(@this, viewCursor, insertion);
 					while (cor.MoveNext()) {
 						yield return null;
 					}
@@ -251,19 +235,6 @@ namespace AutoyaFramework.Information {
 		
 
 		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
-			// ここにくるのはこれコンテンツかコンテナだ。コンテンツのみがくると楽なのだが、コンテンツ 含有 コンテナ なので、
-			// 自動的にコンテナがくることがあり得る。まあしょうがない。
-			// で。その分解はparserで済んでると思う。
-			// customTagの機構はタグの機構の完全上位みたいになってるような気がする。まあフローが違うからそうか。
-
-			/*
-				このタグはカスタムタグではない => デフォルトタグなので、resourcesから引いてくるか。一応。
-			*/
-			var path = "Views/" + InformationConstSettings.VIEWNAME_DEFAULT + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
-			// Debug.LogError("default path:" + path + " parsedTag:" + @this.parsedTag + " prefabName:" + @this.prefabName + " isContainer:" + @this.isContainer + " viewCursor:" + viewCursor);
-
-			// んで、prefabの名前はあってると思う。
-			
 			var contentViewCursor = viewCursor;
 			if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
 				throw new Exception("image should define src param.");
@@ -310,6 +281,145 @@ namespace AutoyaFramework.Information {
 			yield return contentViewCursor;
 		}
 
+		/**
+			テキストコンテンツのレイアウトを行う。
+			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
+		 */
+		private IEnumerator<ViewCursor> DoTextLayout (ParsedTree textTree, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
+			var text = textTree.keyValueStore[Attribute._CONTENT] as string;
+			
+			var prefabName = infoResLoader.GetTagFromIndex(textTree.parsedTag);
+
+			Debug.LogError("LayoutTextContent prefabName:" + prefabName);
+			var cor = infoResLoader.LoadTextPrefab(prefabName);
+
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+
+			var prefab = cor.Current;
+
+			// use prefab's text component for using it's text setting.
+			var textComponent = prefab.GetComponent<Text>();
+			if (textComponent == null) {
+				throw new Exception("failed to get Text component from prefab:" + prefabName + " of text content:" + text);
+			}
+
+			if (textComponent.font == null) {
+				throw new Exception("font is null. prefab:" + prefabName);
+			}
+
+			Debug.LogWarning("文字を配置するときの適当な高さをどうやって与えようか考え中。10000は適当。");
+			
+			// set content to prefab.
+			
+			var generator = new TextGenerator();
+			
+			textComponent.text = text;
+			var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, 10000));
+			generator.Populate(text, setting);
+
+			using (new Lock(textComponent, generator)) {
+				// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
+				var lineCount = generator.lineCount;
+				// Debug.LogError("lineCount:" + lineCount);
+				// Debug.LogError("default preferred width:" + textComponent.preferredWidth);
+				
+				// 0行だったら、入らなかったということなので、改行をしてもらってリトライを行う。
+				if (lineCount == 0 && !string.IsNullOrEmpty(textComponent.text)) {
+					insertion(InsertType.RetryWithNextLine, null);
+					yield break;
+				}
+
+				// 1行以上のラインがある。
+
+				/*
+					ここで、offsetXが0ではない場合、行の中間から行を書き出している。
+					かつ2行以上ある場合、1行目は右端まで到達していて、
+					2行目以降はoffsetが0から書かれる必要がある。
+
+					コンテンツを分離し、それを叶える。
+				*/
+				var isStartAtZeroOffset = textViewCursor.offsetX == 0;
+				var isMultilined = 1 < lineCount;
+
+				// 複数行存在するんだけど、2行目のスタートが0文字目の場合、1行目に1文字も入っていない。コンテンツ全体を次の行で開始させる。
+				if (isMultilined && generator.lines[1].startCharIdx == 0) {
+					insertion(InsertType.RetryWithNextLine, null);
+					yield break;
+				}
+
+				if (isStartAtZeroOffset) {
+					if (isMultilined) {
+						// 複数行が頭から出ている状態で、改行を含んでいる。最終行が中途半端なところにあるのが確定しているので、切り離して別コンテンツとして処理する必要がある。
+						var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
+						
+						// 内容の反映
+						textTree.keyValueStore[Attribute._CONTENT] = bodyContent;
+
+						// 最終行
+						var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
+
+						// Debug.LogError("lastLineContent:" + lastLineContent);
+						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
+						var nextLineContent = new ParsedTree(lastLineContent, textTree.parsedTag);
+						insertion(InsertType.InsertContentToNextLine, nextLineContent);
+
+						// 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
+
+						// 最終一つ前までの高さを出して、
+						var totalHeight = 0;
+						for (var i = 0; i < generator.lineCount-1; i++) {
+							var line = generator.lines[i];
+							totalHeight += line.height;
+						}
+
+						// このビューのポジションとしてセット
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
+						// Debug.LogError("newViewCursor:" + newViewCursor);
+						yield return newViewCursor;
+					} else {
+						// 行頭の単一行
+						var width = textComponent.preferredWidth;
+						var height = generator.lines[0].height;
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+						yield return newViewCursor;
+					}
+				} else {
+					if (isMultilined) {
+						// Debug.LogError("行中での折り返しのある文字ヒット");
+						var currentLineHeight = generator.lines[0].height;
+
+						// 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
+						var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
+						textTree.keyValueStore[Attribute._CONTENT] = currentLineContent;
+
+						// get preferredWidht of text from trimmed line.
+						textComponent.text = currentLineContent;
+
+						var currentLineWidth = textComponent.preferredWidth;
+
+						var restContent = text.Substring(generator.lines[1].startCharIdx);
+						var nextLineContent = new ParsedTree(restContent, textTree.parsedTag);
+
+						// 次のコンテンツを新しい行から開始する。
+						insertion(InsertType.InsertContentToNextLine, nextLineContent);
+
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
+						// Debug.LogError("newViewCursor:" + newViewCursor);
+						yield return newViewCursor;
+					} else {
+						// 行の途中に追加された単一行で、いい感じに入った。
+						var width = textComponent.preferredWidth;
+						var height = generator.lines[0].height;
+						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+						yield return newViewCursor;
+					}
+				}
+			}
+		}
+
+
 		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
 			/*
 				子供のタグを整列させる処理。
@@ -329,7 +439,7 @@ namespace AutoyaFramework.Information {
 
 			for (var i = 0; i < childCount; i++) {
 				var child = containerChildren[i];
-				
+				Debug.LogError("child:" + infoResLoader.GetTagFromIndex(child.parsedTag));
 				currentLineRetry: {
 					linedElements.Add(child);
 
@@ -399,7 +509,8 @@ namespace AutoyaFramework.Information {
 
 					// レイアウトが済んだchildの位置を受け取る。
 					var layoutedChildView = cor.Current;
-					// Debug.LogError("layoutedChildView:" + layoutedChildView);
+					Debug.LogError("layoutedChildView:" + layoutedChildView);
+					Debug.Assert(layoutedChildView != null, "layoutedChildView is null.");
 					
 					var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, viewCursor.viewWidth);
 
@@ -558,144 +669,7 @@ namespace AutoyaFramework.Information {
 			yield return new ViewCursor(0, 0, boxedContentViewCursor.viewWidth, 0);
 		}
 
-		/**
-			テキストコンテンツのレイアウトを行う。
-			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
-		 */
-		private IEnumerator<ViewCursor> LayoutTextContent (ParsedTree textTree, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
-			var text = textTree.keyValueStore[Attribute._CONTENT] as string;
-			
-			var prefabName = infoResLoader.GetTagFromIndex(textTree.parsedTag);
-
-			Debug.LogError("LayoutTextContent prefabName:" + prefabName);
-			var cor = infoResLoader.LoadTextPrefab(prefabName);
-
-			while (cor.MoveNext()) {
-				yield return null;
-			}
-
-			var prefab = cor.Current;
-
-			// use prefab's text component for using it's text setting.
-			var textComponent = prefab.GetComponent<Text>();
-			if (textComponent == null) {
-				throw new Exception("failed to get Text component from prefab:" + prefabName + " of text content:" + text);
-			}
-
-			if (textComponent.font == null) {
-				throw new Exception("font is null. prefab:" + prefabName);
-			}
-
-			Debug.LogWarning("文字を配置するときの適当な高さをどうやって与えようか考え中。10000は適当。");
-			
-			// set content to prefab.
-			
-			var generator = new TextGenerator();
-			
-			textComponent.text = text;
-			var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, 10000));
-			generator.Populate(text, setting);
-
-			using (new Lock(textComponent, generator)) {
-				// この時点で、複数行に分かれるんだけど、最後の行のみ分離する必要がある。
-				var lineCount = generator.lineCount;
-				// Debug.LogError("lineCount:" + lineCount);
-				// Debug.LogError("default preferred width:" + textComponent.preferredWidth);
-				
-				// 0行だったら、入らなかったということなので、改行をしてもらってリトライを行う。
-				if (lineCount == 0 && !string.IsNullOrEmpty(textComponent.text)) {
-					insertion(InsertType.RetryWithNextLine, null);
-					yield break;
-				}
-
-				// 1行以上のラインがある。
-
-				/*
-					ここで、offsetXが0ではない場合、行の中間から行を書き出している。
-					かつ2行以上ある場合、1行目は右端まで到達していて、
-					2行目以降はoffsetが0から書かれる必要がある。
-
-					コンテンツを分離し、それを叶える。
-				*/
-				var isStartAtZeroOffset = textViewCursor.offsetX == 0;
-				var isMultilined = 1 < lineCount;
-
-				// 複数行存在するんだけど、2行目のスタートが0文字目の場合、1行目に1文字も入っていない。コンテンツ全体を次の行で開始させる。
-				if (isMultilined && generator.lines[1].startCharIdx == 0) {
-					insertion(InsertType.RetryWithNextLine, null);
-					yield break;
-				}
-
-				if (isStartAtZeroOffset) {
-					if (isMultilined) {
-						// 複数行が頭から出ている状態で、改行を含んでいる。最終行が中途半端なところにあるのが確定しているので、切り離して別コンテンツとして処理する必要がある。
-						var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
-						
-						// 内容の反映
-						textTree.keyValueStore[Attribute._CONTENT] = bodyContent;
-
-						// 最終行
-						var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
-
-						// Debug.LogError("lastLineContent:" + lastLineContent);
-						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
-						var nextLineContent = new ParsedTree(lastLineContent, textTree.parsedTag);
-						insertion(InsertType.InsertContentToNextLine, nextLineContent);
-
-						// 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
-
-						// 最終一つ前までの高さを出して、
-						var totalHeight = 0;
-						for (var i = 0; i < generator.lineCount-1; i++) {
-							var line = generator.lines[i];
-							totalHeight += line.height;
-						}
-
-						// このビューのポジションとしてセット
-						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
-						// Debug.LogError("newViewCursor:" + newViewCursor);
-						yield return newViewCursor;
-					} else {
-						// 行頭の単一行
-						var width = textComponent.preferredWidth;
-						var height = generator.lines[0].height;
-						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
-						yield return newViewCursor;
-					}
-				} else {
-					if (isMultilined) {
-						// Debug.LogError("行中での折り返しのある文字ヒット");
-						var currentLineHeight = generator.lines[0].height;
-
-						// 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
-						var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
-						textTree.keyValueStore[Attribute._CONTENT] = currentLineContent;
-
-						// get preferredWidht of text from trimmed line.
-						textComponent.text = currentLineContent;
-
-						var currentLineWidth = textComponent.preferredWidth;
-
-						var restContent = text.Substring(generator.lines[1].startCharIdx);
-						var nextLineContent = new ParsedTree(restContent, textTree.parsedTag);
-
-						// 次のコンテンツを新しい行から開始する。
-						insertion(InsertType.InsertContentToNextLine, nextLineContent);
-
-						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
-						// Debug.LogError("newViewCursor:" + newViewCursor);
-						yield return newViewCursor;
-					} else {
-						// 行の途中に追加された単一行で、いい感じに入った。
-						var width = textComponent.preferredWidth;
-						var height = generator.lines[0].height;
-						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
-						yield return newViewCursor;
-					}
-				}
-			}
-		}
-
+		
 		private class Lock : IDisposable {
             private Text textComponent;
 			private TextGenerator gen;

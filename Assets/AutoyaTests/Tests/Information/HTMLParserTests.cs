@@ -193,4 +193,23 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(parsedRoot.GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 1, "not match 1. actual:" + parsedRoot.GetChildren()[0].parsedTag);
         Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 2, "not match 2. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
     }
+
+    [MTest] public void ParseImageAsImgContent () {
+        var sampleHtml = @"
+<img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
+
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+            parsedRoot = parsed;
+        });
+        Autoya.Mainthread_Commit(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
+
+        Assert(parsedRoot.GetChildren().Count == 1, "not match.");
+        Assert(parsedRoot.GetChildren()[0].parsedTag == (int)HtmlTag.img, "not match 1. actual:" + parsedRoot.GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Content_Img, "not match.");
+    }
 }
