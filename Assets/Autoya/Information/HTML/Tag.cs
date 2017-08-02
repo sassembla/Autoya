@@ -11,9 +11,12 @@ namespace AutoyaFramework.Information {
 		body,
 
 		title,
+		
+		h1,h2,h3,h4,h5,h6,
+		pre,strong,code,em,
 
         a,
-		blockquote,
+		p,
 		
 		// value itself tags.
 		br,

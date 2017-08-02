@@ -177,10 +177,6 @@ namespace AutoyaFramework.Information {
 					resultViewCursor = cor.Current;
 					break;
 				}
-				case TreeType.Content_Link: {
-					Debug.LogError("Content_Link まだ。テキストと同様なんだけど分解されない系。");
-					break;
-				}
 				default: {
 					throw new Exception("unexpected tree type:" + @this.treeType);
 				}

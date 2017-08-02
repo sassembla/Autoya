@@ -12,11 +12,25 @@ namespace AutoyaFramework.Information {
 
     [Serializable] public class CustomTagList {
         [SerializeField] public string viewName;
-        [SerializeField] public LayerInfo[] constraints;
+        [SerializeField] public ContentInfo[] contents;
+        [SerializeField] public LayerInfo[] layerConstraints;
         
-        public CustomTagList (string viewName, LayerInfo[] constraints) {
+        public CustomTagList (string viewName, ContentInfo[] contents, LayerInfo[] constraints) {
             this.viewName = viewName;
-            this.constraints = constraints;
+            this.contents = contents;
+            this.layerConstraints = constraints;
+        }
+    }
+
+    [Serializable] public class ContentInfo {
+        [SerializeField] public string contentName;
+        [SerializeField] public TreeType type;
+        [SerializeField] public string loadPath;
+
+        public ContentInfo (string contentName, TreeType type, string loadPath) {
+            this.contentName = contentName;
+            this.type = type;
+            this.loadPath = loadPath;
         }
     }
 
@@ -146,7 +160,7 @@ namespace AutoyaFramework.Information {
                 // pass.
             } else {
                 // create default list for default assets.
-                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new LayerInfo[0]);
+                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
             }
 
             var viewName = this.depthAssetList.viewName;
@@ -170,39 +184,76 @@ namespace AutoyaFramework.Information {
             }
 		}
 
+        public TreeType GetTreeType (int tag) {
+            // 組み込みtagであれば、静的に解決できる。
+            if (defaultTagIntStrPair.ContainsKey(tag)) {
+				switch (tag) {
+                    case (int)HtmlTag.a: {
+                        return TreeType.Content_Text;
+                    }
+                    case (int)HtmlTag.img: {
+                        return TreeType.Content_Img;
+                    }
+                    case (int)HtmlTag.hr:
+                    case (int)HtmlTag.br: {
+                        return TreeType.Content_Empty;
+                    }
+                    default: {
+                        return TreeType.Container;
+                    }
+                }
+			}
+
+            // tag is not default.
+            
+            // var customTag = GetTagFromIndex(tag);
+            Debug.LogWarning("何かしら、カスタムタグに対して、種類設定を行う必要がある。この情報もAntimaterializeに入ってるといいな。");
+            // switch (customTag) {
+
+            // }
+            return TreeType.CustomLayer;
+        }
+
         public IEnumerator<GameObject> LoadTextPrefab (string textPrefabName) {
             GameObject loadedPrefab = null;
-
+            
             Action<GameObject> onLoaded = obj => {
                 loadedPrefab = obj;
             };
 
             Action onLoadFailed = () => {
-                Debug.LogError("特に把握できない理由が得られる");
+                // do nothing.
             };
 
-            var viewName = DepthAssetList().viewName;
-            
-            switch (viewName) {
-                case InformationConstSettings.VIEWNAME_DEFAULT: {
-                    // default path.
-                    var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
+            Debug.LogWarning("デフォルトのプレファブをviewNameから読むか、デフォから読むか、判断せねば。");
+            {
+                // default path.
+                var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + DepthAssetList().viewName + "/";
 
-                    var loadingPrefabName = defaultPath + textPrefabName;
-                    
-                    var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
-                    while (cor.MoveNext()) {
-                        yield return null;
-                    }
-                    break;
+                var loadingPrefabName = defaultPath + textPrefabName;
+                
+                var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
+                while (cor.MoveNext()) {
+                    yield return null;
                 }
-                default: {
-                    Debug.LogError("viewName:" + viewName + " がdefaultでないものに対して");
-                    
-                    break;
+            }
+
+            // 暫定で、なかったらdefault path.
+            if (loadedPrefab == null) {
+                Debug.LogWarning("defaultから読む");
+                var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
+
+                var loadingPrefabName = defaultPath + textPrefabName;
+                
+                var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
+                while (cor.MoveNext()) {
+                    yield return null;
                 }
             }
             
+            if (loadedPrefab == null) {
+                throw new Exception("failed to load text prefab:" + textPrefabName);
+            }
             yield return loadedPrefab;
         }
 
@@ -351,7 +402,7 @@ namespace AutoyaFramework.Information {
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new LayerInfo[0]);// set empty list.
+                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
                 IsLoadingDepthAssetList = false;
             };
 
@@ -377,7 +428,7 @@ namespace AutoyaFramework.Information {
 
         public CustomTagList DepthAssetList () {
             if (this.depthAssetList == null) {
-                return new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new LayerInfo[0]);
+                return new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
             }
 
             return this.depthAssetList;

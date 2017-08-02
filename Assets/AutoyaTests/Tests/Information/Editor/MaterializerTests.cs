@@ -84,7 +84,7 @@ namespace AutoyaFramework.Information {
 					var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
 					Debug.Assert(list.viewName == testTargetSampleObjName);
 
-					var boxConstraintes = list.constraints;
+					var boxConstraintes = list.layerConstraints;
 					
 					// 本体 + MyImgItemの2レイヤーで2
 					Debug.Assert(boxConstraintes.Length == 2, "boxConstraints:" + boxConstraintes.Length);
@@ -130,7 +130,7 @@ namespace AutoyaFramework.Information {
 					var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
 					Debug.Assert(list.viewName == testTargetSampleObjName);
 
-					var boxConstraints = list.constraints;
+					var boxConstraints = list.layerConstraints;
 					
 					// MyImgAndTextItem, IMG, Text_CONTAINER, Text の4つが吐かれる
 					Debug.Assert(boxConstraints.Length == 4, "boxConstraints:" + boxConstraints.Length);

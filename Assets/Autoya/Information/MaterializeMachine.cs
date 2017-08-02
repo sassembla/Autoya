@@ -118,25 +118,6 @@ namespace AutoyaFramework.Information {
 
 			// set parameters.
 			switch (currentTree.treeType) {
-				case TreeType.Content_Link: {
-					foreach (var kvs in currentTree.keyValueStore) {
-						var key = kvs.Key;
-						switch (key) {
-							case Attribute.HREF: {
-								var href = kvs.Value as string;
-
-								// add button component.
-								AddButton(obj, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(currentTree.parsedTag), href));
-								break;
-							}
-							default: {
-								// do nothing.
-								break;
-							}
-						}
-					}
-					break;
-				}
 				case TreeType.Content_Img: {
 					var src = currentTree.keyValueStore[Attribute.SRC] as string;
 					
@@ -164,6 +145,14 @@ namespace AutoyaFramework.Information {
 									var textComponent = obj.GetComponent<Text>();
 									textComponent.text = text;
 								}
+								break;
+							}
+							case Attribute.HREF: {
+								Debug.LogError("このへんだいぶ怪しい気がする。");
+								var href = kvs.Value as string;
+
+								// add button component.
+								AddButton(obj, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(currentTree.parsedTag), href));
 								break;
 							}
 							

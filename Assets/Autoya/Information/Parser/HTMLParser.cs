@@ -203,8 +203,8 @@ namespace AutoyaFramework.Information {
 
 										var tagPoint2 = new ParsedTree(
 											tag, 
-											parentTree,
-											kv
+											kv,
+											infoResLoader.GetTreeType(tag)
 										);
 										tagPoint2.SetParent(parentTree);
 
@@ -244,8 +244,8 @@ namespace AutoyaFramework.Information {
 												
 									var tagPoint = new ParsedTree(
 										tag, 
-										parentTree,
-										kv
+										kv,
+										infoResLoader.GetTreeType(tag)
 									);
 									tagPoint.SetParent(parentTree);
 									
@@ -310,9 +310,9 @@ namespace AutoyaFramework.Information {
 									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
 									
 									var tree = new ParsedTree(
-										tag, 
-										parentTree,
-										kv
+										tag,
+										kv,
+										infoResLoader.GetTreeType(tag)
 									);
 									tree.SetParent(parentTree);
 									

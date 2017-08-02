@@ -54,11 +54,13 @@ namespace AutoyaFramework.Information {
             
             // childrenがいろいろなタグの根本にあたる。
             var constraints = new List<LayerInfo>();
+            var contents = new List<ContentInfo>();
+
             // recursiveに、コンテンツを分解していく。
             for (var i = 0; i < target.transform.childCount; i++) {
                 var child = target.transform.GetChild(i);
                 
-                CollectConstraints(viewName, child.gameObject, constraints);
+                CollectConstraintsAndContents(viewName, child.gameObject, constraints, contents);
             }
             
             if (!constraints.Any()) {
@@ -67,7 +69,7 @@ namespace AutoyaFramework.Information {
             }
 
             var listFileName = "DepthAssetList.txt";
-            var depthAssetList = new CustomTagList(viewName, constraints.ToArray());
+            var depthAssetList = new CustomTagList(viewName, contents.ToArray(), constraints.ToArray());
 
             
             var jsonStr = JsonUtility.ToJson(depthAssetList);
@@ -81,13 +83,87 @@ namespace AutoyaFramework.Information {
         /**
             存在するパーツ単位でconstraintsを生成する
          */
-        private static void CollectConstraints (string viewName, GameObject source, List<LayerInfo> currentConstraints) {
+        private static void CollectConstraintsAndContents (string viewName, GameObject source, List<LayerInfo> currentConstraints, List<ContentInfo> currentContents) {
             // このレイヤーにあるものに対して、まずコピーを生成し、そのコピーに対して処理を行う。
-            var currentLayerInstance = GameObject.Instantiate(source);
-            currentLayerInstance.name = source.name;
+            var currentTargetInstance = GameObject.Instantiate(source);
+            currentTargetInstance.name = source.name;
             
-            using (new GameObjectDeleteUsing(currentLayerInstance)) {
-                ModifyLayerInstance(viewName, currentLayerInstance, currentConstraints);
+            // ここでは、同じ名前のcontentがすでにあればエラーを出して終了する。
+            if (currentContents.Where(c => c.contentName == currentTargetInstance.name).Any()) {
+                throw new Exception("duplicate content:" + currentTargetInstance.name + ". do not duplicate.");
+            }
+
+            if (currentConstraints.Where(c => c.layerName == currentTargetInstance.name).Any()) {
+                throw new Exception("duplicate layer:" + currentTargetInstance.name + ". do not duplicate.");
+            }
+            
+
+            using (new GameObjectDeleteUsing(currentTargetInstance)) {
+                switch (currentTargetInstance.transform.childCount) {
+                    case 0: {
+                        // target is content.
+                        ModifyContentInstance(viewName, currentTargetInstance, currentContents);
+                        break;
+                    }
+                    default: {
+                        // target is layer.
+                        ModifyLayerInstance(viewName, currentTargetInstance, currentConstraints);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private static void ModifyContentInstance (string viewName, GameObject currentContentInstance, List<ContentInfo> currentContents) {
+            var contentName = currentContentInstance.name;
+            
+            // 画像か文字を含んでいるコンテンツで、コードも可。でもボタンの実行に関しては画像に対してボタンが勝手にセットされる。ボタンをつけたらエラー。
+            // 文字のリンク化も勝手に行われる。というかあれもボタンだっけ。
+            // ボタンコンポーネントが付いていたら外す。
+            if (currentContentInstance.GetComponent<Button>() != null) {
+                throw new Exception("do not attach Button component directory. Button component will be attached automatically.");
+            }
+
+            var components = currentContentInstance.GetComponents<Component>();
+            if (components.Length < 2) {
+                throw new Exception("should have at least 2 component. 1st is rectTransform, 2nd is image or text.");
+            }
+
+            foreach (var s in components) {
+                Debug.LogError("s:" + s);
+            }
+            
+            // 2番目のコンポーネントを使う。
+            var currentFirstComponent = components[1];
+            var type = TreeType.Content_Img;
+            switch (currentFirstComponent.GetType().Name) {
+                case "Image": {
+                    type = TreeType.Content_Img;
+                    break;
+                }
+                case "Text": {
+                    type = TreeType.Content_Text;
+                    break;
+                }
+                default: {
+                    throw new Exception("unsupported second component on content. found component type:" + currentFirstComponent);
+                }
+            }
+
+            // 名前を登録する
+            Debug.LogWarning("loadPathのデフォルトどうしようね。とりあえずresourcesかな。");
+            currentContents.Add(new ContentInfo(contentName, type, "test"));
+
+            // このコンポーネントをprefab化する
+            {
+                var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + contentName.ToUpper() + ".prefab";
+                var dirPath = Path.GetDirectoryName(prefabPath);
+                
+                FileController.CreateDirectoryRecursively(dirPath);
+                PrefabUtility.CreatePrefab(prefabPath, currentContentInstance);
+
+                // 自体の削除
+                GameObject.DestroyImmediate(currentContentInstance);
             }
         }
 
@@ -198,7 +274,7 @@ namespace AutoyaFramework.Information {
                     取り出しておいたchildに対して再帰
                 */
                 foreach (var disposableChild in copiedChildList) {
-                    CollectConstraints(viewName, disposableChild, currentConstraints);
+                    ModifyLayerInstance(viewName, disposableChild, currentConstraints);
                 }
             }
         }

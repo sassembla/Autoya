@@ -11,7 +11,7 @@ namespace AutoyaFramework.Information {
             this.infoResLoader = infoResLoader;
             this.constraintsDict = new Dictionary<string, BoxConstraint[]>();
 
-            var constraints = infoResLoader.DepthAssetList().constraints;
+            var constraints = infoResLoader.DepthAssetList().layerConstraints;
 
             foreach (var constraint in constraints) {
                 constraintsDict[constraint.layerName.ToLower()] = constraint.constraints;
@@ -86,7 +86,7 @@ namespace AutoyaFramework.Information {
                     var newBoxTreeAttr = new AttributeKVs(){
                         {Attribute._BOX, matchedBoxies[0].rect}
                     };
-                    var boxTree = new ParsedTree(newTagId, tree, newBoxTreeAttr);
+                    var boxTree = new ParsedTree(newTagId, newBoxTreeAttr, TreeType.CustomBox);
                     
                     // すでに入っているchildとboxTreeを交換
                     tree.ReplaceChildren(child, boxTree);

@@ -15,10 +15,9 @@ namespace AutoyaFramework.Information {
         Container,
         Content_Text,
         Content_Img,
-        Content_Link,
+        Content_Empty,
         CustomLayer,
         CustomBox,
-        CustomContent
     }
     /**
         parsed tree structure.
@@ -88,10 +87,10 @@ namespace AutoyaFramework.Information {
             this.treeType = TreeType.Content_Text;
         }
 
-        public ParsedTree (int parsedTag, ParsedTree parent, AttributeKVs kv) {
+        public ParsedTree (int parsedTag, AttributeKVs kv, TreeType treeType) {
             this.parsedTag = parsedTag;
             this.keyValueStore = kv;
-            this.treeType = TreeType.Container;
+            this.treeType = treeType;
 
             /*
                 カスタムタグは、レイヤーとボックスに分かれるんだけど、まあそういうこともあっていろいろ詳しくやっとくのがいいか。
@@ -137,6 +136,9 @@ namespace AutoyaFramework.Information {
                     prefabを読み込む
                 
                 というだけだ。
+
+                レイアウト時にprefabが必要なのがテキストで、これはテキストサイズとかを判別するために必要になってくる。
+                infoResLoaderが外側にいるので、そこから種類をもらうとしよう。
              */
         }
         
