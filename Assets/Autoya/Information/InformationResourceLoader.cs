@@ -157,11 +157,6 @@ namespace AutoyaFramework.Information {
 			}
         }
 
-        public GameObject LoadPrefabSync (string path) {
-            return Resources.Load(path) as GameObject;
-        }
-
-
         /**
             load prefab from AssetBundle or Resources.
          */
@@ -183,9 +178,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
                 default: {
-                    Debug.LogError("viewName:" + viewName);
-                    
-                    // これだけになるはず。カスタムタグなので、ビューの名前だけで弾ける。
+                    Debug.LogWarning("LoadPrefab viewName:" + viewName);
                     coroutine = LoadPrefabByDepth(tree, onLoaded, onLoadFailed);
                     break;
                 }
@@ -242,7 +235,7 @@ namespace AutoyaFramework.Information {
             if (customTagTypeDict.ContainsKey(textPrefabName.ToLower())) {
                 var loadPath = customTagList.contents.Where(t => t.contentName == textPrefabName.ToLower()).FirstOrDefault().loadPath;
                 Debug.LogWarning("これはloadPathから読むべきなのだな。loadPath:" + loadPath);
-                
+
                 // specific view path.
                 var viewPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + DepthAssetList().viewName + "/";
 

@@ -62,7 +62,7 @@ namespace AutoyaFramework.Information {
                 // whereでの名前一致が辛い。まあでもいいか。
                 var matchedBoxies = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
                 if (!matchedBoxies.Any()) {
-                    throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + infoResLoader.GetTagFromIndex(tree.parsedTag));
+                    throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + infoResLoader.GetTagFromIndex(tree.parsedTag) + " newBoxName:" + newBoxName);
                 }
 
                 // pass.
