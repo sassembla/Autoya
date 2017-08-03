@@ -223,7 +223,7 @@ namespace AutoyaFramework.Information {
             // foreach (var s in customTagTypeDict.Keys) {
             //     Debug.LogError("s:" + s);
             // }
-            
+
             return customTagTypeDict[customTagStr];
         }
 
@@ -238,22 +238,21 @@ namespace AutoyaFramework.Information {
                 // do nothing.
             };
 
-            Debug.LogWarning("デフォルトのプレファブをviewNameから読むか、デフォから読むか、判断せねば。");
-            {
-                // default path.
-                var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + DepthAssetList().viewName + "/";
+            // load text prefab from loadPath.
+            if (customTagTypeDict.ContainsKey(textPrefabName.ToLower())) {
+                var loadPath = customTagList.contents.Where(t => t.contentName == textPrefabName.ToLower()).FirstOrDefault().loadPath;
+                Debug.LogWarning("これはloadPathから読むべきなのだな。loadPath:" + loadPath);
+                
+                // specific view path.
+                var viewPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + DepthAssetList().viewName + "/";
 
-                var loadingPrefabName = defaultPath + textPrefabName;
+                var loadingPrefabName = viewPath + textPrefabName;
                 
                 var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
                 while (cor.MoveNext()) {
                     yield return null;
                 }
-            }
-
-            // 暫定で、なかったらdefault path.
-            if (loadedPrefab == null) {
-                Debug.LogWarning("defaultから読む");
+            } else {
                 var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
 
                 var loadingPrefabName = defaultPath + textPrefabName;
@@ -396,7 +395,7 @@ namespace AutoyaFramework.Information {
         public bool IsLoadingDepthAssetList {
             get; private set;
         }
-        private Dictionary<string, TreeType> customTagTypeDict;
+        private Dictionary<string, TreeType> customTagTypeDict = new Dictionary<string, TreeType>();
 
         public IEnumerator LoadDepthAssetList (string uriSource) {
             if (IsLoadingDepthAssetList) {

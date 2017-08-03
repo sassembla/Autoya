@@ -134,47 +134,28 @@ namespace AutoyaFramework.Information {
 		}
 
 		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
-			var resultViewCursor = new ViewCursor(viewCursor);
-
-			Debug.LogWarning("最終的にienumを渡してcor.moveNextするところをくくり出してもいいかも。");
+			IEnumerator<ViewCursor> cor = null;
+			
 			switch (@this.treeType) {
 				case TreeType.CustomLayer: {
-					var cor = DoCustomTagContainerLayout(@this, viewCursor);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-
-					Debug.LogError("カスタムタグの計算結果を返す");
+					cor = DoCustomTagContainerLayout(@this, viewCursor);
+					
+					Debug.LogError("カスタムレイヤの計算結果を返す");
 					break;
 				}
 				case TreeType.Container: {
 					Debug.LogError("コンテナ");
-					var cor = DoContainerLayout(@this, viewCursor);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-
-					resultViewCursor = cor.Current;
+					cor = DoContainerLayout(@this, viewCursor);
 					break;
 				}
 				case TreeType.Content_Img: {
 					Debug.LogError("画像");
-					var cor = DoImgLayout(@this, viewCursor, insertion);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-
-					resultViewCursor = cor.Current;
+					cor = DoImgLayout(@this, viewCursor, insertion);
 					break;
 				}
 				case TreeType.Content_Text: {
 					Debug.LogError("テキスト");
-					var cor = DoTextLayout(@this, viewCursor, insertion);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-
-					resultViewCursor = cor.Current;
+					cor = DoTextLayout(@this, viewCursor, insertion);
 					break;
 				}
 				default: {
@@ -182,7 +163,11 @@ namespace AutoyaFramework.Information {
 				}
 			}
 
-			yield return resultViewCursor;
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+
+			yield return cor.Current;
 		}
 		
 		/**
