@@ -213,7 +213,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Content_Img, "not match.");
     }
 
-    [MTest] public void ParseCustomTextAsTextContent () {
+    [MTest] public void ParseCustomImgAsImgContent () {
         var sampleHtml = @"
 <!--depth asset list url(resources://Views/ParserTestImgView/DepthAssetList)-->
 <myimg src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
@@ -229,6 +229,25 @@ public class HTMLParserTests : MiyamasuTestRunner {
         );
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Content_Img, "not match.");
+        Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Content_Img, "not match. expected:" + TreeType.Content_Img + " actual:" + parsedRoot.GetChildren()[0].treeType);
+    }
+
+    [MTest] public void ParseCustomTextAsTextContent () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/ParserTestTextView/DepthAssetList)-->
+<mytext>text</mytext>";
+
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+            parsedRoot = parsed;
+        });
+        Autoya.Mainthread_Commit(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
+
+        Assert(parsedRoot.GetChildren().Count == 1, "not match.");
+        Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Container, "not match. expected:" + TreeType.Container + " actual:" + parsedRoot.GetChildren()[0].treeType);
     }
 }

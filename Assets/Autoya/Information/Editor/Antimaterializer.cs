@@ -63,11 +63,6 @@ namespace AutoyaFramework.Information {
                 CollectConstraintsAndContents(viewName, child.gameObject, constraints, contents);
             }
             
-            if (!constraints.Any()) {
-                Debug.Log("cancelled antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath + " because this layer is empty. please add 1 or more asset on layer.");
-                return;
-            }
-
             var listFileName = "DepthAssetList.txt";
             var depthAssetList = new CustomTagList(viewName, contents.ToArray(), constraints.ToArray());
 
@@ -77,7 +72,7 @@ namespace AutoyaFramework.Information {
                 sw.WriteLine(jsonStr);
             }
             AssetDatabase.Refresh();
-            Debug.Log("fiished antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath);
+            Debug.Log("finished antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath);
         }
 
         /**
@@ -115,7 +110,7 @@ namespace AutoyaFramework.Information {
         }
 
         private static void ModifyContentInstance (string viewName, GameObject currentContentInstance, List<ContentInfo> currentContents) {
-            var contentName = currentContentInstance.name;
+            var contentName = currentContentInstance.name.ToLower();
             
             // 画像か文字を含んでいるコンテンツで、コードも可。でもボタンの実行に関しては画像に対してボタンが勝手にセットされる。ボタンをつけたらエラー。
             // 文字のリンク化も勝手に行われる。というかあれもボタンだっけ。
@@ -125,16 +120,16 @@ namespace AutoyaFramework.Information {
             }
 
             var components = currentContentInstance.GetComponents<Component>();
-            if (components.Length < 2) {
-                throw new Exception("should have at least 2 component. 1st is rectTransform, 2nd is image or text.");
+            if (components.Length < 3) {
+                throw new Exception("should have at least 3 component. 1st is rectTransform, 2nd is canvasRendererm 3rd is image or text.");
             }
 
-            foreach (var s in components) {
-                Debug.LogError("s:" + s);
-            }
+            // foreach (var s in components) {
+            //     Debug.LogError("s:" + s.GetType().Name);
+            // }
             
-            // 2番目のコンポーネントを使う。
-            var currentFirstComponent = components[1];
+            // 3番目のコンポーネントを使う。
+            var currentFirstComponent = components[2];
             var type = TreeType.Content_Img;
             switch (currentFirstComponent.GetType().Name) {
                 case "Image": {
@@ -142,7 +137,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
                 case "Text": {
-                    type = TreeType.Content_Text;
+                    type = TreeType.Container;// not Content_Text. this is container.
                     break;
                 }
                 default: {
@@ -177,7 +172,8 @@ namespace AutoyaFramework.Information {
             rectTrans.pivot = new Vector2(0,1);
 
 
-            var layerName = currentLayerInstance.name;
+            var layerName = currentLayerInstance.name.ToLower();
+
             var childrenConstraintDict = new Dictionary<string, BoxPos>();
             var copiedChildList = new List<GameObject>();
             

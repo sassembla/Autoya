@@ -20,6 +20,18 @@ namespace AutoyaFramework.Information {
             this.contents = contents;
             this.layerConstraints = constraints;
         }
+
+        public Dictionary<string, TreeType> GetTagTypeDict () {
+            var tagNames = new Dictionary<string, TreeType>();
+            foreach (var content in contents) {
+                tagNames[content.contentName] = content.type;
+            }
+            foreach (var constraint in layerConstraints) {
+                tagNames[constraint.layerName] = TreeType.CustomLayer;
+            }
+            
+            return tagNames;
+        }
     }
 
     [Serializable] public class ContentInfo {
@@ -156,14 +168,14 @@ namespace AutoyaFramework.Information {
         public IEnumerator LoadPrefab (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
             IEnumerator coroutine = null;
 
-            if (this.depthAssetList != null) {
+            if (this.customTagList != null) {
                 // pass.
             } else {
                 // create default list for default assets.
-                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
+                this.customTagList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
             }
 
-            var viewName = this.depthAssetList.viewName;
+            var viewName = this.customTagList.viewName;
             
             switch (viewName) {
                 case InformationConstSettings.VIEWNAME_DEFAULT: {
@@ -206,12 +218,13 @@ namespace AutoyaFramework.Information {
 
             // tag is not default.
             
-            // var customTag = GetTagFromIndex(tag);
-            Debug.LogWarning("何かしら、カスタムタグに対して、種類設定を行う必要がある。この情報もAntimaterializeに入ってるといいな。");
-            // switch (customTag) {
-
+            var customTagStr = GetTagFromIndex(tag);
+            // Debug.LogError("customTagStr:" + customTagStr);
+            // foreach (var s in customTagTypeDict.Keys) {
+            //     Debug.LogError("s:" + s);
             // }
-            return TreeType.CustomLayer;
+            
+            return customTagTypeDict[customTagStr];
         }
 
         public IEnumerator<GameObject> LoadTextPrefab (string textPrefabName) {
@@ -379,11 +392,12 @@ namespace AutoyaFramework.Information {
         }
         
 
-        private CustomTagList depthAssetList;
+        private CustomTagList customTagList;
         public bool IsLoadingDepthAssetList {
             get; private set;
         }
-        
+        private Dictionary<string, TreeType> customTagTypeDict;
+
         public IEnumerator LoadDepthAssetList (string uriSource) {
             if (IsLoadingDepthAssetList) {
                 throw new Exception("multiple depth description found. only one description is valid.");
@@ -395,14 +409,15 @@ namespace AutoyaFramework.Information {
             IsLoadingDepthAssetList = true;
 
 
-            Action<CustomTagList> succeeded = (depthAssetList) => {
-                this.depthAssetList = depthAssetList;
+            Action<CustomTagList> succeeded = customTagList => {
+                this.customTagList = customTagList;
+                this.customTagTypeDict = this.customTagList.GetTagTypeDict();
                 IsLoadingDepthAssetList = false;
             };
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.depthAssetList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
+                this.customTagList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
                 IsLoadingDepthAssetList = false;
             };
 
@@ -427,11 +442,11 @@ namespace AutoyaFramework.Information {
 
 
         public CustomTagList DepthAssetList () {
-            if (this.depthAssetList == null) {
+            if (this.customTagList == null) {
                 return new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
             }
 
-            return this.depthAssetList;
+            return this.customTagList;
         }
 
         private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action failed) {

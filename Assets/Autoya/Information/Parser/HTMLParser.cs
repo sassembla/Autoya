@@ -394,6 +394,7 @@ namespace AutoyaFramework.Information {
 			}
 		}
 
+		
 		private string GetContentOfCommentTag (string data, int offset, out int tagEndPos) {
 			var startPos = data.IndexOf("<!--", offset);
 			if (startPos == -1) {
