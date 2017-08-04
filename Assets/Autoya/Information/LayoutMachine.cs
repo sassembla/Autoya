@@ -139,12 +139,12 @@ namespace AutoyaFramework.Information {
 			switch (@this.treeType) {
 				case TreeType.CustomLayer: {
 					Debug.LogError("カスタムレイヤ");
-					cor = DoCustomTagLayerLayout(@this, viewCursor);
+					cor = DoLayerLayout(@this, viewCursor);
 					break;
 				}
 				case TreeType.CustomEmptyLayer: {
-					Debug.LogError("中身のないカスタムレイヤのレイアウトはコンテナと同様で、ただし高さのセットを崩さない(縮まない)");
-					cor = DoContainerLayout(@this, viewCursor);
+					Debug.LogError("中身のないカスタムレイヤ");
+					cor = DoEmptyLayerLayout(@this, viewCursor);
 					break;
 				}
 				case TreeType.Container: {
@@ -179,7 +179,7 @@ namespace AutoyaFramework.Information {
 			customTagLayer/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
 			ここだけ相対的なレイアウトが崩れる。
 		 */
-		private IEnumerator<ViewCursor> DoCustomTagLayerLayout (ParsedTree @this, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoLayerLayout (ParsedTree @this, ViewCursor viewCursor) {
 			// 親コンテンツのサイズを継承
 			@this.SetPosFromViewCursor(viewCursor);
 
@@ -227,6 +227,26 @@ namespace AutoyaFramework.Information {
 			Debug.LogError("ここでカスタムタグ自体のサイズを変更する。　additionalHeight:" + additionalHeight);
 			viewCursor.viewHeight += additionalHeight;
 			yield return viewCursor;
+		}
+
+		private IEnumerator<ViewCursor> DoEmptyLayerLayout (ParsedTree @this, ViewCursor viewCursor) {
+			
+			var baseViewCursorHeight = viewCursor.viewHeight;
+			var cor = DoContainerLayout(@this, viewCursor);
+
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+			
+			var resultViewCursor = cor.Current;
+			
+			// 縮まない。伸びるぶんには放置。
+			if (resultViewCursor.viewHeight < baseViewCursorHeight) {
+				resultViewCursor.viewHeight = baseViewCursorHeight;
+			}
+
+			@this.SetPosFromViewCursor(resultViewCursor);
+			yield return resultViewCursor;
 		}
 
 		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {

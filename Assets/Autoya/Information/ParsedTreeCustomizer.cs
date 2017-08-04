@@ -32,7 +32,7 @@ namespace AutoyaFramework.Information {
             foreach (var child in tree.GetChildren()) {
                 if (IsCustomTag(child.parsedTag)) {
                     // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグ。");
-                    ExpandCustomTag(child);
+                    ExpandCustomTagToLayer(child);
                 } else {
                     // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグではない");
                     TraverseTagRecursive(child);
@@ -43,9 +43,8 @@ namespace AutoyaFramework.Information {
         /**
             カスタムタグの内容を分解し、存在するchildの代わりにboxを挿入する。
          */
-        private void ExpandCustomTag (ParsedTree tree) {
+        private void ExpandCustomTagToLayer (ParsedTree tree) {
             var adoptedConstaints = GetConstraints(tree.parsedTag);
-            Debug.LogError("expanding custom layer:" + tree.treeType);
             // このtree自体がカスタムタグなので、存在する子供に対してboxConstraintをチェックしていく。
             var children = tree.GetChildren();
 

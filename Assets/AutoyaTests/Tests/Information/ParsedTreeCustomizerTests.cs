@@ -20,7 +20,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
     private ParsedTreeCustomizer customizer;
 
     public static void ShowRecursive (ParsedTree tree, InformationResourceLoader loader) {
-        Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.parsedTag));
+        Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.parsedTag) + " type:" + tree.treeType);
         foreach (var child in tree.GetChildren()) {
             ShowRecursive(child, loader);
         }
