@@ -138,9 +138,13 @@ namespace AutoyaFramework.Information {
 			
 			switch (@this.treeType) {
 				case TreeType.CustomLayer: {
-					cor = DoCustomTagContainerLayout(@this, viewCursor);
-					
-					Debug.LogError("カスタムレイヤの計算結果を返す");
+					Debug.LogError("カスタムレイヤ");
+					cor = DoCustomTagLayerLayout(@this, viewCursor);
+					break;
+				}
+				case TreeType.CustomEmptyLayer: {
+					Debug.LogError("中身のないカスタムレイヤのレイアウトはコンテナと同様で、ただし高さのセットを崩さない(縮まない)");
+					cor = DoContainerLayout(@this, viewCursor);
 					break;
 				}
 				case TreeType.Container: {
@@ -171,49 +175,59 @@ namespace AutoyaFramework.Information {
 		}
 		
 		/**
-			カスタムタグのレイアウトを行う。
-			customTag_CONTAINER/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
+			カスタムタグのレイヤーのレイアウトを行う。
+			customTagLayer/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
 			ここだけ相対的なレイアウトが崩れる。
 		 */
-		private IEnumerator<ViewCursor> DoCustomTagContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
-			/*
-				原点もアンカーも固定されていて、親サイズに対してそのまま出せばいい。
-			*/
-			@this.viewWidth = viewCursor.viewWidth;
-
-			// ここにくるのは、カスタムタグ かつ　レイヤー。なので、子供はすべてbox。
+		private IEnumerator<ViewCursor> DoCustomTagLayerLayout (ParsedTree @this, ViewCursor viewCursor) {
+			// 親コンテンツのサイズを継承
+			@this.SetPosFromViewCursor(viewCursor);
 
 			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
-
-			Debug.LogError("customTag path:" + path);
+			Debug.LogError("あとで使うprefabのパス。layer prefab path:" + path);
 
 			/*
-				カスタムタグだったら、prefabをロードして、原点位置は0,0、
+				レイヤーなので、prefabをロードして、原点位置は0,0、
 					サイズは親サイズ、という形で生成する。
 				
 				・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
-				・この際のchildのサイズは、必ずboxのものになる。このへんがキモかな。
+				・この際のchildのサイズは、layerであれば必ずboxのサイズになる。このへんがキモかな。
 			*/
 
-			// html上でのchildをセットしに行く。該当するboxがあるんだろうか的なチェックはカスタマイズ時に済んでいる。ので、ここでは作ればいいだけ。
 			var children = @this.GetChildren();
+			var additionalHeight = 0f;
 
 			foreach (var boxTree in children) {
-				var cor = LayoutBox(viewCursor, boxTree);
+				Debug.LogError("tag:" + infoResLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
+
+				/*
+					位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
+					コンテナがここに飛び込んでくることがある。boxがないところに飛び込んでくるコンテナってことか。
+				*/
+				var layoutParam = boxTree.keyValueStore[Attribute._BOX] as BoxPos;
+				
+				var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
+				Debug.LogError("viewRect:" + viewRect);
+
+				var childView = new ViewCursor(viewRect.x, viewRect.y + additionalHeight, viewRect.width, viewRect.height);
+
+				var cor = LayoutBoxedContents(childView, boxTree);
 
 				while (cor.MoveNext()) {
 					yield return null;
 				}
 
-				var resultCor = cor.Current;
-				Debug.LogWarning("カスタムタグのboxのレイアウトが終わった。で、親のサイズが変わる(高さが高くなった)可能性がある。幅は変化しない。");
+				childView = cor.Current;
+				if (viewRect.height < childView.viewHeight) {
+					Debug.LogError("レイアウト後のサイズが大きいので、次のrectの開始位置を差分だけズラす。");
+					additionalHeight = childView.viewHeight - viewRect.height;
+				}
 			}
 
-			Debug.LogError("ここでカスタムタグ自体のサイズを変更する。");
-
+			Debug.LogError("ここでカスタムタグ自体のサイズを変更する。　additionalHeight:" + additionalHeight);
+			viewCursor.viewHeight += additionalHeight;
 			yield return viewCursor;
 		}
-		
 
 		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 			var contentViewCursor = viewCursor;
@@ -559,95 +573,131 @@ namespace AutoyaFramework.Information {
 		}
 
 		/**
-			この関数に含まれるのはboxで、ここに含まれるのはすべてカスタムタグの内容。
+			ボックス内部のコンテンツのレイアウトを行う
 		 */
-		private IEnumerator<ViewCursor> LayoutBox (ViewCursor layerViewCursor, ParsedTree box) {
-			/*
-				位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
-			 */
-			var layoutParam = box.keyValueStore[Attribute._BOX] as BoxPos;
+		private IEnumerator<ViewCursor> LayoutBoxedContents (ViewCursor boxView, ParsedTree box) {
 			
-			var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(layerViewCursor.viewWidth, layerViewCursor.viewHeight, layoutParam);
-			Debug.LogError("viewRect:" + viewRect);
+			var containerChildren = box.GetChildren();
+			var childCount = containerChildren.Count;
 
-			var boxViewCursor = new ViewCursor(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
-
-			foreach (var child in box.GetChildren()) {
-				// ここでのコンテンツはboxの中身のコンテンツなので、必ず縦に並ぶ。列切り替えが発生しない。
-				// 幅と高さを与えるが、高さは変更されて帰ってくる可能性が高い。
-
-				// コンテンツが一切ない場合でもこの高さを維持する。
-				// コンテンツがこの高さを切ってもこの高さを維持する。
-				var cor = LayoutBoxedContent(child, boxViewCursor);
-				while (cor.MoveNext()) {
-					yield return null;
-				}
-
-				var resultCursor = cor.Current;
+			if (childCount == 0) {
+				yield break;
 			}
-			
-			// 適当にまず返す
-			Debug.LogWarning("適当に返す。本来ここで返却される可能性があるのは、子供が複数いるときに、その高さが異なる = 縦に伸びる、みたいなケースで、その時、次に用意してあるboxの位置をずらす。");
-			yield return layerViewCursor;
-		}
 
-		private IEnumerator<ViewCursor> LayoutBoxedContent (ParsedTree boxedContainer, ViewCursor boxedContentViewCursor) {
-			/*
-				boxの要素。表示位置が0固定されたコンテナになっている。
-				ここで、このboxedContainerの子要素を列挙する。
-
-				幅が上位から決定されていて、このビューに何が入ろうと幅は変化しない。
-				高さに関しては、htmlに含まれる内容に応じて変化する。
-			 */
-			var children = boxedContainer.GetChildren();
-
-			var childViewCursor = boxedContentViewCursor;
-			var childCount = children.Count;
+			var linedElements = new List<ParsedTree>();
+			var childView = new ViewCursor(boxView);
 
 			for (var i = 0; i < childCount; i++) {
-				var child = children[i];
+				var child = containerChildren[i];
+				Debug.LogError("box child:" + infoResLoader.GetTagFromIndex(child.parsedTag));
+				currentLineRetry: {
+					linedElements.Add(child);
 
-				var cor = DoLayout(
-					child,
-					childViewCursor, 
-					(type, newChild) => {
-						Debug.LogError("type:" + type);
-						children.Insert(i + 1, newChild);
+					// set insertion type.
+					var currentInsertType = InsertType.Continue;
+
+					// 子供ごとにレイアウトし、結果を受け取る
+					var cor = DoLayout(
+						child, 
+						childView, 
+						(insertType, newChild) => {
+							currentInsertType = insertType;
+
+							switch (insertType) {
+								case InsertType.InsertContentToNextLine: {
+									// 次に処理するコンテンツを差し込む。
+									containerChildren.Insert(i+1, newChild);
+									childCount++;
+									break;
+								}
+							}
+						}
+					);
+
+					while (cor.MoveNext()) {
+						yield return null;
 					}
-				);
-				
-				while (cor.MoveNext()) {
-					yield return null;
+					
+					switch (currentInsertType) {
+						case InsertType.RetryWithNextLine: {
+							// Debug.LogError("テキストコンテンツが0行を叩き出したので、このコンテンツ自体をもう一度レイアウトする。");
+							
+							// 最後の一つ=この処理の開始時にいれていたものを削除
+							linedElements.RemoveAt(linedElements.Count - 1);
+
+							// 含まれているものの整列処理をし、列の高さを受け取る
+							var newLineOffsetY = DoLining(linedElements);
+
+							// 整列と高さ取得が完了したのでリセット
+							linedElements.Clear();
+
+							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+							childView = ViewCursor.NextLine(childView, newLineOffsetY, boxView.viewWidth);
+
+							// もう一度この行を処理する。
+							goto currentLineRetry;
+						}
+						case InsertType.InsertContentToNextLine: {
+							// Debug.LogError("ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。");
+
+							// ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。
+							var newLineOffsetY = DoLining(linedElements);
+
+							// 整列と高さ取得が完了したのでリセット
+							linedElements.Clear();
+
+							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+							childView = ViewCursor.NextLine(childView, newLineOffsetY, boxView.viewWidth);
+							Debug.LogError("box child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
+							continue;
+						}
+					}
+
+					/*
+						コンテンツがwidth内に置けた(ギリギリを含む)
+					 */
+
+					// レイアウトが済んだchildの位置を受け取る。
+					var layoutedChildView = cor.Current;
+					Debug.LogError("box layoutedChildView:" + layoutedChildView);
+					Debug.Assert(layoutedChildView != null, "layoutedChildView is null.");
+					
+					var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, boxView.viewWidth);
+
+					// レイアウト直後に次のポイントの開始位置が幅を超えている場合、現行の行のライニングを行う。
+					if (boxView.viewWidth <= nextChildViewCursor.offsetX) {
+						// ライニング
+						var nextLineOffsetY = DoLining(linedElements);
+
+						// ライン解消
+						linedElements.Clear();
+
+						// 改行処理
+						childView = ViewCursor.NextLine(childView, nextLineOffsetY, boxView.viewWidth);
+					} else {
+						// 次のchildの開始ポイントを現在のchildの右にセット
+						childView = nextChildViewCursor;
+					}
+
+					Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
 				}
 
-				// 更新
-				// childViewCursor = cor.Current;
-				
-				// if (childViewCursor.offsetX + childViewCursor.viewWidth < width) {
-				// 	continue;
-				// }
-
-				// if (childViewCursor.offsetX + childViewCursor.viewWidth <= width) {
-				// 	Debug.LogError("改行して次！");
-				// 	continue;
-				// }
-
-				// if (width < childViewCursor.offsetX + childViewCursor.viewWidth) {
-				// 	// 長さが超えてるので、
-				// 	Debug.LogError("幅が超えてるので、、、なんかする。");
-				// }
-
-				/*
-					子はカスタムタグコンテナか、コンテナか、コンテンツ。それらのミックスが入る。なるほど。
-					幅が固定されているので、常にliningが走っている状態になる。
-
-					例えばここにくる全てのchildがcontentとかだと、ライニングは一定の規模で発生する。
-				 */
-
+				// 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
 			}
 
-			Debug.LogError("高さの合計値を計算して、元のheightとどっちが大きいか比較して返す。今は適当。");
-			yield return new ViewCursor(0, 0, boxedContentViewCursor.viewWidth, 0);
+			// 最後の列はそのまま1列扱いになるので、整列。
+			if (linedElements.Any()) {
+				// ここでは高さを取得、使用しない。
+				DoLining(linedElements);
+			}
+			
+			var lastChildEndY = containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight;
+			// Debug.Log("lastChildEndY:" + lastChildEndY + " これが更新されない場合、レイアウトされたパーツにサイズが入ってない。");
+			childView = ViewCursor.Wrap(childView, lastChildEndY);
+			
+			// 自分自身のサイズを再規定
+			box.SetPosFromViewCursor(childView);
+			yield return childView;
 		}
 
 		

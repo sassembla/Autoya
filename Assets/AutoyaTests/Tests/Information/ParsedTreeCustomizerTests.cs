@@ -140,5 +140,45 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 
         // ShowRecursive(customizedTree, loader);
     }
+
+    [MTest] public void WithDeepCustomTagBoxHasBoxAttr () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/WithDeepCustomTag/DepthAssetList)-->
+<customtag><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
+<p>else</p>
+        ";
+
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+            parsedRoot = parsed;
+            // ShowRecursive(parsedRoot, loader);
+        });
+        RunEnumeratorOnMainThread(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
+        
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        Assert(contentsCount == 6, "not match. contentsCount:" + contentsCount);
+
+        // カスタマイズタグを変形させて中身を伸長する
+        customizer = new ParsedTreeCustomizer(loader);
+        var customizedTree = customizer.Customize(parsedRoot);
+
+        // 階層が増えてるはず
+        var newContentsCount = CountContentsRecursive(customizedTree);
+        Assert(contentsCount < newContentsCount, "less. newContentsCount:" + newContentsCount);
+
+        // 増えてる階層に関してのチェックを行う。1種のcustomTagがあるので1つ増える。
+        Assert(contentsCount +1 == newContentsCount, "not match. newContentsCount:" + newContentsCount);
+
+        foreach (var s in customizedTree.GetChildren()[0].GetChildren()) {
+            Assert(s.treeType == TreeType.CustomBox, "not match, s.treeType:" + s.treeType);
+            Assert(s.keyValueStore.ContainsKey(AutoyaFramework.Information.Attribute._BOX), "box does not have pos kv.");
+        }
+
+        // ShowRecursive(customizedTree, loader);
+    }
     
 }

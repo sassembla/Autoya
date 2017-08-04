@@ -18,6 +18,7 @@ namespace AutoyaFramework.Information {
         Content_Empty,
         CustomLayer,
         CustomBox,
+        CustomEmptyLayer,
     }
     /**
         parsed tree structure.
@@ -52,7 +53,6 @@ namespace AutoyaFramework.Information {
             this.viewWidth = source.viewWidth;
             this.viewHeight = source.viewHeight;
         }
-
 
         public ParsedTree () {
             this.parsedTag = (int)HtmlTag._ROOT;

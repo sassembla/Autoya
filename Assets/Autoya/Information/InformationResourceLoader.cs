@@ -27,7 +27,11 @@ namespace AutoyaFramework.Information {
                 tagNames[content.contentName] = content.type;
             }
             foreach (var constraint in layerConstraints) {
-                tagNames[constraint.layerName] = TreeType.CustomLayer;
+                if (constraint.constraints.Any()) {
+                    tagNames[constraint.layerName] = TreeType.CustomLayer;
+                } else {
+                    tagNames[constraint.layerName] = TreeType.CustomEmptyLayer;
+                }
             }
             
             return tagNames;

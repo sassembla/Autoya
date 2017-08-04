@@ -45,10 +45,7 @@ namespace AutoyaFramework.Information {
          */
         private void ExpandCustomTag (ParsedTree tree) {
             var adoptedConstaints = GetConstraints(tree.parsedTag);
-            // foreach (var s in adoptedConstaints) {
-            //     Debug.LogError("s:" + s.boxName);
-            // }
-            
+            Debug.LogError("expanding custom layer:" + tree.treeType);
             // このtree自体がカスタムタグなので、存在する子供に対してboxConstraintをチェックしていく。
             var children = tree.GetChildren();
 
@@ -59,7 +56,7 @@ namespace AutoyaFramework.Information {
                 var newBoxName = GetLayerBoxName(tree.parsedTag, child.parsedTag);
                 // Debug.LogError("newBoxName:" + newBoxName);
                 
-                // whereでの名前一致が辛い。まあでもいいか。
+                Debug.LogWarning("whereでの名前一致が辛い。");
                 var matchedBoxies = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
                 if (!matchedBoxies.Any()) {
                     throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + infoResLoader.GetTagFromIndex(tree.parsedTag) + " newBoxName:" + newBoxName);

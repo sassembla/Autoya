@@ -459,6 +459,15 @@ public class LayoutMachineTests : MiyamasuTestRunner {
     }
 
     [MTest] public void LayoutHTMLWithCustomTag () {
+        /*
+            textbgの上にカスタムタグが乗ってほしいが、そういうの想定してなくて辛い。
+            boxが存在しないレイヤーにコンテンツを足すにはどうすればいいか、とかその辺。
+            ・そもそもレイヤーにboxが存在する場合、指定の位置に出す。
+            ・レイヤーにboxが存在していて無視したtagが来た場合、エラー。
+            ・レイヤーにboxが存在しない場合、左上から出す。
+
+            とかか。
+         */
         var sample = @"
 <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
 <body>

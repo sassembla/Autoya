@@ -128,7 +128,7 @@ namespace AutoyaFramework.Information {
             //     Debug.LogError("s:" + s.GetType().Name);
             // }
             
-            // 3番目のコンポーネントを使う。
+            // rectTrans, canvasRenderer 以外を採用する。
             var currentFirstComponent = components[2];
             var type = TreeType.Content_Img;
             switch (currentFirstComponent.GetType().Name) {
