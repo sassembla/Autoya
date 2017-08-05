@@ -84,16 +84,11 @@ namespace AutoyaFramework.Information {
 		private readonly ViewBox view;
 
       	public LayoutMachine (
-			  ParsedTree @this, 
 			  InformationResourceLoader infoResLoader,
-			  ViewBox view, Action<IEnumerator> executor, 
-			  Action<ParsedTree> layouted
+			  ViewBox view
 		) {
 			this.infoResLoader = infoResLoader;
 			this.view = view;
-			
-			// start execute.
-			executor(StartLayout(@this, layouted));
         }
 
 		private enum InsertType {
@@ -102,20 +97,8 @@ namespace AutoyaFramework.Information {
 			RetryWithNextLine,
 		};
 
-		private IEnumerator StartLayout (ParsedTree @this, Action<ParsedTree> layouted) {
-			/*
-				えーっと、やらなければいけないこと全部盛りだと、
-
-				・上からサイズを設定する
-				・サイズを規定できる場合は規定する
-				・子供にサイズを渡す
-				・transformとかのパラメータを保持する
-				とかか。
-				で、
-				カスタムタグは原点は左上0で、ボックスの配置を行う必要はあるんでサイズは固定で、っていう感じになるか。box自体の配置は親に対する関係と同一でないといけない。これ守れてる気がしないな。
-				テスト描こう。
-			
-			 */
+		public IEnumerator Layout (ParsedTree @this, Action<ParsedTree> layouted) {
+			Debug.LogError("どこかで、layoutによって分割されたオブジェクトのリセットを行わなければ。");
 			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
 			
 			var cor = DoLayout(@this, viewCursor);
@@ -129,8 +112,6 @@ namespace AutoyaFramework.Information {
 			Debug.LogError("root viewCursor:" + viewCursor);
 			
 			layouted(@this);
-
-			yield break;
 		}
 
 		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {

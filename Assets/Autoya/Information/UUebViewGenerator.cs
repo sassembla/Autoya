@@ -51,50 +51,50 @@ namespace AutoyaFramework.Information {
 				parsedRootTree => {
 
 					// layout -> materialize.
-					new LayoutMachine(
-						parsedRootTree,
-						infoResLoader,
-						view, 
-						executor, 
-						layoutedTree => {
-							Debug.LogWarning("封印中");
-							// layout is done.
-							// layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
+					// new LayoutMachine(
+					// 	parsedRootTree,
+					// 	infoResLoader,
+					// 	view, 
+					// 	executor, 
+					// 	layoutedTree => {
+					// 		Debug.LogWarning("封印中");
+					// 		// layout is done.
+					// 		// layoutDone(new Rect(0,0, view.width, layoutedTree.totalHeight));
 
-							/*
-								attributes and depth are ready for each tree.
-							*/
-							var total = 0.0;
-							var done = 0.0;
+					// 		/*
+					// 			attributes and depth are ready for each tree.
+					// 		*/
+					// 		var total = 0.0;
+					// 		var done = 0.0;
 
-							Action<IEnumerator> act = iEnum => {
-								total++;
-								var loadAct = LoadingDone(
-									iEnum, 
-									() => {
-										done++;
+					// 		Action<IEnumerator> act = iEnum => {
+					// 			total++;
+					// 			var loadAct = LoadingDone(
+					// 				iEnum, 
+					// 				() => {
+					// 					done++;
 
-										if (progress != null) {
-											var progressRate = done / total;
+					// 					if (progress != null) {
+					// 						var progressRate = done / total;
 											
-											if (done == total) {
-												progressRate = 1.0;
-											}
+					// 						if (done == total) {
+					// 							progressRate = 1.0;
+					// 						}
 
-											progress(progressRate);
+					// 						progress(progressRate);
 
-											if (done == total) {
-												loadDone();
-											}
-										}
-									}
-								);
-								executor(loadAct);
-							};
+					// 						if (done == total) {
+					// 							loadDone();
+					// 						}
+					// 					}
+					// 				}
+					// 			);
+					// 			executor(loadAct);
+					// 		};
 							
-							// new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
-						}
-					);
+					// 		// new MaterializeMachine(infoResLoader, layoutedTree, rootObj, view, act);
+					// 	}
+					// );
 				}
 			);
 

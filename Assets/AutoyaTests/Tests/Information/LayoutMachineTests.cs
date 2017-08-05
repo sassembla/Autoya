@@ -43,7 +43,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             parsedRoot = parsed;
         });
 
-        RunEnumeratorOnMainThread(cor);
+        Autoya.Mainthread_Commit(cor);
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -62,14 +62,18 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         ParsedTree layouted = null;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 layouted = layoutedTree;
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
@@ -86,16 +90,19 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 done = true;
                 Assert(layoutedTree.viewHeight == 16, "not match.");
             }
         );
 
+        Autoya.Mainthread_Commit(cor);
         WaitUntil(
             () => done, 5, "timeout."
         );
@@ -111,15 +118,19 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 done = true;
                 Assert(layoutedTree.viewHeight == 112, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -132,19 +143,22 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 <body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
         var tree = CreateCustomizedTree(sample);
         
-        
-
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 done = true;
                 Assert(layoutedTree.viewHeight == 100, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -160,15 +174,19 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 done = true;
                 Assert(layoutedTree.viewHeight == 10, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -185,15 +203,20 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 done = true;
                 Assert(layoutedTree.viewHeight == 16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -204,45 +227,52 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
         var tree = CreateCustomizedTree(sample);
-        
-        
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 done = true;
                 Assert(layoutedTree.viewHeight == 112, "not match.");
             }
         );
 
+        Autoya.Mainthread_Commit(cor);
+
+
         WaitUntil(
             () => done, 5, "timeout."
         );
     }
+    
 
     [MTest] public void LayoutHTMLWithWideImageAndText () {
         var sample = @"
 <body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
         var tree = CreateCustomizedTree(sample);
-        
-        
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
-            loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            loader,
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 26, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -255,16 +285,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -279,16 +314,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 16+16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -302,16 +342,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 16+16+16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -325,16 +370,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 10+16+16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -349,16 +399,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -373,16 +428,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -396,16 +456,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 16+16+16, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -419,16 +484,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var done = false;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
-                ShowLayoutRecursive(layoutedTree);
+                // ShowLayoutRecursive(layoutedTree);
                 done = true;
                 Assert(layoutedTree.viewHeight == 20, "not match.");
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -444,14 +514,19 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
         ParsedTree layouted = null;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 layouted = layoutedTree;
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
@@ -459,15 +534,6 @@ public class LayoutMachineTests : MiyamasuTestRunner {
     }
 
     [MTest] public void LayoutHTMLWithCustomTag () {
-        /*
-            textbgの上にカスタムタグが乗ってほしいが、そういうの想定してなくて辛い。
-            boxが存在しないレイヤーにコンテンツを足すにはどうすればいいか、とかその辺。
-            ・そもそもレイヤーにboxが存在する場合、指定の位置に出す。
-            ・レイヤーにboxが存在していて無視したtagが来た場合、エラー。
-            ・レイヤーにboxが存在しない場合、左上から出す。
-
-            とかか。
-         */
         var sample = @"
 <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
 <body>
@@ -479,14 +545,19 @@ else
 
         ParsedTree layouted = null;
         var layoutMachine = new LayoutMachine(
-            tree, 
             loader, 
-            new ViewBox(100,100,0), 
-            Autoya.Mainthread_Commit, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
             layoutedTree => {
                 layouted = layoutedTree;
             }
         );
+
+        Autoya.Mainthread_Commit(cor);
+
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
@@ -495,5 +566,56 @@ else
         ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
     }
 
+
+    [MTest] public void Re_LayoutHTMLWithSmallImageAndSmallText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
+        var tree = CreateCustomizedTree(sample);
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            loader, 
+            new ViewBox(100,100,0)            
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 112, "not match.");
+            }
+        );
+
+        Autoya.Mainthread_Commit(cor);
+
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+
+        /*
+            re-layout.
+         */
+        var done2 = false;
+        var layoutMachine2 = new LayoutMachine(
+            loader, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor2 = layoutMachine.Layout(
+            tree,
+            layoutedTree => {
+                done2 = true;
+                Assert(layoutedTree.viewHeight == 112, "not match.");
+            }
+        );
+
+        Autoya.Mainthread_Commit(cor2);
+
+
+        WaitUntil(
+            () => done2, 5, "timeout."
+        );
+    }
     
 }

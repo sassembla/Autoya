@@ -45,7 +45,7 @@ namespace AutoyaFramework.Information {
          */
         private void ExpandCustomTagToLayer (ParsedTree tree) {
             var adoptedConstaints = GetConstraints(tree.parsedTag);
-            // このtree自体がカスタムタグなので、存在する子供に対してboxConstraintをチェックしていく。
+            // このtree自体がレイヤーなので、存在する子供に対してboxConstraintをチェックしていく。
             var children = tree.GetChildren();
 
             var box = new List<ParsedTree>();
@@ -55,10 +55,10 @@ namespace AutoyaFramework.Information {
                 var newBoxName = GetLayerBoxName(tree.parsedTag, child.parsedTag);
                 // Debug.LogError("newBoxName:" + newBoxName);
                 
-                Debug.LogWarning("whereでの名前一致が辛い。");
+                // Debug.LogWarning("whereでの名前一致が辛い。");
                 var matchedBoxies = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
                 if (!matchedBoxies.Any()) {
-                    throw new Exception("該当するboxが見つからない、行き先のないhtmlタグを発見した:" + infoResLoader.GetTagFromIndex(tree.parsedTag) + " newBoxName:" + newBoxName);
+                    throw new Exception("no target tag found:" + infoResLoader.GetTagFromIndex(child.parsedTag) + " in this layer:" + infoResLoader.GetTagFromIndex(tree.parsedTag));
                 }
 
                 // pass.
@@ -77,7 +77,7 @@ namespace AutoyaFramework.Information {
                     // boxTreeにchildを追加
                     boxTree.AddChild(child);
                 } else {
-                    Debug.LogError("add box.");
+                    // Debug.LogError("add box.");
                     // 新規に中間treeを作成する。
                     var newBoxTreeAttr = new AttributeKVs(){
                         {Attribute._BOX, matchedBoxies[0].rect}

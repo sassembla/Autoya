@@ -10,22 +10,73 @@ using UnityEngine.UI;
 namespace AutoyaFramework.Information {
     public class MaterializeMachine {
 		private readonly InformationResourceLoader infoResLoader;
-        private readonly InformationRootMonoBehaviour rootInputComponent;
+        private InformationRootMonoBehaviour rootInputComponent;
         
 
         public MaterializeMachine(
-			InformationResourceLoader infoResLoader,
-			ParsedTree layoutedTree, 
-			GameObject rootGameObject, 
-			ViewBox view, 
-			Action<IEnumerator> executor
+			InformationResourceLoader infoResLoader	
 		) {
 			this.infoResLoader = infoResLoader;
+		}
+
+		public IEnumerator<GameObject> Materialize (ParsedTree tree, float yOffset, Action<double> progress, Action onLoaded) {
+			Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。");
+
+			var rootObj = new GameObject(HtmlTag._ROOT.ToString());
+			{
+				var rootRectTrans = rootObj.AddComponent<RectTransform>();
+				this.rootInputComponent = rootObj.AddComponent<InformationRootMonoBehaviour>();
+				
+				// set anchor to left top.
+				rootRectTrans.anchorMin = Vector2.up;
+				rootRectTrans.anchorMax = Vector2.up;
+				rootRectTrans.pivot = Vector2.up;
+				rootRectTrans.position = Vector2.zero;
+			}
 			
-            this.rootInputComponent = rootGameObject.GetComponent<InformationRootMonoBehaviour>();
-            
-			executor(Execute(layoutedTree, rootGameObject, view));
+			// return obj first.
+			yield return rootObj;
+
+			var total = 0.0;
+			var done = 0.0;
+
+            // Action<IEnumerator> act = iEnum => {
+			// 	total++;
+			// 	var loadAct = LoadingDone(
+			// 		iEnum, 
+			// 		() => {
+			// 			done++;
+
+			// 			if (progress != null) {
+			// 				var progressRate = done / total;
+							
+			// 				if (done == total) {
+			// 					progressRate = 1.0;
+			// 				}
+
+			// 				progress(progressRate);
+
+			// 				if (done == total) {
+			// 					loadDone();
+			// 				}
+			// 			}
+			// 		}
+			// 	);
+			// 	Debug.LogError("途中。");
+			// 	// infoResLoader.(loadAct);
+			// };
+			yield return null;
         }
+
+		private IEnumerator LoadingDone (IEnumerator loadingCoroutine, Action loadDone) {
+			while (loadingCoroutine.MoveNext()) {
+				yield return null;
+			}
+
+			if (loadDone != null) {
+				loadDone();
+			}
+		}
 
 		private IEnumerator Execute (ParsedTree layoutedTree, GameObject rootGameObject, ViewBox view) {
             var cor = MaterializeRecursively(rootGameObject, layoutedTree);
