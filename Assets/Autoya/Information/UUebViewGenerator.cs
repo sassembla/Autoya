@@ -45,9 +45,8 @@ namespace AutoyaFramework.Information {
 		 */
         private void GenerateView (GameObject rootObj, string source, ViewBox view, Action<Rect> layoutDone, Action<double> progress, Action loadDone) {
 			// parse html string to tree.
-			var cor = new HTMLParser().ParseRoot(
+			var cor = new HTMLParser(infoResLoader).ParseRoot(
 				source, 
-				infoResLoader, 
 				parsedRootTree => {
 
 					// layout -> materialize.

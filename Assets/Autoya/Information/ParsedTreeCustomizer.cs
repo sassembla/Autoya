@@ -11,7 +11,7 @@ namespace AutoyaFramework.Information {
             this.infoResLoader = infoResLoader;
             this.constraintsDict = new Dictionary<string, BoxConstraint[]>();
 
-            var constraints = infoResLoader.DepthAssetList().layerConstraints;
+            var constraints = infoResLoader.CustomTagList().layerConstraints;
 
             foreach (var constraint in constraints) {
                 constraintsDict[constraint.layerName.ToLower()] = constraint.constraints;

@@ -60,24 +60,6 @@ namespace AutoyaFramework.Information {
             this.treeType = TreeType.Container;
         }
 
-        /**
-            uGUIのパラメータからRectを出す。
-         */
-        public static Rect GetChildViewRectFromParentRectTrans (float parentWidth, float parentHeight, BoxPos pos) {
-            // アンカーからwidthとheightを出す。
-            var anchorWidth = (parentWidth * pos.anchorMin.x) + (parentWidth * (1 - pos.anchorMax.x));
-            var anchorHeight = (parentHeight * pos.anchorMin.y) + (parentHeight * (1 - pos.anchorMax.y));
-
-            var viewWidth = parentWidth - anchorWidth - pos.offsetMin.x + pos.offsetMax.x;
-            var viewHeight = parentHeight - anchorHeight - pos.offsetMin.y + pos.offsetMax.y;
-
-            // 左上原点を出す。
-            var offsetX = (parentWidth * pos.anchorMin.x) + pos.offsetMin.x;
-            var offsetY = (parentHeight * (1-pos.anchorMax.y)) - (pos.offsetMax.y);
-
-            return new Rect(offsetX, offsetY, viewWidth, viewHeight);
-        }
-
         public ParsedTree (string textContent, int baseTag) {// as text_content.
             this.parsedTag = baseTag;
             
@@ -186,6 +168,33 @@ namespace AutoyaFramework.Information {
 
         public string ShowContent() {
             return this.treeType.ToString();
+        }
+
+
+        /**
+            uGUIのパラメータからRectを出す。
+         */
+        public static Rect GetChildViewRectFromParentRectTrans (float parentWidth, float parentHeight, BoxPos pos) {
+            // アンカーからwidthとheightを出す。
+            var anchorWidth = (parentWidth * pos.anchorMin.x) + (parentWidth * (1 - pos.anchorMax.x));
+            var anchorHeight = (parentHeight * pos.anchorMin.y) + (parentHeight * (1 - pos.anchorMax.y));
+
+            var viewWidth = parentWidth - anchorWidth - pos.offsetMin.x + pos.offsetMax.x;
+            var viewHeight = parentHeight - anchorHeight - pos.offsetMin.y + pos.offsetMax.y;
+
+            // 左上原点を出す。
+            var offsetX = (parentWidth * pos.anchorMin.x) + pos.offsetMin.x;
+            var offsetY = (parentHeight * (1-pos.anchorMax.y)) - (pos.offsetMax.y);
+
+            return new Rect(offsetX, offsetY, viewWidth, viewHeight);
+        }
+
+         public static Vector2 AnchoredPositionOf (ParsedTree tree) {
+            return new Vector2(tree.offsetX, tree.offsetY);
+        }
+
+        public static Vector2 SizeDeltaOf (ParsedTree tree) {
+            return new Vector2(tree.viewWidth, tree.viewHeight);
         }
     }
 }

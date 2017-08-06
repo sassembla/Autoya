@@ -146,8 +146,7 @@ namespace AutoyaFramework.Information {
             }
 
             // 名前を登録する
-            Debug.LogWarning("loadPathのデフォルトどうしようね。とりあえずresourcesかな。");
-            currentContents.Add(new ContentInfo(contentName, type, "test"));
+            currentContents.Add(new ContentInfo(contentName, type, "resources://" + InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + viewName + "/" + contentName.ToUpper()));
 
             // このコンポーネントをprefab化する
             {
@@ -252,15 +251,10 @@ namespace AutoyaFramework.Information {
                         .Select(kv => new BoxConstraint(kv.Key, kv.Value))
                         .ToArray();
 
-                    // var resourcePath = "resources://" + resourcePathWithExtension.Substring(0, resourcePathWithExtension.Length - Path.GetExtension(resourcePathWithExtension).Length);
-                    Debug.LogWarning("このロードパスの対象がもっとたくさんあるような気がする。");
-                    Debug.LogWarning("layerのprefabにbox情報が入ってるんで、結局posは必要ないっぽい。");
-                    var loadPath = "test";
-
                     var newConstraints = new LayerInfo(
                         layerName, 
                         newChildConstraint,
-                        loadPath
+                        "resources://" + InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + viewName + "/" + layerName.ToUpper()
                     );
 
                     currentConstraints.Add(newConstraints);

@@ -161,37 +161,211 @@ namespace AutoyaFramework.Information {
 			}
         }
 
-        /**
-            load prefab from AssetBundle or Resources.
-         */
-        public IEnumerator LoadPrefab (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
-            IEnumerator coroutine = null;
+        public IEnumerator<GameObject> LoadGameObjectFromPrefab (int parsedTag, TreeType treeType, bool prefabOnly=false) {
+            GameObject gameObj = null;
+            var tagName = GetTagFromIndex(parsedTag);
 
-            if (this.customTagList != null) {
-                // pass.
-            } else {
-                // create default list for default assets.
-                this.customTagList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
+            switch (IsDefaultTag(parsedTag)) {
+                case true: {
+
+                    switch (treeType) {
+                        case TreeType.Container: {
+                            Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
+                            var containerObj = new GameObject(tagName);
+                            var trans = containerObj.AddComponent<RectTransform>();
+                            trans.anchorMin = Vector2.up;
+                            trans.anchorMax = Vector2.up;
+                            trans.offsetMin = Vector2.up;
+                            trans.offsetMax = Vector2.up;
+                            trans.pivot = Vector2.up;
+
+                            gameObj = containerObj;        
+                            break;
+                        }
+                        default: {
+                            // コンテナ以外だと、いろんなデフォルトコンテンツがここにくる。
+                            var prefabName = GetTagFromIndex(parsedTag);
+                            var loadingPrefabName = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
+
+                            var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
+                            while (cor.MoveNext()) {
+                                yield return null;
+                            }
+
+                            var loadedPrefab = cor.Current;
+                            
+                            if (prefabOnly) {
+                                gameObj = loadedPrefab;
+                            } else {
+                                gameObj = GameObject.Instantiate(loadedPrefab);
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+
+                // 非デフォルトタグ、loadpathが存在する。
+                default: {
+                    var tag = GetTagFromIndex(parsedTag);
+                    var loadPath = GetCustomTagLoadPath(parsedTag, treeType);
+
+                    var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
+                    while (cor.MoveNext()) {
+                        yield return null;
+                    }
+
+                    var loadedPrefab = cor.Current;
+                    
+                    if (prefabOnly) {
+                        gameObj = loadedPrefab;
+                    } else {
+                        gameObj = GameObject.Instantiate(loadedPrefab);
+                    }
+                    break;
+                }
             }
 
-            var viewName = this.customTagList.viewName;
-            
-            switch (viewName) {
-                case InformationConstSettings.VIEWNAME_DEFAULT: {
-                    coroutine = LoadPrefabFromDefaultResources(tree, onLoaded, onLoadFailed);
-                    break;
+            gameObj.name = tagName;
+            yield return gameObj;
+        }
+
+        private string GetCustomTagLoadPath (int parsedTag, TreeType treeType) {
+            var tag = GetTagFromIndex(parsedTag);
+            var targetPrefab = string.Empty;
+
+            switch (treeType) {
+                case TreeType.CustomLayer: {
+                    return customTagList.layerConstraints.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
+                }
+                case TreeType.Content_Img:
+                case TreeType.Content_Text: {
+                    return customTagList.contents.Where(t => t.contentName == tag).Select(t => t.loadPath).FirstOrDefault();
                 }
                 default: {
-                    Debug.LogWarning("LoadPrefab viewName:" + viewName);
-                    coroutine = LoadPrefabByDepth(tree, onLoaded, onLoadFailed);
+                    throw new Exception("unexpected tree type:" + treeType + " of tag:" + tag);
+                }
+            }            
+        }
+
+         /**
+            loadPathからcustomTag = レイヤーのprefabをロードし、GameObjectを返す。
+         */
+        public IEnumerator<GameObject> LoadCustomPrefabFromLoadPathOrCache (string loadPath) {
+            // schemeをみてロード方法を決定する。
+
+            var schemeAndPath = loadPath.Split(new char[]{'/'}, 2);
+            var scheme = schemeAndPath[0];
+
+            var extLen = Path.GetExtension(loadPath).Length;
+            var uri = loadPath.Substring(0, loadPath.Length - extLen);
+            
+            IEnumerator<GameObject> cor = null;
+
+            switch (scheme) {
+                case "assetbundle:": {
+                    cor = LoadPrefabFromAssetBundle(uri);
                     break;
+                }
+                case "https:":
+                case "http:": {
+                    throw new Exception("http|https are not supported scheme for downloading prefab. use assetbundle:// instead.");
+                }
+                case "resources:": {
+                    cor = LoadPrefabFromResourcesOrCache(uri.Substring("resources://".Length));
+                    break;
+                }
+                default: {// other.
+                    throw new Exception("unsupported scheme:" + scheme + " found when loading custom tag prefab:" + loadPath);
                 }
             }
 
-            while (coroutine.MoveNext()) {
+            while (cor.MoveNext()) {
                 yield return null;
             }
-		}
+
+            yield return cor.Current;
+        }
+
+        /**
+            キャッシュヒット処理込み。
+            resourcesからprefabをロードし、GameObjectを返す。
+         */
+        private IEnumerator<GameObject> LoadPrefabFromResourcesOrCache (string loadingPrefabName) {
+            // Debug.LogError("loadingPrefabName:" + loadingPrefabName);
+
+            GameObject loadedPrefab = null;
+
+            if (prefabCache.ContainsKey(loadingPrefabName)) {
+                var cachedPrefab = prefabCache[loadingPrefabName];
+                var newGameObjectFromCachedPrefab = GameObject.Instantiate(cachedPrefab);
+                newGameObjectFromCachedPrefab.name = loadingPrefabName;
+
+                loadedPrefab = newGameObjectFromCachedPrefab;
+            }
+
+            // no cache hit. start loading prefab.
+
+            // wait the end of other loading for same prefab.
+            else if (loadingPrefabNames.Contains(loadingPrefabName)) {
+                while (loadingPrefabNames.Contains(loadingPrefabName)) {
+                    yield return null;
+                }
+
+                if (!prefabCache.ContainsKey(loadingPrefabName)) {
+                    Debug.LogError("キャッシュされたはずなんだけどロードに失敗");
+
+                    var failedObj = new GameObject();
+                    failedObj.name = loadingPrefabName;
+
+                    loadedPrefab = failedObj;
+                } else {
+                    
+                    var cachedPrefab = prefabCache[loadingPrefabName];
+                    var newGameObjectFromCachedPrefab = GameObject.Instantiate(cachedPrefab);
+                    newGameObjectFromCachedPrefab.name = loadingPrefabName;
+
+                    loadedPrefab = newGameObjectFromCachedPrefab;
+                }
+            } else {
+                // start loading.
+                using (new AssetLoadingConstraint(loadingPrefabName, loadingPrefabNames)) {
+                    GameObject obj = null;
+                    var cor = Resources.LoadAsync(loadingPrefabName);
+                
+                    while (!cor.isDone) {
+                        yield return null;
+                    }
+                    
+                    obj = cor.asset as GameObject;
+
+                    if (obj == null) {
+                        // no prefab found.
+                        Debug.LogError("no prefab found in Resources:" + loadingPrefabName);
+
+                        var failedObj = new GameObject();
+                        failedObj.name = loadingPrefabName;
+                        loadedPrefab = failedObj;
+                    } else {
+                        loadedPrefab = obj;
+                    }
+                }
+            }
+            yield return loadedPrefab;
+        }
+
+        private IEnumerator<GameObject> LoadPrefabFromAssetBundle (string path) {
+            // アセット名が書いてあると思うんで、assetBundleListとかから取り寄せる
+            Debug.LogError("まだ実装してないassetBundleからprefabを読む仕掛け");
+            yield return null;
+        }
+
+        public bool IsDefaultTag (int tag) {
+            if (defaultTagIntStrPair.ContainsKey(tag)) {
+                return true;
+            }
+            return false;
+        }
 
         public TreeType GetTreeType (int tag) {
             // 組み込みtagであれば、静的に解決できる。
@@ -224,169 +398,68 @@ namespace AutoyaFramework.Information {
             return customTagTypeDict[customTagStr];
         }
 
-        public IEnumerator<GameObject> LoadTextPrefab (string textPrefabName) {
-            GameObject loadedPrefab = null;
-            
-            Action<GameObject> onLoaded = obj => {
-                loadedPrefab = obj;
-            };
+        /**
+            materialize時に画像を読み込む。
+         */
+        public void LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
+            IEnumerator coroutine;
 
-            Action onLoadFailed = () => {
-                // do nothing.
-            };
+            /*
+                supported schemes are,
+                    
+                    ^http://		http scheme => load asset from web.
+                    ^https://		https scheme => load asset from web.
+                    ^assetbundle://	assetbundle scheme => load asset from assetBundle.
+                    ^resources://   resources scheme => (Resources/)somewhere/resource path.
+                    ^./				relative path => (Resources/)somewhere/resource path.
+                    ^/              absolute path => unsupported.
+                    ^.*				path => (Resources/)somewhere/resource path.
+            */
+            var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
+            var scheme = schemeAndPath[0];
 
-            // load text prefab from loadPath.
-            if (customTagTypeDict.ContainsKey(textPrefabName.ToLower())) {
-                var loadPath = customTagList.contents.Where(t => t.contentName == textPrefabName.ToLower()).FirstOrDefault().loadPath;
-                Debug.LogWarning("これはloadPathから読むべきなのだな。loadPath:" + loadPath);
-
-                // specific view path.
-                var viewPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + DepthAssetList().viewName + "/";
-
-                var loadingPrefabName = viewPath + textPrefabName;
-                
-                var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
-                while (cor.MoveNext()) {
-                    yield return null;
-                }
-            } else {
-                var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
-
-                var loadingPrefabName = defaultPath + textPrefabName;
-                
-                var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
-                while (cor.MoveNext()) {
-                    yield return null;
-                }
-            }
-            
-            if (loadedPrefab == null) {
-                throw new Exception("failed to load text prefab:" + textPrefabName);
-            }
-            yield return loadedPrefab;
-        }
-
-
-
-
-
-        private IEnumerator LoadPrefabByDepth (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
-            IEnumerator coroutine = null;
-
-            Debug.LogError("tree:" + tree.parsedTag);
-            Debug.LogError("ここまできた。で、DL情報はAntimaterializerでconstraintsに入れるようにしよう。デフォResources tree.keyValueStore:" + tree.keyValueStore);
-            var kvs = tree.keyValueStore;
-            foreach (var kv in kvs) {
-                Debug.LogError("k:" + kv.Key);
-            }
-            
-            Debug.LogError("prefabのロードを行わないといけない、layoutをせねば、みたいな。んーーでももうrectTransformのパラメータが手に入ってるんだよな。なので、カスタム情報だけが取れればそれでいいのか。");
-
-
-            // var assetName = info.depthAssetName;
-            // var uriSource = info.loadPath;
-
-            // var schemeEndIndex = uriSource.IndexOf("//");
-            // if (schemeEndIndex == -1) {
-            //     throw new Exception("failed to get scheme from loadPath:" + uriSource);
-            // }
-            // var scheme = uriSource.Substring(0, schemeEndIndex);
-            
-            // switch (scheme) {
-            //     case "assetbundle:": {
-            //         Debug.LogError("まだ未実装");
-            //         // var bundleName = uriSource;
-            //         // coroutine = LoadListFromAssetBundle(uriSource, succeeded, failed);
-            //         break;
-            //     }
-            //     case "resources:": {
-            //         var resourcePath = uriSource.Substring("resources:".Length + 2);
-            //         coroutine = LoadPrefabFromResources(resourcePath, tree, onLoaded, onLoadFailed);
-            //         break;
-            //     }
-            //     default: {// other.
-            //         throw new Exception("unsupported scheme found, scheme:" + scheme);
-            //     }
-            // }
-
-            // while (coroutine.MoveNext()) {
-            //     yield return null;
-            // }
-            yield break;
-        }
-
-        private IEnumerator LoadPrefabFromResources (string loadingPrefabName, Action<GameObject> onLoaded, Action onLoadFailed) {
-            
-            // cached.
-            if (prefabCache.ContainsKey(loadingPrefabName)) {
-                onLoaded(prefabCache[loadingPrefabName]);
-                yield break;
-            }
-            
-            // wait the end of other loading for same prefab.
-            if (loadingPrefabNames.Contains(loadingPrefabName)) {
-                while (loadingPrefabNames.Contains(loadingPrefabName)) {
-                    yield return null;
-                }
-
-                if (!prefabCache.ContainsKey(loadingPrefabName)) {
-                    onLoadFailed();
-                    yield break;
-                }
-
-                onLoaded(prefabCache[loadingPrefabName]);
-                yield break;
-            }
-            
-            // start loading.
-            using (new AssetLoadingConstraint(loadingPrefabName, loadingPrefabNames)) {
-                GameObject obj = null;
-                var cor = Resources.LoadAsync(loadingPrefabName);
-            
-                while (!cor.isDone) {
-                    yield return null;
-                }
-                
-                obj = cor.asset as GameObject;
-                if (obj == null) {
-                    // no prefab found.
-                    Debug.LogError("no prefab found in Resources:" + loadingPrefabName);
-
-                    onLoadFailed();
-                    yield break;
-                }
-                
-                // set cache.
-                prefabCache[loadingPrefabName] = obj;
-
-                onLoaded(obj);
-            }
-        }
-
-
-        private IEnumerator LoadPrefabFromDefaultResources (ParsedTree tree, Action<GameObject> onLoaded, Action onLoadFailed) {
-            // default path.
-            var defaultPath = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/";
-
-            var loadingPrefabName = string.Empty;
-            Debug.LogError("ちょっと動きを見て見ないとわからん。");
-            switch (tree.treeType) {
-                case TreeType.Container: {
-                    loadingPrefabName = defaultPath + InformationConstSettings.NAME_PREFAB_CONTAINER;
+            switch (scheme) {
+                case "assetbundle:": {
+                    var bundleName = uriSource;
+                    coroutine = LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
                     break;
                 }
-                default: {
-                    loadingPrefabName = defaultPath + GetTagFromIndex(tree.parsedTag);
+                case "https:":
+                case "http:": {
+                    coroutine = LoadImageFromWeb(uriSource, loaded, loadFailed);
+                    break;
+                }
+                case ".": {
+                    var resourcePath = uriSource.Substring(2);
+                    coroutine = LoadImageFromResources(resourcePath, loaded, loadFailed);
+                    break;
+                }
+                case "resources:": {
+                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
+                    break;
+                }
+                case "/:": {
+                    throw new Exception("unsupported scheme:/");
+                }
+                default: {// other.
+                    if (string.IsNullOrEmpty(scheme)) {
+                        Debug.LogError("empty uri found:" + uriSource);
+                        return;
+                    }
+
+                    // not empty. treat as resource file path.
+                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
                     break;
                 }
             }
             
-            var cor = LoadPrefabFromResources(loadingPrefabName, onLoaded, onLoadFailed);
-            while (cor.MoveNext()) {
-                yield return null;
-            }
+            // execute loading.
+            executor(coroutine);
         }
-        
+
+
+
+
 
         private CustomTagList customTagList;
         public bool IsLoadingDepthAssetList {
@@ -394,7 +467,7 @@ namespace AutoyaFramework.Information {
         }
         private Dictionary<string, TreeType> customTagTypeDict = new Dictionary<string, TreeType>();
 
-        public IEnumerator LoadDepthAssetList (string uriSource) {
+        public IEnumerator LoadCustomTagList (string uriSource) {
             if (IsLoadingDepthAssetList) {
                 throw new Exception("multiple depth description found. only one description is valid.");
             }
@@ -437,7 +510,7 @@ namespace AutoyaFramework.Information {
         }
 
 
-        public CustomTagList DepthAssetList () {
+        public CustomTagList CustomTagList () {
             if (this.customTagList == null) {
                 return new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
             }
@@ -536,61 +609,7 @@ namespace AutoyaFramework.Information {
 		}
 
 
-        public void LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
-            IEnumerator coroutine;
 
-            /*
-                supported schemes are,
-                    
-                    ^http://		http scheme => load asset from web.
-                    ^https://		https scheme => load asset from web.
-                    ^assetbundle://	assetbundle scheme => load asset from assetBundle.
-                    ^resources://   resources scheme => (Resources/)somewhere/resource path.
-                    ^./				relative path => (Resources/)somewhere/resource path.
-                    ^/              absolute path => unsupported.
-                    ^.*				path => (Resources/)somewhere/resource path.
-            */
-            var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
-            var scheme = schemeAndPath[0];
-
-            switch (scheme) {
-                case "assetbundle:": {
-                    var bundleName = uriSource;
-                    coroutine = LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
-                    break;
-                }
-                case "https:":
-                case "http:": {
-                    coroutine = LoadImageFromWeb(uriSource, loaded, loadFailed);
-                    break;
-                }
-                case ".": {
-                    var resourcePath = uriSource.Substring(2);
-                    coroutine = LoadImageFromResources(resourcePath, loaded, loadFailed);
-                    break;
-                }
-                case "resources:": {
-                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
-                    break;
-                }
-                case "/:": {
-                    throw new Exception("unsupported scheme:/");
-                }
-                default: {// other.
-                    if (string.IsNullOrEmpty(scheme)) {
-                        Debug.LogError("empty uri found:" + uriSource);
-                        return;
-                    }
-
-                    // not empty. treat as resource file path.
-                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
-                    break;
-                }
-            }
-            
-            // execute loading.
-            executor(coroutine);
-        }
 
         private readonly Dictionary<string, int> defaultTagStrIntPair;
         private readonly Dictionary<int, string> defaultTagIntStrPair;
@@ -624,19 +643,6 @@ namespace AutoyaFramework.Information {
             undefinedTagDict[tagCandidateStr] = count;
             return count;
         }
-
-        public bool IsCustomTag (int parsedTag) {
-            if (parsedTag < (int)HtmlTag._END) {
-				return false;
-			}
-
-			if (undefinedTagDict.ContainsValue(parsedTag)) {
-				return true;
-			}
-
-            throw new Exception("failed to determine tag from parsedTag. parsedTag:" + parsedTag);
-        }
-
 
 
 

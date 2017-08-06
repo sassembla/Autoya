@@ -36,14 +36,14 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        parser = new HTMLParser();
         loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        parser = new HTMLParser(loader);
         viewBox = new ViewBox(100,100,0);
 	}
 
     private ParsedTree CreateLayoutedTree (string sampleHtml) {
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
 
@@ -85,11 +85,23 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         
         var materializer = new MaterializeMachine(loader);
         
+        GameObject rootObj = null;
+
+        // このへんでreloadManagerみたいなのを考える必要が出てくる。
+        // 現在はまだ適当。
+        RunOnMainThread(
+            () => {
+                rootObj = new GameObject();
+                var canvas = GameObject.Find("Canvas");
+                rootObj.transform.SetParent(canvas.transform, false);
+            }
+        );
 
         var done = false;
-        var cor = materializer.Materialize(tree, 0, progress => {}, () => {
+        var cor = materializer.Materialize(rootObj, tree, 0, progress => {}, () => {
             done = true;
         });
+
         
         Autoya.Mainthread_Commit(cor);
         

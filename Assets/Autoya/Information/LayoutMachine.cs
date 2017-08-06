@@ -164,7 +164,7 @@ namespace AutoyaFramework.Information {
 			// 親コンテンツのサイズを継承
 			@this.SetPosFromViewCursor(viewCursor);
 
-			var path = "Views/" + infoResLoader.DepthAssetList().viewName + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
+			var path = "Views/" + infoResLoader.CustomTagList().viewName + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
 			Debug.LogError("あとで使うprefabのパス。layer prefab path:" + path);
 
 			/*
@@ -284,10 +284,7 @@ namespace AutoyaFramework.Information {
 		private IEnumerator<ViewCursor> DoTextLayout (ParsedTree textTree, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
 			var text = textTree.keyValueStore[Attribute._CONTENT] as string;
 			
-			var prefabName = infoResLoader.GetTagFromIndex(textTree.parsedTag);
-
-			Debug.LogError("LayoutTextContent prefabName:" + prefabName);
-			var cor = infoResLoader.LoadTextPrefab(prefabName);
+			var cor = infoResLoader.LoadGameObjectFromPrefab(textTree.parsedTag, textTree.treeType, true);
 
 			while (cor.MoveNext()) {
 				yield return null;
@@ -298,11 +295,11 @@ namespace AutoyaFramework.Information {
 			// use prefab's text component for using it's text setting.
 			var textComponent = prefab.GetComponent<Text>();
 			if (textComponent == null) {
-				throw new Exception("failed to get Text component from prefab:" + prefabName + " of text content:" + text);
+				throw new Exception("failed to get Text component from prefab:" + prefab.name + " of text content:" + text);
 			}
 
 			if (textComponent.font == null) {
-				throw new Exception("font is null. prefab:" + prefabName);
+				throw new Exception("font is null. prefab:" + prefab.name);
 			}
 
 			Debug.LogWarning("文字を配置するときの適当な高さをどうやって与えようか考え中。10000は適当。");

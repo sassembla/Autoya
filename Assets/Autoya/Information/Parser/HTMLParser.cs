@@ -27,11 +27,13 @@ namespace AutoyaFramework.Information {
 		depthAssetListが発見されたら、DLを開始する。
      */
     public class HTMLParser {
-		private InformationResourceLoader infoResLoader;
+		private readonly InformationResourceLoader infoResLoader;
 
-        public IEnumerator ParseRoot (string source, InformationResourceLoader infoResLoader, Action<ParsedTree> parsed) {
+		public HTMLParser (InformationResourceLoader infoResLoader) {
 			this.infoResLoader = infoResLoader;
+		}
 
+        public IEnumerator ParseRoot (string source, Action<ParsedTree> parsed) {
 			var lines = source.Split('\n');
 			for (var i = 0; i < lines.Length; i++) {
 				lines[i] = lines[i].TrimStart();
@@ -40,7 +42,6 @@ namespace AutoyaFramework.Information {
             var root = new ParsedTree();
             return Parse(root, string.Join(string.Empty, lines), parsed);
         }
-
 
         /**
 			与えられたstringから情報を抜き出し、パーツの親子構造を規定する。
@@ -378,7 +379,7 @@ namespace AutoyaFramework.Information {
 				/*
 					start loading of depthAssetList.
 				 */
-				var cor = infoResLoader.LoadDepthAssetList(depthAssetListUrl);
+				var cor = infoResLoader.LoadCustomTagList(depthAssetListUrl);
 
 				while (cor.MoveNext()) {
 					yield return null;

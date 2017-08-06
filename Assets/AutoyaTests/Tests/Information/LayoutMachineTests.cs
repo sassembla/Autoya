@@ -33,13 +33,13 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        parser = new HTMLParser();
         loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        parser = new HTMLParser(loader);
 	}
 
     private ParsedTree CreateCustomizedTree (string sampleHtml) {
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
 

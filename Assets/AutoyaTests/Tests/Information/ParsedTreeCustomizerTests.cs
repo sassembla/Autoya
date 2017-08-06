@@ -42,8 +42,8 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        parser = new HTMLParser();
         loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        parser = new HTMLParser(loader);
 	}
 
     [MTest] public void ParseDefaultTag () {
@@ -52,7 +52,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         RunEnumeratorOnMainThread(cor);
@@ -81,7 +81,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
             // ShowRecursive(parsedRoot, loader);
         });
@@ -114,7 +114,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
             // ShowRecursive(parsedRoot, loader);
         });
@@ -149,7 +149,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
             // ShowRecursive(parsedRoot, loader);
         });

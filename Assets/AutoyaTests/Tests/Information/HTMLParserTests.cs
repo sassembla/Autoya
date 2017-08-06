@@ -25,8 +25,8 @@ public class HTMLParserTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        parser = new HTMLParser();
         loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        parser = new HTMLParser(loader);
 	}
 
     [MTest] public void LoadSimpleHTML () {
@@ -35,7 +35,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -56,7 +56,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -75,7 +75,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -96,7 +96,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -119,7 +119,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -146,7 +146,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -176,7 +176,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         ";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -199,7 +199,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -219,7 +219,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <myimg src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -238,7 +238,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <mytext>text</mytext>";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
@@ -258,7 +258,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <customtext>text</customtext>";
 
         ParsedTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, loader, parsed => {
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
         Autoya.Mainthread_Commit(cor);
