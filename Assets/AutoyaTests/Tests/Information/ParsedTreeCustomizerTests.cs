@@ -102,8 +102,8 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         var newContentsCount = CountContentsRecursive(customizedTree);
         Assert(contentsCount < newContentsCount, "actual:" + newContentsCount);
 
-        // 増えてる階層に関してのチェックを行う
-        Assert(contentsCount +1 == newContentsCount, "actual:" + newContentsCount);
+        // 増えてる階層に関してのチェックを行う customtagで+1, customtextで+1。
+        Assert(contentsCount +2 == newContentsCount, "actual:" + newContentsCount);
     }
 
     [MTest] public void WithDeepCustomTag () {

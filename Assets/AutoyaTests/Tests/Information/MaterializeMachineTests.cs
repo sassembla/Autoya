@@ -20,7 +20,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     private ParsedTreeCustomizer customizer;
 
     private ViewBox viewBox;
-    private GameObject viewGameObj;
+    private GameObject canvas;
 
     private void ShowLayoutRecursive (ParsedTree tree) {
         Debug.Log("tree:" + loader.GetTagFromIndex(tree.parsedTag) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
@@ -39,6 +39,12 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
         parser = new HTMLParser(loader);
         viewBox = new ViewBox(100,100,0);
+
+        RunOnMainThread(
+            () => {
+                canvas = GameObject.Find("Canvas/MaterializeTestPlace");
+            }
+        );
 	}
 
     private ParsedTree CreateLayoutedTree (string sampleHtml) {
@@ -78,21 +84,18 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         return layouted;
     }
 
-    [MTest] public void MaterializeHTML () {
-        var sample = @"
-<body>something</body>";
-        var tree = CreateLayoutedTree(sample);
-        
+    private int index;
+    private void Show (ParsedTree tree) {
         var materializer = new MaterializeMachine(loader);
         
         GameObject rootObj = null;
+        RectTransform rectTrans = null;
 
         // このへんでreloadManagerみたいなのを考える必要が出てくる。
         // 現在はまだ適当。
         RunOnMainThread(
             () => {
                 rootObj = new GameObject();
-                var canvas = GameObject.Find("Canvas");
                 rootObj.transform.SetParent(canvas.transform, false);
             }
         );
@@ -108,425 +111,201 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         WaitUntil(
             () => done, 5, "not yet."
         );
+        
+        RunOnMainThread(
+            () => {
+                rectTrans = rootObj.GetComponent<RectTransform>();
+                
+                // move to indexed pos.
+                rectTrans.anchoredPosition += new Vector2(100 * index, 0);
+                index++;
+            }
+        );
     }
 
-//     [MTest] public void MaterializeHTMLHasValidView () {
-//         var sample = @"
-// <body>something</body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTML () {
+        var sample = @"
+<body>something</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLHasValidView () {
+        var sample = @"
+<body>something</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-
-//     }
-
-//     [MTest] public void MaterializeHTMLWithSmallTextHasValidView () {
-//         var sample = @"
-// <body>over 100px string should be multi lined text with good separation. need some length.</body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithSmallTextHasValidView () {
+        var sample = @"
+<body>over 100px string should be multi lined text with good separation. need some length.</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithImage () {
+        var sample = @"
+<body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 112, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
+    [MTest] public void MaterializeHTMLWithSmallImage () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/></body>";
+        var tree = CreateLayoutedTree(sample);
         
-//     }
+        Show(tree);
+    }
 
-//     [MTest] public void MaterializeHTMLWithImage () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithSmallImageAndText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>text</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithSmallImageAndSmallText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 100, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-//     [MTest] public void MaterializeHTMLWithSmallImage () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/10.png/09f/fff'/></body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithWideImageAndText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+    [MTest] public void MaterializeHTMLWithTextAndWideImage () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/100x10/000/fff'/></body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 10, "not match.");
-//             }
-//         );
 
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-
-//     }
-
-//     [MTest] public void MaterializeHTMLWithSmallImageAndText () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/10.png/09f/fff'/>text</body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithTextAndWideImageAndText () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/100x10/000/fff'/>else</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithTextAndWideImageAndTextAndWideImageAndText () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-//     [MTest] public void MaterializeHTMLWithSmallImageAndSmallText () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithWideImageAndTextAndWideImageAndText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+
+
+    [MTest] public void MaterializeHTMLWithTextAndSmallImage () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/10x10/000/fff'/></body>";
+        var tree = CreateLayoutedTree(sample);
+
+        Show(tree);
+    }
+
+
+    [MTest] public void MaterializeHTMLWithTextAndSmallImageAndText () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/10x10/000/fff'/>b!</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 112, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-//     [MTest] public void MaterializeHTMLWithWideImageAndText () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithTextAndSmallImageAndTextAndWideImageAndText () {
+        var sample = @"
+<body>something<img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/100x10/000/fff'/>other</body>";
+        var tree = CreateLayoutedTree(sample);
         
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithSmallImageAndTextAndSmallImageAndText () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/10x20/000/fff'/>other</body>";
+        var tree = CreateLayoutedTree(sample);
         
-
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 26, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-//     [MTest] public void MaterializeHTMLWithTextAndWideImage () {
-//         var sample = @"
-// <body>something<img src='https://dummyimage.com/100x10/000/fff'/></body>";
-//         var tree = CreateLayoutedTree(sample);
-
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
+        Show(tree);
+    }
 
 
-//     [MTest] public void MaterializeHTMLWithTextAndWideImageAndText () {
-//         var sample = @"
-// <body>something<img src='https://dummyimage.com/100x10/000/fff'/>else</body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16+16, "not match.");
-//             }
-//         );
+    [MTest] public void LoadHTMLWithCustomTagLink () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->";
+        var tree = CreateLayoutedTree(sample);
 
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
+        Show(tree);
+    }
 
-//     [MTest] public void MaterializeHTMLWithTextAndWideImageAndTextAndWideImageAndText () {
-//         var sample = @"
-// <body>something<img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16+16+16, "not match.");
-//             }
-//         );
+    [MTest] public void MaterializeHTMLWithCustomTag () {
+        /*
+            ・そもそもレイヤーにboxが存在する場合、指定の位置に出す。
+            ・レイヤーにboxが存在していてその存在を無視した別のtagが来た場合、エラー。
+            ・レイヤーにboxが存在しない場合、左上から出す。
 
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
+         */
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<body>
+<customtag><custombg><textbg><customtext>something</customtext></textbg></custombg></customtag>
+else
+</body>";
+        var tree = CreateLayoutedTree(sample);
 
-//     [MTest] public void MaterializeHTMLWithWideImageAndTextAndWideImageAndText () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 10+16+16, "not match.");
-//             }
-//         );
+        Show(tree);
+    }
 
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
+    [MTest] public void MaterializeHTMLWithCustomTagSmallText () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<body>
+<customtag><custombg><textbg><customtext>
+something you need is not time, money, but do things fast.</customtext></textbg></custombg></customtag>
+else
+</body>";
+        var tree = CreateLayoutedTree(sample);
 
+        Show(tree);
+    }
 
-//     [MTest] public void MaterializeHTMLWithTextAndSmallImage () {
-//         var sample = @"
-// <body>something<img src='https://dummyimage.com/10x10/000/fff'/></body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithCustomTagLargeText () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<body>
+<customtag><custombg><textbg><customtext>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+</customtext></textbg></custombg></customtag>
+else
+</body>";
+        var tree = CreateLayoutedTree(sample);
 
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-
-//     [MTest] public void MaterializeHTMLWithTextAndSmallImageAndText () {
-//         var sample = @"
-// <body>something<img src='https://dummyimage.com/10x10/000/fff'/>b!</body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-//     [MTest] public void MaterializeHTMLWithTextAndSmallImageAndTextAndWideImageAndText () {
-//         var sample = @"
-// <body>something<img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/100x10/000/fff'/>other</body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 16+16+16, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-//     [MTest] public void MaterializeHTMLWithSmallImageAndTextAndSmallImageAndText () {
-//         var sample = @"
-// <body><img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/10x20/000/fff'/>other</body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         var done = false;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 ShowLayoutRecursive(layoutedTree);
-//                 done = true;
-//                 Assert(layoutedTree.viewHeight == 20, "not match.");
-//             }
-//         );
-
-//         WaitUntil(
-//             () => done, 5, "timeout."
-//         );
-//     }
-
-
-//     [MTest] public void LoadHTMLWithCustomTagLink () {
-//         var sample = @"
-// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-//         ";
-//         var tree = CreateLayoutedTree(sample);
-
-//         ParsedTree layouted = null;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 layouted = layoutedTree;
-//             }
-//         );
-
-//         WaitUntil(
-//             () => layouted != null, 5, "timeout."
-//         );
-//     }
-
-//     [MTest] public void MaterializeHTMLWithCustomTag () {
-//         /*
-//             textbgの上にカスタムタグが乗ってほしいが、そういうの想定してなくて辛い。
-//             boxが存在しないレイヤーにコンテンツを足すにはどうすればいいか、とかその辺。
-//             ・そもそもレイヤーにboxが存在する場合、指定の位置に出す。
-//             ・レイヤーにboxが存在していて無視したtagが来た場合、エラー。
-//             ・レイヤーにboxが存在しない場合、左上から出す。
-
-//             とかか。
-//          */
-//         var sample = @"
-// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-// <body>
-// <customtag><textbg><customtext>something</customtext></textbg></customtag>
-// else
-// </body>
-//         ";
-//         var tree = CreateLayoutedTree(sample);
-
-//         ParsedTree layouted = null;
-//         var layoutMachine = new LayoutMachine(
-//             tree, 
-//             loader, 
-//             new ViewBox(100,100,0), 
-//             Autoya.Mainthread_Commit, 
-//             layoutedTree => {
-//                 layouted = layoutedTree;
-//             }
-//         );
-
-//         WaitUntil(
-//             () => layouted != null, 5, "timeout."
-//         );
-
-//         ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
-//     }
+        Show(tree);
+    }
 
     
 }

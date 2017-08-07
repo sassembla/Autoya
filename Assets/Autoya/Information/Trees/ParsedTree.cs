@@ -190,7 +190,7 @@ namespace AutoyaFramework.Information {
         }
 
          public static Vector2 AnchoredPositionOf (ParsedTree tree) {
-            return new Vector2(tree.offsetX, tree.offsetY);
+            return new Vector2(tree.offsetX, -tree.offsetY);
         }
 
         public static Vector2 SizeDeltaOf (ParsedTree tree) {

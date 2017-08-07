@@ -251,7 +251,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Container, "not match. expected:" + TreeType.Container + " actual:" + parsedRoot.GetChildren()[0].treeType);
     }
 
-    [MTest] public void ParserTestCombination () {
+    [MTest] public void ParserTestCustomLayerAndCustomContentCombination () {
         var sampleHtml = @"
 <!--depth asset list url(resources://Views/ParserTestCombination/DepthAssetList)-->
 <customtag><customtagtext><customtext>text</customtext></customtagtext></customtag>
@@ -271,5 +271,6 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(parsedRoot.GetChildren()[0].treeType == TreeType.CustomLayer, "not match. expected:" + TreeType.CustomLayer + " actual:" + parsedRoot.GetChildren()[0].treeType);
         Assert(parsedRoot.GetChildren()[1].treeType == TreeType.Container, "not match. expected:" + TreeType.Container + " actual:" + parsedRoot.GetChildren()[0].treeType);
     }
+    
     
 }

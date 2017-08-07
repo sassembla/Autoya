@@ -97,11 +97,11 @@ namespace AutoyaFramework.Information {
 			RetryWithNextLine,
 		};
 
-		public IEnumerator Layout (ParsedTree @this, Action<ParsedTree> layouted) {
-			Debug.LogError("どこかで、layoutによって分割されたオブジェクトのリセットを行わなければ。");
+		public IEnumerator Layout (ParsedTree rootTree, Action<ParsedTree> layouted) {
+			Debug.LogWarning("どこかで、layoutによって分割されたオブジェクトのリセットを行わなければ。オリジナルtreeの保持はしたくないな〜。");
 			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
 			
-			var cor = DoLayout(@this, viewCursor);
+			var cor = DoLayout(rootTree, viewCursor);
 			
 			while (cor.MoveNext()) {
 				yield return null;
@@ -109,42 +109,41 @@ namespace AutoyaFramework.Information {
 
 			// ビュー高さが出る。
 			viewCursor = cor.Current;
-			Debug.LogError("root viewCursor:" + viewCursor);
 			
-			layouted(@this);
+			// セット
+			rootTree.SetPosFromViewCursor(viewCursor);
+			
+			layouted(rootTree);
 		}
 
-		private IEnumerator<ViewCursor> DoLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
+		private IEnumerator<ViewCursor> DoLayout (ParsedTree tree, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 			IEnumerator<ViewCursor> cor = null;
+
+			// Debug.LogError("@this.treeType:" + tree.treeType);
 			
-			switch (@this.treeType) {
+			switch (tree.treeType) {
 				case TreeType.CustomLayer: {
-					Debug.LogError("カスタムレイヤ");
-					cor = DoLayerLayout(@this, viewCursor);
+					cor = DoLayerLayout(tree, viewCursor);
 					break;
 				}
 				case TreeType.CustomEmptyLayer: {
-					Debug.LogError("中身のないカスタムレイヤ");
-					cor = DoEmptyLayerLayout(@this, viewCursor);
+					cor = DoEmptyLayerLayout(tree, viewCursor);
 					break;
 				}
 				case TreeType.Container: {
-					Debug.LogError("コンテナ");
-					cor = DoContainerLayout(@this, viewCursor);
+					cor = DoContainerLayout(tree, viewCursor);
 					break;
 				}
 				case TreeType.Content_Img: {
-					Debug.LogError("画像");
-					cor = DoImgLayout(@this, viewCursor, insertion);
+					cor = DoImgLayout(tree, viewCursor, insertion);
 					break;
 				}
 				case TreeType.Content_Text: {
-					Debug.LogError("テキスト");
-					cor = DoTextLayout(@this, viewCursor, insertion);
+					cor = DoTextLayout(tree, viewCursor, insertion);
 					break;
 				}
 				default: {
-					throw new Exception("unexpected tree type:" + @this.treeType);
+					throw new Exception("unexpected tree type:" + tree.treeType);
 				}
 			}
 
@@ -160,12 +159,9 @@ namespace AutoyaFramework.Information {
 			customTagLayer/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
 			ここだけ相対的なレイアウトが崩れる。
 		 */
-		private IEnumerator<ViewCursor> DoLayerLayout (ParsedTree @this, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoLayerLayout (ParsedTree layerTree, ViewCursor viewCursor) {
 			// 親コンテンツのサイズを継承
-			@this.SetPosFromViewCursor(viewCursor);
-
-			var path = "Views/" + infoResLoader.CustomTagList().viewName + "/" + infoResLoader.GetTagFromIndex(@this.parsedTag);
-			Debug.LogError("あとで使うprefabのパス。layer prefab path:" + path);
+			layerTree.SetPosFromViewCursor(viewCursor);
 
 			/*
 				レイヤーなので、prefabをロードして、原点位置は0,0、
@@ -174,12 +170,19 @@ namespace AutoyaFramework.Information {
 				・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
 				・この際のchildのサイズは、layerであれば必ずboxのサイズになる。このへんがキモかな。
 			*/
+			var children = layerTree.GetChildren();
 
-			var children = @this.GetChildren();
+			if (children.Count == 0) {
+				layerTree.SetPosFromViewCursor(viewCursor);
+				yield return viewCursor;
+				yield break;
+			}
+
+			
 			var additionalHeight = 0f;
 
 			foreach (var boxTree in children) {
-				Debug.LogError("tag:" + infoResLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
+				// Debug.LogError("box tag:" + infoResLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
 
 				/*
 					位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
@@ -188,55 +191,70 @@ namespace AutoyaFramework.Information {
 				var layoutParam = boxTree.keyValueStore[Attribute._BOX] as BoxPos;
 				
 				var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
-				Debug.LogError("viewRect:" + viewRect);
+				// Debug.LogError("viewRect:" + viewRect);
 
 				var childView = new ViewCursor(viewRect.x, viewRect.y + additionalHeight, viewRect.width, viewRect.height);
 
-				var cor = LayoutBoxedContents(childView, boxTree);
+				var cor = LayoutBoxedContents(boxTree, childView);
 
 				while (cor.MoveNext()) {
 					yield return null;
 				}
 
 				childView = cor.Current;
+				// Debug.LogError("boxの中身:" + infoResLoader.GetTagFromIndex(boxTree.parsedTag) + " の、layout後viewCursor:" + childView);
 				if (viewRect.height < childView.viewHeight) {
-					Debug.LogError("レイアウト後のサイズが大きいので、次のrectの開始位置を差分だけズラす。");
+					// Debug.LogError("レイアウト後のサイズが大きいので、次のrectの開始位置を差分だけズラす。");
 					additionalHeight = childView.viewHeight - viewRect.height;
 				}
 			}
-
-			Debug.LogError("ここでカスタムタグ自体のサイズを変更する。　additionalHeight:" + additionalHeight);
+			
+			Debug.LogWarning("横揃えのものの高さを変えたい場合、boxごとの下端みたいなのの概念を持ち出さないといけないぽい。あれか、boxのめり込みグループを勝手に発掘するか。Antimaterialize時に干渉するものを出しておく的な。boxの出現順をもとに子供コンテンツを制御する必要がある。下端がめりこんでいるコンテンツのYをズラす。横はグルーピングで頑張って、みたいな。");
+			// Debug.LogError("ここでカスタムタグ自体のサイズを変更する。　additionalHeight:" + additionalHeight);
 			viewCursor.viewHeight += additionalHeight;
+
+			// セット
+			layerTree.SetPosFromViewCursor(viewCursor);
+
 			yield return viewCursor;
 		}
 
-		private IEnumerator<ViewCursor> DoEmptyLayerLayout (ParsedTree @this, ViewCursor viewCursor) {
-			
-			var baseViewCursorHeight = viewCursor.viewHeight;
-			var cor = DoContainerLayout(@this, viewCursor);
+		private IEnumerator<ViewCursor> DoEmptyLayerLayout (ParsedTree emptyLayerTree, ViewCursor viewCursor) {
+			var childCount = emptyLayerTree.GetChildren().Count;
+			if (childCount == 0) {
+				emptyLayerTree.SetPosFromViewCursor(viewCursor);
+				yield return viewCursor;
+				yield break;
+			}
 
+			var baseViewCursorHeight = viewCursor.viewHeight;
+			
+			var childView = new ViewCursor(0, 0, viewCursor.viewWidth, viewCursor.viewHeight);
+			var cor = LayoutBoxedContents(emptyLayerTree.GetChildren()[0], childView);
+			
 			while (cor.MoveNext()) {
 				yield return null;
 			}
 			
 			var resultViewCursor = cor.Current;
 			
-			// 縮まない。伸びるぶんには放置。
+			// 伸びるぶんには伸ばす。
 			if (resultViewCursor.viewHeight < baseViewCursorHeight) {
 				resultViewCursor.viewHeight = baseViewCursorHeight;
 			}
 
-			@this.SetPosFromViewCursor(resultViewCursor);
+			emptyLayerTree.SetPosFromViewCursor(resultViewCursor);
+
 			yield return resultViewCursor;
 		}
 
-		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree @this, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
+		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree imgTree, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 			var contentViewCursor = viewCursor;
-			if (!@this.keyValueStore.ContainsKey(Attribute.SRC)) {
+			if (!imgTree.keyValueStore.ContainsKey(Attribute.SRC)) {
 				throw new Exception("image should define src param.");
 			}
 
-			var src = @this.keyValueStore[Attribute.SRC] as string;
+			var src = imgTree.keyValueStore[Attribute.SRC] as string;
 			
 			// need to download image.
 			
@@ -272,7 +290,7 @@ namespace AutoyaFramework.Information {
 			contentViewCursor.viewHeight = imageHeight;
 
 			// 自己のサイズに反映
-			@this.SetPosFromViewCursor(contentViewCursor);
+			imgTree.SetPosFromViewCursor(contentViewCursor);
 			
 			yield return contentViewCursor;
 		}
@@ -413,7 +431,7 @@ namespace AutoyaFramework.Information {
 		}
 
 
-		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree @this, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree containerTree, ViewCursor viewCursor) {
 			/*
 				子供のタグを整列させる処理。
 				横に整列、縦に並ぶ、などが実行される。
@@ -423,16 +441,18 @@ namespace AutoyaFramework.Information {
 			var childView = new ViewCursor(viewCursor);
 			var linedElements = new List<ParsedTree>();
 			
-			var containerChildren = @this.GetChildren();
+			var containerChildren = containerTree.GetChildren();
 			var childCount = containerChildren.Count;
-			
+
 			if (childCount == 0) {
+				containerTree.SetPosFromViewCursor(viewCursor);
+				yield return viewCursor;
 				yield break;
 			}
 
 			for (var i = 0; i < childCount; i++) {
 				var child = containerChildren[i];
-				Debug.LogError("child:" + infoResLoader.GetTagFromIndex(child.parsedTag));
+				// Debug.LogError("child:" + infoResLoader.GetTagFromIndex(child.parsedTag));
 				currentLineRetry: {
 					linedElements.Add(child);
 
@@ -491,7 +511,7 @@ namespace AutoyaFramework.Information {
 
 							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
 							childView = ViewCursor.NextLine(childView, newLineOffsetY, viewCursor.viewWidth);
-							Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
+							// Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
 							continue;
 						}
 					}
@@ -502,7 +522,7 @@ namespace AutoyaFramework.Information {
 
 					// レイアウトが済んだchildの位置を受け取る。
 					var layoutedChildView = cor.Current;
-					Debug.LogError("layoutedChildView:" + layoutedChildView);
+					// Debug.LogError("layoutedChildView:" + layoutedChildView);
 					Debug.Assert(layoutedChildView != null, "layoutedChildView is null.");
 					
 					var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, viewCursor.viewWidth);
@@ -522,7 +542,7 @@ namespace AutoyaFramework.Information {
 						childView = nextChildViewCursor;
 					}
 
-					Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
+					// Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
 				}
 
 				// 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
@@ -535,11 +555,12 @@ namespace AutoyaFramework.Information {
 			}
 			
 			var lastChildEndY = containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight;
+			
 			// Debug.Log("lastChildEndY:" + lastChildEndY + " これが更新されない場合、レイアウトされたパーツにサイズが入ってない。");
 			viewCursor = ViewCursor.Wrap(viewCursor, lastChildEndY);
 			
 			// 自分自身のサイズを再規定
-			@this.SetPosFromViewCursor(viewCursor);
+			containerTree.SetPosFromViewCursor(viewCursor);
 			yield return viewCursor;
 		}
 
@@ -573,12 +594,14 @@ namespace AutoyaFramework.Information {
 		/**
 			ボックス内部のコンテンツのレイアウトを行う
 		 */
-		private IEnumerator<ViewCursor> LayoutBoxedContents (ViewCursor boxView, ParsedTree box) {
+		private IEnumerator<ViewCursor> LayoutBoxedContents (ParsedTree boxTree, ViewCursor boxView) {
 			
-			var containerChildren = box.GetChildren();
+			var containerChildren = boxTree.GetChildren();
 			var childCount = containerChildren.Count;
 
 			if (childCount == 0) {
+				boxTree.SetPosFromViewCursor(boxView);
+				yield return boxView;
 				yield break;
 			}
 
@@ -587,7 +610,6 @@ namespace AutoyaFramework.Information {
 
 			for (var i = 0; i < childCount; i++) {
 				var child = containerChildren[i];
-				Debug.LogError("box child:" + infoResLoader.GetTagFromIndex(child.parsedTag));
 				currentLineRetry: {
 					linedElements.Add(child);
 
@@ -657,7 +679,7 @@ namespace AutoyaFramework.Information {
 
 					// レイアウトが済んだchildの位置を受け取る。
 					var layoutedChildView = cor.Current;
-					Debug.LogError("box layoutedChildView:" + layoutedChildView);
+					// Debug.LogError("box layoutedChildView:" + layoutedChildView);
 					Debug.Assert(layoutedChildView != null, "layoutedChildView is null.");
 					
 					var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, boxView.viewWidth);
@@ -677,7 +699,7 @@ namespace AutoyaFramework.Information {
 						childView = nextChildViewCursor;
 					}
 
-					Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
+					// Debug.LogError("child:" + infoResLoader.GetTagFromIndex(child.parsedTag) + " done," + child.ShowContent() + " next childView:" + childView);
 				}
 
 				// 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
@@ -691,11 +713,12 @@ namespace AutoyaFramework.Information {
 			
 			var lastChildEndY = containerChildren[containerChildren.Count-1].offsetY + containerChildren[containerChildren.Count-1].viewHeight;
 			// Debug.Log("lastChildEndY:" + lastChildEndY + " これが更新されない場合、レイアウトされたパーツにサイズが入ってない。");
-			childView = ViewCursor.Wrap(childView, lastChildEndY);
-			
+			boxView = ViewCursor.Wrap(boxView, lastChildEndY);
+			// Debug.LogError("layoutBoxedContent boxView:" + boxView);
+
 			// 自分自身のサイズを再規定
-			box.SetPosFromViewCursor(childView);
-			yield return childView;
+			boxTree.SetPosFromViewCursor(boxView);
+			yield return boxView;
 		}
 
 		

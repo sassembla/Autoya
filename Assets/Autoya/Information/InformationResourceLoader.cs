@@ -179,7 +179,7 @@ namespace AutoyaFramework.Information {
                             trans.offsetMax = Vector2.up;
                             trans.pivot = Vector2.up;
 
-                            gameObj = containerObj;        
+                            gameObj = containerObj;
                             break;
                         }
                         default: {
@@ -205,22 +205,52 @@ namespace AutoyaFramework.Information {
                     break;
                 }
 
-                // 非デフォルトタグ、loadpathが存在する。
+                // 非デフォルトタグ、customBox以外はloadpathが存在する。
                 default: {
-                    var tag = GetTagFromIndex(parsedTag);
-                    var loadPath = GetCustomTagLoadPath(parsedTag, treeType);
+                    switch (treeType) {
+                        case TreeType.Container: {
+                            Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
+                            var containerObj = new GameObject(tagName);
+                            var trans = containerObj.AddComponent<RectTransform>();
+                            trans.anchorMin = Vector2.up;
+                            trans.anchorMax = Vector2.up;
+                            trans.offsetMin = Vector2.up;
+                            trans.offsetMax = Vector2.up;
+                            trans.pivot = Vector2.up;
 
-                    var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
-                    while (cor.MoveNext()) {
-                        yield return null;
-                    }
+                            gameObj = containerObj;
+                            break;
+                        }
+                        case TreeType.CustomBox: {
+                            var customBoxObj = new GameObject(tagName);
+                            var trans = customBoxObj.AddComponent<RectTransform>();
+                            trans.anchorMin = Vector2.up;
+                            trans.anchorMax = Vector2.up;
+                            trans.offsetMin = Vector2.up;
+                            trans.offsetMax = Vector2.up;
+                            trans.pivot = Vector2.up;
 
-                    var loadedPrefab = cor.Current;
-                    
-                    if (prefabOnly) {
-                        gameObj = loadedPrefab;
-                    } else {
-                        gameObj = GameObject.Instantiate(loadedPrefab);
+                            gameObj = customBoxObj;
+                            break;
+                        }
+                        default: {
+                            var tag = GetTagFromIndex(parsedTag);
+                            var loadPath = GetCustomTagLoadPath(parsedTag, treeType);
+
+                            var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
+                            while (cor.MoveNext()) {
+                                yield return null;
+                            }
+
+                            var loadedPrefab = cor.Current;
+                            
+                            if (prefabOnly) {
+                                gameObj = loadedPrefab;
+                            } else {
+                                gameObj = GameObject.Instantiate(loadedPrefab);
+                            }
+                            break;
+                        }
                     }
                     break;
                 }
@@ -235,7 +265,8 @@ namespace AutoyaFramework.Information {
             var targetPrefab = string.Empty;
 
             switch (treeType) {
-                case TreeType.CustomLayer: {
+                case TreeType.CustomLayer:
+                case TreeType.CustomEmptyLayer: {
                     return customTagList.layerConstraints.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
                 }
                 case TreeType.Content_Img:

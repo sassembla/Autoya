@@ -102,7 +102,7 @@ namespace AutoyaFramework.Information {
 							}
 						);
 
-						Debug.LogError("idを入れるならこの辺かな。idを渡すのもやろう。");
+						Debug.LogWarning("idを入れるならこの辺かな。idを渡すのもやろう。");
 
 						// add button component.
 						AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), src));
@@ -147,7 +147,7 @@ namespace AutoyaFramework.Information {
 
 			var children = tree.GetChildren();
 
-			Debug.LogError("レイアウトが終わってるので、このへんはフルに分散できそう。");
+			Debug.LogWarning("レイアウトが終わってるので、このへんはフルに分散できそう。");
 			foreach (var child in children) {
 				var cor = MaterializeRecursive(child, newGameObject);
 				while (cor.MoveNext()) {

@@ -29,35 +29,47 @@ namespace AutoyaFramework.Information {
 
 
         private void TraverseTagRecursive (ParsedTree tree) {
-            foreach (var child in tree.GetChildren()) {
-                if (IsCustomTag(child.parsedTag)) {
-                    // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグ。");
-                    ExpandCustomTagToLayer(child);
-                } else {
-                    // Debug.LogError("child prefab:" + child.prefabName + "　こいつはカスタムタグではない");
-                    TraverseTagRecursive(child);
+            // Debug.LogError("TraverseTagRecursive tree:" + infoResLoader.GetTagFromIndex(tree.parsedTag) + " treeType:" + tree.treeType);
+            
+            switch (tree.treeType) {
+                case TreeType.CustomLayer: {
+                    ExpandCustomTagToLayer(tree);
+                    break;
+                }
+                case TreeType.CustomEmptyLayer: {
+                    ExpandCustomTagToEmptyLayer(tree);
+                    break;
+                }
+                default: {
+                    foreach (var child in tree.GetChildren()) {
+                        TraverseTagRecursive(child);
+                    }
+                    break;
                 }
             }
         }
 
         /**
-            カスタムタグの内容を分解し、存在するchildの代わりにboxを挿入する。
+            boxありのlayerを作成する。
+            ・childを入れるboxを生成
+            ・boxにchildを入れる
+            ・layerにboxを入れる
          */
         private void ExpandCustomTagToLayer (ParsedTree tree) {
             var adoptedConstaints = GetConstraints(tree.parsedTag);
-            // このtree自体がレイヤーなので、存在する子供に対してboxConstraintをチェックしていく。
+            
             var children = tree.GetChildren();
 
             var box = new List<ParsedTree>();
+            Debug.LogWarning("子供順ではなく、boxの出現順をもとに子供コンテンツを制御する必要がある。そのほうが描きやすいかもね。");
+
             for (var i = 0; i < children.Count; i++) {
                 var child = children[i];
                 
                 var newBoxName = GetLayerBoxName(tree.parsedTag, child.parsedTag);
-                // Debug.LogError("newBoxName:" + newBoxName);
                 
-                // Debug.LogWarning("whereでの名前一致が辛い。");
-                var matchedBoxies = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
-                if (!matchedBoxies.Any()) {
+                var matchedBoxes = adoptedConstaints.Where(c => c.boxName == newBoxName).ToArray();
+                if (!matchedBoxes.Any()) {
                     throw new Exception("no target tag found:" + infoResLoader.GetTagFromIndex(child.parsedTag) + " in this layer:" + infoResLoader.GetTagFromIndex(tree.parsedTag));
                 }
 
@@ -77,10 +89,9 @@ namespace AutoyaFramework.Information {
                     // boxTreeにchildを追加
                     boxTree.AddChild(child);
                 } else {
-                    // Debug.LogError("add box.");
                     // 新規に中間treeを作成する。
                     var newBoxTreeAttr = new AttributeKVs(){
-                        {Attribute._BOX, matchedBoxies[0].rect}
+                        {Attribute._BOX, matchedBoxes[0].rect}
                     };
                     var boxTree = new ParsedTree(newTagId, newBoxTreeAttr, TreeType.CustomBox);
                     
@@ -104,21 +115,32 @@ namespace AutoyaFramework.Information {
             }
         }
 
+        private void ExpandCustomTagToEmptyLayer (ParsedTree tree) {
+            // Debug.LogError("専用で一つ、なんでも入るboxを作り出す。範囲は全体。");
 
+            var newBoxName = GetLayerBoxName(tree.parsedTag, tree.parsedTag);
 
-        private bool IsCustomTag (int parsedTag) {
-            var key = infoResLoader.GetTagFromIndex(parsedTag);
-            if (constraintsDict.ContainsKey(key)) {
-                var constraints = constraintsDict[key];
-                for (var i = 0; i < constraints.Length; i++) {
-                    constraints[i].boxName = constraints[i].boxName.ToLower();
-                }
-                return true;
+            Debug.LogWarning("名前は仮で newBoxName:" + newBoxName + " このときのtreeType:" + tree.treeType);
+
+            var newTagId = infoResLoader.FindOrCreateTag(newBoxName);
+            var boxTree = new ParsedTree(newTagId, new AttributeKVs(), TreeType.CustomBox);
+            
+            var children = tree.GetChildren();
+            for (var i = 0; i < children.Count; i++) {
+                var child = children[i];
+
+                // 現在参加しているtreeから離脱
+                tree.RemoveChild(child);
+
+                // boxTreeにchildを追加
+                boxTree.AddChild(child);
+
+                // 子の階層の処理を続ける。
+                TraverseTagRecursive(child);
             }
 
-            return false;
+            tree.AddChild(boxTree);
         }
-
         
         private string GetLayerBoxName (int layerTag, int boxTag) {
             return infoResLoader.GetTagFromIndex(layerTag) + "_" + infoResLoader.GetTagFromIndex(boxTag);
