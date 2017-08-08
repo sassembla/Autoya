@@ -74,54 +74,6 @@ namespace AutoyaFramework.Information {
             this.keyValueStore = kv;
             this.treeType = treeType;
 
-            /*
-                カスタムタグは、レイヤーとボックスに分かれるんだけど、まあそういうこともあっていろいろ詳しくやっとくのがいいか。
-
-                コンテンツである場合、というのが真っ先に切り分けられる。
-                この場合、ロードするprefabの名前は、tagから復元できる。
-                で、同様にコンテナである場合、それを明示しておければいいような気がする。
-
-                コンテンツとコンテナにそれぞれ自明なことは、
-                ・コンテナ
-                    コンテンツに特性を渡す。
-                
-                ・コンテンツ
-                    コンテナの特性を受ける。
-
-                ・カスタムタグ
-                    レイヤーとして要素を持つ。boxを保持する
-                    
-                ・box
-                    コンテナとして動作する。中に特定のレイヤーが入る。
-
-                ・カスタムコンテナ
-                    カスタムコンテンツを持つコンテナ。
-
-                ・カスタムコンテンツ
-                    親がカスタムコンテナなコンテンツ。
-
-                この6種が存在する。
-                で、これはprefabのロード方法に直結する。
-
-                ・コンテナ or コンテンツ
-                    コンテナは、カスタムコンテナ以外一切特徴がない。ので、無視していい。名前があっても構わんわけだ。
-                    コンテンツはtagを見てどのtagのコンテンツかを見て対象のprefabをロードする必要がある。
-
-                ・デフォルト or カスタム
-                    カスタムコンテナはレイヤー+boxに分解される前提で、レイヤーのみprefabを読み込む。
-
-                よし。
-                ・レイヤーだったら
-                    prefabを読み込む
-                
-                ・コンテンツだったら
-                    prefabを読み込む
-                
-                というだけだ。
-
-                レイアウト時にprefabが必要なのがテキストで、これはテキストサイズとかを判別するために必要になってくる。
-                infoResLoaderが外側にいるので、そこから種類をもらうとしよう。
-             */
         }
         
         public void SetParent (ParsedTree t) {
@@ -195,6 +147,33 @@ namespace AutoyaFramework.Information {
 
         public static Vector2 SizeDeltaOf (ParsedTree tree) {
             return new Vector2(tree.viewWidth, tree.viewHeight);
+        }
+
+        public static ParsedTree RevertInsertedTree (ParsedTree rootTree) {
+			RevertRecursive(rootTree);
+            return rootTree;
+		}
+
+        private static void RevertRecursive (ParsedTree tree) {
+            foreach (var child in tree.GetChildren()) {
+                RevertRecursive(child);
+            }
+
+            if (tree is InsertedTree) {
+                var insertedTree = tree as InsertedTree;
+                var parent = insertedTree.parentTree;
+
+                // merge contents.
+                parent.keyValueStore[Attribute._CONTENT] = parent.keyValueStore[Attribute._CONTENT] as string + insertedTree.keyValueStore[Attribute._CONTENT] as string;
+                parent.RemoveChild(insertedTree);
+            }
+        }
+    }
+
+    public class InsertedTree : ParsedTree {
+        public readonly ParsedTree parentTree;
+        public InsertedTree (ParsedTree baseTree, string textContent, int baseTag) : base(textContent, baseTag) {
+            this.parentTree = baseTree;
         }
     }
 }

@@ -321,15 +321,13 @@ namespace AutoyaFramework.Information {
 			if (textComponent.font == null) {
 				throw new Exception("font is null. prefab:" + prefab.name);
 			}
-
-			Debug.LogWarning("文字を配置するときの適当な高さをどうやって与えようか考え中。10000は適当。");
 			
 			// set content to prefab.
 			
 			var generator = new TextGenerator();
 			
 			textComponent.text = text;
-			var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, 10000));
+			var setting = textComponent.GetGenerationSettings(new Vector2(textViewCursor.viewWidth, float.PositiveInfinity));
 			generator.Populate(text, setting);
 
 			using (new Lock(textComponent, generator)) {
@@ -375,7 +373,7 @@ namespace AutoyaFramework.Information {
 
 						// Debug.LogError("lastLineContent:" + lastLineContent);
 						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
-						var nextLineContent = new ParsedTree(lastLineContent, textTree.parsedTag);
+						var nextLineContent = new InsertedTree(textTree, lastLineContent, textTree.parsedTag);
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
 						// 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
@@ -413,7 +411,7 @@ namespace AutoyaFramework.Information {
 						var currentLineWidth = textComponent.preferredWidth;
 
 						var restContent = text.Substring(generator.lines[1].startCharIdx);
-						var nextLineContent = new ParsedTree(restContent, textTree.parsedTag);
+						var nextLineContent = new InsertedTree(textTree, restContent, textTree.parsedTag);
 
 						// 次のコンテンツを新しい行から開始する。
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
