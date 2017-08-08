@@ -4,8 +4,15 @@ namespace AutoyaFramework.Information {
     public enum HTMLAttribute {
 		_UNKNOWN,
 
+        // system.
         _CONTENT,
 		_BOX,
+
+        // attributes.
+        ID,
+        LISTEN,
+        BUTTON,
+        HIDDEN,
         SRC,
         HREF,
 		START,

@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace AutoyaFramework.Information {
     public class MaterializeMachine {
 		private readonly InformationResourceLoader infoResLoader;
-        private InformationRootMonoBehaviour rootInputComponent;
+        private UUebView rootInputComponent;
 
         public MaterializeMachine(
 			InformationResourceLoader infoResLoader	
@@ -24,7 +24,7 @@ namespace AutoyaFramework.Information {
 			root.name = HtmlTag._ROOT.ToString();
 			{
 				var rootRectTrans = root.AddComponent<RectTransform>();
-				this.rootInputComponent = root.AddComponent<InformationRootMonoBehaviour>();
+				this.rootInputComponent = root.GetComponent<UUebView>();
 				
 				// set anchor to left top.
 				rootRectTrans.anchorMin = Vector2.up;
@@ -72,26 +72,35 @@ namespace AutoyaFramework.Information {
 
 		private IEnumerator MaterializeRecursive (ParsedTree tree, GameObject parent) {
 			GameObject newGameObject = null;
-			if (tree.parsedTag == (int)HtmlTag._ROOT) {
+			if (tree.parsedTag == (int)HtmlTag._ROOT) {// ここだけ逃すと良さそう。
 				newGameObject = parent;
 			} else {
+				if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
+					rootInputComponent.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
+				}
+				
+				if (tree.IsHidden()) {
+					// cancel materialize of this tree.
+					yield break;
+				}
+
 				var prefabCor = infoResLoader.LoadGameObjectFromPrefab(tree.parsedTag, tree.treeType);
 
 				while (prefabCor.MoveNext()) {
 					yield return null;
 				}
 
+				// set pos and size.
 				newGameObject = prefabCor.Current;
 				newGameObject.transform.SetParent(parent.transform);
 				var rectTrans = newGameObject.GetComponent<RectTransform>();
 				rectTrans.anchoredPosition = ParsedTree.AnchoredPositionOf(tree);
 				rectTrans.sizeDelta = ParsedTree.SizeDeltaOf(tree);
 
-				// set parameters.
+				// set parameters and events by container type. button, link.
 				switch (tree.treeType) {
 					case TreeType.Content_Img: {
 						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
-						
 						infoResLoader.LoadImageAsync(
 							src, 
 							sprite => {
@@ -101,38 +110,36 @@ namespace AutoyaFramework.Information {
 								// download failed. do nothing.
 							}
 						);
+						
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
+							var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
+							if (enable) {
+								var buttonId = string.Empty;
+								if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+									buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
+								}
 
-						Debug.LogWarning("idを入れるならこの辺かな。idを渡すのもやろう。");
-
-						// add button component.
-						AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), src));
+								// add button component.
+								AddButton(newGameObject, () => rootInputComponent.OnImageTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), src, buttonId));
+							}
+						}
 						break;
 					}
 					
 					case TreeType.Content_Text: {
-						foreach (var kvs in tree.keyValueStore) {
-							switch (kvs.Key) {
-								case HTMLAttribute._CONTENT:{
-									var text = kvs.Value as string;
-									if (!string.IsNullOrEmpty(text)) {
-										var textComponent = newGameObject.GetComponent<Text>();
-										textComponent.text = text;
-									}
-									break;
-								}
-								case HTMLAttribute.HREF: {
-									var href = kvs.Value as string;
-
-									// add button component.
-									AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), href));
-									break;
-								}
-								
-								default: {
-									// ignore.
-									break;
-								}
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute._CONTENT)) {
+							var text = tree.keyValueStore[HTMLAttribute._CONTENT] as string;
+							if (!string.IsNullOrEmpty(text)) {
+								var textComponent = newGameObject.GetComponent<Text>();
+								textComponent.text = text;
 							}
+						}
+
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
+							var href = tree.keyValueStore[HTMLAttribute.HREF] as string;
+
+							// add button component.
+							AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), href));
 						}
 						
 						break;

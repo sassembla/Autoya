@@ -22,12 +22,12 @@ namespace AutoyaFramework.Information {
 			this.infoResLoader = new InformationResourceLoader(executor, requestHeader, httpResponseHandlingDelegate);
 		}
 		
-		public GameObject GenerateViewFromSource (string source, ViewBox view, Action<Rect>layoutDone, Action<double> progress, Action loadDone) {
+        public GameObject GenerateViewFromSource (string source, ViewBox view, Action<Rect>layoutDone, Action<double> progress, Action loadDone) {
 			// generate and return root object first.
 			var rootObj = new GameObject(HtmlTag._ROOT.ToString());
 			{
 				var rootRectTrans = rootObj.AddComponent<RectTransform>();
-				rootObj.AddComponent<InformationRootMonoBehaviour>();
+				rootObj.AddComponent<UUebView>();
 				
 				// set anchor to left top.
 				rootRectTrans.anchorMin = Vector2.up;

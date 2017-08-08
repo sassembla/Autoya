@@ -12,8 +12,4 @@ Kill all WebViews.
 
 ## Specs
 
-you can use HTML and Markdown for draw UI like information.(only HTML. not including CSS, JS.)
-
-Markdown is equivalent to CommonMark strict.
-see [https://markdown-it.github.io](https://markdown-it.github.io) and check the CommonMark strict.
-
+you can use HTML for draw UI like information.(only HTML. not including CSS, JS.)

@@ -1,5 +1,4 @@
 using Miyamasu;
-using MarkdownSharp;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
@@ -315,7 +314,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
             
             var textChildren = bodyContainer.GetChildren();
             var textChildrenTree = textChildren[0];
-            
+
             Assert(textChildren.Count == 1, "not match c. actual:" + textChildren.Count);
             Assert(textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string == "something", "actual:" + textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string);
         }

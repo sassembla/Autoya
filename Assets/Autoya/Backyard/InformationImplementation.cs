@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using AutoyaFramework.Information;
 using System.Collections.Generic;
-using MarkdownSharp;
 using System.Linq;
 using System.Collections;
 

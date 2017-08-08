@@ -10,7 +10,7 @@ using System.IO;
 	test for materializer
  */
 namespace AutoyaFramework.Information {
-	public class MaterializerTests {
+	public class AntimaterializerTests {
 		
 		private static GameObject editorCanvas;
 

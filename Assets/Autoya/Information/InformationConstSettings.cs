@@ -3,7 +3,6 @@ namespace AutoyaFramework.Information {
       public const int TAG_MAX_LEN = 100;
       public const double TIMEOUT_SEC = 5.0;
 
-      public const string NAME_PREFAB_CONTAINER = "_CONTAINER";
       public const string VIEWNAME_DEFAULT = "Default";
       public const string FULLPATH_INFORMATION_RESOURCE = "Assets/InformationResources/Resources/Views/";
       

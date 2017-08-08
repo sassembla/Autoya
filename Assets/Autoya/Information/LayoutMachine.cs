@@ -119,38 +119,49 @@ namespace AutoyaFramework.Information {
 			IEnumerator<ViewCursor> cor = null;
 
 			// Debug.LogError("@this.treeType:" + tree.treeType);
+			bool hidden = false;
+			if (tree.keyValueStore.ContainsKey(HTMLAttribute.HIDDEN)) {
+				hidden = tree.keyValueStore[HTMLAttribute.HIDDEN] as string == "true";
+			}
 			
-			switch (tree.treeType) {
-				case TreeType.CustomLayer: {
-					cor = DoLayerLayout(tree, viewCursor);
-					break;
+			if (hidden) {
+				tree.SetHide();
+				
+				// 一切サイズが存在しない
+				yield return viewCursor;
+			} else {
+				switch (tree.treeType) {
+					case TreeType.CustomLayer: {
+						cor = DoLayerLayout(tree, viewCursor);
+						break;
+					}
+					case TreeType.CustomEmptyLayer: {
+						cor = DoEmptyLayerLayout(tree, viewCursor);
+						break;
+					}
+					case TreeType.Container: {
+						cor = DoContainerLayout(tree, viewCursor);
+						break;
+					}
+					case TreeType.Content_Img: {
+						cor = DoImgLayout(tree, viewCursor, insertion);
+						break;
+					}
+					case TreeType.Content_Text: {
+						cor = DoTextLayout(tree, viewCursor, insertion);
+						break;
+					}
+					default: {
+						throw new Exception("unexpected tree type:" + tree.treeType);
+					}
 				}
-				case TreeType.CustomEmptyLayer: {
-					cor = DoEmptyLayerLayout(tree, viewCursor);
-					break;
-				}
-				case TreeType.Container: {
-					cor = DoContainerLayout(tree, viewCursor);
-					break;
-				}
-				case TreeType.Content_Img: {
-					cor = DoImgLayout(tree, viewCursor, insertion);
-					break;
-				}
-				case TreeType.Content_Text: {
-					cor = DoTextLayout(tree, viewCursor, insertion);
-					break;
-				}
-				default: {
-					throw new Exception("unexpected tree type:" + tree.treeType);
-				}
-			}
 
-			while (cor.MoveNext()) {
-				yield return null;
-			}
+				while (cor.MoveNext()) {
+					yield return null;
+				}
 
-			yield return cor.Current;
+				yield return cor.Current;
+			}
 		}
 		
 		/**

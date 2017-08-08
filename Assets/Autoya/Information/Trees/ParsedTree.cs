@@ -32,6 +32,27 @@ namespace AutoyaFramework.Information {
         public readonly AttributeKVs keyValueStore;
         public readonly TreeType treeType;
 
+        private bool hidden = false;
+
+        public void ShowOrHide () {
+            hidden = !hidden;
+            Debug.LogError("hidden:" + hidden);
+            if (hidden) {
+                SetHide();
+            }
+        }
+        public void SetHide () {
+            hidden = true;
+
+            offsetX = 0;
+            offsetY = 0;
+            viewWidth = 0;
+            viewHeight = 0;
+        }
+
+        public bool IsHidden () {
+            return hidden;
+        }
 
         // レイアウト処理
         public float offsetX;
@@ -73,7 +94,6 @@ namespace AutoyaFramework.Information {
             this.parsedTag = parsedTag;
             this.keyValueStore = kv;
             this.treeType = treeType;
-
         }
         
         public void SetParent (ParsedTree t) {

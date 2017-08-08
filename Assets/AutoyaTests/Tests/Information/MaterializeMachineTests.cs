@@ -1,5 +1,4 @@
 using Miyamasu;
-using MarkdownSharp;
 using UnityEngine;
 using System.Collections.Generic;
 using System;
@@ -28,6 +27,8 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         }
     }
 
+    GameObject rootObj;
+
 	[MSetup] public void Setup () {
 
 		// GetTexture(url) runs only Play mode.
@@ -35,15 +36,20 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
-        parser = new HTMLParser(loader);
-        viewBox = new ViewBox(100,100,0);
+        UUebView controller = null;
 
         RunOnMainThread(
             () => {
+                rootObj = new GameObject();
+                controller = rootObj.AddComponent<UUebView>();
+                
                 canvas = GameObject.Find("Canvas/MaterializeTestPlace");
             }
         );
+
+        loader = new InformationResourceLoader(controller.Executor);
+        parser = new HTMLParser(loader);
+        viewBox = new ViewBox(100,100,0);
 	}
 
     private ParsedTree CreateLayoutedTree (string sampleHtml) {
@@ -85,14 +91,12 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     private void Show (ParsedTree tree) {
         var materializer = new MaterializeMachine(loader);
         
-        GameObject rootObj = null;
         RectTransform rectTrans = null;
 
         // このへんでreloadManagerみたいなのを考える必要が出てくる。
         // 現在はまだ適当。
         RunOnMainThread(
             () => {
-                rootObj = new GameObject();
                 rootObj.transform.SetParent(canvas.transform, false);
             }
         );
@@ -144,9 +148,52 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         Show(tree);
     }
 
+//     [MTest] public void MaterializeHTMLWithLink () {
+//         var sample = @"
+// <body><a href='https://dummyimage.com/100.png/09f/fff'/></body>";
+//         var tree = CreateLayoutedTree(sample);
+        
+//         Show(tree);
+//     }
+
+//     [MTest] public void MaterializeHTMLWithLinkWithId () {
+//         var sample = @"
+// <body><a href='https://dummyimage.com/100.png/09f/fff' id='linkId'/></body>";
+//         var tree = CreateLayoutedTree(sample);
+        
+//         Show(tree);
+//     }
+
     [MTest] public void MaterializeHTMLWithImage () {
         var sample = @"
 <body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
+        var tree = CreateLayoutedTree(sample);
+        
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithImageAsButton () {
+        var sample = @"
+<body><img src='https://dummyimage.com/100.png/09f/fff' button='true''/></body>";
+        var tree = CreateLayoutedTree(sample);
+        
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithImageAsButtonWithId () {
+        var sample = @"
+<body><img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/></body>";
+        var tree = CreateLayoutedTree(sample);
+        
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
+        var sample = @"
+<body>
+<p listen='imageId' hidden='true'>something</p>
+<img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
+</body>";
         var tree = CreateLayoutedTree(sample);
         
         Show(tree);

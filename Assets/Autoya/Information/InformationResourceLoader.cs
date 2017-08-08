@@ -132,7 +132,7 @@ namespace AutoyaFramework.Information {
         }
 
         private readonly Action<IEnumerator> executor;
-        public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate) {
+        public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
             defaultTagStrIntPair = new Dictionary<string, int>();
             defaultTagIntStrPair = new Dictionary<int, string>();
            
