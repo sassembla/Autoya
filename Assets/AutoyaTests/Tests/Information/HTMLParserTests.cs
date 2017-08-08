@@ -128,13 +128,13 @@ public class HTMLParserTests : MiyamasuTestRunner {
             () => parsedRoot != null, 5, "too late."
         );
 
-        // loader contains 2 additional custom tags.
+        // loader contains 3 additional custom tags.
         var count = loader.GetAdditionalTagCount();
-        Assert(count == 2, "not match. count:" + count);
+        Assert(count == 3, "not match. count:" + count);
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 1, "not match 1. actual:" + parsedRoot.GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 2, "not match 2. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].parsedTag == 33, "not match. actual:" + parsedRoot.GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 3, "not match +3. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
     }
 
     [MTest] public void ParseCustomTagMoreDeep () {
@@ -157,13 +157,13 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
         // loader contains 4 additional custom tags.
         var count = loader.GetAdditionalTagCount();
-        Assert(count == 4, "not match. count:" + count);
+        Assert(count == 6, "not match. count:" + count);
 
-        Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 1, "not match 1. actual:" + parsedRoot.GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 2, "not match 2. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 3, "not match 3. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 4, "not match 4. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren().Count == 1, "not match a.");
+        Assert(parsedRoot.GetChildren()[0].parsedTag == 33, "not match b. actual:" + parsedRoot.GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == 38, "not match c. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag == 34, "not match d. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag == 35, "not match e. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag);
     }
 
 
@@ -187,11 +187,11 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
         // loader contains 2 additional custom tags.
         var count = loader.GetAdditionalTagCount();
-        Assert(count == 2, "not match. count:" + count);
+        Assert(count == 3, "not match. count:" + count);
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 1, "not match 1. actual:" + parsedRoot.GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 2, "not match 2. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].parsedTag == 33, "not match a. actual:" + parsedRoot.GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 3, "not match b. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
     }
 
     [MTest] public void ParseImageAsImgContent () {
@@ -272,5 +272,51 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(parsedRoot.GetChildren()[1].treeType == TreeType.Container, "not match. expected:" + TreeType.Container + " actual:" + parsedRoot.GetChildren()[0].treeType);
     }
     
-    
+    [MTest] public void Revert () {
+        var sampleHtml = @"
+<body>something</body>
+        ";
+
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
+            parsedRoot = parsed;
+        });
+        Autoya.Mainthread_Commit(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 1, "too late."
+        );
+
+        {
+            var bodyContainer = parsedRoot.GetChildren()[0];
+            
+            var textChildren = bodyContainer.GetChildren();
+
+            Assert(textChildren.Count == 1, "not match a. actual:" + textChildren.Count);
+            
+            var textChildrenTree = textChildren[0];
+            var textPart = textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string;
+            var frontHalf = textPart.Substring(0,4);
+            var backHalf = textPart.Substring(4);
+
+            textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] = frontHalf;
+
+            var insertionTree = new InsertedTree(textChildrenTree, backHalf, textChildrenTree.parsedTag);
+            insertionTree.SetParent(bodyContainer);
+
+            // 増えてるはず
+            Assert(bodyContainer.GetChildren().Count == 2, "not match b. actual:" + bodyContainer.GetChildren().Count);
+        }
+
+        parsedRoot = ParsedTree.RevertInsertedTree(parsedRoot);
+
+        {
+            var bodyContainer = parsedRoot.GetChildren()[0];
+            
+            var textChildren = bodyContainer.GetChildren();
+            var textChildrenTree = textChildren[0];
+            Assert(textChildren.Count == 1, "not match c. actual:" + textChildren.Count);
+            Assert(textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string == "something", "actual:" + textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string);
+        }
+    }
 }

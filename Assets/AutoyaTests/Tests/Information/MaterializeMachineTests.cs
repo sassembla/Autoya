@@ -17,7 +17,6 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
     private InformationResourceLoader loader;
-    private ParsedTreeCustomizer customizer;
 
     private ViewBox viewBox;
     private GameObject canvas;
@@ -59,8 +58,6 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             () => parsedRoot != null, 1, "too late."
         );
         
-        customizer = new ParsedTreeCustomizer(loader);
-        var tree = customizer.Customize(parsedRoot);
 
         ParsedTree layouted = null;
         var layoutMachine = new LayoutMachine(
@@ -69,7 +66,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         );
 
         var cor2 = layoutMachine.Layout(
-            tree, 
+            parsedRoot, 
             layoutedTree => {
                 layouted = layoutedTree;
             }

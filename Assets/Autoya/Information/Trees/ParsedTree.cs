@@ -64,7 +64,7 @@ namespace AutoyaFramework.Information {
             this.parsedTag = baseTag;
             
             this.keyValueStore = new AttributeKVs();
-            keyValueStore[Attribute._CONTENT] = textContent;
+            keyValueStore[HTMLAttribute._CONTENT] = textContent;
             
             this.treeType = TreeType.Content_Text;
         }
@@ -81,7 +81,7 @@ namespace AutoyaFramework.Information {
                 t.parsedTag == (int)HtmlTag._ROOT && 
                 this.treeType == TreeType.Content_Text
             ) {
-                var val = this.keyValueStore[Attribute._CONTENT];
+                var val = this.keyValueStore[HTMLAttribute._CONTENT];
                 throw new Exception("invalid text contains outside of tag. val:" + val);
             }
             
@@ -145,17 +145,29 @@ namespace AutoyaFramework.Information {
 		}
 
         private static void RevertRecursive (ParsedTree tree) {
-            foreach (var child in tree.GetChildren()) {
+            var children = tree.GetChildren();
+            children.Reverse();
+
+            var count = children.Count;
+            
+            var list = new List<ParsedTree>();
+            for (var i = 0; i < count; i++) {
+                var child = children[i];
                 RevertRecursive(child);
+
+                if (child is InsertedTree) {
+                    var insertedTree = child as InsertedTree;
+                    var baseTree = insertedTree.parentTree;
+
+                    // merge contents.
+                    baseTree.keyValueStore[HTMLAttribute._CONTENT] = baseTree.keyValueStore[HTMLAttribute._CONTENT] as string + insertedTree.keyValueStore[HTMLAttribute._CONTENT] as string;
+                    
+                    list.Add(insertedTree);
+                }
             }
 
-            if (tree is InsertedTree) {
-                var insertedTree = tree as InsertedTree;
-                var parent = insertedTree.parentTree;
-
-                // merge contents.
-                parent.keyValueStore[Attribute._CONTENT] = parent.keyValueStore[Attribute._CONTENT] as string + insertedTree.keyValueStore[Attribute._CONTENT] as string;
-                parent.RemoveChild(insertedTree);
+            foreach (var removedInsertedTree in list) {
+                tree.RemoveChild(removedInsertedTree);
             }
         }
     }

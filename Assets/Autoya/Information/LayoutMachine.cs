@@ -187,7 +187,7 @@ namespace AutoyaFramework.Information {
 					位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
 					コンテナがここに飛び込んでくることがある。boxがないところに飛び込んでくるコンテナってことか。
 				*/
-				var layoutParam = boxTree.keyValueStore[Attribute._BOX] as BoxPos;
+				var layoutParam = boxTree.keyValueStore[HTMLAttribute._BOX] as BoxPos;
 				
 				var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
 				// Debug.LogError("viewRect:" + viewRect);
@@ -251,11 +251,11 @@ namespace AutoyaFramework.Information {
 
 		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree imgTree, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
 			var contentViewCursor = viewCursor;
-			if (!imgTree.keyValueStore.ContainsKey(Attribute.SRC)) {
+			if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
 				throw new Exception("image should define src param.");
 			}
 
-			var src = imgTree.keyValueStore[Attribute.SRC] as string;
+			var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
 			
 			// need to download image.
 			
@@ -301,7 +301,7 @@ namespace AutoyaFramework.Information {
 			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
 		 */
 		private IEnumerator<ViewCursor> DoTextLayout (ParsedTree textTree, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
-			var text = textTree.keyValueStore[Attribute._CONTENT] as string;
+			var text = textTree.keyValueStore[HTMLAttribute._CONTENT] as string;
 			
 			var cor = infoResLoader.LoadGameObjectFromPrefab(textTree.parsedTag, textTree.treeType, true);
 
@@ -365,7 +365,7 @@ namespace AutoyaFramework.Information {
 						var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
 						
 						// 内容の反映
-						textTree.keyValueStore[Attribute._CONTENT] = bodyContent;
+						textTree.keyValueStore[HTMLAttribute._CONTENT] = bodyContent;
 
 						// 最終行
 						var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
@@ -402,7 +402,7 @@ namespace AutoyaFramework.Information {
 
 						// 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
 						var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
-						textTree.keyValueStore[Attribute._CONTENT] = currentLineContent;
+						textTree.keyValueStore[HTMLAttribute._CONTENT] = currentLineContent;
 
 						// get preferredWidht of text from trimmed line.
 						textComponent.text = currentLineContent;

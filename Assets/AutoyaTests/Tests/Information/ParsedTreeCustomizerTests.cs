@@ -17,7 +17,6 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
     private InformationResourceLoader loader;
-    private ParsedTreeCustomizer customizer;
 
     public static void ShowRecursive (ParsedTree tree, InformationResourceLoader loader) {
         Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.parsedTag) + " type:" + tree.treeType);
@@ -66,10 +65,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         var contentsCount = CountContentsRecursive(parsedRoot);
         Assert(contentsCount == 3/*root + body + content*/, "not match. contentsCount:" + contentsCount);
 
-        customizer = new ParsedTreeCustomizer(loader);
-        var customizedTree = customizer.Customize(parsedRoot);
-
-        var newContentsCount = CountContentsRecursive(customizedTree);
+        var newContentsCount = CountContentsRecursive(parsedRoot);
         Assert(newContentsCount == 3, "not match. newContentsCount:" + newContentsCount);
     }
 
@@ -92,18 +88,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         );
         
         var contentsCount = CountContentsRecursive(parsedRoot);
-        Assert(contentsCount == 6, "not match. contentsCount:" + contentsCount);
-
-        // カスタマイズタグを変形させて中身を伸長する
-        customizer = new ParsedTreeCustomizer(loader);
-        var customizedTree = customizer.Customize(parsedRoot);
-
-        // 階層が増えてるはず
-        var newContentsCount = CountContentsRecursive(customizedTree);
-        Assert(contentsCount < newContentsCount, "actual:" + newContentsCount);
-
-        // 増えてる階層に関してのチェックを行う customtagで+1
-        Assert(contentsCount +1 == newContentsCount, "actual:" + newContentsCount);
+        Assert(contentsCount == 7, "not match. contentsCount:" + contentsCount);
     }
 
     [MTest] public void WithDeepCustomTag () {
@@ -125,18 +110,9 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
         );
         
         var contentsCount = CountContentsRecursive(parsedRoot);
-        Assert(contentsCount == 6, "not match. contentsCount:" + contentsCount);
-
-        // カスタマイズタグを変形させて中身を伸長する
-        customizer = new ParsedTreeCustomizer(loader);
-        var customizedTree = customizer.Customize(parsedRoot);
-
-        // 階層が増えてるはず
-        var newContentsCount = CountContentsRecursive(customizedTree);
-        Assert(contentsCount < newContentsCount, "less. newContentsCount:" + newContentsCount);
-
+        
         // 増えてる階層に関してのチェックを行う。1種のcustomTagがあるので1つ増える。
-        Assert(contentsCount +1 == newContentsCount, "not match. newContentsCount:" + newContentsCount);
+        Assert(contentsCount == 7, "not match. contentsCount:" + contentsCount);
 
         // ShowRecursive(customizedTree, loader);
     }
@@ -159,23 +135,9 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
             () => parsedRoot != null, 5, "too late."
         );
         
-        var contentsCount = CountContentsRecursive(parsedRoot);
-        Assert(contentsCount == 6, "not match. contentsCount:" + contentsCount);
-
-        // カスタマイズタグを変形させて中身を伸長する
-        customizer = new ParsedTreeCustomizer(loader);
-        var customizedTree = customizer.Customize(parsedRoot);
-
-        // 階層が増えてるはず
-        var newContentsCount = CountContentsRecursive(customizedTree);
-        Assert(contentsCount < newContentsCount, "less. newContentsCount:" + newContentsCount);
-
-        // 増えてる階層に関してのチェックを行う。1種のcustomTagがあるので1つ増える。
-        Assert(contentsCount +1 == newContentsCount, "not match. newContentsCount:" + newContentsCount);
-
-        foreach (var s in customizedTree.GetChildren()[0].GetChildren()) {
+       foreach (var s in parsedRoot.GetChildren()[0].GetChildren()) {
             Assert(s.treeType == TreeType.CustomBox, "not match, s.treeType:" + s.treeType);
-            Assert(s.keyValueStore.ContainsKey(AutoyaFramework.Information.Attribute._BOX), "box does not have pos kv.");
+            Assert(s.keyValueStore.ContainsKey(AutoyaFramework.Information.HTMLAttribute._BOX), "box does not have pos kv.");
         }
 
         // ShowRecursive(customizedTree, loader);

@@ -90,7 +90,7 @@ namespace AutoyaFramework.Information {
 				// set parameters.
 				switch (tree.treeType) {
 					case TreeType.Content_Img: {
-						var src = tree.keyValueStore[Attribute.SRC] as string;
+						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
 						
 						infoResLoader.LoadImageAsync(
 							src, 
@@ -112,7 +112,7 @@ namespace AutoyaFramework.Information {
 					case TreeType.Content_Text: {
 						foreach (var kvs in tree.keyValueStore) {
 							switch (kvs.Key) {
-								case Attribute._CONTENT:{
+								case HTMLAttribute._CONTENT:{
 									var text = kvs.Value as string;
 									if (!string.IsNullOrEmpty(text)) {
 										var textComponent = newGameObject.GetComponent<Text>();
@@ -120,7 +120,7 @@ namespace AutoyaFramework.Information {
 									}
 									break;
 								}
-								case Attribute.HREF: {
+								case HTMLAttribute.HREF: {
 									var href = kvs.Value as string;
 
 									// add button component.

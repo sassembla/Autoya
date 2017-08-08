@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
 namespace AutoyaFramework.Information {
-    public enum Attribute {
+    public enum HTMLAttribute {
 		_UNKNOWN,
 
         _CONTENT,
@@ -13,5 +13,5 @@ namespace AutoyaFramework.Information {
 
     }
 
-    public class AttributeKVs : Dictionary<Attribute, object> {}
+    public class AttributeKVs : Dictionary<HTMLAttribute, object> {}
 }
