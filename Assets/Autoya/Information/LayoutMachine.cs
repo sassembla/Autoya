@@ -220,17 +220,19 @@ namespace AutoyaFramework.Information {
 		}
 
 		private IEnumerator<ViewCursor> DoEmptyLayerLayout (ParsedTree emptyLayerTree, ViewCursor viewCursor) {
-			var childCount = emptyLayerTree.GetChildren().Count;
-			if (childCount == 0) {
-				emptyLayerTree.SetPosFromViewCursor(viewCursor);
-				yield return viewCursor;
-				yield break;
-			}
+			// var childCount = emptyLayerTree.GetChildren().Count;
+			// if (childCount == 0) {
+			// 	emptyLayerTree.SetPosFromViewCursor(viewCursor);
+			// 	yield return viewCursor;
+			// 	yield break;
+			// }
 
 			var baseViewCursorHeight = viewCursor.viewHeight;
-			
+
 			var childView = new ViewCursor(0, 0, viewCursor.viewWidth, viewCursor.viewHeight);
-			var cor = LayoutBoxedContents(emptyLayerTree.GetChildren()[0], childView);
+
+			var cor = DoContainerLayout(emptyLayerTree, childView);
+			// var cor = LayoutBoxedContents(emptyLayerTree.GetChildren()[0], childView);
 			
 			while (cor.MoveNext()) {
 				yield return null;

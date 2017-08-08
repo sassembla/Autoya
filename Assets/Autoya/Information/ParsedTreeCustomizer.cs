@@ -36,10 +36,10 @@ namespace AutoyaFramework.Information {
                     ExpandCustomTagToLayer(tree);
                     break;
                 }
-                case TreeType.CustomEmptyLayer: {
-                    ExpandCustomTagToEmptyLayer(tree);
-                    break;
-                }
+                // case TreeType.CustomEmptyLayer: {
+                //     ExpandCustomTagToEmptyLayer(tree);
+                //     break;
+                // }
                 default: {
                     foreach (var child in tree.GetChildren()) {
                         TraverseTagRecursive(child);
@@ -118,8 +118,9 @@ namespace AutoyaFramework.Information {
         private void ExpandCustomTagToEmptyLayer (ParsedTree tree) {
             // Debug.LogError("専用で一つ、なんでも入るboxを作り出す。範囲は全体。");
 
-            var newBoxName = GetLayerBoxName(tree.parsedTag, tree.parsedTag);
+            var newBoxName = infoResLoader.GetTagFromIndex(tree.parsedTag);
 
+            // さて、このboxを無くすことはできないだろうか。
             Debug.LogWarning("名前は仮で newBoxName:" + newBoxName + " このときのtreeType:" + tree.treeType);
 
             var newTagId = infoResLoader.FindOrCreateTag(newBoxName);
