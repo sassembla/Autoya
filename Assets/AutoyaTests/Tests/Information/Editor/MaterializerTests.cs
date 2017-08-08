@@ -61,14 +61,14 @@ namespace AutoyaFramework.Information {
 				() => {
 					Antimaterializer.Antimaterialize();
 					
-					// 出力物に対してのチェックを行う。カラであれば生成しない
+					// カスタムタグを生成する。
 					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList");
-					Debug.Assert(!jsonAsset);
+					Debug.Assert(jsonAsset, "no output file.");
 				}
 			);
 		}
 
-		// 階層付きのものを分解する
+		// 階層付きのレイヤーを分解する
 		public static void EditorSampleMaterialWithDepth () {
 			var testTargetSampleObjName = "EditorSampleMaterialWithDepth";
 			Run(testTargetSampleObjName,

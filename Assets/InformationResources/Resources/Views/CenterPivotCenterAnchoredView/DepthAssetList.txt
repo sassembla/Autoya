@@ -1,1 +1,0 @@
-{"viewName":"CenterPivotCenterAnchoredView","depthAssetNames":[{"depthAssetName":"CenterPivotCenterAnchoredView/P_CONTAINER/DIV_CONTAINER/IMG","loadPath":"resources://Views/CenterPivotCenterAnchoredView/P_CONTAINER/DIV_CONTAINER/IMG"},{"depthAssetName":"CenterPivotCenterAnchoredView/P_CONTAINER","loadPath":"resources://Views/CenterPivotCenterAnchoredView/P_CONTAINER"}]}

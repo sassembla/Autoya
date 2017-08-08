@@ -1,1 +1,0 @@
-{"depthAssetNames":[{"depthAssetName":"LeftTopPivotXAnchoredWithXMerginView/P_CONTAINER/DIV_CONTAINER/IMG","loadPath":"resources://Views/LeftTopPivotXAnchoredWithXMerginView/P_CONTAINER/DIV_CONTAINER/IMG"},{"depthAssetName":"LeftTopPivotXAnchoredWithXMerginView/P_CONTAINER","loadPath":"resources://Views/LeftTopPivotXAnchoredWithXMerginView/P_CONTAINER"}]}

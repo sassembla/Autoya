@@ -1,1 +1,0 @@
-{"viewName":"PivotView","depthAssetNames":[{"depthAssetName":"PivotView/P_CONTAINER/DIV_CONTAINER/IMG","loadPath":"resources://Views/PivotView/P_CONTAINER/DIV_CONTAINER/IMG"},{"depthAssetName":"PivotView/P_CONTAINER","loadPath":"resources://Views/PivotView/P_CONTAINER"}]}

@@ -1,1 +1,0 @@
-{"viewName":"LeftTopAncheredView","depthAssetNames":[{"depthAssetName":"LeftTopAncheredView/P_CONTAINER/DIV_CONTAINER/IMG","loadPath":"resources://Views/LeftTopAncheredView/P_CONTAINER/DIV_CONTAINER/IMG"},{"depthAssetName":"LeftTopAncheredView/P_CONTAINER","loadPath":"resources://Views/LeftTopAncheredView/P_CONTAINER"}]}
