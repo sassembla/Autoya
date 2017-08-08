@@ -92,30 +92,20 @@ namespace AutoyaFramework.Information {
 			return _children;
 		}
 
-        public bool ContainsChild (int parsedTag) {
-            return _children.FindIndex(c => c.parsedTag == parsedTag) != -1;
-        }
-        public ParsedTree GetChildOfTag (int parsedTag) {
-            return _children[_children.FindIndex(c => c.parsedTag == parsedTag)];
-        }
 
-
-        public void AddChild (ParsedTree child) {
-            this._children.Add(child);
+        public void AddChildren (ParsedTree[] children) {
+            this._children.AddRange(children);
         }
 
         public void RemoveChild (ParsedTree child) {
             this._children.Remove(child);
         }
-        public void ReplaceChildren (ParsedTree oldTree, ParsedTree newTree) {
-            var index = this._children.FindIndex(current => current == oldTree);
-            
-            if (index == -1) {
-                throw new Exception("failed to replace old tree to new tree. oldTree:" + oldTree.parsedTag + " did not found from children of:" + this.parsedTag);
+        public void ReplaceChildrenToBox (ParsedTree[] oldTrees, ParsedTree newTree) {
+            foreach (var oldTree in oldTrees) {
+                this._children.Remove(oldTree);
             }
 
-            this._children.RemoveAt(index);
-            this._children.Insert(index, newTree);
+            this._children.Add(newTree);
         }
 
         public string ShowContent() {

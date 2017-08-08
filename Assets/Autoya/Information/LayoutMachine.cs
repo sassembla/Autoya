@@ -98,7 +98,6 @@ namespace AutoyaFramework.Information {
 		};
 
 		public IEnumerator Layout (ParsedTree rootTree, Action<ParsedTree> layouted) {
-			Debug.LogWarning("どこかで、layoutによって分割されたオブジェクトのリセットを行わなければ。オリジナルtreeの保持はしたくないな〜。");
 			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
 			
 			var cor = DoLayout(rootTree, viewCursor);

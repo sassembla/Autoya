@@ -135,6 +135,7 @@ namespace AutoyaFramework.Information {
         public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate) {
             defaultTagStrIntPair = new Dictionary<string, int>();
             defaultTagIntStrPair = new Dictionary<int, string>();
+           
             foreach (var tag in Enum.GetValues(typeof(HtmlTag))) {
                 var tagStr = tag.ToString();
                 var index = (int)tag;
@@ -489,197 +490,6 @@ namespace AutoyaFramework.Information {
         }
 
 
-
-
-
-        private CustomTagList customTagList;
-        public bool IsLoadingDepthAssetList {
-            get; private set;
-        }
-        private Dictionary<string, TreeType> customTagTypeDict = new Dictionary<string, TreeType>();
-
-        public IEnumerator LoadCustomTagList (string uriSource) {
-            if (IsLoadingDepthAssetList) {
-                throw new Exception("multiple depth description found. only one description is valid.");
-            }
-
-            var schemeEndIndex = uriSource.IndexOf("//");
-            var scheme = uriSource.Substring(0, schemeEndIndex);
-            
-            IsLoadingDepthAssetList = true;
-
-
-            Action<CustomTagList> succeeded = customTagList => {
-                this.customTagList = customTagList;
-                this.customTagTypeDict = this.customTagList.GetTagTypeDict();
-                IsLoadingDepthAssetList = false;
-            };
-            
-            Action failed = () => {
-                Debug.LogError("failed to load depthAssetList from url:" + uriSource);
-                this.customTagList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
-                IsLoadingDepthAssetList = false;
-            };
-
-            switch (scheme) {
-                case "assetbundle:": {
-                    var bundleName = uriSource;
-                    return LoadListFromAssetBundle(uriSource, succeeded, failed);
-                }
-                case "https:":
-                case "http:": {
-                    return LoadListFromWeb(uriSource, succeeded, failed);
-                }
-                case "resources:": {
-                    var resourcePath = uriSource.Substring("resources:".Length + 2);
-                    return LoadListFromResources(resourcePath, succeeded, failed);
-                }
-                default: {// other.
-                    throw new Exception("unsupported scheme found, scheme:" + scheme);
-                }
-            }
-        }
-
-
-        public CustomTagList CustomTagList () {
-            if (this.customTagList == null) {
-                return new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);
-            }
-
-            return this.customTagList;
-        }
-
-        private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action failed) {
-            Debug.LogError("not yet applied. LoadListFromAssetBundle url:" + url);
-            failed();
-            yield break;
-        }
-        
-        private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action loadFailed) {
-            var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
-            var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
-
-            using (var request = UnityWebRequest.Get(url)) {
-                foreach (var reqHeader in reqHeaders) {
-                    request.SetRequestHeader(reqHeader.Key, reqHeader.Value);
-                }
-
-                var p = request.Send();
-
-                var timeoutSec = InformationConstSettings.TIMEOUT_SEC;
-                var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
-
-                while (!p.isDone) {
-                    yield return null;
-
-                    // check timeout.
-                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-                        Debug.LogError("timeout. load aborted, dataPath:" + url);
-                        request.Abort();
-                        loadFailed();
-                        yield break;
-                    }
-                }
-
-                var responseCode = (int)request.responseCode;
-                var responseHeaders = request.GetResponseHeaders();
-                
-                if (request.isError) {
-                    httpResponseHandlingDelegate(
-                        connectionId,
-                        responseHeaders,
-                        responseCode,
-                        null, 
-                        request.error, 
-                        (conId, data) => {
-                            throw new Exception("request encountered some kind of error.");
-                        }, 
-                        (conId, code, reason, autoyaStatus) => {
-                            Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
-                            loadFailed();
-                        }
-                    );
-                    yield break;
-                }
-
-                httpResponseHandlingDelegate(
-                    connectionId,
-                    responseHeaders,
-                    responseCode,
-                    string.Empty, 
-                    request.error,
-                    (conId, unusedData) => {
-                        var jsonStr = request.downloadHandler.text;
-                        var newDepthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
-
-                        loadSucceeded(newDepthAssetList);
-                    }, 
-                    (conId, code, reason, autoyaStatus) => {
-                        Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
-                        loadFailed();
-                    }
-                );
-            }
-        }
-        
-        private IEnumerator LoadListFromResources (string path, Action<CustomTagList> succeeded, Action failed) {
-            var requestCor = Resources.LoadAsync(path);
-
-            while (!requestCor.isDone) {
-                yield return null;
-            }
-
-            if (requestCor.asset == null) {
-                failed();
-                yield break;
-            }
-
-            var jsonStr = (requestCor.asset as TextAsset).text;
-            var depthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
-            succeeded(depthAssetList);
-		}
-
-
-
-
-        private readonly Dictionary<string, int> defaultTagStrIntPair;
-        private readonly Dictionary<int, string> defaultTagIntStrPair;
-
-        private Dictionary<string, int> undefinedTagDict = new Dictionary<string, int>();
-
-        public string GetTagFromIndex (int index) {
-			if (index < defaultTagStrIntPair.Count) {
-				return defaultTagIntStrPair[index];
-			}
-
-			if (undefinedTagDict.ContainsValue(index)) {
-				return undefinedTagDict.FirstOrDefault(x => x.Value == index).Key;
-			}
-			
-			throw new Exception("failed to get tag from index. index:" + index);
-		}
-
-        public int FindOrCreateTag (string tagCandidateStr) {
-            if (defaultTagStrIntPair.ContainsKey(tagCandidateStr)) {
-				return defaultTagStrIntPair[tagCandidateStr];
-			}
-            // collect undefined tag.
-            // Debug.LogError("tagCandidateStr:" + tagCandidateStr);
-
-            if (undefinedTagDict.ContainsKey(tagCandidateStr)) {
-                return undefinedTagDict[tagCandidateStr];
-            }
-            
-            var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
-            undefinedTagDict[tagCandidateStr] = count;
-            return count;
-        }
-
-
-
-
-
-
         /*
             return imageLoad iEnum functions.   
          */
@@ -836,9 +646,213 @@ namespace AutoyaFramework.Information {
 
 
 
-        public static GameObject LoadGameObject (GameObject prefab) {
-            // Debug.LogWarning("ここを後々、可視範囲へのオブジェクトプールからの取得に変える。タグ単位でGameObjectのプールを作るか。スクロールとかで可視範囲に入ったら内容を当てる、みたいなのがやりたい。");
-            return GameObject.Instantiate(prefab);
+
+
+
+
+        private CustomTagList customTagList;
+        public bool IsLoadingDepthAssetList {
+            get; private set;
         }
+
+        private Dictionary<string, TreeType> customTagTypeDict = new Dictionary<string, TreeType>();
+        private Dictionary<string, BoxConstraint[]> constraintsDict;
+        
+
+        public IEnumerator LoadCustomTagList (string uriSource) {
+            if (IsLoadingDepthAssetList) {
+                throw new Exception("multiple depth description found. only one description is valid.");
+            }
+
+            var schemeEndIndex = uriSource.IndexOf("//");
+            var scheme = uriSource.Substring(0, schemeEndIndex);
+            
+            IsLoadingDepthAssetList = true;
+
+
+            Action<CustomTagList> succeeded = customTagList => {
+                this.customTagList = customTagList;
+                this.customTagTypeDict = this.customTagList.GetTagTypeDict();
+
+                // レイヤー名:constraintsの辞書を生成しておく。
+                this.constraintsDict = new Dictionary<string, BoxConstraint[]>();
+
+                var constraints = customTagList.layerConstraints;
+
+                foreach (var constraint in constraints) {
+                    constraintsDict[constraint.layerName.ToLower()] = constraint.constraints;
+                }
+
+                IsLoadingDepthAssetList = false;
+            };
+            
+            Action failed = () => {
+                Debug.LogError("failed to load depthAssetList from url:" + uriSource + ". use default empty customTagList automatically.");
+                this.customTagList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
+                IsLoadingDepthAssetList = false;
+            };
+
+            IEnumerator cor = null;
+            switch (scheme) {
+                case "assetbundle:": {
+                    var bundleName = uriSource;
+                    cor = LoadListFromAssetBundle(uriSource, succeeded, failed);
+                    break;
+                }
+                case "https:":
+                case "http:": {
+                    cor =  LoadListFromWeb(uriSource, succeeded, failed);
+                    break;
+                }
+                case "resources:": {
+                    var resourcePath = uriSource.Substring("resources:".Length + 2);
+                    cor = LoadListFromResources(resourcePath, succeeded, failed);
+                    break;
+                }
+                default: {// other.
+                    throw new Exception("unsupported scheme found, scheme:" + scheme);
+                }
+            }
+
+            while (cor.MoveNext()) {
+                yield return null;
+            }
+        }
+
+        public BoxConstraint[] GetConstraints (int parsedTag) {
+            var key = GetTagFromIndex(parsedTag);
+            return constraintsDict[key];
+        }
+
+        public string GetLayerBoxName (int layerTag, int boxTag) {
+            return GetTagFromIndex(layerTag) + "_" + GetTagFromIndex(boxTag);
+        }
+
+        private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action failed) {
+            Debug.LogError("not yet applied. LoadListFromAssetBundle url:" + url);
+            failed();
+            yield break;
+        }
+        
+        private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action loadFailed) {
+            var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
+            var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+
+            using (var request = UnityWebRequest.Get(url)) {
+                foreach (var reqHeader in reqHeaders) {
+                    request.SetRequestHeader(reqHeader.Key, reqHeader.Value);
+                }
+
+                var p = request.Send();
+
+                var timeoutSec = InformationConstSettings.TIMEOUT_SEC;
+                var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
+
+                while (!p.isDone) {
+                    yield return null;
+
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+                        Debug.LogError("timeout. load aborted, dataPath:" + url);
+                        request.Abort();
+                        loadFailed();
+                        yield break;
+                    }
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+                
+                if (request.isError) {
+                    httpResponseHandlingDelegate(
+                        connectionId,
+                        responseHeaders,
+                        responseCode,
+                        null, 
+                        request.error, 
+                        (conId, data) => {
+                            throw new Exception("request encountered some kind of error.");
+                        }, 
+                        (conId, code, reason, autoyaStatus) => {
+                            Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
+                            loadFailed();
+                        }
+                    );
+                    yield break;
+                }
+
+                httpResponseHandlingDelegate(
+                    connectionId,
+                    responseHeaders,
+                    responseCode,
+                    string.Empty, 
+                    request.error,
+                    (conId, unusedData) => {
+                        var jsonStr = request.downloadHandler.text;
+                        var newDepthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
+
+                        loadSucceeded(newDepthAssetList);
+                    }, 
+                    (conId, code, reason, autoyaStatus) => {
+                        Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
+                        loadFailed();
+                    }
+                );
+            }
+        }
+        
+        private IEnumerator LoadListFromResources (string path, Action<CustomTagList> succeeded, Action failed) {
+            var requestCor = Resources.LoadAsync(path);
+
+            while (!requestCor.isDone) {
+                yield return null;
+            }
+
+            if (requestCor.asset == null) {
+                failed();
+                yield break;
+            }
+
+            var jsonStr = (requestCor.asset as TextAsset).text;
+            var depthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
+            succeeded(depthAssetList);
+		}
+
+
+
+
+        private readonly Dictionary<string, int> defaultTagStrIntPair;
+        private readonly Dictionary<int, string> defaultTagIntStrPair;
+
+        private Dictionary<string, int> undefinedTagDict = new Dictionary<string, int>();
+
+        public string GetTagFromIndex (int index) {
+			if (index < defaultTagStrIntPair.Count) {
+				return defaultTagIntStrPair[index];
+			}
+
+			if (undefinedTagDict.ContainsValue(index)) {
+				return undefinedTagDict.FirstOrDefault(x => x.Value == index).Key;
+			}
+			
+			throw new Exception("failed to get tag from index. index:" + index);
+		}
+
+        public int FindOrCreateTag (string tagCandidateStr) {
+            if (defaultTagStrIntPair.ContainsKey(tagCandidateStr)) {
+				return defaultTagStrIntPair[tagCandidateStr];
+			}
+            // collect undefined tag.
+            // Debug.LogError("tagCandidateStr:" + tagCandidateStr);
+
+            if (undefinedTagDict.ContainsKey(tagCandidateStr)) {
+                return undefinedTagDict[tagCandidateStr];
+            }
+            
+            var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
+            undefinedTagDict[tagCandidateStr] = count;
+            return count;
+        }
+
     }
 }

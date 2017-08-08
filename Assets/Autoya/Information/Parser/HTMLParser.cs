@@ -386,12 +386,6 @@ namespace AutoyaFramework.Information {
 				}
 				
 				// loaded.
-				/*
-					この時点で、そのタグが実際にはなんなのか、という照会ができるだけの情報が整ったことになる。
-					で、ここから先でTreeが完成する。ので、タグごとにどんなprefab使えばいいかは出せるようになった気がする。
-
-					具体的には、parsedTag決定時に、親parsedTagから、prefabNameが決定する。
-				 */
 			}
 		}
 

@@ -697,5 +697,58 @@ else
             () => done2, 5, "timeout."
         );
     }
+
+    [MTest] public void Re_LayoutHTMLWithSmallImageAndSmallTextByResetFeature () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
+        var tree = CreateCustomizedTree(sample);
+
+        var done = false;
+        var layoutMachine = new LayoutMachine(
+            loader, 
+            new ViewBox(100,100,0)            
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            layoutedTree => {
+                done = true;
+                Assert(layoutedTree.viewHeight == 112, "not match.");
+            }
+        );
+
+        Autoya.Mainthread_Commit(cor);
+
+
+        WaitUntil(
+            () => done, 5, "timeout."
+        );
+
+        var revertedTree = ParsedTree.RevertInsertedTree(tree);
+
+        /*
+            re-layout.
+         */
+        var done2 = false;
+        var layoutMachine2 = new LayoutMachine(
+            loader, 
+            new ViewBox(100,100,0)
+        );
+
+        var cor2 = layoutMachine.Layout(
+            revertedTree,
+            layoutedTree => {
+                done2 = true;
+                Assert(layoutedTree.viewHeight == 112, "not match. actual:" + layoutedTree.viewHeight);
+            }
+        );
+
+        Autoya.Mainthread_Commit(cor2);
+
+
+        WaitUntil(
+            () => done2, 5, "timeout."
+        );
+    }
     
 }
