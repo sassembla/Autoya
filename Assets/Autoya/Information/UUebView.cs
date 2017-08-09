@@ -7,11 +7,17 @@ namespace AutoyaFramework.Information {
 
 	/**
 		UUebView instance.
+
+		なんかこのインスタンスをnewできたら使えます的な感じになったほうがいい気がしてきたぞ。
 	 */
 	public class UUebView : MonoBehaviour {
-		private Dictionary<string, List<ParsedTree>> listenerDict = new Dictionary<string, List<ParsedTree>>();
+		public ParsedTree root;
 
-        public void Executor (IEnumerator iEnum) {
+		private Dictionary<string, List<ParsedTree>> listenerDict = new Dictionary<string, List<ParsedTree>>();
+		private LayoutMachine lMachine;
+		private MaterializeMachine mMachine;
+
+        public void CoroutineExecutor (IEnumerator iEnum) {
 			StartCoroutine(iEnum);
 		}
 
@@ -21,7 +27,7 @@ namespace AutoyaFramework.Information {
 			if (!string.IsNullOrEmpty(buttonId)) {
 				if (listenerDict.ContainsKey(buttonId)) {
 					listenerDict[buttonId].ForEach(t => t.ShowOrHide());
-					Reload();
+					StartCoroutine(Reload());
 				}
 			}
 		}
@@ -32,7 +38,7 @@ namespace AutoyaFramework.Information {
 			if (!string.IsNullOrEmpty(linkId)) {
 				if (listenerDict.ContainsKey(linkId)) {
 					listenerDict[linkId].ForEach(t => t.ShowOrHide());
-					Reload();
+					StartCoroutine(Reload());
 				}
 			}
 		}
@@ -52,9 +58,36 @@ namespace AutoyaFramework.Information {
 			
 		}
 
-		private void Reload () {
-			// なんかいろいろとstartCoroutineで処理できそう。
-            throw new NotImplementedException();
+		private IEnumerator Reload () {
+			// reset inserted trees.
+			root = ParsedTree.RevertInsertedTree(root);
+
+			Debug.LogError("reloadには来てる");
+			var layout = lMachine.Layout(
+				root, 
+				layouted => {
+					Debug.LogError("reloadには来て、その後layoutも終わってるんだけど。");
+					root = layouted;
+					try {
+						var mat = mMachine.Materialize(this.gameObject, root, 0, progress => {}, () => {Debug.LogError("done");});
+						StartCoroutine(mat);
+					} catch (Exception e) {
+						Debug.LogError("e:" + e);
+					}
+				}
+			);
+			
+			return layout;
+        }
+
+		public void SetLayoutMachine (LayoutMachine lMachine) {
+			Debug.LogError("SetLayoutMachine 適当");
+            this.lMachine = lMachine;
+        }
+
+        public void SetMaterializeMachine (MaterializeMachine mMachine) {
+			Debug.LogError("SetMaterializeMachine 適当2");
+            this.mMachine = mMachine;
         }
     }
 }

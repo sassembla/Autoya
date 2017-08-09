@@ -111,7 +111,7 @@ namespace AutoyaFramework.Information {
 			
 			// セット
 			rootTree.SetPosFromViewCursor(viewCursor);
-			
+			Debug.LogError("layouted");
 			layouted(rootTree);
 		}
 

@@ -28,6 +28,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     }
 
     GameObject rootObj;
+    UUebView controller;
 
 	[MSetup] public void Setup () {
 
@@ -35,8 +36,6 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 		if (!IsTestRunningInPlayingMode()) {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
-
-        UUebView controller = null;
 
         RunOnMainThread(
             () => {
@@ -47,7 +46,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             }
         );
 
-        loader = new InformationResourceLoader(controller.Executor);
+        loader = new InformationResourceLoader(controller.CoroutineExecutor);
         parser = new HTMLParser(loader);
         viewBox = new ViewBox(100,100,0);
 	}
@@ -71,9 +70,14 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             viewBox
         );
 
+        controller.SetLayoutMachine(layoutMachine);
+
         var cor2 = layoutMachine.Layout(
             parsedRoot, 
             layoutedTree => {
+                // ちょっと適当
+                controller.root = layoutedTree;
+
                 layouted = layoutedTree;
             }
         );
@@ -89,7 +93,9 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 
     private int index;
     private void Show (ParsedTree tree) {
-        var materializer = new MaterializeMachine(loader);
+        var materializeMachine = new MaterializeMachine(loader);
+
+        controller.SetMaterializeMachine(materializeMachine);
         
         RectTransform rectTrans = null;
 
@@ -98,11 +104,12 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         RunOnMainThread(
             () => {
                 rootObj.transform.SetParent(canvas.transform, false);
+                rectTrans = rootObj.AddComponent<RectTransform>();
             }
         );
 
         var done = false;
-        var cor = materializer.Materialize(rootObj, tree, 0, progress => {}, () => {
+        var cor = materializeMachine.Materialize(rootObj, tree, 0, progress => {}, () => {
             done = true;
         });
 
@@ -115,8 +122,6 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         
         RunOnMainThread(
             () => {
-                rectTrans = rootObj.GetComponent<RectTransform>();
-                
                 // move to indexed pos.
                 rectTrans.anchoredPosition += new Vector2(100 * index, 0);
                 index++;

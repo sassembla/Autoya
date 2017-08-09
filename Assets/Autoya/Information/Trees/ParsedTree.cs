@@ -35,8 +35,10 @@ namespace AutoyaFramework.Information {
         private bool hidden = false;
 
         public void ShowOrHide () {
-            hidden = !hidden;
             Debug.LogError("hidden:" + hidden);
+            hidden = !hidden;
+            Debug.LogError("after hidden:" + hidden);
+            
             if (hidden) {
                 SetHide();
             }

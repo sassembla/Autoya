@@ -23,7 +23,7 @@ namespace AutoyaFramework.Information {
 
 			root.name = HtmlTag._ROOT.ToString();
 			{
-				var rootRectTrans = root.AddComponent<RectTransform>();
+				var rootRectTrans = root.GetComponent<RectTransform>();
 				this.rootInputComponent = root.GetComponent<UUebView>();
 				
 				// set anchor to left top.
