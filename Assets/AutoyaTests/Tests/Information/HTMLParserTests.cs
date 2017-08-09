@@ -15,7 +15,7 @@ using AutoyaFramework;
 public class HTMLParserTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
-    private InformationResourceLoader loader;
+    private ResourceLoader loader;
 
 	[MSetup] public void Setup () {
 
@@ -24,7 +24,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        loader = new ResourceLoader(Autoya.Mainthread_Commit, null, null);
         parser = new HTMLParser(loader);
 	}
 
@@ -33,7 +33,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <body>something</body>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -54,7 +54,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <body>something</body>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -73,7 +73,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <customtag><customtagtext>something</customtagtext></customtag>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -94,7 +94,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <body>something</body>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -107,7 +107,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var children = parsedRoot.GetChildren();
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == (int)HtmlTag.body, "not match.");
+        Assert(parsedRoot.GetChildren()[0].tagValue == (int)HtmlTag.body, "not match.");
         
     }
 
@@ -117,7 +117,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <customtag><customtagtext>something</customtagtext></customtag>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -132,8 +132,8 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(count == 3, "not match. count:" + count);
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == 33, "not match. actual:" + parsedRoot.GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 3, "not match +3. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].tagValue == 33, "not match. actual:" + parsedRoot.GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == ((int)HtmlTag._END) + 3, "not match +3. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
     }
 
     [MTest] public void ParseCustomTagMoreDeep () {
@@ -144,7 +144,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 </customtagtext></customtag>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -159,10 +159,10 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(count == 6, "not match. count:" + count);
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match a.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == 33, "not match b. actual:" + parsedRoot.GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == 38, "not match c. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag == 34, "not match d. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag == 35, "not match e. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].tagValue == 33, "not match b. actual:" + parsedRoot.GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == 38, "not match c. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].tagValue == 34, "not match d. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].tagValue == 35, "not match e. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].tagValue);
     }
 
 
@@ -174,7 +174,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 </customtagtext></customtag>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -189,15 +189,15 @@ public class HTMLParserTests : MiyamasuTestRunner {
         Assert(count == 3, "not match. count:" + count);
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == 33, "not match a. actual:" + parsedRoot.GetChildren()[0].parsedTag);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag == ((int)HtmlTag._END) + 3, "not match b. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].tagValue == 33, "not match a. actual:" + parsedRoot.GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == ((int)HtmlTag._END) + 3, "not match b. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
     }
 
     [MTest] public void ParseImageAsImgContent () {
         var sampleHtml = @"
 <img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -208,7 +208,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         );
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].parsedTag == (int)HtmlTag.img, "not match 1. actual:" + parsedRoot.GetChildren()[0].parsedTag);
+        Assert(parsedRoot.GetChildren()[0].tagValue == (int)HtmlTag.img, "not match 1. actual:" + parsedRoot.GetChildren()[0].tagValue);
         Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Content_Img, "not match.");
     }
 
@@ -217,7 +217,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <!--depth asset list url(resources://Views/ParserTestImgView/DepthAssetList)-->
 <myimg src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -236,7 +236,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <!--depth asset list url(resources://Views/ParserTestTextView/DepthAssetList)-->
 <mytext>text</mytext>";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -256,7 +256,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <customtag><customtagtext><customtext>text</customtext></customtagtext></customtag>
 <customtext>text</customtext>";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -276,7 +276,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 <body>something</body>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -300,14 +300,14 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
             textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] = frontHalf;
 
-            var insertionTree = new InsertedTree(textChildrenTree, backHalf, textChildrenTree.parsedTag);
+            var insertionTree = new InsertedTree(textChildrenTree, backHalf, textChildrenTree.tagValue);
             insertionTree.SetParent(bodyContainer);
 
             // 増えてるはず
             Assert(bodyContainer.GetChildren().Count == 2, "not match b. actual:" + bodyContainer.GetChildren().Count);
         }
 
-        parsedRoot = ParsedTree.RevertInsertedTree(parsedRoot);
+        parsedRoot = TagTree.RevertInsertedTree(parsedRoot);
 
         {
             var bodyContainer = parsedRoot.GetChildren()[0];

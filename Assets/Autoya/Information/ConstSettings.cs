@@ -1,5 +1,5 @@
 namespace AutoyaFramework.Information {
-    public class InformationConstSettings {
+    public class ConstSettings {
       public const int TAG_MAX_LEN = 100;
       public const double TIMEOUT_SEC = 5.0;
 

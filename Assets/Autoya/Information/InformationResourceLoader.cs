@@ -10,98 +10,12 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
 
-    [Serializable] public class CustomTagList {
-        [SerializeField] public string viewName;
-        [SerializeField] public ContentInfo[] contents;
-        [SerializeField] public LayerInfo[] layerConstraints;
-        
-        public CustomTagList (string viewName, ContentInfo[] contents, LayerInfo[] constraints) {
-            this.viewName = viewName;
-            this.contents = contents;
-            this.layerConstraints = constraints;
-        }
-
-        public Dictionary<string, TreeType> GetTagTypeDict () {
-            var tagNames = new Dictionary<string, TreeType>();
-            foreach (var content in contents) {
-                tagNames[content.contentName] = content.type;
-            }
-            foreach (var constraint in layerConstraints) {
-                if (constraint.constraints.Any()) {
-                    tagNames[constraint.layerName] = TreeType.CustomLayer;
-                } else {
-                    tagNames[constraint.layerName] = TreeType.CustomEmptyLayer;
-                }
-            }
-            
-            return tagNames;
-        }
-    }
-
-    [Serializable] public class ContentInfo {
-        [SerializeField] public string contentName;
-        [SerializeField] public TreeType type;
-        [SerializeField] public string loadPath;
-
-        public ContentInfo (string contentName, TreeType type, string loadPath) {
-            this.contentName = contentName;
-            this.type = type;
-            this.loadPath = loadPath;
-        }
-    }
-
-    [Serializable] public class LayerInfo {
-        [SerializeField] public string layerName;
-        [SerializeField] public BoxConstraint[] constraints;
-        [SerializeField] public string loadPath;
-        public LayerInfo (string layerName, BoxConstraint[] constraints, string loadPath) {
-            this.layerName = layerName;
-            this.constraints = constraints;
-            this.loadPath = loadPath;
-        }
-    }
-
-    [Serializable] public class BoxConstraint {
-        [SerializeField] public string boxName;
-        [SerializeField] public BoxPos rect;
-
-        public BoxConstraint (string boxName, BoxPos rect) {
-            this.boxName = boxName.ToLower();
-            this.rect = rect;
-        }
-    }
-
-    [Serializable] public class BoxPos {
-        [SerializeField] public Vector2 anchoredPosition;
-        [SerializeField] public Vector2 sizeDelta;
-        [SerializeField] public Vector2 offsetMin;
-        [SerializeField] public Vector2 offsetMax;
-        [SerializeField] public Vector2 pivot;
-
-        [SerializeField] public Vector2 anchorMin;
-        [SerializeField] public Vector2 anchorMax;
-
-        public BoxPos (RectTransform rect) {
-            this.anchoredPosition = rect.anchoredPosition;
-            this.sizeDelta = rect.sizeDelta;
-            this.offsetMin = rect.offsetMin;
-            this.offsetMax = rect.offsetMax;
-            this.pivot = rect.pivot;
-            this.anchorMin = rect.anchorMin;
-            this.anchorMax = rect.anchorMax;
-        }
-        
-        override public string ToString () {
-            return "anchoredPosition:" + this.anchoredPosition + " sizeDelta:" + this.sizeDelta + " offsetMin:" + this.offsetMin + " offsetMax:" + this.offsetMax + " pivot:" +this.pivot + " anchorMin:" + this.anchorMin + " anchorMax:" + this.anchorMax;
-        }
-    }
-
-    public class InformationResourceLoader {
+    public class ResourceLoader {
         private class SpriteCache : Dictionary<string, Sprite> {};
         private class PrefabCache : Dictionary<string, GameObject> {};
 
         /*
-            information feature global cache.
+            global cache.
 
             sprites and prefabs are cached statically.
          */
@@ -132,7 +46,7 @@ namespace AutoyaFramework.Information {
         }
 
         private readonly Action<IEnumerator> executor;
-        public InformationResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+        public ResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
             defaultTagStrIntPair = new Dictionary<string, int>();
             defaultTagIntStrPair = new Dictionary<int, string>();
            
@@ -171,7 +85,7 @@ namespace AutoyaFramework.Information {
 
                     switch (treeType) {
                         case TreeType.Container: {
-                            Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
+                            Debug.LogWarning("GameObjectな必要はないという感じが。最適化することがあったらやろう。現状は特に損が多くない。rectTransしかついてないし。ただ、newが多いのは損なので、その辺なんとかしよう。");
                             var containerObj = new GameObject(tagName);
                             var trans = containerObj.AddComponent<RectTransform>();
                             trans.anchorMin = Vector2.up;
@@ -186,7 +100,7 @@ namespace AutoyaFramework.Information {
                         default: {
                             // コンテナ以外だと、いろんなデフォルトコンテンツがここにくる。
                             var prefabName = GetTagFromIndex(parsedTag);
-                            var loadingPrefabName = InformationConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + InformationConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
+                            var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
 
                             var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
                             while (cor.MoveNext()) {
@@ -543,7 +457,7 @@ namespace AutoyaFramework.Information {
 
             // start downloading.
             using (new AssetLoadingConstraint(url, spriteDownloadingUris)) {
-                var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_IMAGE_PREFIX + Guid.NewGuid().ToString();
+                var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_IMAGE_PREFIX + Guid.NewGuid().ToString();
                 var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
                 // start download tex from url.
@@ -554,7 +468,7 @@ namespace AutoyaFramework.Information {
 
                     var p = request.Send();
 
-                    var timeoutSec = InformationConstSettings.TIMEOUT_SEC;
+                    var timeoutSec = ConstSettings.TIMEOUT_SEC;
                     var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
 
                     while (!p.isDone) {
@@ -688,7 +602,7 @@ namespace AutoyaFramework.Information {
             
             Action failed = () => {
                 Debug.LogError("failed to load depthAssetList from url:" + uriSource + ". use default empty customTagList automatically.");
-                this.customTagList = new CustomTagList(InformationConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
+                this.customTagList = new CustomTagList(ConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
                 IsLoadingDepthAssetList = false;
             };
 
@@ -735,7 +649,7 @@ namespace AutoyaFramework.Information {
         }
         
         private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action loadFailed) {
-            var connectionId = InformationConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
+            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
             var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
             using (var request = UnityWebRequest.Get(url)) {
@@ -745,7 +659,7 @@ namespace AutoyaFramework.Information {
 
                 var p = request.Send();
 
-                var timeoutSec = InformationConstSettings.TIMEOUT_SEC;
+                var timeoutSec = ConstSettings.TIMEOUT_SEC;
                 var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
 
                 while (!p.isDone) {

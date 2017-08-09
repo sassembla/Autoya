@@ -15,13 +15,13 @@ using AutoyaFramework;
 public class MaterializeMachineTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
-    private InformationResourceLoader loader;
+    private ResourceLoader loader;
 
     private ViewBox viewBox;
     private GameObject canvas;
 
-    private void ShowLayoutRecursive (ParsedTree tree) {
-        Debug.Log("tree:" + loader.GetTagFromIndex(tree.parsedTag) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+    private void ShowLayoutRecursive (TagTree tree) {
+        Debug.Log("tree:" + loader.GetTagFromIndex(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
         foreach (var child in tree.GetChildren()) {
             ShowLayoutRecursive(child);
         }
@@ -46,13 +46,13 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             }
         );
 
-        loader = new InformationResourceLoader(controller.CoroutineExecutor);
+        loader = new ResourceLoader(controller.CoroutineExecutor);
         parser = new HTMLParser(loader);
         viewBox = new ViewBox(100,100,0);
 	}
 
-    private ParsedTree CreateLayoutedTree (string sampleHtml) {
-        ParsedTree parsedRoot = null;
+    private TagTree CreateLayoutedTree (string sampleHtml) {
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -64,13 +64,11 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         );
         
 
-        ParsedTree layouted = null;
+        TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
             loader, 
             viewBox
         );
-
-        controller.SetLayoutMachine(layoutMachine);
 
         var cor2 = layoutMachine.Layout(
             parsedRoot, 
@@ -92,14 +90,12 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     }
 
     private int index;
-    private void Show (ParsedTree tree) {
+    private void Show (TagTree tree) {
         var materializeMachine = new MaterializeMachine(loader);
 
-        controller.SetMaterializeMachine(materializeMachine);
-        
         RectTransform rectTrans = null;
 
-        // このへんでreloadManagerみたいなのを考える必要が出てくる。
+        // このへんでreloadみたいなのを考える必要が出てくる。
         // 現在はまだ適当。
         RunOnMainThread(
             () => {

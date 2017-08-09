@@ -20,24 +20,26 @@ namespace AutoyaFramework.Information {
         CustomBox,
         CustomEmptyLayer,
     }
+
     /**
-        parsed tree structure.
+        tree structure.
      */
-    public class ParsedTree {
+    public class TagTree {
         // tree params.
-        private List<ParsedTree> _children = new List<ParsedTree>();
+        private List<TagTree> _children = new List<TagTree>();
         
         // tag params.
-        public readonly int parsedTag;
+        public readonly int tagValue;
         public readonly AttributeKVs keyValueStore;
         public readonly TreeType treeType;
 
         private bool hidden = false;
 
         public void ShowOrHide () {
-            Debug.LogError("hidden:" + hidden);
             hidden = !hidden;
-            Debug.LogError("after hidden:" + hidden);
+
+            // 更新
+            keyValueStore[HTMLAttribute.HIDDEN] = hidden.ToString();
             
             if (hidden) {
                 SetHide();
@@ -77,14 +79,14 @@ namespace AutoyaFramework.Information {
             this.viewHeight = source.viewHeight;
         }
 
-        public ParsedTree () {
-            this.parsedTag = (int)HtmlTag._ROOT;
+        public TagTree () {
+            this.tagValue = (int)HtmlTag._ROOT;
             this.keyValueStore = new AttributeKVs();
             this.treeType = TreeType.Container;
         }
 
-        public ParsedTree (string textContent, int baseTag) {// as text_content.
-            this.parsedTag = baseTag;
+        public TagTree (string textContent, int baseTag) {// as text_content.
+            this.tagValue = baseTag;
             
             this.keyValueStore = new AttributeKVs();
             keyValueStore[HTMLAttribute._CONTENT] = textContent;
@@ -92,15 +94,15 @@ namespace AutoyaFramework.Information {
             this.treeType = TreeType.Content_Text;
         }
 
-        public ParsedTree (int parsedTag, AttributeKVs kv, TreeType treeType) {
-            this.parsedTag = parsedTag;
+        public TagTree (int parsedTag, AttributeKVs kv, TreeType treeType) {
+            this.tagValue = parsedTag;
             this.keyValueStore = kv;
             this.treeType = treeType;
         }
         
-        public void SetParent (ParsedTree t) {
+        public void SetParent (TagTree t) {
             if (
-                t.parsedTag == (int)HtmlTag._ROOT && 
+                t.tagValue == (int)HtmlTag._ROOT && 
                 this.treeType == TreeType.Content_Text
             ) {
                 var val = this.keyValueStore[HTMLAttribute._CONTENT];
@@ -110,19 +112,20 @@ namespace AutoyaFramework.Information {
 			t._children.Add(this);
 		}
 
-        public List<ParsedTree> GetChildren () {
+        public List<TagTree> GetChildren () {
 			return _children;
 		}
 
 
-        public void AddChildren (ParsedTree[] children) {
+        public void AddChildren (TagTree[] children) {
             this._children.AddRange(children);
         }
 
-        public void RemoveChild (ParsedTree child) {
+        public void RemoveChild (TagTree child) {
             this._children.Remove(child);
         }
-        public void ReplaceChildrenToBox (ParsedTree[] oldTrees, ParsedTree newTree) {
+
+        public void ReplaceChildrenToBox (TagTree[] oldTrees, TagTree newTree) {
             foreach (var oldTree in oldTrees) {
                 this._children.Remove(oldTree);
             }
@@ -153,26 +156,26 @@ namespace AutoyaFramework.Information {
             return new Rect(offsetX, offsetY, viewWidth, viewHeight);
         }
 
-         public static Vector2 AnchoredPositionOf (ParsedTree tree) {
+         public static Vector2 AnchoredPositionOf (TagTree tree) {
             return new Vector2(tree.offsetX, -tree.offsetY);
         }
 
-        public static Vector2 SizeDeltaOf (ParsedTree tree) {
+        public static Vector2 SizeDeltaOf (TagTree tree) {
             return new Vector2(tree.viewWidth, tree.viewHeight);
         }
 
-        public static ParsedTree RevertInsertedTree (ParsedTree rootTree) {
+        public static TagTree RevertInsertedTree (TagTree rootTree) {
 			RevertRecursive(rootTree);
             return rootTree;
 		}
 
-        private static void RevertRecursive (ParsedTree tree) {
+        private static void RevertRecursive (TagTree tree) {
             var children = tree.GetChildren();
             children.Reverse();
 
             var count = children.Count;
             
-            var list = new List<ParsedTree>();
+            var list = new List<TagTree>();
             for (var i = 0; i < count; i++) {
                 var child = children[i];
                 RevertRecursive(child);
@@ -194,9 +197,9 @@ namespace AutoyaFramework.Information {
         }
     }
 
-    public class InsertedTree : ParsedTree {
-        public readonly ParsedTree parentTree;
-        public InsertedTree (ParsedTree baseTree, string textContent, int baseTag) : base(textContent, baseTag) {
+    public class InsertedTree : TagTree {
+        public readonly TagTree parentTree;
+        public InsertedTree (TagTree baseTree, string textContent, int baseTag) : base(textContent, baseTag) {
             this.parentTree = baseTree;
         }
     }

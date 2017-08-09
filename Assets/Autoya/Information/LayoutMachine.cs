@@ -79,12 +79,12 @@ namespace AutoyaFramework.Information {
         レイアウトを実行するクラス。
     */
     public class LayoutMachine {
-		private readonly InformationResourceLoader infoResLoader;
+		private readonly ResourceLoader infoResLoader;
 		
 		private readonly ViewBox view;
 
       	public LayoutMachine (
-			  InformationResourceLoader infoResLoader,
+			  ResourceLoader infoResLoader,
 			  ViewBox view
 		) {
 			this.infoResLoader = infoResLoader;
@@ -97,7 +97,7 @@ namespace AutoyaFramework.Information {
 			RetryWithNextLine,
 		};
 
-		public IEnumerator Layout (ParsedTree rootTree, Action<ParsedTree> layouted) {
+		public IEnumerator Layout (TagTree rootTree, Action<TagTree> layouted) {
 			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
 			
 			var cor = DoLayout(rootTree, viewCursor);
@@ -111,11 +111,10 @@ namespace AutoyaFramework.Information {
 			
 			// セット
 			rootTree.SetPosFromViewCursor(viewCursor);
-			Debug.LogError("layouted");
 			layouted(rootTree);
 		}
 
-		private IEnumerator<ViewCursor> DoLayout (ParsedTree tree, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
+		private IEnumerator<ViewCursor> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
 			IEnumerator<ViewCursor> cor = null;
 
 			// Debug.LogError("@this.treeType:" + tree.treeType);
@@ -169,7 +168,7 @@ namespace AutoyaFramework.Information {
 			customTagLayer/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
 			ここだけ相対的なレイアウトが崩れる。
 		 */
-		private IEnumerator<ViewCursor> DoLayerLayout (ParsedTree layerTree, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoLayerLayout (TagTree layerTree, ViewCursor viewCursor) {
 			// 親コンテンツのサイズを継承
 			layerTree.SetPosFromViewCursor(viewCursor);
 
@@ -200,7 +199,7 @@ namespace AutoyaFramework.Information {
 				*/
 				var layoutParam = boxTree.keyValueStore[HTMLAttribute._BOX] as BoxPos;
 				
-				var viewRect = ParsedTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
+				var viewRect = TagTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
 				// Debug.LogError("viewRect:" + viewRect);
 
 				var childView = new ViewCursor(viewRect.x, viewRect.y + additionalHeight, viewRect.width, viewRect.height);
@@ -229,7 +228,7 @@ namespace AutoyaFramework.Information {
 			yield return viewCursor;
 		}
 
-		private IEnumerator<ViewCursor> DoEmptyLayerLayout (ParsedTree emptyLayerTree, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor) {
 			// var childCount = emptyLayerTree.GetChildren().Count;
 			// if (childCount == 0) {
 			// 	emptyLayerTree.SetPosFromViewCursor(viewCursor);
@@ -260,7 +259,7 @@ namespace AutoyaFramework.Information {
 			yield return resultViewCursor;
 		}
 
-		private IEnumerator<ViewCursor> DoImgLayout (ParsedTree imgTree, ViewCursor viewCursor, Action<InsertType, ParsedTree> insertion=null) {
+		private IEnumerator<ViewCursor> DoImgLayout (TagTree imgTree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
 			var contentViewCursor = viewCursor;
 			if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
 				throw new Exception("image should define src param.");
@@ -311,10 +310,10 @@ namespace AutoyaFramework.Information {
 			テキストコンテンツのレイアウトを行う。
 			もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
 		 */
-		private IEnumerator<ViewCursor> DoTextLayout (ParsedTree textTree, ViewCursor textViewCursor, Action<InsertType, ParsedTree> insertion) {
+		private IEnumerator<ViewCursor> DoTextLayout (TagTree textTree, ViewCursor textViewCursor, Action<InsertType, TagTree> insertion) {
 			var text = textTree.keyValueStore[HTMLAttribute._CONTENT] as string;
 			
-			var cor = infoResLoader.LoadGameObjectFromPrefab(textTree.parsedTag, textTree.treeType, true);
+			var cor = infoResLoader.LoadGameObjectFromPrefab(textTree.tagValue, textTree.treeType, true);
 
 			while (cor.MoveNext()) {
 				yield return null;
@@ -383,7 +382,7 @@ namespace AutoyaFramework.Information {
 
 						// Debug.LogError("lastLineContent:" + lastLineContent);
 						// 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
-						var nextLineContent = new InsertedTree(textTree, lastLineContent, textTree.parsedTag);
+						var nextLineContent = new InsertedTree(textTree, lastLineContent, textTree.tagValue);
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
 						// 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
@@ -421,7 +420,7 @@ namespace AutoyaFramework.Information {
 						var currentLineWidth = textComponent.preferredWidth;
 
 						var restContent = text.Substring(generator.lines[1].startCharIdx);
-						var nextLineContent = new InsertedTree(textTree, restContent, textTree.parsedTag);
+						var nextLineContent = new InsertedTree(textTree, restContent, textTree.tagValue);
 
 						// 次のコンテンツを新しい行から開始する。
 						insertion(InsertType.InsertContentToNextLine, nextLineContent);
@@ -441,7 +440,7 @@ namespace AutoyaFramework.Information {
 		}
 
 
-		private IEnumerator<ViewCursor> DoContainerLayout (ParsedTree containerTree, ViewCursor viewCursor) {
+		private IEnumerator<ViewCursor> DoContainerLayout (TagTree containerTree, ViewCursor viewCursor) {
 			/*
 				子供のタグを整列させる処理。
 				横に整列、縦に並ぶ、などが実行される。
@@ -449,7 +448,7 @@ namespace AutoyaFramework.Information {
 				初期カーソルは親と同じ。
 			*/
 			var childView = new ViewCursor(viewCursor);
-			var linedElements = new List<ParsedTree>();
+			var linedElements = new List<TagTree>();
 			
 			var containerChildren = containerTree.GetChildren();
 			var childCount = containerChildren.Count;
@@ -578,7 +577,7 @@ namespace AutoyaFramework.Information {
 			linedChildrenの中で一番高度のあるコンテンツをもとに、他のコンテンツを下揃いに整列させ、次の行の開始Yを返す。
 			整列が終わったら、それぞれのコンテンツのオフセットをいじる。サイズは変化しない。
 		*/
-		private float DoLining (List<ParsedTree> linedChildren) {
+		private float DoLining (List<TagTree> linedChildren) {
 			var nextOffsetY = 0f;
 			var tallestHeight = 0f;
 
@@ -604,7 +603,7 @@ namespace AutoyaFramework.Information {
 		/**
 			ボックス内部のコンテンツのレイアウトを行う
 		 */
-		private IEnumerator<ViewCursor> LayoutBoxedContents (ParsedTree boxTree, ViewCursor boxView) {
+		private IEnumerator<ViewCursor> LayoutBoxedContents (TagTree boxTree, ViewCursor boxView) {
 			
 			var containerChildren = boxTree.GetChildren();
 			var childCount = containerChildren.Count;
@@ -615,7 +614,7 @@ namespace AutoyaFramework.Information {
 				yield break;
 			}
 
-			var linedElements = new List<ParsedTree>();
+			var linedElements = new List<TagTree>();
 			var childView = new ViewCursor(boxView);
 
 			for (var i = 0; i < childCount; i++) {
@@ -678,7 +677,7 @@ namespace AutoyaFramework.Information {
 
 							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
 							childView = ViewCursor.NextLine(childView, newLineOffsetY, boxView.viewWidth);
-							Debug.LogError("box child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
+							Debug.LogError("box child:" + child.tagValue + " done," + child.ShowContent() + " next childView:" + childView);
 							continue;
 						}
 					}

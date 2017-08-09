@@ -54,7 +54,7 @@ public class ViewGen : MonoBehaviour {
 
 			pivotはあくまで回転中心。
 		 */
-		var childViewRect = ParsedTree.GetChildViewRectFromParentRectTrans(parentWidth, parentHeight, pos);
+		var childViewRect = TagTree.GetChildViewRectFromParentRectTrans(parentWidth, parentHeight, pos);
 		var anchorWidth = (parentWidth * pos.anchorMin.x) + (parentWidth * (1 - pos.anchorMax.x));
 		var anchorHeight = (parentHeight * pos.anchorMin.y) + (parentHeight * (1 - pos.anchorMax.y));
 

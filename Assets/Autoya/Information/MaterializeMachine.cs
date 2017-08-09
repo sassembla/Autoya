@@ -9,16 +9,16 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
     public class MaterializeMachine {
-		private readonly InformationResourceLoader infoResLoader;
+		private readonly ResourceLoader infoResLoader;
         private UUebView rootInputComponent;
 
         public MaterializeMachine(
-			InformationResourceLoader infoResLoader	
+			ResourceLoader infoResLoader	
 		) {
 			this.infoResLoader = infoResLoader;
 		}
 
-		public IEnumerator Materialize (GameObject root, ParsedTree tree, float yOffset, Action<double> progress, Action onLoaded) {
+		public IEnumerator Materialize (GameObject root, TagTree tree, float yOffset, Action<double> progress, Action onLoaded) {
 			Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。その場合はGameObjectは渡した方がいいのか。取り合えず書いちゃう。");
 
 			root.name = HtmlTag._ROOT.ToString();
@@ -70,9 +70,9 @@ namespace AutoyaFramework.Information {
 			onLoaded();
         }
 
-		private IEnumerator MaterializeRecursive (ParsedTree tree, GameObject parent) {
+		private IEnumerator MaterializeRecursive (TagTree tree, GameObject parent) {
 			GameObject newGameObject = null;
-			if (tree.parsedTag == (int)HtmlTag._ROOT) {// ここだけ逃すと良さそう。
+			if (tree.tagValue == (int)HtmlTag._ROOT) {// ここだけ逃すと良さそう。
 				newGameObject = parent;
 			} else {
 				if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
@@ -84,7 +84,7 @@ namespace AutoyaFramework.Information {
 					yield break;
 				}
 
-				var prefabCor = infoResLoader.LoadGameObjectFromPrefab(tree.parsedTag, tree.treeType);
+				var prefabCor = infoResLoader.LoadGameObjectFromPrefab(tree.tagValue, tree.treeType);
 
 				while (prefabCor.MoveNext()) {
 					yield return null;
@@ -94,8 +94,8 @@ namespace AutoyaFramework.Information {
 				newGameObject = prefabCor.Current;
 				newGameObject.transform.SetParent(parent.transform);
 				var rectTrans = newGameObject.GetComponent<RectTransform>();
-				rectTrans.anchoredPosition = ParsedTree.AnchoredPositionOf(tree);
-				rectTrans.sizeDelta = ParsedTree.SizeDeltaOf(tree);
+				rectTrans.anchoredPosition = TagTree.AnchoredPositionOf(tree);
+				rectTrans.sizeDelta = TagTree.SizeDeltaOf(tree);
 
 				// set parameters and events by container type. button, link.
 				switch (tree.treeType) {
@@ -120,7 +120,7 @@ namespace AutoyaFramework.Information {
 								}
 
 								// add button component.
-								AddButton(newGameObject, () => rootInputComponent.OnImageTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), src, buttonId));
+								AddButton(newGameObject, () => rootInputComponent.OnImageTapped(infoResLoader.GetTagFromIndex(tree.tagValue), src, buttonId));
 							}
 						}
 						break;
@@ -139,7 +139,7 @@ namespace AutoyaFramework.Information {
 							var href = tree.keyValueStore[HTMLAttribute.HREF] as string;
 
 							// add button component.
-							AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.parsedTag), href));
+							AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.tagValue), href));
 						}
 						
 						break;

@@ -15,16 +15,16 @@ using AutoyaFramework;
 public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
-    private InformationResourceLoader loader;
+    private ResourceLoader loader;
 
-    public static void ShowRecursive (ParsedTree tree, InformationResourceLoader loader) {
-        Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.parsedTag) + " type:" + tree.treeType);
+    public static void ShowRecursive (TagTree tree, ResourceLoader loader) {
+        Debug.Log("parsedTag:" + loader.GetTagFromIndex(tree.tagValue) + " type:" + tree.treeType);
         foreach (var child in tree.GetChildren()) {
             ShowRecursive(child, loader);
         }
     }
 
-    private int CountContentsRecursive (ParsedTree tree) {
+    private int CountContentsRecursive (TagTree tree) {
         var children = tree.GetChildren();
         var count = 0;
         foreach (var child in children) {
@@ -40,7 +40,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        loader = new ResourceLoader(Autoya.Mainthread_Commit, null, null);
         parser = new HTMLParser(loader);
 	}
 
@@ -49,7 +49,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 <body>something</body>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -75,7 +75,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 <p>else</p>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
             // ShowRecursive(parsedRoot, loader);
@@ -97,7 +97,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 <p>else</p>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
             // ShowRecursive(parsedRoot, loader);
@@ -123,7 +123,7 @@ public class ParsedTreeCustomizerTests : MiyamasuTestRunner {
 <p>else</p>
         ";
 
-        ParsedTree parsedRoot = null;
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
             // ShowRecursive(parsedRoot, loader);

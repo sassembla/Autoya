@@ -9,17 +9,19 @@ using UnityEngine;
 namespace AutoyaFramework.Information {
 	/**
 		ビューの生成を行う。
+
+		このクラスは最終的にUUebViewを返せればそれで良さそう。
 	 */
     public class UUebViewGenerator {
 		private readonly Action<IEnumerator> executor;
-		private readonly InformationResourceLoader infoResLoader;
+		private readonly ResourceLoader infoResLoader;
 		public UUebViewGenerator (
 			Action<IEnumerator> executor,
 			Autoya.HttpRequestHeaderDelegate requestHeader=null,
 			Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
 		) {
 			this.executor = executor;
-			this.infoResLoader = new InformationResourceLoader(executor, requestHeader, httpResponseHandlingDelegate);
+			this.infoResLoader = new ResourceLoader(executor, requestHeader, httpResponseHandlingDelegate);
 		}
 		
         public GameObject GenerateViewFromSource (string source, ViewBox view, Action<Rect>layoutDone, Action<double> progress, Action loadDone) {

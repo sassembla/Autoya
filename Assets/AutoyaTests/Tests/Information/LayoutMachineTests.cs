@@ -15,10 +15,10 @@ using AutoyaFramework;
 public class LayoutMachineTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
-    private InformationResourceLoader loader;
+    private ResourceLoader loader;
 
-    private void ShowLayoutRecursive (ParsedTree tree) {
-        Debug.Log("tree:" + loader.GetTagFromIndex(tree.parsedTag) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+    private void ShowLayoutRecursive (TagTree tree) {
+        Debug.Log("tree:" + loader.GetTagFromIndex(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
         foreach (var child in tree.GetChildren()) {
             ShowLayoutRecursive(child);
         }
@@ -31,12 +31,12 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        loader = new InformationResourceLoader(Autoya.Mainthread_Commit, null, null);
+        loader = new ResourceLoader(Autoya.Mainthread_Commit, null, null);
         parser = new HTMLParser(loader);
 	}
 
-    private ParsedTree CreateCustomizedTree (string sampleHtml) {
-        ParsedTree parsedRoot = null;
+    private TagTree CreateCustomizedTree (string sampleHtml) {
+        TagTree parsedRoot = null;
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
@@ -57,7 +57,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         
 
-        ParsedTree layouted = null;
+        TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
             loader, 
             new ViewBox(100,100,0)
@@ -509,7 +509,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         ";
         var tree = CreateCustomizedTree(sample);
 
-        ParsedTree layouted = null;
+        TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
             loader, 
             new ViewBox(100,100,0)
@@ -540,7 +540,7 @@ else
         ";
         var tree = CreateCustomizedTree(sample);
 
-        ParsedTree layouted = null;
+        TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
             loader, 
             new ViewBox(100,100,0)
@@ -574,7 +574,7 @@ else
 </body>";
         var tree = CreateCustomizedTree(sample);
 
-        ParsedTree layouted = null;
+        TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
             loader, 
             new ViewBox(100,100,0)
@@ -608,7 +608,7 @@ else
 </body>";
         var tree = CreateCustomizedTree(sample);
 
-        ParsedTree layouted = null;
+        TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
             loader, 
             new ViewBox(100,100,0)
@@ -721,7 +721,7 @@ else
             () => done, 5, "timeout."
         );
 
-        var revertedTree = ParsedTree.RevertInsertedTree(tree);
+        var revertedTree = TagTree.RevertInsertedTree(tree);
 
         /*
             revert-layout.

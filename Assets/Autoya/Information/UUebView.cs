@@ -9,15 +9,19 @@ namespace AutoyaFramework.Information {
 		UUebView instance.
 
 		なんかこのインスタンスをnewできたら使えます的な感じになったほうがいい気がしてきたぞ。
+
+		・MonoBehaviourなので、イベント送付先をuGUIのイベントで送付できる
+			レシーバを登録する形になる
+
+		・StartCoroutineが使える(executorを渡すことでOK)
+
 	 */
 	public class UUebView : MonoBehaviour {
-		public ParsedTree root;
+		public TagTree root;
 
-		private Dictionary<string, List<ParsedTree>> listenerDict = new Dictionary<string, List<ParsedTree>>();
-		private LayoutMachine lMachine;
-		private MaterializeMachine mMachine;
-
-        public void CoroutineExecutor (IEnumerator iEnum) {
+		private Dictionary<string, List<TagTree>> listenerDict = new Dictionary<string, List<TagTree>>();
+		
+		public void CoroutineExecutor (IEnumerator iEnum) {
 			StartCoroutine(iEnum);
 		}
 
@@ -43,14 +47,13 @@ namespace AutoyaFramework.Information {
 			}
 		}
 
-        public void AddListener(ParsedTree tree, string listenTargetId) {
+        public void AddListener(TagTree tree, string listenTargetId) {
             if (!listenerDict.ContainsKey(listenTargetId)) {
-				listenerDict[listenTargetId] = new List<ParsedTree>();
+				listenerDict[listenTargetId] = new List<TagTree>();
 			}
 
 			if (!listenerDict[listenTargetId].Contains(tree)) {
 				listenerDict[listenTargetId].Add(tree);
-				Debug.LogError("足した。listenTargetId:" + listenTargetId);
 			}
         }
 
@@ -59,35 +62,22 @@ namespace AutoyaFramework.Information {
 		}
 
 		private IEnumerator Reload () {
+			Debug.LogError("調整中。さてどうしようかな、infoResLoaderのあり方をこちらに持って来てもいいのかも。");
 			// reset inserted trees.
-			root = ParsedTree.RevertInsertedTree(root);
+			root = TagTree.RevertInsertedTree(root);
 
-			Debug.LogError("reloadには来てる");
-			var layout = lMachine.Layout(
-				root, 
-				layouted => {
-					Debug.LogError("reloadには来て、その後layoutも終わってるんだけど。");
-					root = layouted;
-					try {
-						var mat = mMachine.Materialize(this.gameObject, root, 0, progress => {}, () => {Debug.LogError("done");});
-						StartCoroutine(mat);
-					} catch (Exception e) {
-						Debug.LogError("e:" + e);
-					}
-				}
-			);
+			// var layout = lMachine.Layout(
+			// 	root, 
+			// 	layouted => {
+			// 		root = layouted;
+
+			// 		var mat = mMachine.Materialize(this.gameObject, root, 0, progress => {}, () => {Debug.LogError("done");});
+			// 		StartCoroutine(mat);
+			// 	}
+			// );
 			
-			return layout;
-        }
-
-		public void SetLayoutMachine (LayoutMachine lMachine) {
-			Debug.LogError("SetLayoutMachine 適当");
-            this.lMachine = lMachine;
-        }
-
-        public void SetMaterializeMachine (MaterializeMachine mMachine) {
-			Debug.LogError("SetMaterializeMachine 適当2");
-            this.mMachine = mMachine;
+			// return layout;
+			yield return null;
         }
     }
 }

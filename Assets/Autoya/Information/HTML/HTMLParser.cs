@@ -27,19 +27,19 @@ namespace AutoyaFramework.Information {
 		depthAssetListが発見されたら、DLを開始する。
      */
     public class HTMLParser {
-		private readonly InformationResourceLoader infoResLoader;
+		private readonly ResourceLoader infoResLoader;
 
-		public HTMLParser (InformationResourceLoader infoResLoader) {
+		public HTMLParser (ResourceLoader infoResLoader) {
 			this.infoResLoader = infoResLoader;
 		}
 
-        public IEnumerator ParseRoot (string source, Action<ParsedTree> parsed) {
+        public IEnumerator ParseRoot (string source, Action<TagTree> parsed) {
 			var lines = source.Split('\n');
 			for (var i = 0; i < lines.Length; i++) {
 				lines[i] = lines[i].TrimStart();
 			}
 
-            var root = new ParsedTree();
+            var root = new TagTree();
             return Parse(root, string.Join(string.Empty, lines), parsed);
         }
 
@@ -49,7 +49,7 @@ namespace AutoyaFramework.Information {
 
 			そのうち単一のArrayとしてindexのみで処理するように書き換えると、コピーが減って楽。
 		 */
-        private IEnumerator Parse (ParsedTree parentTree, string data, Action<ParsedTree> parsed) {
+        private IEnumerator Parse (TagTree parentTree, string data, Action<TagTree> parsed) {
 			// Debug.LogError("data:" + data + " parentTree:" + infoResLoader.GetTagFromIndex(parentTree.parsedTag));
 			var charIndex = 0;
 			var readPoint = 0;
@@ -194,15 +194,15 @@ namespace AutoyaFramework.Information {
 											// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
 
 											if (!string.IsNullOrEmpty(str)) {
-												var contentTagPoint = new ParsedTree(
+												var contentTagPoint = new TagTree(
 													str,
-													parentTree.parsedTag
+													parentTree.tagValue
 												);
 												contentTagPoint.SetParent(parentTree);
 											}
 										}
 
-										var tagPoint2 = new ParsedTree(
+										var tagPoint2 = new TagTree(
 											tag, 
 											kv,
 											infoResLoader.GetTreeType(tag)
@@ -233,9 +233,9 @@ namespace AutoyaFramework.Information {
 										// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
 
 										if (!string.IsNullOrEmpty(str)) {
-											var contentTagPoint = new ParsedTree(
+											var contentTagPoint = new TagTree(
 												str,
-												parentTree.parsedTag
+												parentTree.tagValue
 											);
 											contentTagPoint.SetParent(parentTree);
 										}
@@ -243,7 +243,7 @@ namespace AutoyaFramework.Information {
 
 									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
 												
-									var tagPoint = new ParsedTree(
+									var tagPoint = new TagTree(
 										tag, 
 										kv,
 										infoResLoader.GetTreeType(tag)
@@ -300,9 +300,9 @@ namespace AutoyaFramework.Information {
 										// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
 
 										if (!string.IsNullOrEmpty(str)) {
-											var contentTagPoint = new ParsedTree(
+											var contentTagPoint = new TagTree(
 												str,
-												parentTree.parsedTag
+												parentTree.tagValue
 											);
 											contentTagPoint.SetParent(parentTree);
 										}
@@ -310,7 +310,7 @@ namespace AutoyaFramework.Information {
 
 									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
 									
-									var tree = new ParsedTree(
+									var tree = new TagTree(
 										tag,
 										kv,
 										infoResLoader.GetTreeType(tag)
@@ -344,9 +344,9 @@ namespace AutoyaFramework.Information {
 				var restStr = data.Substring(readPoint);
 				// Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
 				if (!string.IsNullOrEmpty(restStr)) {
-					var contentTree = new ParsedTree(
+					var contentTree = new TagTree(
 						restStr,
-						parentTree.parsedTag
+						parentTree.tagValue
 					);
 					contentTree.SetParent(parentTree);
 				}
@@ -365,8 +365,8 @@ namespace AutoyaFramework.Information {
             parsed(parentTree);
         }
 
-		private void ExpandCustomTagToLayer (ParsedTree tree) {
-			var adoptedConstaints = infoResLoader.GetConstraints(tree.parsedTag);
+		private void ExpandCustomTagToLayer (TagTree tree) {
+			var adoptedConstaints = infoResLoader.GetConstraints(tree.tagValue);
 			var children = tree.GetChildren();
 
 			/*
@@ -379,7 +379,7 @@ namespace AutoyaFramework.Information {
 			foreach (var box in adoptedConstaints) {
 				var boxName = box.boxName;
 
-				var boxingChildren = children.Where(c => infoResLoader.GetLayerBoxName(tree.parsedTag, c.parsedTag) == boxName).ToArray();
+				var boxingChildren = children.Where(c => infoResLoader.GetLayerBoxName(tree.tagValue, c.tagValue) == boxName).ToArray();
 				if (boxingChildren.Any()) {
 					var boxTag = infoResLoader.FindOrCreateTag(boxName);
 					
@@ -387,7 +387,7 @@ namespace AutoyaFramework.Information {
 					var newBoxTreeAttr = new AttributeKVs(){
 						{HTMLAttribute._BOX, box.rect}
 					};
-					var boxTree = new ParsedTree(boxTag, newBoxTreeAttr, TreeType.CustomBox);
+					var boxTree = new TagTree(boxTag, newBoxTreeAttr, TreeType.CustomBox);
 					
 					// すでに入っているchildrenを取り除いて、boxを投入
 					tree.ReplaceChildrenToBox(boxingChildren, boxTree);
@@ -399,7 +399,7 @@ namespace AutoyaFramework.Information {
 
 			var errorTrees = tree.GetChildren().Where(c => c.treeType != TreeType.CustomBox);
 			if (errorTrees.Any()) {
-				throw new Exception("unexpected tag:" + string.Join(", ", errorTrees.Select(t => infoResLoader.GetTagFromIndex(t.parsedTag)).ToArray()) + " found at customLayer:" + infoResLoader.GetTagFromIndex(tree.parsedTag) + ". please exclude not defined tags in this layer, or define it on this layer.");
+				throw new Exception("unexpected tag:" + string.Join(", ", errorTrees.Select(t => infoResLoader.GetTagFromIndex(t.tagValue)).ToArray()) + " found at customLayer:" + infoResLoader.GetTagFromIndex(tree.tagValue) + ". please exclude not defined tags in this layer, or define it on this layer.");
 			}
 		}
 		
@@ -407,16 +407,16 @@ namespace AutoyaFramework.Information {
 			parse comment as specific parameters for Information feature.
 			get depthAssetList url if exists.
 		 */
-		private IEnumerator ParseAsComment (ParsedTree parent, string data) {
-			if (parent.parsedTag != (int)HtmlTag._ROOT) {
+		private IEnumerator ParseAsComment (TagTree parent, string data) {
+			if (parent.tagValue != (int)HtmlTag._ROOT) {
 				// ignored.
 				yield break;
 			}
 
 			// parse as params only root/comment tag with specific format.
-			if (data.StartsWith(InformationConstSettings.DEPTH_ASSETLIST_URL_START) && data.EndsWith(InformationConstSettings.DEPTH_ASSETLIST_URL_END)) {
-				var keywordLen = InformationConstSettings.DEPTH_ASSETLIST_URL_START.Length;
-				var depthAssetListUrl = data.Substring(keywordLen, data.Length - keywordLen - InformationConstSettings.DEPTH_ASSETLIST_URL_END.Length);
+			if (data.StartsWith(ConstSettings.DEPTH_ASSETLIST_URL_START) && data.EndsWith(ConstSettings.DEPTH_ASSETLIST_URL_END)) {
+				var keywordLen = ConstSettings.DEPTH_ASSETLIST_URL_START.Length;
+				var depthAssetListUrl = data.Substring(keywordLen, data.Length - keywordLen - ConstSettings.DEPTH_ASSETLIST_URL_END.Length);
 				
 				try {
 					var uri = new Uri(depthAssetListUrl);
@@ -643,7 +643,7 @@ namespace AutoyaFramework.Information {
 				get TAG_MAX_LEN char for finding tag.
 				if the len of data is less than this 12 char, len is become that data's len itself.
 			 */
-			var allowedMaxTagLength = InformationConstSettings.TAG_MAX_LEN;
+			var allowedMaxTagLength = ConstSettings.TAG_MAX_LEN;
 			if (data.Length - tagStartPos < allowedMaxTagLength) {
 				allowedMaxTagLength = data.Length - tagStartPos;
 			}
