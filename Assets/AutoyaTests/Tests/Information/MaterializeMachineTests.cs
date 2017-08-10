@@ -20,15 +20,16 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     private ViewBox viewBox;
     private GameObject canvas;
 
+    
+    GameObject rootObj;
+    UUebView executor;
     private void ShowLayoutRecursive (TagTree tree) {
-        Debug.Log("tree:" + loader.GetTagFromIndex(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+        Debug.Log("tree:" + loader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
         foreach (var child in tree.GetChildren()) {
             ShowLayoutRecursive(child);
         }
     }
 
-    GameObject rootObj;
-    UUebView controller;
 
 	[MSetup] public void Setup () {
 
@@ -40,13 +41,13 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         RunOnMainThread(
             () => {
                 rootObj = new GameObject();
-                controller = rootObj.AddComponent<UUebView>();
+                executor = rootObj.AddComponent<UUebView>();
                 
                 canvas = GameObject.Find("Canvas/MaterializeTestPlace");
             }
         );
 
-        loader = new ResourceLoader(controller.CoroutineExecutor);
+        loader = new ResourceLoader(executor.CoroutineExecutor);
         parser = new HTMLParser(loader);
         viewBox = new ViewBox(100,100,0);
 	}
@@ -57,7 +58,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             parsedRoot = parsed;
         });
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -73,14 +74,11 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         var cor2 = layoutMachine.Layout(
             parsedRoot, 
             layoutedTree => {
-                // ちょっと適当
-                controller.root = layoutedTree;
-
                 layouted = layoutedTree;
             }
         );
 
-        Autoya.Mainthread_Commit(cor2);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor2));
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
@@ -105,12 +103,15 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         );
 
         var done = false;
-        var cor = materializeMachine.Materialize(rootObj, tree, 0, progress => {}, () => {
-            done = true;
-        });
-
         
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(
+            () => {
+                var cor = materializeMachine.Materialize(rootObj, new UUebViewCore(rootObj.GetComponent<UUebView>()), tree, 0, progress => {}, () => {
+                    done = true;
+                });
+                executor.CoroutineExecutor(cor);
+            }
+        );
         
         WaitUntil(
             () => done, 5, "not yet."
@@ -149,21 +150,27 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         Show(tree);
     }
 
-//     [MTest] public void MaterializeHTMLWithLink () {
-//         var sample = @"
-// <body><a href='https://dummyimage.com/100.png/09f/fff'/></body>";
-//         var tree = CreateLayoutedTree(sample);
-        
-//         Show(tree);
-//     }
+    [MTest] public void MaterializeHTMLWithLink () {
+        Debug.LogError("not yet.");
+        return;
 
-//     [MTest] public void MaterializeHTMLWithLinkWithId () {
-//         var sample = @"
-// <body><a href='https://dummyimage.com/100.png/09f/fff' id='linkId'/></body>";
-//         var tree = CreateLayoutedTree(sample);
+        var sample = @"
+<body><a href='https://dummyimage.com/100.png/09f/fff'>link!</a></body>";
+        var tree = CreateLayoutedTree(sample);
         
-//         Show(tree);
-//     }
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithLinkWithId () {
+        Debug.LogError("not yet.");
+        return;
+
+        var sample = @"
+<body><a href='https://dummyimage.com/100.png/09f/fff' id='linkId'>link!</a></body>";
+        var tree = CreateLayoutedTree(sample);
+        
+        Show(tree);
+    }
 
     [MTest] public void MaterializeHTMLWithImage () {
         var sample = @"

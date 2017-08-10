@@ -17,8 +17,10 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
     private ResourceLoader loader;
 
+    private UUebView executor;
+
     private void ShowLayoutRecursive (TagTree tree) {
-        Debug.Log("tree:" + loader.GetTagFromIndex(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+        Debug.Log("tree:" + loader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
         foreach (var child in tree.GetChildren()) {
             ShowLayoutRecursive(child);
         }
@@ -31,7 +33,13 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        loader = new ResourceLoader(Autoya.Mainthread_Commit, null, null);
+        RunOnMainThread(
+            () => {
+                executor = new GameObject("layoutMachineTest").AddComponent<UUebView>();
+            }
+        );
+
+        loader = new ResourceLoader(executor.CoroutineExecutor, null, null);
         parser = new HTMLParser(loader);
 	}
 
@@ -41,7 +49,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             parsedRoot = parsed;
         });
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -70,7 +78,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
@@ -99,7 +107,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         WaitUntil(
             () => done, 5, "timeout."
         );
@@ -127,7 +135,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -154,7 +162,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -183,7 +191,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
         WaitUntil(
             () => done, 5, "timeout."
@@ -212,7 +220,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -239,7 +247,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -268,7 +276,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -295,7 +303,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -324,7 +332,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -352,7 +360,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -380,7 +388,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -409,7 +417,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -438,7 +446,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -466,7 +474,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -494,7 +502,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -522,7 +530,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -553,14 +561,12 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
         );
-
-        ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
     }
 
     [MTest] public void LayoutHTMLWithCustomTagSmallText () {
@@ -587,14 +593,12 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
         );
-
-        ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
     }
 
     [MTest] public void LayoutHTMLWithCustomTagLargeText () {
@@ -633,14 +637,12 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
             () => layouted != null, 5, "timeout."
         );
-
-        ParsedTreeCustomizerTests.ShowRecursive(layouted, loader);
     }
 
 
@@ -663,7 +665,7 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -687,7 +689,7 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor2);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor2));
 
 
         WaitUntil(
@@ -714,7 +716,7 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
         WaitUntil(
@@ -736,7 +738,7 @@ else
             }
         );
 
-        Autoya.Mainthread_Commit(cor2);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor2));
 
 
         WaitUntil(

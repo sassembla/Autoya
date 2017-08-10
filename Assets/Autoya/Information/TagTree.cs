@@ -15,7 +15,7 @@ namespace AutoyaFramework.Information {
         Container,
         Content_Text,
         Content_Img,
-        Content_Empty,
+        Content_CRLF,
         CustomLayer,
         CustomBox,
         CustomEmptyLayer,
@@ -80,13 +80,13 @@ namespace AutoyaFramework.Information {
         }
 
         public TagTree () {
-            this.tagValue = (int)HtmlTag._ROOT;
+            this.tagValue = (int)HTMLTag._ROOT;
             this.keyValueStore = new AttributeKVs();
             this.treeType = TreeType.Container;
         }
 
-        public TagTree (string textContent, int baseTag) {// as text_content.
-            this.tagValue = baseTag;
+        public TagTree (string textContent, int baseTagValue) {// as text_content.
+            this.tagValue = baseTagValue;
             
             this.keyValueStore = new AttributeKVs();
             keyValueStore[HTMLAttribute._CONTENT] = textContent;
@@ -102,7 +102,7 @@ namespace AutoyaFramework.Information {
         
         public void SetParent (TagTree t) {
             if (
-                t.tagValue == (int)HtmlTag._ROOT && 
+                t.tagValue == (int)HTMLTag._ROOT && 
                 this.treeType == TreeType.Content_Text
             ) {
                 var val = this.keyValueStore[HTMLAttribute._CONTENT];

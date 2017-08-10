@@ -50,7 +50,7 @@ namespace AutoyaFramework.Information {
             defaultTagStrIntPair = new Dictionary<string, int>();
             defaultTagIntStrPair = new Dictionary<int, string>();
            
-            foreach (var tag in Enum.GetValues(typeof(HtmlTag))) {
+            foreach (var tag in Enum.GetValues(typeof(HTMLTag))) {
                 var tagStr = tag.ToString();
                 var index = (int)tag;
 
@@ -78,7 +78,7 @@ namespace AutoyaFramework.Information {
 
         public IEnumerator<GameObject> LoadGameObjectFromPrefab (int parsedTag, TreeType treeType, bool prefabOnly=false) {
             GameObject gameObj = null;
-            var tagName = GetTagFromIndex(parsedTag);
+            var tagName = GetTagFromValue(parsedTag);
 
             switch (IsDefaultTag(parsedTag)) {
                 case true: {
@@ -99,7 +99,7 @@ namespace AutoyaFramework.Information {
                         }
                         default: {
                             // コンテナ以外だと、いろんなデフォルトコンテンツがここにくる。
-                            var prefabName = GetTagFromIndex(parsedTag);
+                            var prefabName = GetTagFromValue(parsedTag);
                             var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
 
                             var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
@@ -149,7 +149,7 @@ namespace AutoyaFramework.Information {
                             break;
                         }
                         default: {
-                            var tag = GetTagFromIndex(parsedTag);
+                            var tag = GetTagFromValue(parsedTag);
                             var loadPath = GetCustomTagLoadPath(parsedTag, treeType);
 
                             var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
@@ -176,7 +176,7 @@ namespace AutoyaFramework.Information {
         }
 
         private string GetCustomTagLoadPath (int parsedTag, TreeType treeType) {
-            var tag = GetTagFromIndex(parsedTag);
+            var tag = GetTagFromValue(parsedTag);
             var targetPrefab = string.Empty;
 
             switch (treeType) {
@@ -317,15 +317,15 @@ namespace AutoyaFramework.Information {
             // 組み込みtagであれば、静的に解決できる。
             if (defaultTagIntStrPair.ContainsKey(tag)) {
 				switch (tag) {
-                    case (int)HtmlTag.a: {
+                    case (int)HTMLTag.a: {
                         return TreeType.Content_Text;
                     }
-                    case (int)HtmlTag.img: {
+                    case (int)HTMLTag.img: {
                         return TreeType.Content_Img;
                     }
-                    case (int)HtmlTag.hr:
-                    case (int)HtmlTag.br: {
-                        return TreeType.Content_Empty;
+                    case (int)HTMLTag.hr:
+                    case (int)HTMLTag.br: {
+                        return TreeType.Content_CRLF;
                     }
                     default: {
                         return TreeType.Container;
@@ -335,7 +335,7 @@ namespace AutoyaFramework.Information {
 
             // tag is not default.
             
-            var customTagStr = GetTagFromIndex(tag);
+            var customTagStr = GetTagFromValue(tag);
             // Debug.LogError("customTagStr:" + customTagStr);
             // foreach (var s in customTagTypeDict.Keys) {
             //     Debug.LogError("s:" + s);
@@ -634,12 +634,12 @@ namespace AutoyaFramework.Information {
         }
 
         public BoxConstraint[] GetConstraints (int parsedTag) {
-            var key = GetTagFromIndex(parsedTag);
+            var key = GetTagFromValue(parsedTag);
             return constraintsDict[key];
         }
 
         public string GetLayerBoxName (int layerTag, int boxTag) {
-            return GetTagFromIndex(layerTag) + "_" + GetTagFromIndex(boxTag);
+            return GetTagFromValue(layerTag) + "_" + GetTagFromValue(boxTag);
         }
 
         private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action failed) {
@@ -740,7 +740,7 @@ namespace AutoyaFramework.Information {
 
         private Dictionary<string, int> undefinedTagDict = new Dictionary<string, int>();
 
-        public string GetTagFromIndex (int index) {
+        public string GetTagFromValue (int index) {
 			if (index < defaultTagStrIntPair.Count) {
 				return defaultTagIntStrPair[index];
 			}
@@ -763,7 +763,7 @@ namespace AutoyaFramework.Information {
                 return undefinedTagDict[tagCandidateStr];
             }
             
-            var count = (int)HtmlTag._END + undefinedTagDict.Count + 1;
+            var count = (int)HTMLTag._END + undefinedTagDict.Count + 1;
             undefinedTagDict[tagCandidateStr] = count;
             return count;
         }

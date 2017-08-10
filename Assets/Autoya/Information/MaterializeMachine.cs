@@ -9,22 +9,22 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
     public class MaterializeMachine {
-		private readonly ResourceLoader infoResLoader;
-        private UUebView rootInputComponent;
+		private readonly ResourceLoader resLoader;
+        private UUebViewCore core;
 
         public MaterializeMachine(
-			ResourceLoader infoResLoader	
+			ResourceLoader resLoader	
 		) {
-			this.infoResLoader = infoResLoader;
+			this.resLoader = resLoader;
 		}
 
-		public IEnumerator Materialize (GameObject root, TagTree tree, float yOffset, Action<double> progress, Action onLoaded) {
+		public IEnumerator Materialize (GameObject root, UUebViewCore core, TagTree tree, float yOffset, Action<double> progress, Action onLoaded) {
 			Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。その場合はGameObjectは渡した方がいいのか。取り合えず書いちゃう。");
 
-			root.name = HtmlTag._ROOT.ToString();
+			root.name = HTMLTag._ROOT.ToString();
 			{
 				var rootRectTrans = root.GetComponent<RectTransform>();
-				this.rootInputComponent = root.GetComponent<UUebView>();
+				this.core = core;
 				
 				// set anchor to left top.
 				rootRectTrans.anchorMin = Vector2.up;
@@ -60,7 +60,7 @@ namespace AutoyaFramework.Information {
 			// 		}
 			// 	);
 			// 	Debug.LogError("途中。");
-			// 	// infoResLoader.(loadAct);
+			// 	// resLoader.(loadAct);
 			// };
 			var cor = MaterializeRecursive(tree, root);
 			while (cor.MoveNext()) {
@@ -72,11 +72,12 @@ namespace AutoyaFramework.Information {
 
 		private IEnumerator MaterializeRecursive (TagTree tree, GameObject parent) {
 			GameObject newGameObject = null;
-			if (tree.tagValue == (int)HtmlTag._ROOT) {// ここだけ逃すと良さそう。
+			Debug.LogWarning("ここだけ逃すと良さそう");
+			if (tree.tagValue == (int)HTMLTag._ROOT) {
 				newGameObject = parent;
 			} else {
 				if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
-					rootInputComponent.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
+					core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
 				}
 				
 				if (tree.IsHidden()) {
@@ -84,7 +85,7 @@ namespace AutoyaFramework.Information {
 					yield break;
 				}
 
-				var prefabCor = infoResLoader.LoadGameObjectFromPrefab(tree.tagValue, tree.treeType);
+				var prefabCor = resLoader.LoadGameObjectFromPrefab(tree.tagValue, tree.treeType);
 
 				while (prefabCor.MoveNext()) {
 					yield return null;
@@ -101,7 +102,7 @@ namespace AutoyaFramework.Information {
 				switch (tree.treeType) {
 					case TreeType.Content_Img: {
 						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
-						infoResLoader.LoadImageAsync(
+						resLoader.LoadImageAsync(
 							src, 
 							sprite => {
 								newGameObject.GetComponent<Image>().sprite = sprite;
@@ -120,7 +121,7 @@ namespace AutoyaFramework.Information {
 								}
 
 								// add button component.
-								AddButton(newGameObject, () => rootInputComponent.OnImageTapped(infoResLoader.GetTagFromIndex(tree.tagValue), src, buttonId));
+								AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
 							}
 						}
 						break;
@@ -137,9 +138,14 @@ namespace AutoyaFramework.Information {
 
 						if (tree.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
 							var href = tree.keyValueStore[HTMLAttribute.HREF] as string;
+							
+							var linkId = string.Empty;
+							if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+								linkId = tree.keyValueStore[HTMLAttribute.ID] as string;
+							}
 
 							// add button component.
-							AddButton(newGameObject, () => rootInputComponent.OnLinkTapped(infoResLoader.GetTagFromIndex(tree.tagValue), href));
+							AddButton(newGameObject, () => core.OnLinkTapped(resLoader.GetTagFromValue(tree.tagValue), href, linkId));
 						}
 						
 						break;

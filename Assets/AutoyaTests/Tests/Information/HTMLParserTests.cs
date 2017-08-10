@@ -17,6 +17,8 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     private ResourceLoader loader;
 
+    private UUebView executor;
+
 	[MSetup] public void Setup () {
 
 		// GetTexture(url) runs only Play mode.
@@ -24,9 +26,25 @@ public class HTMLParserTests : MiyamasuTestRunner {
 			SkipCurrentTest("Information feature should run on MainThread.");
 		};
 
-        loader = new ResourceLoader(Autoya.Mainthread_Commit, null, null);
+        
+        RunOnMainThread(
+            () => {
+                executor = new GameObject("htmlParserTest").AddComponent<UUebView>();
+            }
+        );
+        
+        loader = new ResourceLoader(executor.CoroutineExecutor, null, null);
         parser = new HTMLParser(loader);
 	}
+
+    private int CountContentsRecursive (TagTree tree) {
+        var children = tree.GetChildren();
+        var count = 0;
+        foreach (var child in children) {
+            count += CountContentsRecursive(child);
+        }
+        return count + 1;// add this content count.
+    }
 
     [MTest] public void LoadSimpleHTML () {
         var sampleHtml = @"
@@ -37,7 +55,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -58,7 +76,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -77,7 +95,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -98,7 +116,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -107,7 +125,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var children = parsedRoot.GetChildren();
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].tagValue == (int)HtmlTag.body, "not match.");
+        Assert(parsedRoot.GetChildren()[0].tagValue == (int)HTMLTag.body, "not match.");
         
     }
 
@@ -121,7 +139,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -133,7 +151,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
         Assert(parsedRoot.GetChildren()[0].tagValue == 33, "not match. actual:" + parsedRoot.GetChildren()[0].tagValue);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == ((int)HtmlTag._END) + 3, "not match +3. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == ((int)HTMLTag._END) + 3, "not match +3. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
     }
 
     [MTest] public void ParseCustomTagMoreDeep () {
@@ -148,7 +166,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -178,7 +196,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -190,7 +208,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
         Assert(parsedRoot.GetChildren()[0].tagValue == 33, "not match a. actual:" + parsedRoot.GetChildren()[0].tagValue);
-        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == ((int)HtmlTag._END) + 3, "not match b. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].GetChildren()[0].tagValue == ((int)HTMLTag._END) + 3, "not match b. actual:" + parsedRoot.GetChildren()[0].GetChildren()[0].tagValue);
     }
 
     [MTest] public void ParseImageAsImgContent () {
@@ -201,14 +219,14 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
         );
 
         Assert(parsedRoot.GetChildren().Count == 1, "not match.");
-        Assert(parsedRoot.GetChildren()[0].tagValue == (int)HtmlTag.img, "not match 1. actual:" + parsedRoot.GetChildren()[0].tagValue);
+        Assert(parsedRoot.GetChildren()[0].tagValue == (int)HTMLTag.img, "not match 1. actual:" + parsedRoot.GetChildren()[0].tagValue);
         Assert(parsedRoot.GetChildren()[0].treeType == TreeType.Content_Img, "not match.");
     }
 
@@ -221,7 +239,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -240,7 +258,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -260,7 +278,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 5, "too late."
@@ -280,7 +298,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
         var cor = parser.ParseRoot(sampleHtml, parsed => {
             parsedRoot = parsed;
         });
-        Autoya.Mainthread_Commit(cor);
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -318,5 +336,103 @@ public class HTMLParserTests : MiyamasuTestRunner {
             Assert(textChildren.Count == 1, "not match c. actual:" + textChildren.Count);
             Assert(textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string == "something", "actual:" + textChildrenTree.keyValueStore[HTMLAttribute._CONTENT] as string);
         }
+    }
+
+    [MTest] public void ParseDefaultTag () {
+        var sampleHtml = @"
+<body>something</body>
+        ";
+
+        TagTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
+            parsedRoot = parsed;
+        });
+        RunEnumeratorOnMainThread(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 1, "too late."
+        );
+        
+        // parsedRootを与えて、custimizedRootを返してくる
+        // treeの内容が変わらないはず
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        Assert(contentsCount == 3/*root + body + content*/, "not match. contentsCount:" + contentsCount);
+
+        var newContentsCount = CountContentsRecursive(parsedRoot);
+        Assert(newContentsCount == 3, "not match. newContentsCount:" + newContentsCount);
+    }
+
+    [MTest] public void WithCustomTag () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/WithCustomTag/DepthAssetList)-->
+<customtag><customtext>something</customtext></customtag>
+<p>else</p>
+        ";
+
+        TagTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
+            parsedRoot = parsed;
+            // ShowRecursive(parsedRoot, loader);
+        });
+        RunEnumeratorOnMainThread(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
+        
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        Assert(contentsCount == 7, "not match. contentsCount:" + contentsCount);
+    }
+
+    [MTest] public void WithDeepCustomTag () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/WithDeepCustomTag/DepthAssetList)-->
+<customtag><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
+<p>else</p>
+        ";
+
+        TagTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
+            parsedRoot = parsed;
+            // ShowRecursive(parsedRoot, loader);
+        });
+        RunEnumeratorOnMainThread(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
+        
+        var contentsCount = CountContentsRecursive(parsedRoot);
+        
+        // 増えてる階層に関してのチェックを行う。1種のcustomTagがあるので1つ増える。
+        Assert(contentsCount == 7, "not match. contentsCount:" + contentsCount);
+
+        // ShowRecursive(customizedTree, loader);
+    }
+
+    [MTest] public void WithDeepCustomTagBoxHasBoxAttr () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/WithDeepCustomTag/DepthAssetList)-->
+<customtag><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
+<p>else</p>
+        ";
+
+        TagTree parsedRoot = null;
+        var cor = parser.ParseRoot(sampleHtml, parsed => {
+            parsedRoot = parsed;
+            // ShowRecursive(parsedRoot, loader);
+        });
+        RunEnumeratorOnMainThread(cor);
+        
+        WaitUntil(
+            () => parsedRoot != null, 5, "too late."
+        );
+        
+       foreach (var s in parsedRoot.GetChildren()[0].GetChildren()) {
+            Assert(s.treeType == TreeType.CustomBox, "not match, s.treeType:" + s.treeType);
+            Assert(s.keyValueStore.ContainsKey(AutoyaFramework.Information.HTMLAttribute._BOX), "box does not have pos kv.");
+        }
+
+        // ShowRecursive(customizedTree, loader);
     }
 }

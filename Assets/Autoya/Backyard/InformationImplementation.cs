@@ -36,16 +36,17 @@ namespace AutoyaFramework {
 				new Dictionary<string, string>(),
 				url,
 				(conId, code, responseHeaders, html) => {
-					var v = new UUebViewGenerator(executor);
-					var root = v.GenerateViewFromSource(
-						html, 
-						new ViewBox(windowWidth, windowHeight, 0), //anchorPos
-						layoutDone,
-						viewDownloadProgress, 
-						loadDone
-					);
+					Debug.LogError("もっと飲み込めるかな？まあhtmlのロードは外部化しといたほうが良さそう。");
+					// var v = new UUebViewGenerator(executor);
+					// var root = v.GenerateViewFromSource(
+					// 	html, 
+					// 	new ViewBox(windowWidth, windowHeight, 0), //anchorPos
+					// 	layoutDone,
+					// 	viewDownloadProgress, 
+					// 	loadDone
+					// );
 
-					onRootViewGenerated(root);
+					// onRootViewGenerated(root);
 				},
 				(conId, code, reason, responseHeaders) => {
 					loadFailed(code, reason);

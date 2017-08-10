@@ -5,7 +5,7 @@ namespace AutoyaFramework.Information {
 
 		the tag which is not contained in this enum will be resolved at runtime.
 	 */
-    public enum HtmlTag {
+    public enum HTMLTag {
 		html,
 		head,
 		body,

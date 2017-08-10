@@ -191,7 +191,7 @@ namespace Miyamasu {
 			}
 
 			if (string.IsNullOrEmpty(subLocation)) TestLogger.LogError("test FAILED by:" + e.InnerException.Message + " @ " + location, true);
-			else TestLogger.LogError("test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
+			else TestLogger.LogError("e:" + e + " test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
 		}
 		
 		/**
