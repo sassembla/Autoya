@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
 
+    // キャッシュ保持と各種coroutineの生成を行う。
+
     public class ResourceLoader {
         private class SpriteCache : Dictionary<string, Sprite> {};
         private class PrefabCache : Dictionary<string, GameObject> {};
@@ -45,8 +47,7 @@ namespace AutoyaFramework.Information {
             return undefinedTagDict.Count;
         }
 
-        private readonly Action<IEnumerator> executor;
-        public ResourceLoader (Action<IEnumerator> executor, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+        public ResourceLoader (Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
             defaultTagStrIntPair = new Dictionary<string, int>();
             defaultTagIntStrPair = new Dictionary<int, string>();
            
@@ -57,8 +58,6 @@ namespace AutoyaFramework.Information {
                 defaultTagStrIntPair[tagStr] = index;
                 defaultTagIntStrPair[index] = tagStr;
             }
-
-            this.executor = executor;
 
             /*
                 set request header generation func and response validation delegate.
@@ -76,11 +75,77 @@ namespace AutoyaFramework.Information {
 			}
         }
 
-        public IEnumerator<GameObject> LoadGameObjectFromPrefab (int parsedTag, TreeType treeType, bool prefabOnly=false) {
-            GameObject gameObj = null;
-            var tagName = GetTagFromValue(parsedTag);
+        public IEnumerator<string> DownloadHTMLFromWeb (string url, Action<ContentType, int, string> failed) {
+            var timeoutSec = ConstSettings.TIMEOUT_SEC;
+            var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_HTML_PREFIX + Guid.NewGuid().ToString();
+            using(var request = UnityWebRequest.Get(url)) {
+                var reqHeader = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+                foreach (var item in reqHeader) {
+                    request.SetRequestHeader(item.Key, item.Value);
+                }
 
-            switch (IsDefaultTag(parsedTag)) {
+                var p = request.Send();
+				
+				while (!p.isDone) {
+					yield return null;
+
+					// check timeout.
+					if (timeoutSec != 0 && timeoutTick < DateTime.UtcNow.Ticks) {
+						request.Abort();
+						failed(ContentType.HTML, -1, "failed to download html:" + url + " by timeout.");
+						yield break;
+					}
+				}
+
+                var responseCode = (int)request.responseCode;
+				var responseHeaders = request.GetResponseHeaders();
+
+                if (request.isError) {
+                    httpResponseHandlingDelegate(
+                        connectionId,
+                        responseHeaders,
+                        responseCode,
+                        null, 
+                        request.error, 
+                        (conId, data) => {
+                            throw new Exception("request encountered some kind of error.");
+                        }, 
+                        (conId, code, reason, autoyaStatus) => {
+                            failed(ContentType.HTML, code, "failed to download html:" + url + " reason:" + reason);
+                        }
+                    );
+                    yield break;
+                }
+
+                var htmlStr = string.Empty;
+                
+                httpResponseHandlingDelegate(
+                    connectionId,
+                    responseHeaders,
+                    responseCode,
+                    request, 
+                    request.error,
+                    (conId, data) => {
+                        htmlStr = Encoding.UTF8.GetString(request.downloadHandler.data);
+                    }, 
+                    (conId, code, reason, autoyaStatus) => {
+                        failed(ContentType.HTML, code, "failed to download html:" + url + " reason:" + reason);
+                    }
+                );
+
+                if (!string.IsNullOrEmpty(htmlStr)) {
+                    yield return htmlStr;
+                }
+            }
+            
+        }
+
+        public IEnumerator<GameObject> LoadGameObjectFromPrefab (int tagValue, TreeType treeType, bool prefabOnly=false) {
+            GameObject gameObj = null;
+            var tagName = GetTagFromValue(tagValue);
+
+            switch (IsDefaultTag(tagValue)) {
                 case true: {
 
                     switch (treeType) {
@@ -98,8 +163,8 @@ namespace AutoyaFramework.Information {
                             break;
                         }
                         default: {
-                            // コンテナ以外だと、いろんなデフォルトコンテンツがここにくる。
-                            var prefabName = GetTagFromValue(parsedTag);
+                            // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
+                            var prefabName = GetTagFromValue(tagValue);
                             var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
 
                             var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
@@ -149,8 +214,8 @@ namespace AutoyaFramework.Information {
                             break;
                         }
                         default: {
-                            var tag = GetTagFromValue(parsedTag);
-                            var loadPath = GetCustomTagLoadPath(parsedTag, treeType);
+                            var tag = GetTagFromValue(tagValue);
+                            var loadPath = GetCustomTagLoadPath(tagValue, treeType);
 
                             var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
                             while (cor.MoveNext()) {
@@ -171,12 +236,14 @@ namespace AutoyaFramework.Information {
                 }
             }
 
+            // Debug.LogError("loaded, tagName:" + tagName);
+
             gameObj.name = tagName;
             yield return gameObj;
         }
 
-        private string GetCustomTagLoadPath (int parsedTag, TreeType treeType) {
-            var tag = GetTagFromValue(parsedTag);
+        private string GetCustomTagLoadPath (int tagValue, TreeType treeType) {
+            var tag = GetTagFromValue(tagValue);
             var targetPrefab = string.Empty;
 
             switch (treeType) {
@@ -276,14 +343,13 @@ namespace AutoyaFramework.Information {
             } else {
                 // start loading.
                 using (new AssetLoadingConstraint(loadingPrefabName, loadingPrefabNames)) {
-                    GameObject obj = null;
                     var cor = Resources.LoadAsync(loadingPrefabName);
                 
                     while (!cor.isDone) {
                         yield return null;
                     }
                     
-                    obj = cor.asset as GameObject;
+                    var obj = cor.asset as GameObject;
 
                     if (obj == null) {
                         // no prefab found.
@@ -297,6 +363,8 @@ namespace AutoyaFramework.Information {
                     }
                 }
             }
+            // Debug.LogError("loaded:" + loadedPrefab);
+
             yield return loadedPrefab;
         }
 
@@ -345,11 +413,9 @@ namespace AutoyaFramework.Information {
         }
 
         /**
-            materialize時に画像を読み込む。
+            layout, materialize時に画像を読み込む。
          */
-        public void LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
-            IEnumerator coroutine;
-
+        public IEnumerator LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
             /*
                 supported schemes are,
                     
@@ -358,8 +424,6 @@ namespace AutoyaFramework.Information {
                     ^assetbundle://	assetbundle scheme => load asset from assetBundle.
                     ^resources://   resources scheme => (Resources/)somewhere/resource path.
                     ^./				relative path => (Resources/)somewhere/resource path.
-                    ^/              absolute path => unsupported.
-                    ^.*				path => (Resources/)somewhere/resource path.
             */
             var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
             var scheme = schemeAndPath[0];
@@ -367,40 +431,23 @@ namespace AutoyaFramework.Information {
             switch (scheme) {
                 case "assetbundle:": {
                     var bundleName = uriSource;
-                    coroutine = LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
-                    break;
+                    return LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
                 }
                 case "https:":
                 case "http:": {
-                    coroutine = LoadImageFromWeb(uriSource, loaded, loadFailed);
-                    break;
+                    return LoadImageFromWeb(uriSource, loaded, loadFailed);
                 }
                 case ".": {
                     var resourcePath = uriSource.Substring(2);
-                    coroutine = LoadImageFromResources(resourcePath, loaded, loadFailed);
-                    break;
+                    return LoadImageFromResources(resourcePath, loaded, loadFailed);
                 }
                 case "resources:": {
-                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
-                    break;
-                }
-                case "/:": {
-                    throw new Exception("unsupported scheme:/");
+                    return LoadImageFromResources(uriSource, loaded, loadFailed);
                 }
                 default: {// other.
-                    if (string.IsNullOrEmpty(scheme)) {
-                        Debug.LogError("empty uri found:" + uriSource);
-                        return;
-                    }
-
-                    // not empty. treat as resource file path.
-                    coroutine = LoadImageFromResources(uriSource, loaded, loadFailed);
-                    break;
+                    throw new Exception("unsupported scheme:" + scheme);
                 }
             }
-            
-            // execute loading.
-            executor(coroutine);
         }
 
 
@@ -633,8 +680,8 @@ namespace AutoyaFramework.Information {
             }
         }
 
-        public BoxConstraint[] GetConstraints (int parsedTag) {
-            var key = GetTagFromValue(parsedTag);
+        public BoxConstraint[] GetConstraints (int tagValue) {
+            var key = GetTagFromValue(tagValue);
             return constraintsDict[key];
         }
 
@@ -649,7 +696,7 @@ namespace AutoyaFramework.Information {
         }
         
         private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action loadFailed) {
-            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_DEPTHASSETLIST_PREFIX + Guid.NewGuid().ToString();
+            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_CUSTOMTAGLIST_PREFIX + Guid.NewGuid().ToString();
             var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
             using (var request = UnityWebRequest.Get(url)) {

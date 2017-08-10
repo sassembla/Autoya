@@ -6,7 +6,7 @@ using UnityEngine;
 /**
     test for UUebView generator.
 */
-public class UUebViewTests : MiyamasuTestRunner {
+public class UUebViewCoreTests : MiyamasuTestRunner {
     GameObject eventReceiverGameObj;
     GameObject view;
     
@@ -14,15 +14,17 @@ public class UUebViewTests : MiyamasuTestRunner {
     private void Show (GameObject view) {
         RunOnMainThread(
             () => {
-                var canvas = GameObject.Find("Canvas/UUebViewTestPlace");
+                var canvas = GameObject.Find("Canvas/UUebViewCoreTestPlace");
                 var baseObj = new GameObject("base");
-
-                baseObj.transform.SetParent(canvas.transform, false);
-                view.transform.SetParent(baseObj.transform);
+                
 
                 // ベースオブジェクトを見やすい位置に移動
                 var baseObjRect = baseObj.AddComponent<RectTransform>();
-                baseObjRect.anchoredPosition += new Vector2(100 * index, 0);
+                baseObjRect.anchoredPosition = new Vector2(100 * index, 0);
+
+                baseObj.transform.SetParent(canvas.transform, false);
+
+                view.transform.SetParent(baseObj.transform, false);
 
                 index++;
             }
@@ -33,6 +35,7 @@ public class UUebViewTests : MiyamasuTestRunner {
         RunOnMainThread(
             () => {
                 eventReceiverGameObj = new GameObject("controller");
+                eventReceiverGameObj.AddComponent<TestReceiver>();
             }
         );
     }
@@ -40,28 +43,38 @@ public class UUebViewTests : MiyamasuTestRunner {
     [MTest] public void GenerateSingleViewFromSource () {
         var source = @"
 <body>
-    something
+    something.
     <img src='https://dummyimage.com/100.png/09f/fff'/>
 </body>";
-
+        
+        var done = false;
+        
         RunOnMainThread(
             () => {
-                view = UUebViewCore.GenerateSingleViewFromSource(eventReceiverGameObj, source, new Vector2(100,100));
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
             }
         );
         
         Show(view);
 
         WaitUntil(
-            () => eventReceiverGameObj == null, 5, "too late."
+            () => done, 5, "too late."
         );
     }
 
     [MTest] public void GenerateSingleViewFromUrl () {
         var url = "resources://UUebViewTest/UUebViewTest.html";
 
+        var done = false;
+        
         RunOnMainThread(
             () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
                 view = UUebViewCore.GenerateSingleViewFromUrl(eventReceiverGameObj, url, new Vector2(100,100));
             }
         );
@@ -69,34 +82,48 @@ public class UUebViewTests : MiyamasuTestRunner {
         Show(view);
 
         WaitUntil(
-            () => eventReceiverGameObj == null, 5, "too late."
+            () => done, 5, "too late."
         );
     }
 
     [MTest] public void LoadThenReload () {
         var source = @"
 <body>
-    something
+    something.
     <img src='https://dummyimage.com/100.png/09f/fff'/>
 </body>";
 
+        var done = false;
+        
         RunOnMainThread(
             () => {
-                view = UUebViewCore.GenerateSingleViewFromSource(eventReceiverGameObj, source, new Vector2(100,100));
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
             }
         );
         
         Show(view);
 
         WaitUntil(
-            () => eventReceiverGameObj == null, 5, "too late."
+            () => done, 5, "too late."
         );
 
+        var done2 = false;
+        
         RunOnMainThread(
             () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done2 = true;
+                };
                 var core = view.GetComponent<UUebView>().Core;
                 core.Reload();
             }
+        );
+
+        WaitUntil(
+            () => done2, 5, "too late."
         );
     }
 }

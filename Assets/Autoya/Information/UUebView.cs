@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace AutoyaFramework.Information {
 
@@ -22,33 +21,38 @@ namespace AutoyaFramework.Information {
 
 		/*
 			preset parameters.
-			you can use this UUebView with preset paramters.
+			you can use this UUebView with preset paramters for testing.
 		 */
 		public string presetUrl;
 		public GameObject presetEventReceiver;
 
 
 		public UUebViewCore Core {
-			get; private set;
+			get; set;
 		}
 
 		void Start () {
 			if (!string.IsNullOrEmpty(presetUrl) && presetEventReceiver != null) {
-				DownloadHtml(presetUrl, GetComponent<RectTransform>().sizeDelta, presetEventReceiver);
+				Debug.Log("show preset view.");
+				UUebViewCore.GenerateSingleViewFromUrl(presetEventReceiver, presetUrl, GetComponent<RectTransform>().sizeDelta);
 			}
 		}
 
-
-		public void LoadHtml (string source, Vector2 viewRect, GameObject eventReceiverGameObj=null, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
-            Debug.LogError("htmlから展開する");
-        }
-
-        public void DownloadHtml (string url, Vector2 viewRect, GameObject eventReceiverGameObj=null, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
-            Debug.LogError("urlから展開する");
-        }
-
+		object lockObj = new object();
+		Queue<IEnumerator> coroutines = new Queue<IEnumerator>();
+		void Update () {
+			lock (lockObj) {
+				while (0 < coroutines.Count) {
+					var cor = coroutines.Dequeue();
+					StartCoroutine(cor);
+				}
+			}
+		}
+		
 		public void CoroutineExecutor (IEnumerator iEnum) {
-			StartCoroutine(iEnum);
+			lock (lockObj) {
+				coroutines.Enqueue(iEnum);
+			}
 		}
     }
 
@@ -57,13 +61,5 @@ namespace AutoyaFramework.Information {
 		IMAGE,
 		LINK,
 		CUSTOMTAGLIST
-	}
-
-	public interface IUUebViewEventHandler : IEventSystemHandler {
-		void OnLoadProgress (double progress);
-		void OnContentLoaded ();
-		void OnContentLoadFailed (ContentType type, int code, string reason);
-		void OnElementTapped (ContentType type, string param, string id);
-		void OnElementLongTapped (ContentType type, string param, string id);
 	}
 }

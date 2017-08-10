@@ -25,36 +25,36 @@ namespace AutoyaFramework {
 
 			var http = new Connections.HTTP.HTTPConnection();
 
-			var view = new ViewBox(windowWidth, windowHeight, anchorPos);
+			// var view = new ViewBox(windowWidth, windowHeight, anchorPos);
 			
-			Action<IEnumerator> executor = iEnum => {
-				autoya.mainthreadDispatcher.Commit(iEnum);
-			};
+			// Action<IEnumerator> executor = iEnum => {
+			// 	autoya.mainthreadDispatcher.Commit(iEnum);
+			// };
 
-			var cor = http.Get(
-				Guid.NewGuid().ToString(),
-				new Dictionary<string, string>(),
-				url,
-				(conId, code, responseHeaders, html) => {
-					Debug.LogError("もっと飲み込めるかな？まあhtmlのロードは外部化しといたほうが良さそう。");
-					// var v = new UUebViewGenerator(executor);
-					// var root = v.GenerateViewFromSource(
-					// 	html, 
-					// 	new ViewBox(windowWidth, windowHeight, 0), //anchorPos
-					// 	layoutDone,
-					// 	viewDownloadProgress, 
-					// 	loadDone
-					// );
+			// var cor = http.Get(
+			// 	Guid.NewGuid().ToString(),
+			// 	new Dictionary<string, string>(),
+			// 	url,
+			// 	(conId, code, responseHeaders, html) => {
+			// 		Debug.LogError("もっと飲み込めるかな？まあhtmlのロードは外部化しといたほうが良さそう。");
+			// 		// var v = new UUebViewGenerator(executor);
+			// 		// var root = v.GenerateViewFromSource(
+			// 		// 	html, 
+			// 		// 	new ViewBox(windowWidth, windowHeight, 0), //anchorPos
+			// 		// 	layoutDone,
+			// 		// 	viewDownloadProgress, 
+			// 		// 	loadDone
+			// 		// );
 
-					// onRootViewGenerated(root);
-				},
-				(conId, code, reason, responseHeaders) => {
-					loadFailed(code, reason);
-				},
-				5.0
-			);
+			// 		// onRootViewGenerated(root);
+			// 	},
+			// 	(conId, code, reason, responseHeaders) => {
+			// 		loadFailed(code, reason);
+			// 	},
+			// 	5.0
+			// );
 
-			autoya.mainthreadDispatcher.Commit(cor);
+			// autoya.mainthreadDispatcher.Commit(cor);
 		}
 	}
 }

@@ -80,15 +80,9 @@ namespace AutoyaFramework.Information {
     */
     public class LayoutMachine {
 		private readonly ResourceLoader resLoader;
-		
-		private readonly ViewBox view;
 
-      	public LayoutMachine (
-			  ResourceLoader resLoader,
-			  ViewBox view
-		) {
+      	public LayoutMachine (ResourceLoader resLoader) {
 			this.resLoader = resLoader;
-			this.view = view;
         }
 
 		private enum InsertType {
@@ -97,8 +91,8 @@ namespace AutoyaFramework.Information {
 			RetryWithNextLine,
 		};
 
-		public IEnumerator Layout (TagTree rootTree, Action<TagTree> layouted) {
-			var viewCursor = new ViewCursor(0, 0, view.width, view.height);
+		public IEnumerator Layout (TagTree rootTree, Vector2 view, Action<TagTree> layouted) {
+			var viewCursor = new ViewCursor(0, 0, view.x, view.y);
 			
 			var cor = DoLayout(rootTree, viewCursor);
 			
@@ -271,14 +265,12 @@ namespace AutoyaFramework.Information {
 
 			var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
 			
-			// need to download image.
-			
-			var downloaded = false;
+			// need to download image for determine size.
 
 			var imageWidth = 0f;
 			var imageHeight = 0f;
 
-			resLoader.LoadImageAsync(
+			var cor = resLoader.LoadImageAsync(
 				src, 
 				(sprite) => {
 					imageWidth = sprite.rect.size.x;
@@ -288,15 +280,13 @@ namespace AutoyaFramework.Information {
 					}
 					
 					imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
-					downloaded = true;
 				},
 				() => {
 					imageHeight = 0;
-					downloaded = true;
 				}
 			);
 
-			while (!downloaded) {
+			while (cor.MoveNext()) {
 				yield return null;
 			}
 

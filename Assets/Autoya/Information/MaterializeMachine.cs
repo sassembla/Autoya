@@ -11,16 +11,15 @@ namespace AutoyaFramework.Information {
     public class MaterializeMachine {
 		private readonly ResourceLoader resLoader;
         private UUebViewCore core;
-
-        public MaterializeMachine(
-			ResourceLoader resLoader	
-		) {
+		private GameObject root;
+        public MaterializeMachine(ResourceLoader resLoader) {
 			this.resLoader = resLoader;
 		}
 
-		public IEnumerator Materialize (GameObject root, UUebViewCore core, TagTree tree, float yOffset, Action<double> progress, Action onLoaded) {
+		public IEnumerator Materialize (GameObject root, UUebViewCore core, TagTree tree, float yOffset, Action onLoaded) {
 			Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。その場合はGameObjectは渡した方がいいのか。取り合えず書いちゃう。");
 
+			this.root = root;
 			root.name = HTMLTag._ROOT.ToString();
 			{
 				var rootRectTrans = root.GetComponent<RectTransform>();
@@ -30,38 +29,8 @@ namespace AutoyaFramework.Information {
 				rootRectTrans.anchorMin = Vector2.up;
 				rootRectTrans.anchorMax = Vector2.up;
 				rootRectTrans.pivot = Vector2.up;
-				rootRectTrans.position = Vector2.zero;
 			}
 			
-
-			var total = 0.0;
-			var done = 0.0;
-
-            // Action<IEnumerator> act = iEnum => {
-			// 	total++;
-			// 	var loadAct = LoadingDone(
-			// 		iEnum, 
-			// 		() => {
-			// 			done++;
-
-			// 			if (progress != null) {
-			// 				var progressRate = done / total;
-							
-			// 				if (done == total) {
-			// 					progressRate = 1.0;
-			// 				}
-
-			// 				progress(progressRate);
-
-			// 				if (done == total) {
-			// 					loadDone();
-			// 				}
-			// 			}
-			// 		}
-			// 	);
-			// 	Debug.LogError("途中。");
-			// 	// resLoader.(loadAct);
-			// };
 			var cor = MaterializeRecursive(tree, root);
 			while (cor.MoveNext()) {
 				yield return null;
@@ -102,7 +71,7 @@ namespace AutoyaFramework.Information {
 				switch (tree.treeType) {
 					case TreeType.Content_Img: {
 						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
-						resLoader.LoadImageAsync(
+						var imageLoadCor = resLoader.LoadImageAsync(
 							src, 
 							sprite => {
 								newGameObject.GetComponent<Image>().sprite = sprite;
@@ -111,6 +80,8 @@ namespace AutoyaFramework.Information {
 								// download failed. do nothing.
 							}
 						);
+
+						core.LoadParallel(imageLoadCor);
 						
 						if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
 							var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
@@ -160,7 +131,7 @@ namespace AutoyaFramework.Information {
 
 			var children = tree.GetChildren();
 
-			Debug.LogWarning("レイアウトが終わってるので、このへんはフルに分散できそう。");
+			Debug.LogWarning("レイアウトが終わってるので、このへんはフルに分散できそう。内部的に分散する手法がいい感じになったらやろう。まあ2017で。");
 			foreach (var child in children) {
 				var cor = MaterializeRecursive(child, newGameObject);
 				while (cor.MoveNext()) {
@@ -168,21 +139,6 @@ namespace AutoyaFramework.Information {
 				}
 			}
 		}
-
-		private IEnumerator LoadingDone (IEnumerator loadingCoroutine, Action loadDone) {
-			while (loadingCoroutine.MoveNext()) {
-				yield return null;
-			}
-
-			if (loadDone != null) {
-				loadDone();
-			}
-		}
-
-
-
-
-
 
 		private void AddButton (GameObject obj, UnityAction param) {
 			var button = obj.GetComponent<Button>();
@@ -220,5 +176,18 @@ namespace AutoyaFramework.Information {
 				}
 			}
 		}
+		
+        public void RemoveContents () {
+			var list = new List<GameObject>();
+
+			for (var i = 0; i < this.root.transform.childCount; i++) {
+				list.Add(this.root.transform.GetChild(i).gameObject);
+			}
+
+			// 取り出してから消す
+			foreach (var childObj in list) {
+				GameObject.Destroy(childObj);
+			}
+        }
     }
 }
