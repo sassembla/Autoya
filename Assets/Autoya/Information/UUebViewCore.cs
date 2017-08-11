@@ -160,7 +160,7 @@ namespace AutoyaFramework.Information {
             if parsedTagTree was changed, materialize dirty flagged content only.
          */
         private IEnumerator Update (TagTree tree, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
-            tree = TagTree.RevertInsertedTree(tree);
+            TagTree.RevertInsertedTree(tree);
 
             IEnumerator materialize = null;
             var layout = layoutMachine.Layout(
@@ -195,6 +195,11 @@ namespace AutoyaFramework.Information {
             }
         }
 
+        /**
+            すべてのGameObjectを消して、コンテンツをリロードする(仮)
+            差分updateだけをする機構が欲しいところ。layoutは決まってるんだしプールに退避してあってるものだけ持ってくる、でいいのか。
+            であれば欲しいのはmaterialId = tagIdか。materialIdがparse時にセットされて変更されないなら、materialize時にも継続して使用できる。
+         */
         public void Reload () {
             materializeMachine.RemoveContents();
             view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
@@ -206,7 +211,7 @@ namespace AutoyaFramework.Information {
 			if (!string.IsNullOrEmpty(buttonId)) {
 				if (listenerDict.ContainsKey(buttonId)) {
 					listenerDict[buttonId].ForEach(t => t.ShowOrHide());
-					view.StartCoroutine(Update(layoutedTree, viewRect, eventReceiverGameObj));
+					Reload();
 				}
 			}
 		}
@@ -217,7 +222,7 @@ namespace AutoyaFramework.Information {
 			if (!string.IsNullOrEmpty(linkId)) {
 				if (listenerDict.ContainsKey(linkId)) {
 					listenerDict[linkId].ForEach(t => t.ShowOrHide());
-					view.StartCoroutine(Update(layoutedTree, viewRect, eventReceiverGameObj));
+					Reload();
 				}
 			}
 		}

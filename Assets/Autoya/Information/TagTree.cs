@@ -164,35 +164,34 @@ namespace AutoyaFramework.Information {
             return new Vector2(tree.viewWidth, tree.viewHeight);
         }
 
-        public static TagTree RevertInsertedTree (TagTree rootTree) {
+        public static void RevertInsertedTree (TagTree rootTree) {
 			RevertRecursive(rootTree);
-            return rootTree;
 		}
 
         private static void RevertRecursive (TagTree tree) {
             var children = tree.GetChildren();
-            children.Reverse();
-
-            var count = children.Count;
             
-            var list = new List<TagTree>();
-            for (var i = 0; i < count; i++) {
-                var child = children[i];
-                RevertRecursive(child);
+            /*
+                前方に元tree、後方に挿入treeがある場合があるので、
+                childrenを逆にした配列を用意して畳み込みを行う。
+             */
+            var removeTargets = new List<TagTree>();
+            foreach (var reverted in children.AsEnumerable().Reverse()) {
+                RevertRecursive(reverted);
 
-                if (child is InsertedTree) {
-                    var insertedTree = child as InsertedTree;
+                if (reverted is InsertedTree) {
+                    var insertedTree = reverted as InsertedTree;
                     var baseTree = insertedTree.parentTree;
 
-                    // merge contents.
+                    // merge contents to base.
                     baseTree.keyValueStore[HTMLAttribute._CONTENT] = baseTree.keyValueStore[HTMLAttribute._CONTENT] as string + insertedTree.keyValueStore[HTMLAttribute._CONTENT] as string;
                     
-                    list.Add(insertedTree);
+                    removeTargets.Add(insertedTree);
                 }
             }
-
-            foreach (var removedInsertedTree in list) {
-                tree.RemoveChild(removedInsertedTree);
+            
+            foreach (var removeTarget in removeTargets) {
+                tree.RemoveChild(removeTarget);
             }
         }
     }

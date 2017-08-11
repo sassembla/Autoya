@@ -43,12 +43,9 @@ namespace AutoyaFramework.Information {
 		}
 
 		/**
-			次の要素の起点となるviewCursorを返す
+			左詰めで、次の要素の起点となるviewCursorを返す
 		 */
         public static ViewCursor NextRightCursor(ViewCursor childView, float viewWidth){
-
-			// 横並べ処理。
-
 			// オフセットを直前のオフセット + 幅のポイントにずらす。
 			childView.offsetX = childView.offsetX + childView.viewWidth;
 

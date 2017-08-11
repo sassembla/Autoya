@@ -42,10 +42,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
 
     [MTest] public void GenerateSingleViewFromSource () {
         var source = @"
-<body>
-    something.
-    <img src='https://dummyimage.com/100.png/09f/fff'/>
-</body>";
+<body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
         
         var done = false;
         
@@ -89,7 +86,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
     [MTest] public void LoadThenReload () {
         var source = @"
 <body>
-    something.
+    something3.
     <img src='https://dummyimage.com/100.png/09f/fff'/>
 </body>";
 
@@ -124,6 +121,58 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
 
         WaitUntil(
             () => done2, 5, "too late."
+        );
+    }
+
+    [MTest] public void ShowAndHide () {
+        var source = @"
+<body>
+    something3.
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <p hidden='false' listen='button'>else</p>
+</body>";
+
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
+
+    [MTest] public void HideAndShow () {
+        var source = @"
+<body>
+    something3.
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <p hidden='true' listen='button'>else</p>
+</body>";
+
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
         );
     }
 }
