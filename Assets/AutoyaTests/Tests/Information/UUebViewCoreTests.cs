@@ -175,4 +175,58 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
             () => done, 5, "too late."
         );
     }
+
+    [MTest] public void CascadeButton () {
+        var source = @"
+<body>
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/08f/fff' id='button2' button='true' listen='button'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/07f/fff' id='button3' button='true' listen='button2'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/06f/fff' id='button4' button='true' listen='button3'/>
+</body>";
+
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
+
+    [MTest] public void CachedContent () {
+        var source = @"
+<body>
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/08f/fff' id='button2' button='true' listen='button'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/07f/fff' id='button3' button='true' listen='button2'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/06f/fff' id='button4' button='true' listen='button3'/>
+</body>";
+
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 }

@@ -34,7 +34,8 @@ namespace AutoyaFramework.Information {
 		void Start () {
 			if (!string.IsNullOrEmpty(presetUrl) && presetEventReceiver != null) {
 				Debug.Log("show preset view.");
-				UUebViewCore.GenerateSingleViewFromUrl(presetEventReceiver, presetUrl, GetComponent<RectTransform>().sizeDelta);
+				var view = UUebViewCore.GenerateSingleViewFromUrl(presetEventReceiver, presetUrl, GetComponent<RectTransform>().sizeDelta);
+				view.transform.SetParent(this.transform, false);
 			}
 		}
 

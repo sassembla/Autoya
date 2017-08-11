@@ -138,9 +138,8 @@ namespace AutoyaFramework.Information {
                     yield return htmlStr;
                 }
             }
-            
         }
-
+        
         public IEnumerator<GameObject> LoadGameObjectFromPrefab (int tagValue, TreeType treeType, bool prefabOnly=false) {
             GameObject gameObj = null;
             var tagName = GetTagFromValue(tagValue);
@@ -150,7 +149,7 @@ namespace AutoyaFramework.Information {
 
                     switch (treeType) {
                         case TreeType.Container: {
-                            Debug.LogWarning("GameObjectな必要はないという感じが。最適化することがあったらやろう。現状は特に損が多くない。rectTransしかついてないし。ただ、newが多いのは損なので、その辺なんとかしよう。");
+                            // Debug.LogWarning("GameObjectな必要はないという感じが。最適化することがあったらやろう。現状は特に損が多くない。rectTransしかついてないし。ただ、newが多いのは損なので、その辺なんとかしよう。");
                             var containerObj = new GameObject(tagName);
                             var trans = containerObj.AddComponent<RectTransform>();
                             trans.anchorMin = Vector2.up;
@@ -189,7 +188,7 @@ namespace AutoyaFramework.Information {
                 default: {
                     switch (treeType) {
                         case TreeType.Container: {
-                            Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
+                            // Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
                             var containerObj = new GameObject(tagName);
                             var trans = containerObj.AddComponent<RectTransform>();
                             trans.anchorMin = Vector2.up;
@@ -262,11 +261,9 @@ namespace AutoyaFramework.Information {
         }
 
          /**
-            loadPathからcustomTag = レイヤーのprefabをロードし、GameObjectを返す。
+            loadPathからcustomTag = レイヤーのprefabを返す。
          */
         public IEnumerator<GameObject> LoadCustomPrefabFromLoadPathOrCache (string loadPath) {
-            // schemeをみてロード方法を決定する。
-
             var schemeAndPath = loadPath.Split(new char[]{'/'}, 2);
             var scheme = schemeAndPath[0];
 
@@ -302,7 +299,7 @@ namespace AutoyaFramework.Information {
 
         /**
             キャッシュヒット処理込み。
-            resourcesからprefabをロードし、GameObjectを返す。
+            resourcesからprefabを返す。
          */
         private IEnumerator<GameObject> LoadPrefabFromResourcesOrCache (string loadingPrefabName) {
             // Debug.LogError("loadingPrefabName:" + loadingPrefabName);
@@ -310,35 +307,26 @@ namespace AutoyaFramework.Information {
             GameObject loadedPrefab = null;
 
             if (prefabCache.ContainsKey(loadingPrefabName)) {
-                var cachedPrefab = prefabCache[loadingPrefabName];
-                var newGameObjectFromCachedPrefab = GameObject.Instantiate(cachedPrefab);
-                newGameObjectFromCachedPrefab.name = loadingPrefabName;
+                // Debug.LogError("キャッシュから読み出す");
 
-                loadedPrefab = newGameObjectFromCachedPrefab;
+                var cachedPrefab = prefabCache[loadingPrefabName];
+                loadedPrefab = cachedPrefab;
             }
 
             // no cache hit. start loading prefab.
 
             // wait the end of other loading for same prefab.
             else if (loadingPrefabNames.Contains(loadingPrefabName)) {
+                // Debug.LogError("キャッシュにないけどロード中 loadingPrefabName:" + loadingPrefabName);
                 while (loadingPrefabNames.Contains(loadingPrefabName)) {
                     yield return null;
                 }
 
                 if (!prefabCache.ContainsKey(loadingPrefabName)) {
-                    Debug.LogError("キャッシュされたはずなんだけどロードに失敗");
-
-                    var failedObj = new GameObject();
-                    failedObj.name = loadingPrefabName;
-
-                    loadedPrefab = failedObj;
+                    throw new Exception("キャッシュされたはずなんだけどロードに失敗");
                 } else {
-                    
                     var cachedPrefab = prefabCache[loadingPrefabName];
-                    var newGameObjectFromCachedPrefab = GameObject.Instantiate(cachedPrefab);
-                    newGameObjectFromCachedPrefab.name = loadingPrefabName;
-
-                    loadedPrefab = newGameObjectFromCachedPrefab;
+                    loadedPrefab = cachedPrefab;
                 }
             } else {
                 // start loading.
@@ -359,6 +347,9 @@ namespace AutoyaFramework.Information {
                         failedObj.name = loadingPrefabName;
                         loadedPrefab = failedObj;
                     } else {
+                        // cache.
+                        prefabCache[loadingPrefabName] = obj;
+
                         loadedPrefab = obj;
                     }
                 }

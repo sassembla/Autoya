@@ -17,7 +17,9 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
 
     void IUUebViewEventHandler.OnContentLoaded() {
         Debug.Log("OnContentLoaded");
-        OnContentLoaded();
+        if (OnContentLoaded != null) {
+            OnContentLoaded();
+        }
     }
 
     void IUUebViewEventHandler.OnContentLoadFailed(ContentType type, int code, string reason) {
