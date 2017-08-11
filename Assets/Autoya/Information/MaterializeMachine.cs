@@ -54,17 +54,17 @@ namespace AutoyaFramework.Information {
 					yield break;
 				}
 
-				var prefabCor = resLoader.LoadGameObjectFromPrefab(tree.tagValue, tree.treeType);
+				var objCor = resLoader.LoadGameObjectFromPrefab(tree.id, tree.tagValue, tree.treeType);
 
-				while (prefabCor.MoveNext()) {
-					if (prefabCor.Current != null) {
+				while (objCor.MoveNext()) {
+					if (objCor.Current != null) {
 						break; 
 					}
 					yield return null;
 				}
 
 				// set pos and size.
-				newGameObject = prefabCor.Current;
+				newGameObject = objCor.Current;
 				newGameObject.transform.SetParent(parent.transform);
 				var rectTrans = newGameObject.GetComponent<RectTransform>();
 				rectTrans.anchoredPosition = TagTree.AnchoredPositionOf(tree);

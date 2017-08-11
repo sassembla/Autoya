@@ -26,6 +26,7 @@ namespace AutoyaFramework.Information {
      */
     public class TagTree {
         // tree params.
+        public readonly string id;
         private List<TagTree> _children = new List<TagTree>();
         
         // tag params.
@@ -34,6 +35,46 @@ namespace AutoyaFramework.Information {
         public readonly TreeType treeType;
 
         private bool hidden = false;
+
+        // レイアウト処理
+        public float offsetX;
+        public float offsetY;
+        public float viewWidth;
+        public float viewHeight;
+
+        public TagTree () {
+            this.id = Guid.NewGuid().ToString();
+            this.tagValue = (int)HTMLTag._ROOT;
+            this.keyValueStore = new AttributeKVs();
+            this.treeType = TreeType.Container;
+        }
+
+        public TagTree (string textContent, int baseTagValue) {// as text_content.
+            this.id = Guid.NewGuid().ToString();
+            this.tagValue = baseTagValue;
+            
+            this.keyValueStore = new AttributeKVs();
+            keyValueStore[HTMLAttribute._CONTENT] = textContent;
+            
+            this.treeType = TreeType.Content_Text;
+        }
+
+        public TagTree (string baseId, string textContent, int baseTagValue) {// as inserted text_content.
+            this.id = baseId + ".";
+            this.tagValue = baseTagValue;
+            
+            this.keyValueStore = new AttributeKVs();
+            keyValueStore[HTMLAttribute._CONTENT] = textContent;
+            
+            this.treeType = TreeType.Content_Text;
+        }
+
+        public TagTree (int parsedTag, AttributeKVs kv, TreeType treeType) {
+            this.id = Guid.NewGuid().ToString();
+            this.tagValue = parsedTag;
+            this.keyValueStore = kv;
+            this.treeType = treeType;
+        }
 
         public void ShowOrHide () {
             hidden = !hidden;
@@ -58,12 +99,6 @@ namespace AutoyaFramework.Information {
             return hidden;
         }
 
-        // レイアウト処理
-        public float offsetX;
-        public float offsetY;
-        public float viewWidth;
-        public float viewHeight;
-
         public ViewCursor SetPos (float offsetX, float offsetY, float viewWidth, float viewHeight) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
@@ -77,27 +112,6 @@ namespace AutoyaFramework.Information {
             this.offsetY = source.offsetY;
             this.viewWidth = source.viewWidth;
             this.viewHeight = source.viewHeight;
-        }
-
-        public TagTree () {
-            this.tagValue = (int)HTMLTag._ROOT;
-            this.keyValueStore = new AttributeKVs();
-            this.treeType = TreeType.Container;
-        }
-
-        public TagTree (string textContent, int baseTagValue) {// as text_content.
-            this.tagValue = baseTagValue;
-            
-            this.keyValueStore = new AttributeKVs();
-            keyValueStore[HTMLAttribute._CONTENT] = textContent;
-            
-            this.treeType = TreeType.Content_Text;
-        }
-
-        public TagTree (int parsedTag, AttributeKVs kv, TreeType treeType) {
-            this.tagValue = parsedTag;
-            this.keyValueStore = kv;
-            this.treeType = treeType;
         }
         
         public void SetParent (TagTree t) {
@@ -198,7 +212,7 @@ namespace AutoyaFramework.Information {
 
     public class InsertedTree : TagTree {
         public readonly TagTree parentTree;
-        public InsertedTree (TagTree baseTree, string textContent, int baseTag) : base(textContent, baseTag) {
+        public InsertedTree (TagTree baseTree, string textContent, int baseTag) : base(baseTree.id, textContent, baseTag) {
             this.parentTree = baseTree;
         }
     }

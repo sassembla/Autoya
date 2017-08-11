@@ -140,9 +140,12 @@ namespace AutoyaFramework.Information {
             }
         }
         
-        public IEnumerator<GameObject> LoadGameObjectFromPrefab (int tagValue, TreeType treeType, bool prefabOnly=false) {
+        public IEnumerator<GameObject> LoadGameObjectFromPrefab (string id, int tagValue, TreeType treeType, bool prefabOnly=false) {
             GameObject gameObj = null;
             var tagName = GetTagFromValue(tagValue);
+
+            // ここで、gameObjectに対するhashが作り出せる。
+            Debug.LogError("id:" + id);
 
             switch (IsDefaultTag(tagValue)) {
                 case true: {
