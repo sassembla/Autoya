@@ -96,6 +96,9 @@ namespace AutoyaFramework.Information {
                     var cor = resLoader.DownloadHTMLFromWeb(url, failed);
 
                     while (cor.MoveNext()) {
+                        if (cor.Current != null) {
+                            break;
+                        }
                         yield return null;
                     }
 

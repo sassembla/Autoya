@@ -57,6 +57,9 @@ namespace AutoyaFramework.Information {
 				var prefabCor = resLoader.LoadGameObjectFromPrefab(tree.tagValue, tree.treeType);
 
 				while (prefabCor.MoveNext()) {
+					if (prefabCor.Current != null) {
+						break; 
+					}
 					yield return null;
 				}
 
@@ -135,6 +138,9 @@ namespace AutoyaFramework.Information {
 			foreach (var child in children) {
 				var cor = MaterializeRecursive(child, newGameObject);
 				while (cor.MoveNext()) {
+					if (cor.Current != null) {
+						break;
+					}
 					yield return null;
 				}
 			}

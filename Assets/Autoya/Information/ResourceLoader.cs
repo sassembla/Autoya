@@ -168,6 +168,9 @@ namespace AutoyaFramework.Information {
 
                             var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
                             while (cor.MoveNext()) {
+                                if (cor.Current != null) {
+                                    break;
+                                }                           
                                 yield return null;
                             }
 
@@ -218,6 +221,9 @@ namespace AutoyaFramework.Information {
 
                             var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
                             while (cor.MoveNext()) {
+                                if (cor.Current != null) {
+                                    break;
+                                }
                                 yield return null;
                             }
 
@@ -291,6 +297,9 @@ namespace AutoyaFramework.Information {
             }
 
             while (cor.MoveNext()) {
+                if (cor.Current != null) {
+                    break;
+                }
                 yield return null;
             }
 

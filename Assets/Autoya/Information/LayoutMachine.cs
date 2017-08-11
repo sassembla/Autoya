@@ -94,6 +94,9 @@ namespace AutoyaFramework.Information {
 			var cor = DoLayout(rootTree, viewCursor);
 			
 			while (cor.MoveNext()) {
+				if (cor.Current != null) {
+					break;
+				}
 				yield return null;
 			}
 
@@ -151,6 +154,9 @@ namespace AutoyaFramework.Information {
 				}
 
 				while (cor.MoveNext()) {
+					if (cor.Current != null) {
+						break;
+					}
 					yield return null;
 				}
 
@@ -202,6 +208,9 @@ namespace AutoyaFramework.Information {
 				var cor = LayoutBoxedContents(boxTree, childView);
 
 				while (cor.MoveNext()) {
+					if (cor.Current != null) {
+						break;
+					}
 					yield return null;
 				}
 
@@ -239,6 +248,9 @@ namespace AutoyaFramework.Information {
 			// var cor = LayoutBoxedContents(emptyLayerTree.GetChildren()[0], childView);
 			
 			while (cor.MoveNext()) {
+				if (cor.Current != null) {
+					break;
+				}
 				yield return null;
 			}
 			
@@ -344,6 +356,9 @@ namespace AutoyaFramework.Information {
 					);
 
 					while (cor.MoveNext()) {
+						if (cor.Current != null) {
+							break;
+						}		
 						yield return null;
 					}
 					
@@ -440,6 +455,9 @@ namespace AutoyaFramework.Information {
 			var cor = resLoader.LoadGameObjectFromPrefab(textTree.tagValue, textTree.treeType, true);
 
 			while (cor.MoveNext()) {
+				if (cor.Current != null) {
+					break;
+				}
 				yield return null;
 			}
 
@@ -640,6 +658,9 @@ namespace AutoyaFramework.Information {
 					);
 
 					while (cor.MoveNext()) {
+						if (cor.Current != null) {
+							break;
+						}
 						yield return null;
 					}
 					
