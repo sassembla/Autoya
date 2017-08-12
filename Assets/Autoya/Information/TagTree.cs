@@ -190,8 +190,6 @@ namespace AutoyaFramework.Information {
 
             if (isUsing) {
                 usingIds.Add(tree.id);
-            } else {
-                return;
             }
 
             var children = tree.GetChildren();

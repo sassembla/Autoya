@@ -224,14 +224,18 @@ namespace AutoyaFramework.Information {
             //     reloadingハンドラ？
             // materializeにもusingIdsが使えるはず。
             
-            foreach (var cache in goCache.Values) {
+            // 間違ってた。使ってるやつを戻しちゃってる。
+            // そら使わんやつ残るわ。
+            var cachedKeys = goCache.Keys.ToArray();
+
+            var unusingIds = cachedKeys.Except(usingIds);
+            foreach (var unusingCacheId in unusingIds) {
+                var cache = goCache[unusingCacheId];
                 cache.transform.SetParent(cacheBox.transform);
             }
         }
 
         public void Reset () {
-            spriteCache.Clear();
-            prefabCache.Clear();
             goCache.Clear();
         }
 

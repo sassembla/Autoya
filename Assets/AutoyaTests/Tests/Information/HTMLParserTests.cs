@@ -38,6 +38,15 @@ public class HTMLParserTests : MiyamasuTestRunner {
         parser = new HTMLParser(loader);
     }
 
+    [MTeardown] public void Teardown () {
+        RunOnMainThread(
+            () => {
+                GameObject.DestroyImmediate(executor);
+                GameObject.DestroyImmediate(loader.cacheBox);
+            }
+        );
+    }
+
     public static void ShowRecursive (TagTree tree, ResourceLoader loader) {
         Debug.Log("parsedTag:" + loader.GetTagFromValue(tree.tagValue) + " type:" + tree.treeType);
         foreach (var child in tree.GetChildren()) {
