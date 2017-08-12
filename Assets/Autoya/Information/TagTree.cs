@@ -34,7 +34,9 @@ namespace AutoyaFramework.Information {
         public readonly AttributeKVs keyValueStore;
         public readonly TreeType treeType;
 
-        private bool hidden = false;
+        public bool hidden {
+            get; private set;
+        }
 
         // レイアウト処理
         public float offsetX;
@@ -74,29 +76,24 @@ namespace AutoyaFramework.Information {
             this.tagValue = parsedTag;
             this.keyValueStore = kv;
             this.treeType = treeType;
+
+            if (kv.ContainsKey(HTMLAttribute.HIDDEN) && kv[HTMLAttribute.HIDDEN] as string == "true") {
+                hidden = true;
+            }
         }
 
         public void ShowOrHide () {
             hidden = !hidden;
 
-            // 更新
-            keyValueStore[HTMLAttribute.HIDDEN] = hidden.ToString();
-            
             if (hidden) {
-                SetHide();
+                SetHidePos();
             }
         }
-        public void SetHide () {
-            hidden = true;
-
+        public void SetHidePos () {
             offsetX = 0;
             offsetY = 0;
             viewWidth = 0;
             viewHeight = 0;
-        }
-
-        public bool IsHidden () {
-            return hidden;
         }
 
         public ViewCursor SetPos (float offsetX, float offsetY, float viewWidth, float viewHeight) {
@@ -178,11 +175,25 @@ namespace AutoyaFramework.Information {
             return new Vector2(tree.viewWidth, tree.viewHeight);
         }
 
-        public static void RevertInsertedTree (TagTree rootTree) {
-			RevertRecursive(rootTree);
+        /**
+            ・!hiddenなtreeのid列挙
+            ・レイアウト変更をする予定なので、InsertedTreeの解消
+         */
+        public static string[] CorrectTrees (TagTree rootTree) {
+            var usingIds = new List<string>();
+			CorrectRecursive(rootTree, usingIds);
+            return usingIds.ToArray();
 		}
 
-        private static void RevertRecursive (TagTree tree) {
+        private static void CorrectRecursive (TagTree tree, List<string> usingIds) {
+            var isUsing = !tree.hidden;
+
+            if (isUsing) {
+                usingIds.Add(tree.id);
+            } else {
+                return;
+            }
+
             var children = tree.GetChildren();
             
             /*
@@ -191,7 +202,7 @@ namespace AutoyaFramework.Information {
              */
             var removeTargets = new List<TagTree>();
             foreach (var reverted in children.AsEnumerable().Reverse()) {
-                RevertRecursive(reverted);
+                CorrectRecursive(reverted, usingIds);
 
                 if (reverted is InsertedTree) {
                     var insertedTree = reverted as InsertedTree;

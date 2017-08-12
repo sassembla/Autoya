@@ -138,7 +138,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
                 case "Text": {
-                    type = TreeType.Container;// not Content_Text. this is container.
+                    type = TreeType.Container;// not Content_Text.
                     break;
                 }
                 default: {

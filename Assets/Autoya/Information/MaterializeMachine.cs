@@ -41,15 +41,15 @@ namespace AutoyaFramework.Information {
 
 		private IEnumerator MaterializeRecursive (TagTree tree, GameObject parent) {
 			GameObject newGameObject = null;
-			Debug.LogWarning("ここだけ逃すと良さそう");
 			if (tree.tagValue == (int)HTMLTag._ROOT) {
+				Debug.LogWarning("ここだけ逃すと良さそう");
 				newGameObject = parent;
 			} else {
 				if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
 					core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
 				}
 				
-				if (tree.IsHidden()) {
+				if (tree.hidden) {
 					// cancel materialize of this tree.
 					yield break;
 				}
@@ -65,6 +65,12 @@ namespace AutoyaFramework.Information {
 
 				// set pos and size.
 				newGameObject = objCor.Current;
+
+				var cached = false;
+				if (newGameObject.transform.parent != null) {
+					cached = true;
+				}
+				
 				newGameObject.transform.SetParent(parent.transform);
 				var rectTrans = newGameObject.GetComponent<RectTransform>();
 				rectTrans.anchoredPosition = TagTree.AnchoredPositionOf(tree);
@@ -73,34 +79,39 @@ namespace AutoyaFramework.Information {
 				// set parameters and events by container type. button, link.
 				switch (tree.treeType) {
 					case TreeType.Content_Img: {
-						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
-						var imageLoadCor = resLoader.LoadImageAsync(
-							src, 
-							sprite => {
-								newGameObject.GetComponent<Image>().sprite = sprite;
-							},
-							() => {
-								// download failed. do nothing.
-							}
-						);
-
-						core.LoadParallel(imageLoadCor);
-						
-						if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
-							var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
-							if (enable) {
-								var buttonId = string.Empty;
-								if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
-									buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
+						if (cached) {
+							// pass.
+						} else {
+							var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+							var imageLoadCor = resLoader.LoadImageAsync(
+								src, 
+								sprite => {
+									newGameObject.GetComponent<Image>().sprite = sprite;
+								},
+								() => {
+									// download failed. do nothing.
 								}
+							);
 
-								// add button component.
-								AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
+							resLoader.LoadParallel(imageLoadCor);
+							
+							if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
+								var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
+								if (enable) {
+									var buttonId = string.Empty;
+									if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+										buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
+									}
+
+									// add button component.
+									AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
+								}
 							}
 						}
 						break;
 					}
 					
+					// テキストコンテンツは毎回内容が変わる可能性があるため、キャッシュに関わらず更新する。
 					case TreeType.Content_Text: {
 						if (tree.keyValueStore.ContainsKey(HTMLAttribute._CONTENT)) {
 							var text = tree.keyValueStore[HTMLAttribute._CONTENT] as string;
@@ -153,12 +164,12 @@ namespace AutoyaFramework.Information {
 			}
 
 			if (Application.isPlaying) {
+				button.onClick.RemoveAllListeners();
+
 				/*
 					this code can set action to button. but it does not appear in editor inspector.
 				*/
-				button.onClick.AddListener(
-					param
-				);
+				button.onClick.AddListener(param);
 			} else {
 				try {
 					button.onClick.AddListener(// 現状、エディタでは、Actionをセットする方法がわからん。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。
@@ -182,18 +193,5 @@ namespace AutoyaFramework.Information {
 				}
 			}
 		}
-		
-        public void RemoveAllContents () {
-			var list = new List<GameObject>();
-
-			for (var i = 0; i < this.root.transform.childCount; i++) {
-				list.Add(this.root.transform.GetChild(i).gameObject);
-			}
-
-			// 取り出してから消す
-			foreach (var childObj in list) {
-				GameObject.Destroy(childObj);
-			}
-        }
     }
 }

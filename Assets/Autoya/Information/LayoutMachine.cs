@@ -108,51 +108,25 @@ namespace AutoyaFramework.Information {
 			layouted(rootTree);
 		}
 
+		/**
+			コンテンツ単位でのレイアウトの起点。ここからtreeTypeごとのレイアウトを実行する。
+		 */
 		private IEnumerator<ViewCursor> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
-			IEnumerator<ViewCursor> cor = null;
+			var cor = GetCoroutineByTreeType(tree, viewCursor, insertion);
 
 			// Debug.LogError("@this.treeType:" + tree.treeType);
-			bool hidden = false;
-			if (tree.keyValueStore.ContainsKey(HTMLAttribute.HIDDEN)) {
-				hidden = tree.keyValueStore[HTMLAttribute.HIDDEN] as string == "true";
-			}
 			
-			if (hidden) {
-				tree.SetHide();
-				
-				// 一切サイズが存在しない
+			/*
+				もしもtreeがhiddenだった場合でも、のちのち表示するために内容のロードは行う。
+				ただし、同期的に読む必要はないため、並列でロードする。
+			 */
+			if (tree.hidden) {
+				var loadThenSetHiddenPosCor = SetHiddenPosCoroutine(tree, cor);
+				resLoader.LoadParallel(loadThenSetHiddenPosCor);
+
+				// hiddenなコンテンツのサイズは存在しない。カーソルをそのまま返す。
 				yield return viewCursor;
 			} else {
-				switch (tree.treeType) {
-					case TreeType.CustomLayer: {
-						cor = DoLayerLayout(tree, viewCursor);
-						break;
-					}
-					case TreeType.CustomEmptyLayer: {
-						cor = DoEmptyLayerLayout(tree, viewCursor);
-						break;
-					}
-					case TreeType.Container: {
-						cor = DoContainerLayout(tree, viewCursor);
-						break;
-					}
-					case TreeType.Content_Img: {
-						cor = DoImgLayout(tree, viewCursor, insertion);
-						break;
-					}
-					case TreeType.Content_Text: {
-						cor = DoTextLayout(tree, viewCursor, insertion);
-						break;
-					}
-					case TreeType.Content_CRLF: {
-						cor = DoCRLFLayout(tree, viewCursor);
-						break;
-					}
-					default: {
-						throw new Exception("unexpected tree type:" + tree.treeType);
-					}
-				}
-
 				while (cor.MoveNext()) {
 					if (cor.Current != null) {
 						break;
@@ -161,6 +135,32 @@ namespace AutoyaFramework.Information {
 				}
 
 				yield return cor.Current;
+			}
+		}
+
+		private IEnumerator<ViewCursor> GetCoroutineByTreeType (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
+			switch (tree.treeType) {
+				case TreeType.CustomLayer: {
+					return DoLayerLayout(tree, viewCursor);
+				}
+				case TreeType.CustomEmptyLayer: {
+					return DoEmptyLayerLayout(tree, viewCursor);
+				}
+				case TreeType.Container: {
+					return DoContainerLayout(tree, viewCursor);
+				}
+				case TreeType.Content_Img: {
+					return DoImgLayout(tree, viewCursor, insertion);
+				}
+				case TreeType.Content_Text: {
+					return DoTextLayout(tree, viewCursor, insertion);
+				}
+				case TreeType.Content_CRLF: {
+					return DoCRLFLayout(tree, viewCursor);
+				}
+				default: {
+					throw new Exception("unexpected tree type:" + tree.treeType);
+				}
 			}
 		}
 		
@@ -585,6 +585,17 @@ namespace AutoyaFramework.Information {
 		private IEnumerator<ViewCursor> DoCRLFLayout (TagTree crlfTree, ViewCursor cursor) {
 			throw new Exception("まだ実装してない、brとかhrでの改行処理。 pとかも一緒で、「このコンテンツが終わったら改行する」みたいなのが必須。");
 			yield return null;
+		}
+
+		private IEnumerator SetHiddenPosCoroutine (TagTree hiddenTree, IEnumerator<ViewCursor> cor) {
+			while (cor.MoveNext()) {
+				if (cor.Current != null) {
+					break;
+				}
+				yield return null;
+			}
+
+			hiddenTree.SetHidePos();
 		}
 		
 		/**

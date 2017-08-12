@@ -31,7 +31,7 @@ namespace AutoyaFramework.Information {
         private static PrefabCache prefabCache = new PrefabCache();
         private static List<string> loadingPrefabNames = new List<string>();
 
-        private static GameObjCache goCache = new GameObjCache();
+        private GameObjCache goCache = new GameObjCache();
 
         private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
@@ -51,7 +51,15 @@ namespace AutoyaFramework.Information {
             return undefinedTagDict.Count;
         }
 
-        public ResourceLoader (Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+        public readonly GameObject cacheBox;
+        public readonly Action<IEnumerator> LoadParallel;
+
+        public ResourceLoader (Action<IEnumerator> LoadParallel, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+            this.LoadParallel = LoadParallel;
+
+            cacheBox = new GameObject("UUebViewGOPool");
+            cacheBox.SetActive(false);
+
             defaultTagStrIntPair = new Dictionary<string, int>();
             defaultTagIntStrPair = new Dictionary<int, string>();
            
@@ -208,11 +216,17 @@ namespace AutoyaFramework.Information {
             yield return prefab;
         }
 
-        public void BackGameObjects () {
-            // foreach (var cache in goCache.Values) {
-            //     cache.transform.SetParent(null);
-            // }
-            goCache.Clear();//とりあえず適当に。現在使われているgoCacheをすべてプールに戻す = SetParent(pool)みたいな感じかな。それ用のObjectが必要感じかな〜〜、、
+        
+        public void BackGameObjects (string[] usingIds) {
+            // 使ってるものは位置変更をすればいいはず。
+            // .系は内容も変わることがある。
+            // イベント開始から完了までロック
+            //     reloadingハンドラ？
+            // materializeにもusingIdsが使えるはず。
+            
+            foreach (var cache in goCache.Values) {
+                cache.transform.SetParent(cacheBox.transform);
+            }
         }
 
         public void Reset () {
@@ -225,11 +239,9 @@ namespace AutoyaFramework.Information {
             GameObject gameObj = null;
             var tagName = GetTagFromValue(tagValue);
 
-            // if (goCache.ContainsKey(id)) {
-            //     Debug.LogError("cache hit. id:" + id);
-            //     gameObj = goCache[id];
-            // } else {
-                Debug.LogError("no cache hit. id:" + id);
+            if (goCache.ContainsKey(id)) {
+                gameObj = goCache[id];
+            } else {
                 switch (IsDefaultTag(tagValue)) {
                     case true: {
                         switch (treeType) {
@@ -321,8 +333,8 @@ namespace AutoyaFramework.Information {
                 gameObj.name = tagName;
 
                 // cache.
-                // goCache[id] = gameObj;
-            // }
+                goCache[id] = gameObj;
+            }
 
             // Debug.LogError("loaded, tagName:" + tagName);
 

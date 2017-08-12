@@ -50,7 +50,9 @@ namespace AutoyaFramework.Information {
             this.view = uuebView;
             uuebView.Core = this;
 
-            resLoader = new ResourceLoader(requestHeader, httpResponseHandlingDelegate);
+            resLoader = new ResourceLoader(this.LoadParallel, requestHeader, httpResponseHandlingDelegate);
+            resLoader.cacheBox.transform.SetParent(this.view.transform);
+            
             layoutMachine = new LayoutMachine(resLoader);
             materializeMachine = new MaterializeMachine(resLoader);
         }
@@ -163,7 +165,7 @@ namespace AutoyaFramework.Information {
             if parsedTagTree was changed, materialize dirty flagged content only.
          */
         private IEnumerator Update (TagTree tree, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
-            TagTree.RevertInsertedTree(tree);
+            var usingIds = TagTree.CorrectTrees(tree);
 
             IEnumerator materialize = null;
             var layout = layoutMachine.Layout(
@@ -173,6 +175,7 @@ namespace AutoyaFramework.Information {
                     // update layouted tree.
                     this.layoutedTree = layoutedTree;
                     
+                    resLoader.BackGameObjects(usingIds);
                     materialize = materializeMachine.Materialize(
                         view.gameObject, 
                         this, 
@@ -203,16 +206,10 @@ namespace AutoyaFramework.Information {
          */
         public void Reload () {
             resLoader.Reset();
-            materializeMachine.RemoveAllContents();
             view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
 		}
 
         public void Update () {
-            Debug.LogError("使われているGameObjectだけを全て引き上げて、再度使うという感じか。プールへのバックを行えばいいかな。");
-            materializeMachine.RemoveAllContents();
-            
-            
-            // resLoader.BackGameObjects();
             view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
         }
 

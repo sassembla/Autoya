@@ -40,168 +40,168 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
         );
     }
 
-//     [MTest] public void GenerateSingleViewFromSource () {
-//         var source = @"
-// <body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
+    [MTest] public void GenerateSingleViewFromSource () {
+        var source = @"
+<body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
         
-//         var done = false;
+        var done = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done = true;
-//                 };
-//                 view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
         
-//         Show(view);
+        Show(view);
 
-//         WaitUntil(
-//             () => done, 5, "too late."
-//         );
-//     }
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 
-//     [MTest] public void GenerateSingleViewFromUrl () {
-//         var url = "resources://UUebViewTest/UUebViewTest.html";
+    [MTest] public void GenerateSingleViewFromUrl () {
+        var url = "resources://UUebViewTest/UUebViewTest.html";
 
-//         var done = false;
+        var done = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done = true;
-//                 };
-//                 view = UUebViewCore.GenerateSingleViewFromUrl(eventReceiverGameObj, url, new Vector2(100,100));
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromUrl(eventReceiverGameObj, url, new Vector2(100,100));
+            }
+        );
         
-//         Show(view);
+        Show(view);
 
-//         WaitUntil(
-//             () => done, 5, "too late."
-//         );
-//     }
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 
-//     [MTest] public void LoadThenReload () {
-//         var source = @"
-// <body>
-//     something3.
-//     <img src='https://dummyimage.com/100.png/09f/fff'/>
-// </body>";
+    [MTest] public void LoadThenReload () {
+        var source = @"
+<body>
+    something3.
+    <img src='https://dummyimage.com/100.png/09f/fff'/>
+</body>";
 
-//         var done = false;
+        var done = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done = true;
-//                 };
-//                 view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
         
-//         Show(view);
+        Show(view);
 
-//         WaitUntil(
-//             () => done, 5, "too late."
-//         );
+        WaitUntil(
+            () => done, 5, "too late."
+        );
 
-//         var done2 = false;
+        var done2 = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done2 = true;
-//                 };
-//                 var core = view.GetComponent<UUebView>().Core;
-//                 core.Reload();
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done2 = true;
+                };
+                var core = view.GetComponent<UUebView>().Core;
+                core.Reload();
+            }
+        );
 
-//         WaitUntil(
-//             () => done2, 5, "too late."
-//         );
-//     }
+        WaitUntil(
+            () => done2, 5, "too late."
+        );
+    }
 
-//     [MTest] public void ShowAndHide () {
-//         var source = @"
-// <body>
-//     something3.
-//     <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
-//     <p hidden='false' listen='button'>else</p>
-// </body>";
+    [MTest] public void ShowAndHide () {
+        var source = @"
+<body>
+    something3.
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <p hidden='false' listen='button'>else</p>
+</body>";
 
-//         var done = false;
+        var done = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done = true;
-//                 };
-//                 view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
         
-//         Show(view);
+        Show(view);
 
-//         WaitUntil(
-//             () => done, 5, "too late."
-//         );
-//     }
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 
-//     [MTest] public void HideAndShow () {
-//         var source = @"
-// <body>
-//     something3.
-//     <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
-//     <p hidden='true' listen='button'>else</p>
-// </body>";
+    [MTest] public void HideAndShow () {
+        var source = @"
+<body>
+    something3.
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <p hidden='true' listen='button'>else</p>
+</body>";
 
-//         var done = false;
+        var done = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done = true;
-//                 };
-//                 view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
         
-//         Show(view);
+        Show(view);
 
-//         WaitUntil(
-//             () => done, 5, "too late."
-//         );
-//     }
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 
-//     [MTest] public void CascadeButton () {
-//         var source = @"
-// <body>
-//     <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
-//     <img hidden='true' src='https://dummyimage.com/100.png/08f/fff' id='button2' button='true' listen='button'/>
-//     <img hidden='true' src='https://dummyimage.com/100.png/07f/fff' id='button3' button='true' listen='button2'/>
-//     <img hidden='true' src='https://dummyimage.com/100.png/06f/fff' id='button4' button='true' listen='button3'/>
-// </body>";
+    [MTest] public void CascadeButton () {
+        var source = @"
+<body>
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button' button='true'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/08f/fff' id='button2' button='true' listen='button'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/07f/fff' id='button3' button='true' listen='button2'/>
+    <img hidden='true' src='https://dummyimage.com/100.png/06f/fff' id='button4' button='true' listen='button3'/>
+</body>";
 
-//         var done = false;
+        var done = false;
         
-//         RunOnMainThread(
-//             () => {
-//                 eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
-//                     done = true;
-//                 };
-//                 view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
-//             }
-//         );
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
         
-//         Show(view);
+        Show(view);
 
-//         WaitUntil(
-//             () => done, 5, "too late."
-//         );
-//     }
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 
     [MTest] public void CachedContent () {
         var source = @"
