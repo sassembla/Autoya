@@ -199,14 +199,22 @@ namespace AutoyaFramework.Information {
         }
 
         /**
-            すべてのGameObjectを消して、コンテンツをリロードする(仮)
-            差分updateだけをする機構が欲しいところ。layoutは決まってるんだしプールに退避してあってるものだけ持ってくる、でいいのか。
-            であれば欲しいのはmaterialId = tagIdか。materialIdがparse時にセットされて変更されないなら、materialize時にも継続して使用できる。
+            すべてのGameObjectを消して、コンテンツをリロードする
          */
         public void Reload () {
-            materializeMachine.RemoveContents();
+            resLoader.Reset();
+            materializeMachine.RemoveAllContents();
             view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
 		}
+
+        public void Update () {
+            Debug.LogError("使われているGameObjectだけを全て引き上げて、再度使うという感じか。プールへのバックを行えばいいかな。");
+            materializeMachine.RemoveAllContents();
+            
+            
+            // resLoader.BackGameObjects();
+            view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
+        }
 
         public void OnImageTapped (string tag, string key, string buttonId="") {
 			Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
@@ -214,7 +222,7 @@ namespace AutoyaFramework.Information {
 			if (!string.IsNullOrEmpty(buttonId)) {
 				if (listenerDict.ContainsKey(buttonId)) {
 					listenerDict[buttonId].ForEach(t => t.ShowOrHide());
-					Reload();
+					Update();
 				}
 			}
 		}
@@ -225,7 +233,7 @@ namespace AutoyaFramework.Information {
 			if (!string.IsNullOrEmpty(linkId)) {
 				if (listenerDict.ContainsKey(linkId)) {
 					listenerDict[linkId].ForEach(t => t.ShowOrHide());
-					Reload();
+					Update();
 				}
 			}
 		}
@@ -241,7 +249,7 @@ namespace AutoyaFramework.Information {
         }
 
         public void LoadParallel (IEnumerator cor) {
-            Debug.LogWarning("並列にdlを行う。ここでDL登録すればmaterializeのprogressは出せる。全体像を出した後にdl集計開始っていう感じかな? まあまだ必須ではないと思うので放置。");
+            Debug.LogWarning("並列にdlを行う。ここでDL登録すればmaterialize時のimage load progressは出せる。全体像を出した後にdl集計開始っていう感じかな? まあまだ必須ではないと思うので放置。");
             view.CoroutineExecutor(cor);
         }
     }

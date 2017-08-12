@@ -452,7 +452,7 @@ namespace AutoyaFramework.Information {
 		private IEnumerator<ViewCursor> DoTextLayout (TagTree textTree, ViewCursor textViewCursor, Action<InsertType, TagTree> insertion) {
 			var text = textTree.keyValueStore[HTMLAttribute._CONTENT] as string;
 			
-			var cor = resLoader.LoadGameObjectFromPrefab(textTree.id, textTree.tagValue, textTree.treeType, true);
+			var cor = resLoader.LoadPrefab(textTree.tagValue, textTree.treeType);
 
 			while (cor.MoveNext()) {
 				if (cor.Current != null) {

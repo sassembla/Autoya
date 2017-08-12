@@ -183,7 +183,7 @@ namespace AutoyaFramework.Information {
 			}
 		}
 		
-        public void RemoveContents () {
+        public void RemoveAllContents () {
 			var list = new List<GameObject>();
 
 			for (var i = 0; i < this.root.transform.childCount; i++) {

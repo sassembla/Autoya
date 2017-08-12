@@ -15,6 +15,9 @@ namespace AutoyaFramework.Information {
     public class ResourceLoader {
         private class SpriteCache : Dictionary<string, Sprite> {};
         private class PrefabCache : Dictionary<string, GameObject> {};
+        private class GameObjCache : Dictionary<string, GameObject> {};
+
+        
 
         /*
             global cache.
@@ -28,6 +31,7 @@ namespace AutoyaFramework.Information {
         private static PrefabCache prefabCache = new PrefabCache();
         private static List<string> loadingPrefabNames = new List<string>();
 
+        private static GameObjCache goCache = new GameObjCache();
 
         private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
@@ -139,30 +143,16 @@ namespace AutoyaFramework.Information {
                 }
             }
         }
-        
-        public IEnumerator<GameObject> LoadGameObjectFromPrefab (string id, int tagValue, TreeType treeType, bool prefabOnly=false) {
-            GameObject gameObj = null;
-            var tagName = GetTagFromValue(tagValue);
 
-            // ここで、gameObjectに対するhashが作り出せる。
-            Debug.LogError("id:" + id);
-
+        public IEnumerator<GameObject> LoadPrefab (int tagValue, TreeType treeType) {
+            GameObject prefab = null;
+            
             switch (IsDefaultTag(tagValue)) {
                 case true: {
 
                     switch (treeType) {
                         case TreeType.Container: {
-                            // Debug.LogWarning("GameObjectな必要はないという感じが。最適化することがあったらやろう。現状は特に損が多くない。rectTransしかついてないし。ただ、newが多いのは損なので、その辺なんとかしよう。");
-                            var containerObj = new GameObject(tagName);
-                            var trans = containerObj.AddComponent<RectTransform>();
-                            trans.anchorMin = Vector2.up;
-                            trans.anchorMax = Vector2.up;
-                            trans.offsetMin = Vector2.up;
-                            trans.offsetMax = Vector2.up;
-                            trans.pivot = Vector2.up;
-
-                            gameObj = containerObj;
-                            break;
+                            throw new Exception("unexpected loading.");
                         }
                         default: {
                             // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
@@ -179,11 +169,7 @@ namespace AutoyaFramework.Information {
 
                             var loadedPrefab = cor.Current;
                             
-                            if (prefabOnly) {
-                                gameObj = loadedPrefab;
-                            } else {
-                                gameObj = GameObject.Instantiate(loadedPrefab);
-                            }
+                            prefab = loadedPrefab;
                             break;
                         }
                     }
@@ -193,30 +179,9 @@ namespace AutoyaFramework.Information {
                 // 非デフォルトタグ、customBox以外はloadpathが存在する。
                 default: {
                     switch (treeType) {
-                        case TreeType.Container: {
-                            // Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
-                            var containerObj = new GameObject(tagName);
-                            var trans = containerObj.AddComponent<RectTransform>();
-                            trans.anchorMin = Vector2.up;
-                            trans.anchorMax = Vector2.up;
-                            trans.offsetMin = Vector2.up;
-                            trans.offsetMax = Vector2.up;
-                            trans.pivot = Vector2.up;
-
-                            gameObj = containerObj;
-                            break;
-                        }
+                        case TreeType.Container: 
                         case TreeType.CustomBox: {
-                            var customBoxObj = new GameObject(tagName);
-                            var trans = customBoxObj.AddComponent<RectTransform>();
-                            trans.anchorMin = Vector2.up;
-                            trans.anchorMax = Vector2.up;
-                            trans.offsetMin = Vector2.up;
-                            trans.offsetMax = Vector2.up;
-                            trans.pivot = Vector2.up;
-
-                            gameObj = customBoxObj;
-                            break;
+                            throw new Exception("unexpected loading.");
                         }
                         default: {
                             var tag = GetTagFromValue(tagValue);
@@ -232,11 +197,7 @@ namespace AutoyaFramework.Information {
 
                             var loadedPrefab = cor.Current;
                             
-                            if (prefabOnly) {
-                                gameObj = loadedPrefab;
-                            } else {
-                                gameObj = GameObject.Instantiate(loadedPrefab);
-                            }
+                            prefab = loadedPrefab;
                             break;
                         }
                     }
@@ -244,9 +205,127 @@ namespace AutoyaFramework.Information {
                 }
             }
 
+            yield return prefab;
+        }
+
+        public void BackGameObjects () {
+            // foreach (var cache in goCache.Values) {
+            //     cache.transform.SetParent(null);
+            // }
+            goCache.Clear();//とりあえず適当に。現在使われているgoCacheをすべてプールに戻す = SetParent(pool)みたいな感じかな。それ用のObjectが必要感じかな〜〜、、
+        }
+
+        public void Reset () {
+            spriteCache.Clear();
+            prefabCache.Clear();
+            goCache.Clear();
+        }
+
+        public IEnumerator<GameObject> LoadGameObjectFromPrefab (string id, int tagValue, TreeType treeType) {
+            GameObject gameObj = null;
+            var tagName = GetTagFromValue(tagValue);
+
+            // if (goCache.ContainsKey(id)) {
+            //     Debug.LogError("cache hit. id:" + id);
+            //     gameObj = goCache[id];
+            // } else {
+                Debug.LogError("no cache hit. id:" + id);
+                switch (IsDefaultTag(tagValue)) {
+                    case true: {
+                        switch (treeType) {
+                            case TreeType.Container: {
+                                var containerObj = new GameObject(tagName);
+                                var trans = containerObj.AddComponent<RectTransform>();
+                                trans.anchorMin = Vector2.up;
+                                trans.anchorMax = Vector2.up;
+                                trans.offsetMin = Vector2.up;
+                                trans.offsetMax = Vector2.up;
+                                trans.pivot = Vector2.up;
+
+                                gameObj = containerObj;
+                                break;
+                            }
+                            default: {
+                                // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
+                                var prefabName = GetTagFromValue(tagValue);
+                                var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
+
+                                var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
+                                while (cor.MoveNext()) {
+                                    if (cor.Current != null) {
+                                        break;
+                                    }                           
+                                    yield return null;
+                                }
+
+                                var loadedPrefab = cor.Current;
+                                
+                                gameObj = GameObject.Instantiate(loadedPrefab);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+
+                    // 非デフォルトタグ、customBox以外はloadpathが存在する。
+                    default: {
+                        switch (treeType) {
+                            case TreeType.Container: {
+                                // Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
+                                var containerObj = new GameObject(tagName);
+                                var trans = containerObj.AddComponent<RectTransform>();
+                                trans.anchorMin = Vector2.up;
+                                trans.anchorMax = Vector2.up;
+                                trans.offsetMin = Vector2.up;
+                                trans.offsetMax = Vector2.up;
+                                trans.pivot = Vector2.up;
+
+                                gameObj = containerObj;
+                                break;
+                            }
+                            case TreeType.CustomBox: {
+                                var customBoxObj = new GameObject(tagName);
+                                var trans = customBoxObj.AddComponent<RectTransform>();
+                                trans.anchorMin = Vector2.up;
+                                trans.anchorMax = Vector2.up;
+                                trans.offsetMin = Vector2.up;
+                                trans.offsetMax = Vector2.up;
+                                trans.pivot = Vector2.up;
+
+                                gameObj = customBoxObj;
+                                break;
+                            }
+                            default: {
+                                var tag = GetTagFromValue(tagValue);
+                                var loadPath = GetCustomTagLoadPath(tagValue, treeType);
+
+                                var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
+                                while (cor.MoveNext()) {
+                                    if (cor.Current != null) {
+                                        break;
+                                    }
+                                    yield return null;
+                                }
+
+                                var loadedPrefab = cor.Current;
+                                
+                                gameObj = GameObject.Instantiate(loadedPrefab);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                // set name.
+                gameObj.name = tagName;
+
+                // cache.
+                // goCache[id] = gameObj;
+            // }
+
             // Debug.LogError("loaded, tagName:" + tagName);
 
-            gameObj.name = tagName;
             yield return gameObj;
         }
 
