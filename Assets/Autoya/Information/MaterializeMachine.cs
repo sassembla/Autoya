@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -31,8 +32,28 @@ namespace AutoyaFramework.Information {
 				rootRectTrans.pivot = Vector2.up;
 			}
 			
-			var cor = MaterializeRecursive(tree, root);
-			while (cor.MoveNext()) {
+
+			// materialize root's children in parallel.
+			var children = tree.GetChildren();
+
+			var cors = children.Select(child => MaterializeRecursive(child, root)).ToArray();
+			var done = 0;
+			while (true) {
+				for (var i = 0; i < cors.Length; i++) {
+					var cor = cors[i];
+					if (cor == null) {
+						continue;
+					}
+
+					var cont = cor.MoveNext();
+
+					if (!cont) {
+						cor = null;
+						done++;
+					}
+				}
+
+				if (done == cors.Length) break;
 				yield return null;
 			}
 
@@ -40,112 +61,107 @@ namespace AutoyaFramework.Information {
         }
 
 		private IEnumerator MaterializeRecursive (TagTree tree, GameObject parent) {
-			GameObject newGameObject = null;
-			if (tree.tagValue == (int)HTMLTag._ROOT) {
-				Debug.LogWarning("ここだけ逃すと良さそう");
-				newGameObject = parent;
-			} else {
-				if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
-					core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
+			if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
+				core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
+			}
+			
+			if (tree.hidden) {
+				// cancel materialize of this tree.
+				yield break;
+			}
+
+			var objCor = resLoader.LoadGameObjectFromPrefab(tree.id, tree.tagValue, tree.treeType);
+
+			while (objCor.MoveNext()) {
+				if (objCor.Current != null) {
+					break; 
 				}
-				
-				if (tree.hidden) {
-					// cancel materialize of this tree.
-					yield break;
-				}
+				yield return null;
+			}
 
-				var objCor = resLoader.LoadGameObjectFromPrefab(tree.id, tree.tagValue, tree.treeType);
+			// set pos and size.
+			var newGameObject = objCor.Current;
 
-				while (objCor.MoveNext()) {
-					if (objCor.Current != null) {
-						break; 
-					}
-					yield return null;
-				}
+			var cached = false;
+			if (newGameObject.transform.parent != null) {
+				cached = true;
+			}
+			
+			newGameObject.transform.SetParent(parent.transform);
+			var rectTrans = newGameObject.GetComponent<RectTransform>();
+			rectTrans.anchoredPosition = TagTree.AnchoredPositionOf(tree);
+			rectTrans.sizeDelta = TagTree.SizeDeltaOf(tree);
 
-				// set pos and size.
-				newGameObject = objCor.Current;
-
-				var cached = false;
-				if (newGameObject.transform.parent != null) {
-					cached = true;
-				}
-				
-				newGameObject.transform.SetParent(parent.transform);
-				var rectTrans = newGameObject.GetComponent<RectTransform>();
-				rectTrans.anchoredPosition = TagTree.AnchoredPositionOf(tree);
-				rectTrans.sizeDelta = TagTree.SizeDeltaOf(tree);
-
-				// set parameters and events by container type. button, link.
-				switch (tree.treeType) {
-					case TreeType.Content_Img: {
-						if (cached) {
-							// pass.
-						} else {
-							var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
-							var imageLoadCor = resLoader.LoadImageAsync(
-								src, 
-								sprite => {
-									newGameObject.GetComponent<Image>().sprite = sprite;
-								},
-								() => {
-									// download failed. do nothing.
-								}
-							);
-
-							resLoader.LoadParallel(imageLoadCor);
-							
-							if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
-								var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
-								if (enable) {
-									var buttonId = string.Empty;
-									if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
-										buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
-									}
-
-									// add button component.
-									AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
-								}
+			// set parameters and events by container type. button, link.
+			switch (tree.treeType) {
+				case TreeType.Content_Img: {
+					if (cached) {
+						// pass.
+					} else {
+						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+						var imageLoadCor = resLoader.LoadImageAsync(
+							src, 
+							sprite => {
+								newGameObject.GetComponent<Image>().sprite = sprite;
+							},
+							() => {
+								// download failed. do nothing.
 							}
-						}
-						break;
-					}
-					
-					// テキストコンテンツは毎回内容が変わる可能性があるため、キャッシュに関わらず更新する。
-					case TreeType.Content_Text: {
-						if (tree.keyValueStore.ContainsKey(HTMLAttribute._CONTENT)) {
-							var text = tree.keyValueStore[HTMLAttribute._CONTENT] as string;
-							if (!string.IsNullOrEmpty(text)) {
-								var textComponent = newGameObject.GetComponent<Text>();
-								textComponent.text = text;
-							}
-						}
+						);
 
-						if (tree.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
-							var href = tree.keyValueStore[HTMLAttribute.HREF] as string;
-							
-							var linkId = string.Empty;
-							if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
-								linkId = tree.keyValueStore[HTMLAttribute.ID] as string;
-							}
-
-							// add button component.
-							AddButton(newGameObject, () => core.OnLinkTapped(resLoader.GetTagFromValue(tree.tagValue), href, linkId));
-						}
+						resLoader.LoadParallel(imageLoadCor);
 						
-						break;
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
+							var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
+							if (enable) {
+								var buttonId = string.Empty;
+								if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+									buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
+								}
+
+								// add button component.
+								AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
+							}
+						}
+					}
+					break;
+				}
+				
+				// テキストコンテンツは毎回内容が変わる可能性があるため、キャッシュに関わらず更新する。
+				case TreeType.Content_Text: {
+					if (tree.keyValueStore.ContainsKey(HTMLAttribute._CONTENT)) {
+						var text = tree.keyValueStore[HTMLAttribute._CONTENT] as string;
+						if (!string.IsNullOrEmpty(text)) {
+							var textComponent = newGameObject.GetComponent<Text>();
+							textComponent.text = text;
+						}
+					}
+
+					if (tree.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
+						var href = tree.keyValueStore[HTMLAttribute.HREF] as string;
+						
+						var linkId = string.Empty;
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+							linkId = tree.keyValueStore[HTMLAttribute.ID] as string;
+						}
+
+						// add button component.
+						AddButton(newGameObject, () => core.OnLinkTapped(resLoader.GetTagFromValue(tree.tagValue), href, linkId));
 					}
 					
-					default: {
-						// do nothing.
-						break;
-					}
+					break;
 				}
+				
+				default: {
+					// do nothing.
+					break;
+				}
+			
 			}
 
 			var children = tree.GetChildren();
 
-			Debug.LogWarning("レイアウトが終わってるので、このへんはフルに分散できそう。内部的に分散する手法がいい感じになったらやろう。まあ2017で。");
+			// Debug.LogWarning("レイアウトが終わってるので、このへんはまだフルに分散できそう。内部的に分散する手法がいい感じになったらやろう。まあ2017で。");
 			foreach (var child in children) {
 				var cor = MaterializeRecursive(child, newGameObject);
 				while (cor.MoveNext()) {
