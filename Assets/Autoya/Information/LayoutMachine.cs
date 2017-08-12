@@ -133,7 +133,7 @@ namespace AutoyaFramework.Information {
 					}
 					yield return null;
 				}
-				
+
 				// Debug.LogError("cor.Current:" + cor.Current + " tree:" + resLoader.GetTagFromValue(tree.tagValue) + " type:" + tree.treeType);
 				yield return cor.Current;
 			}
@@ -315,9 +315,9 @@ namespace AutoyaFramework.Information {
 				子供のタグを整列させる処理。
 				横に整列、縦に並ぶ、などが実行される。
 
-				親カーソルから子カーソルを生成。
+				親カーソルから子カーソルを生成。高さに関しては適当。
 			*/
-			var childView = new ViewCursor(0, 0, viewCursor.viewWidth - viewCursor.offsetX, 0);
+			var childView = new ViewCursor(0, 0, viewCursor.viewWidth - viewCursor.offsetX, viewCursor.viewHeight);
 			var linedElements = new List<TagTree>();
 			
 			var containerChildren = containerTree.GetChildren();

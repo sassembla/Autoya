@@ -637,7 +637,7 @@ else
                     if (0 < localTree.GetChildren().Count) {
                         localTree = localTree.GetChildren()[localTree.GetChildren().Count-1];
                         if (localTree.offsetY != 0) {
-                            Assert(localTree.offsetY.Equals(655.6f), "not match, offsetY:" + localTree.offsetY);
+                            Assert(localTree.offsetY.Equals(755.6f), "not match, offsetY:" + localTree.offsetY);
                         }
                     } else {
                         break;
