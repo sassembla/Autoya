@@ -274,32 +274,48 @@ namespace AutoyaFramework.Information {
 			}
 
 			var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
-			
-			Debug.LogError("tag:" + resLoader.GetTagFromValue(imgTree.tagValue) + " これ、カスタムタグだったらサイズわかるからレイアウト先行できるはず。 IsDefaultTag:" + resLoader.IsDefaultTag(imgTree.tagValue));
-
-			// default img tag. need to download image for determine size.
 
 			var imageWidth = 0f;
 			var imageHeight = 0f;
 
-			var cor = resLoader.LoadImageAsync(
-				src, 
-				(sprite) => {
-					imageWidth = sprite.rect.size.x;
-					
-					if (viewCursor.viewWidth < imageWidth) {
-						imageWidth = viewCursor.viewWidth;
-					}
-					
-					imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
-				},
-				() => {
-					imageHeight = 0;
-				}
-			);
 
-			while (cor.MoveNext()) {
-				yield return null;
+			if (resLoader.IsDefaultTag(imgTree.tagValue)) {
+				// default img tag. need to download image for determine size.
+
+				var cor = resLoader.LoadImageAsync(
+					src, 
+					(sprite) => {
+						imageWidth = sprite.rect.size.x;
+						
+						if (viewCursor.viewWidth < imageWidth) {
+							imageWidth = viewCursor.viewWidth;
+						}
+						
+						imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
+					},
+					() => {
+						imageHeight = 0;
+					}
+				);
+
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+			} else {
+				// customtag, requires prefab.
+				var cor = resLoader.LoadPrefab(imgTree.tagValue, TreeType.Content_Img);
+
+				while (cor.MoveNext()) {
+					if (cor.Current != null) {
+						break;
+					}
+					yield return null;
+				}
+
+				var prefab = cor.Current;
+				var rect = prefab.GetComponent<RectTransform>();
+				imageWidth = rect.sizeDelta.x;
+				imageHeight = rect.sizeDelta.y;
 			}
 
 			// 画像のアスペクト比に則ったサイズを返す。高さのみ変更がされる。
