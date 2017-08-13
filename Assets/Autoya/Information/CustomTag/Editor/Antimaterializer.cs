@@ -121,28 +121,30 @@ namespace AutoyaFramework.Information {
             }
 
             var components = currentContentInstance.GetComponents<Component>();
-            if (components.Length < 3) {
-                throw new Exception("should have at least 3 component. 1st is rectTransform, 2nd is canvasRendererm 3rd is image or text.");
-            }
 
-            // foreach (var s in components) {
-            //     Debug.LogError("s:" + s.GetType().Name);
-            // }
-            
-            // rectTrans, canvasRenderer 以外を採用する。
-            var currentFirstComponent = components[2];
             var type = TreeType.Content_Img;
-            switch (currentFirstComponent.GetType().Name) {
-                case "Image": {
-                    type = TreeType.Content_Img;
-                    break;
-                }
-                case "Text": {
-                    type = TreeType.Container;// not Content_Text.
-                    break;
-                }
-                default: {
-                    throw new Exception("unsupported second component on content. found component type:" + currentFirstComponent);
+            if (components.Length < 3) {
+                type = TreeType.Content_Img;
+            } else {
+                // foreach (var s in components) {
+                //     Debug.LogError("s:" + s.GetType().Name);
+                // }
+                
+                // rectTrans, canvasRenderer 以外を採用する。
+                var currentFirstComponent = components[2];
+                
+                switch (currentFirstComponent.GetType().Name) {
+                    case "Image": {
+                        type = TreeType.Content_Img;
+                        break;
+                    }
+                    case "Text": {
+                        type = TreeType.Container;// not Content_Text.
+                        break;
+                    }
+                    default: {
+                        throw new Exception("unsupported second component on content. found component type:" + currentFirstComponent);
+                    }
                 }
             }
 
