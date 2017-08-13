@@ -47,9 +47,7 @@ namespace AutoyaFramework.Information {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 
-        public int GetAdditionalTagCount () {
-            return undefinedTagDict.Count;
-        }
+        
 
         public readonly GameObject cacheBox;
         public readonly Action<IEnumerator> LoadParallel;
@@ -216,29 +214,6 @@ namespace AutoyaFramework.Information {
             yield return prefab;
         }
 
-        
-        public void BackGameObjects (string[] usingIds) {
-            // 使ってるものは位置変更をすればいいはず。
-            // .系は内容も変わることがある。
-            // イベント開始から完了までロック
-            //     reloadingハンドラ？
-            // materializeにもusingIdsが使えるはず。
-            
-            // 間違ってた。使ってるやつを戻しちゃってる。
-            // そら使わんやつ残るわ。
-            var cachedKeys = goCache.Keys.ToArray();
-
-            var unusingIds = cachedKeys.Except(usingIds);
-            foreach (var unusingCacheId in unusingIds) {
-                var cache = goCache[unusingCacheId];
-                cache.transform.SetParent(cacheBox.transform);
-            }
-        }
-
-        public void Reset () {
-            goCache.Clear();
-        }
-
         public IEnumerator<GameObject> LoadGameObjectFromPrefab (string id, int tagValue, TreeType treeType) {
             GameObject gameObj = null;
             var tagName = GetTagFromValue(tagValue);
@@ -345,26 +320,8 @@ namespace AutoyaFramework.Information {
             yield return gameObj;
         }
 
-        private string GetCustomTagLoadPath (int tagValue, TreeType treeType) {
-            var tag = GetTagFromValue(tagValue);
-            var targetPrefab = string.Empty;
 
-            switch (treeType) {
-                case TreeType.CustomLayer:
-                case TreeType.CustomEmptyLayer: {
-                    return customTagList.layerConstraints.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
-                }
-                case TreeType.Content_Img:
-                case TreeType.Content_Text: {
-                    return customTagList.contents.Where(t => t.contentName == tag).Select(t => t.loadPath).FirstOrDefault();
-                }
-                default: {
-                    throw new Exception("unexpected tree type:" + treeType + " of tag:" + tag);
-                }
-            }            
-        }
-
-         /**
+        /**
             loadPathからcustomTag = レイヤーのprefabを返す。
          */
         public IEnumerator<GameObject> LoadCustomPrefabFromLoadPathOrCache (string loadPath) {
@@ -466,48 +423,35 @@ namespace AutoyaFramework.Information {
             yield return loadedPrefab;
         }
 
-        private IEnumerator<GameObject> LoadPrefabFromAssetBundle (string path) {
-            // アセット名が書いてあると思うんで、assetBundleListとかから取り寄せる
-            Debug.LogError("まだ実装してないassetBundleからprefabを読む仕掛け");
-            yield return null;
-        }
+        private IEnumerator<GameObject> LoadPrefabFromAssetBundle (string loadingPrefabName) {
+            GameObject loadedPrefab = null;
+            if (prefabCache.ContainsKey(loadingPrefabName)) {
+                // Debug.LogError("キャッシュから読み出す");
 
-        public bool IsDefaultTag (int tag) {
-            if (defaultTagIntStrPair.ContainsKey(tag)) {
-                return true;
+                var cachedPrefab = prefabCache[loadingPrefabName];
+                loadedPrefab = cachedPrefab;
             }
-            return false;
-        }
 
-        public TreeType GetTreeType (int tag) {
-            // 組み込みtagであれば、静的に解決できる。
-            if (defaultTagIntStrPair.ContainsKey(tag)) {
-				switch (tag) {
-                    case (int)HTMLTag.a: {
-                        return TreeType.Content_Text;
-                    }
-                    case (int)HTMLTag.img: {
-                        return TreeType.Content_Img;
-                    }
-                    case (int)HTMLTag.hr:
-                    case (int)HTMLTag.br: {
-                        return TreeType.Content_CRLF;
-                    }
-                    default: {
-                        return TreeType.Container;
-                    }
+            // no cache hit. start loading prefab.
+
+            // wait the end of other loading for same prefab.
+            else if (loadingPrefabNames.Contains(loadingPrefabName)) {
+                // Debug.LogError("キャッシュにないけどロード中 loadingPrefabName:" + loadingPrefabName);
+                while (loadingPrefabNames.Contains(loadingPrefabName)) {
+                    yield return null;
                 }
-			}
 
-            // tag is not default.
-            
-            var customTagStr = GetTagFromValue(tag);
-            // Debug.LogError("customTagStr:" + customTagStr);
-            // foreach (var s in customTagTypeDict.Keys) {
-            //     Debug.LogError("s:" + s);
-            // }
-
-            return customTagTypeDict[customTagStr];
+                if (!prefabCache.ContainsKey(loadingPrefabName)) {
+                    throw new Exception("キャッシュされたはずなんだけどロードに失敗");
+                } else {
+                    var cachedPrefab = prefabCache[loadingPrefabName];
+                    loadedPrefab = cachedPrefab;
+                }
+            } else {
+                // アセット名が書いてあると思うんで、assetBundleListとかから取り寄せる
+                Debug.LogError("まだ実装してないassetBundleからprefabを読む仕掛け");
+                yield return null;
+            }
         }
 
         /**
@@ -673,6 +617,88 @@ namespace AutoyaFramework.Information {
                     );
                 }
             }
+        }
+
+        private string GetCustomTagLoadPath (int tagValue, TreeType treeType) {
+            var tag = GetTagFromValue(tagValue);
+            var targetPrefab = string.Empty;
+
+            switch (treeType) {
+                case TreeType.CustomLayer:
+                case TreeType.CustomEmptyLayer: {
+                    return customTagList.layerConstraints.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
+                }
+                case TreeType.Content_Img:
+                case TreeType.Content_Text: {
+                    return customTagList.contents.Where(t => t.contentName == tag).Select(t => t.loadPath).FirstOrDefault();
+                }
+                default: {
+                    throw new Exception("unexpected tree type:" + treeType + " of tag:" + tag);
+                }
+            }            
+        }
+
+        public void BackGameObjects (params string[] usingIds) {
+            // 使ってるものは位置変更をすればいいはず。
+            // .系は内容も変わることがある。->string全般。
+            // イベント開始から完了までロック
+            //     reloadingハンドラ？
+            
+            var cachedKeys = goCache.Keys.ToArray();
+
+            var unusingIds = cachedKeys.Except(usingIds);
+            foreach (var unusingCacheId in unusingIds) {
+                var cache = goCache[unusingCacheId];
+                cache.transform.SetParent(cacheBox.transform);
+            }
+        }
+
+
+        public void Reset () {
+            BackGameObjects();
+            goCache.Clear();
+        }
+        
+        public int GetAdditionalTagCount () {
+            return undefinedTagDict.Count;
+        }
+
+        public bool IsDefaultTag (int tag) {
+            if (defaultTagIntStrPair.ContainsKey(tag)) {
+                return true;
+            }
+            return false;
+        }
+
+        public TreeType GetTreeType (int tag) {
+            // 組み込みtagであれば、静的に解決できる。
+            if (defaultTagIntStrPair.ContainsKey(tag)) {
+				switch (tag) {
+                    case (int)HTMLTag.a: {
+                        return TreeType.Content_Text;
+                    }
+                    case (int)HTMLTag.img: {
+                        return TreeType.Content_Img;
+                    }
+                    case (int)HTMLTag.hr:
+                    case (int)HTMLTag.br: {
+                        return TreeType.Content_CRLF;
+                    }
+                    default: {
+                        return TreeType.Container;
+                    }
+                }
+			}
+
+            // tag is not default.
+            
+            var customTagStr = GetTagFromValue(tag);
+            // Debug.LogError("customTagStr:" + customTagStr);
+            // foreach (var s in customTagTypeDict.Keys) {
+            //     Debug.LogError("s:" + s);
+            // }
+
+            return customTagTypeDict[customTagStr];
         }
 
         private class AssetLoadingConstraint : IDisposable {

@@ -463,7 +463,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			var prefab = cor.Current;
-
+			
 			// use prefab's text component for using it's text setting.
 			var textComponent = prefab.GetComponent<Text>();
 			if (textComponent == null) {

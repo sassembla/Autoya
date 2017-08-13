@@ -86,7 +86,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
     [MTest] public void LoadThenReload () {
         var source = @"
 <body>
-    something3.
+    reload sample.
     <img src='https://dummyimage.com/100.png/09f/fff'/>
 </body>";
 
