@@ -278,7 +278,10 @@ namespace AutoyaFramework.Information {
 			var imageWidth = 0f;
 			var imageHeight = 0f;
 
-
+			/*
+				デフォルトタグであれば画像サイズは未定(画像依存)なのでDLして判断する必要がある。
+				そうでなくカスタムタグであれば、固定サイズで画像が扱えるため、prefabをロードしてサイズを固定して計算できる。
+			 */
 			if (resLoader.IsDefaultTag(imgTree.tagValue)) {
 				// default img tag. need to download image for determine size.
 

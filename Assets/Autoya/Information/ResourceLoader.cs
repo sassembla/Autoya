@@ -458,36 +458,67 @@ namespace AutoyaFramework.Information {
             layout, materialize時に画像を読み込む。
          */
         public IEnumerator LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
-            /*
-                supported schemes are,
-                    
-                    ^http://		http scheme => load asset from web.
-                    ^https://		https scheme => load asset from web.
-                    ^assetbundle://	assetbundle scheme => load asset from assetBundle.
-                    ^resources://   resources scheme => (Resources/)somewhere/resource path.
-                    ^./				relative path => (Resources/)somewhere/resource path.
-            */
-            var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
-            var scheme = schemeAndPath[0];
+            if (spriteCache.ContainsKey(uriSource)) {
+                loaded(spriteCache[uriSource]);
+                yield break;
+            }
 
-            switch (scheme) {
-                case "assetbundle:": {
-                    var bundleName = uriSource;
-                    return LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
+            if (spriteDownloadingUris.Contains(uriSource)) {
+                while (spriteDownloadingUris.Contains(uriSource)) {
+                    yield return null;
                 }
-                case "https:":
-                case "http:": {
-                    return LoadImageFromWeb(uriSource, loaded, loadFailed);
+
+                if (spriteCache.ContainsKey(uriSource)) {
+                    // download is done. cached sprite exists.
+                    loaded(spriteCache[uriSource]);
+                    yield break;
                 }
-                case ".": {
-                    var resourcePath = uriSource.Substring(2);
-                    return LoadImageFromResources(resourcePath, loaded, loadFailed);
+
+                loadFailed();
+                yield break;
+            }
+
+            // start downloading.
+            using (new AssetLoadingConstraint(uriSource, spriteDownloadingUris)) {
+                /*
+                    supported schemes are,
+                        
+                        ^http://		http scheme => load asset from web.
+                        ^https://		https scheme => load asset from web.
+                        ^assetbundle://	assetbundle scheme => load asset from assetBundle.
+                        ^resources://   resources scheme => (Resources/)somewhere/resource path.
+                        ^./				relative path => (Resources/)somewhere/resource path.
+                */
+                var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
+                var scheme = schemeAndPath[0];
+                IEnumerator cor = null;
+                switch (scheme) {
+                    case "assetbundle:": {
+                        var bundleName = uriSource;
+                        cor = LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
+                        break;
+                    }
+                    case "https:":
+                    case "http:": {
+                        cor = LoadImageFromWeb(uriSource, loaded, loadFailed);
+                        break;
+                    }
+                    case ".": {
+                        var resourcePath = uriSource.Substring(2);
+                        cor = LoadImageFromResources(resourcePath, loaded, loadFailed);
+                        break;
+                    }
+                    case "resources:": {
+                        cor = LoadImageFromResources(uriSource, loaded, loadFailed);
+                        break;
+                    }
+                    default: {// other.
+                        throw new Exception("unsupported scheme:" + scheme);
+                    }
                 }
-                case "resources:": {
-                    return LoadImageFromResources(uriSource, loaded, loadFailed);
-                }
-                default: {// other.
-                    throw new Exception("unsupported scheme:" + scheme);
+
+                while (cor.MoveNext()) {
+                    yield return null;
                 }
             }
         }
@@ -524,98 +555,76 @@ namespace AutoyaFramework.Information {
         }
 
         private IEnumerator LoadImageFromWeb (string url, Action<Sprite> loaded, Action loadFailed) {
-            if (spriteCache.ContainsKey(url)) {
-                loaded(spriteCache[url]);
-                yield break;
-            }
+            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_IMAGE_PREFIX + Guid.NewGuid().ToString();
+            var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
-            if (spriteDownloadingUris.Contains(url)) {
-                while (spriteDownloadingUris.Contains(url)) {
+            // start download tex from url.
+            using (var request = UnityWebRequest.GetTexture(url)) {
+                foreach (var reqHeader in reqHeaders) {
+                    request.SetRequestHeader(reqHeader.Key, reqHeader.Value);
+                }
+
+                var p = request.Send();
+
+                var timeoutSec = ConstSettings.TIMEOUT_SEC;
+                var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
+
+                while (!p.isDone) {
                     yield return null;
-                }
 
-                if (spriteCache.ContainsKey(url)) {
-                    // download is done. cached sprite exists.
-                    loaded(spriteCache[url]);
-                    yield break;
-                }
-
-                loadFailed();
-                yield break;
-            }
-
-            // start downloading.
-            using (new AssetLoadingConstraint(url, spriteDownloadingUris)) {
-                var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_IMAGE_PREFIX + Guid.NewGuid().ToString();
-                var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
-
-                // start download tex from url.
-                using (var request = UnityWebRequest.GetTexture(url)) {
-                    foreach (var reqHeader in reqHeaders) {
-                        request.SetRequestHeader(reqHeader.Key, reqHeader.Value);
-                    }
-
-                    var p = request.Send();
-
-                    var timeoutSec = ConstSettings.TIMEOUT_SEC;
-                    var limitTick = DateTime.UtcNow.AddSeconds(timeoutSec).Ticks;
-
-                    while (!p.isDone) {
-                        yield return null;
-
-                        // check timeout.
-                        if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-                            Debug.LogError("timeout. load aborted, dataPath:" + url);
-                            request.Abort();
-                            loadFailed();
-                            yield break;
-                        }
-                    }
-
-                    var responseCode = (int)request.responseCode;
-                    var responseHeaders = request.GetResponseHeaders();
-                    
-                    
-                    if (request.isError) {
-                        httpResponseHandlingDelegate(
-                            connectionId,
-                            responseHeaders,
-                            responseCode,
-                            null, 
-                            request.error, 
-                            (conId, data) => {
-                                throw new Exception("request encountered some kind of error.");
-                            }, 
-                            (conId, code, reason, autoyaStatus) => {
-                                Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
-                                loadFailed();
-                            }
-                        );
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
+                        Debug.LogError("timeout. load aborted, dataPath:" + url);
+                        request.Abort();
+                        loadFailed();
                         yield break;
                     }
+                }
 
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+                
+                
+                if (request.isError) {
                     httpResponseHandlingDelegate(
                         connectionId,
                         responseHeaders,
                         responseCode,
-                        request, 
-                        request.error,
+                        null, 
+                        request.error, 
                         (conId, data) => {
-                            // create tex.
-                            var tex = DownloadHandlerTexture.GetContent(request);
-
-                            // cache this sprite for other requests.
-                            var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
-                            spriteCache[url] = spr;
-                            
-                            loaded(spriteCache[url]);
+                            throw new Exception("request encountered some kind of error.");
                         }, 
                         (conId, code, reason, autoyaStatus) => {
                             Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
                             loadFailed();
                         }
                     );
+                    yield break;
                 }
+
+                httpResponseHandlingDelegate(
+                    connectionId,
+                    responseHeaders,
+                    responseCode,
+                    request, 
+                    request.error,
+                    (conId, data) => {
+                        // create tex.
+                        var tex = DownloadHandlerTexture.GetContent(request);
+
+                        // cache this sprite for other requests.
+                        var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
+                        spriteCache[url] = spr;
+                        
+                        loaded(spriteCache[url]);
+                    }, 
+                    (conId, code, reason, autoyaStatus) => {
+                        Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
+                        loadFailed();
+                    }
+                );
+            
             }
         }
 

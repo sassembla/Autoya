@@ -254,7 +254,7 @@ namespace AutoyaFramework.Information {
         }
 
         public void LoadParallel (IEnumerator cor) {
-            Debug.LogWarning("並列にdlを行う。ここでDL登録すればmaterialize時のimage load progressは出せる。全体像を出した後にdl集計開始っていう感じかな? まあまだ必須ではないと思うので放置。");
+            // Debug.LogWarning("並列にdlを行う。ここでDL登録すればmaterialize時のimage load progressは出せる。全体像を出した後にdl集計開始っていう感じかな? まあまだ必須ではないと思うので放置。");
             view.CoroutineExecutor(cor);
         }
     }
