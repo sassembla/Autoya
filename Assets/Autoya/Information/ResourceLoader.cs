@@ -674,9 +674,6 @@ namespace AutoyaFramework.Information {
             // 組み込みtagであれば、静的に解決できる。
             if (defaultTagIntStrPair.ContainsKey(tag)) {
 				switch (tag) {
-                    case (int)HTMLTag.a: {
-                        return TreeType.Content_Text;
-                    }
                     case (int)HTMLTag.img: {
                         return TreeType.Content_Img;
                     }

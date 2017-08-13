@@ -553,6 +553,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 <body>
 <customtag><custombg><textbg><customtext>something</customtext></textbg></custombg></customtag>
 else
+<customimg src='https://dummyimage.com/10x20/000/fff'/>
 </body>
         ";
         var tree = CreateTagTree(sample);

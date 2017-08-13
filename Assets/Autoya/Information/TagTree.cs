@@ -121,6 +121,11 @@ namespace AutoyaFramework.Information {
             }
             
 			t._children.Add(this);
+
+            // inherit specific kv to child if child does not have kv.
+            if (this.treeType == TreeType.Content_Text && t.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
+                this.keyValueStore[HTMLAttribute.HREF] = t.keyValueStore[HTMLAttribute.HREF];
+            }
 		}
 
         public List<TagTree> GetChildren () {

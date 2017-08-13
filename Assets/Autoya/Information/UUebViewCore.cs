@@ -222,10 +222,14 @@ namespace AutoyaFramework.Information {
 					Update();
 				}
 			}
+
+            if (eventReceiverGameObj != null) {
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.IMAGE, key, buttonId));
+            }
 		}
 
         public void OnLinkTapped (string tag, string key, string linkId="") {
-			Debug.LogError("link. tag:" + tag + " key:" + key + " linkId:" + linkId);
+			// Debug.LogError("link. tag:" + tag + " key:" + key + " linkId:" + linkId);
 
 			if (!string.IsNullOrEmpty(linkId)) {
 				if (listenerDict.ContainsKey(linkId)) {
@@ -233,6 +237,10 @@ namespace AutoyaFramework.Information {
 					Update();
 				}
 			}
+
+            if (eventReceiverGameObj != null) {
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.LINK, key, linkId));
+            }
 		}
         
         public void AddListener(TagTree tree, string listenTargetId) {

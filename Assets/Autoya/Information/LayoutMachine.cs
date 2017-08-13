@@ -270,12 +270,14 @@ namespace AutoyaFramework.Information {
 		private IEnumerator<ViewCursor> DoImgLayout (TagTree imgTree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
 			var contentViewCursor = viewCursor;
 			if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
-				throw new Exception("image should define src param.");
+				throw new Exception("image element should define src param.");
 			}
 
 			var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
 			
-			// need to download image for determine size.
+			Debug.LogError("tag:" + resLoader.GetTagFromValue(imgTree.tagValue) + " これ、カスタムタグだったらサイズわかるからレイアウト先行できるはず。 IsDefaultTag:" + resLoader.IsDefaultTag(imgTree.tagValue));
+
+			// default img tag. need to download image for determine size.
 
 			var imageWidth = 0f;
 			var imageHeight = 0f;

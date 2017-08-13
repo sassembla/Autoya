@@ -95,10 +95,8 @@ namespace AutoyaFramework.Information {
 			// set parameters and events by container type. button, link.
 			switch (tree.treeType) {
 				case TreeType.Content_Img: {
-					if (cached) {
-						// pass.
-					} else {
-						var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+					var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+					if (!cached) {
 						var imageLoadCor = resLoader.LoadImageAsync(
 							src, 
 							sprite => {
@@ -110,25 +108,26 @@ namespace AutoyaFramework.Information {
 						);
 
 						resLoader.LoadParallel(imageLoadCor);
-						
-						if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
-							var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
-							if (enable) {
-								var buttonId = string.Empty;
-								if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
-									buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
-								}
-
-								// add button component.
-								AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
+					}
+					
+					if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
+						var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
+						if (enable) {
+							var buttonId = string.Empty;
+							if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+								buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
 							}
+
+							// add button component.
+							AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
 						}
+					
 					}
 					break;
 				}
 				
-				// テキストコンテンツは毎回内容が変わる可能性があるため、キャッシュに関わらず更新する。
 				case TreeType.Content_Text: {
+					// テキストコンテンツは毎回内容が変わる可能性があるため、キャッシュに関わらず更新する。
 					if (tree.keyValueStore.ContainsKey(HTMLAttribute._CONTENT)) {
 						var text = tree.keyValueStore[HTMLAttribute._CONTENT] as string;
 						if (!string.IsNullOrEmpty(text)) {
@@ -148,7 +147,6 @@ namespace AutoyaFramework.Information {
 						// add button component.
 						AddButton(newGameObject, () => core.OnLinkTapped(resLoader.GetTagFromValue(tree.tagValue), href, linkId));
 					}
-					
 					break;
 				}
 				

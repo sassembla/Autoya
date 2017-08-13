@@ -229,4 +229,30 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
             () => done, 5, "too late."
         );
     }
+
+    [MTest] public void ShowLinkByButton () {
+        var source = @"
+<body>
+    something3.
+    <img src='https://dummyimage.com/100.png/09f/fff' id='button1' button='true'/>
+    <a href='href test' hidden='true' listen='button1'>link</a>
+</body>";
+
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnContentLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 }

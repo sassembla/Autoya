@@ -24,16 +24,22 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
 
     void IUUebViewEventHandler.OnContentLoadFailed(ContentType type, int code, string reason) {
         Debug.Log("OnContentLoadFailed type:" + type + " code:" + code + " reason:" + reason);
-        OnContentLoadFailed();
+        if (OnContentLoadFailed != null) {
+            OnContentLoadFailed();
+        }
     }
 
     void IUUebViewEventHandler.OnElementTapped(ContentType type, string param, string id) {
         Debug.Log("OnElementTapped");
-        OnElementTapped();
+        if (OnElementTapped != null) {
+            OnElementTapped();
+        }
     }
 
     void IUUebViewEventHandler.OnElementLongTapped(ContentType type, string param, string id) {
         Debug.Log("OnElementLongTapped");
-        OnElementLongTapped();
+        if (OnElementLongTapped != null) {
+            OnElementLongTapped();
+        }
     }
 }
