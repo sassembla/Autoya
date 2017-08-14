@@ -155,7 +155,7 @@ namespace AutoyaFramework.Information {
 
 
         /**
-            uGUIのパラメータからRectを出す。
+            画面幅、高さから、uGUIの計算を行って実際のレイアウト時のパラメータを算出する。
          */
         public static Rect GetChildViewRectFromParentRectTrans (float parentWidth, float parentHeight, BoxPos pos) {
             // アンカーからwidthとheightを出す。

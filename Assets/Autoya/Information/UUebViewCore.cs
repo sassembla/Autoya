@@ -63,14 +63,24 @@ namespace AutoyaFramework.Information {
         private GameObject eventReceiverGameObj;
         
 		public void LoadHtml (string source, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
-            this.viewRect = viewRect;
-            this.eventReceiverGameObj = eventReceiverGameObj;
+            if (this.viewRect != viewRect) {
+                if (eventReceiverGameObj != null) {
+                    ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoadStarted());
+                }
+                
+                this.viewRect = viewRect;
+                this.eventReceiverGameObj = eventReceiverGameObj;
+            }
 
             var cor = Parse(source);
             view.CoroutineExecutor(cor);
         }
 
         public void DownloadHtml (string url, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
+            if (eventReceiverGameObj != null) {
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoadStarted());
+            }
+            
             this.viewRect = viewRect;
             this.eventReceiverGameObj = eventReceiverGameObj;
             
@@ -91,7 +101,7 @@ namespace AutoyaFramework.Information {
                         downloadFailed = true;
                         
                         if (eventReceiverGameObj != null) {
-                            ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnContentLoadFailed(contentType, code, reason));
+                            ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoadFailed(contentType, code, reason));
                         }
                     };
 
@@ -121,7 +131,7 @@ namespace AutoyaFramework.Information {
                     var res = cor.asset as TextAsset;
                     if (res == null) {
                         if (eventReceiverGameObj != null) {
-                            ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnContentLoadFailed(ContentType.HTML, 0, "could not found html:" + url));
+                            ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoadFailed(ContentType.HTML, 0, "could not found html:" + url));
                         }
                         yield break;
                     }
@@ -183,7 +193,7 @@ namespace AutoyaFramework.Information {
                         0f, 
                         () => {
                             if (eventReceiverGameObj != null) {
-                                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnContentLoaded());
+                                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoaded());
                             }
                         }
                     );
@@ -261,10 +271,10 @@ namespace AutoyaFramework.Information {
 
 
 	public interface IUUebViewEventHandler : IEventSystemHandler {
-		void OnLoadProgress (double progress);
-		void OnContentLoaded ();
-		void OnContentLoadFailed (ContentType type, int code, string reason);
+        void OnLoadStarted ();
+		void OnLoaded ();
+		void OnLoadFailed (ContentType type, int code, string reason);
 		void OnElementTapped (ContentType type, string param, string id);
-		void OnElementLongTapped (ContentType type, string param, string id);
+        void OnElementLongTapped (ContentType type, string param, string id);
 	}
 }

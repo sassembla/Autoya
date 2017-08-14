@@ -54,18 +54,18 @@ namespace AutoyaFramework.Information {
             FileController.RemakeDirectory(exportBasePath);
             
             // childrenがいろいろなタグの根本にあたる。
-            var constraints = new List<LayerInfo>();
+            var layers = new List<LayerInfoOnEditor>();
             var contents = new List<ContentInfo>();
 
             // recursiveに、コンテンツを分解していく。
             for (var i = 0; i < target.transform.childCount; i++) {
                 var child = target.transform.GetChild(i);
                 
-                CollectConstraintsAndContents(viewName, child.gameObject, constraints, contents);
+                CollectConstraintsAndContents(viewName, child.gameObject, layers, contents);
             }
-            
+
             var listFileName = "DepthAssetList.txt";
-            var depthAssetList = new CustomTagList(viewName, contents.ToArray(), constraints.ToArray());
+            var depthAssetList = new CustomTagList(viewName, contents.ToArray(), layers.Select(l => l.layerInfo).ToArray());
 
             
             var jsonStr = JsonUtility.ToJson(depthAssetList);
@@ -79,17 +79,17 @@ namespace AutoyaFramework.Information {
         /**
             存在するパーツ単位でconstraintsを生成する
          */
-        private static void CollectConstraintsAndContents (string viewName, GameObject source, List<LayerInfo> currentConstraints, List<ContentInfo> currentContents) {
+        private static void CollectConstraintsAndContents (string viewName, GameObject source, List<LayerInfoOnEditor> currentLayers, List<ContentInfo> currentContents) {
             // このレイヤーにあるものに対して、まずコピーを生成し、そのコピーに対して処理を行う。
             var currentTargetInstance = GameObject.Instantiate(source);
             currentTargetInstance.name = source.name;
             
-            // ここでは、同じ名前のcontentがすでにあればエラーを出して終了する。
+            // ここでは、同じ名前のcontent/layerがすでにあればエラーを出して終了する。
             if (currentContents.Where(c => c.contentName == currentTargetInstance.name).Any()) {
                 throw new Exception("duplicate content:" + currentTargetInstance.name + ". do not duplicate.");
             }
 
-            if (currentConstraints.Where(c => c.layerName == currentTargetInstance.name).Any()) {
+            if (currentLayers.Where(c => c.layerInfo.layerName == currentTargetInstance.name).Any()) {
                 throw new Exception("duplicate layer:" + currentTargetInstance.name + ". do not duplicate.");
             }
             
@@ -103,11 +103,64 @@ namespace AutoyaFramework.Information {
                     }
                     default: {
                         // target is layer.
-                        ModifyLayerInstance(viewName, currentTargetInstance, currentConstraints);
+                        ModifyLayerInstance(viewName, currentTargetInstance, currentLayers);
                         break;
                     }
                 }
             }
+
+            // 存在するlayer内の要素に対して、重なっているもの、縦に干渉しないものをグループとして扱う。
+            foreach (var currentLayer in currentLayers) {
+                if (currentLayer.layerInfo.boxes.Any()) {
+                    CollectCollisionInLayer(currentLayer);
+                }
+            }
+        }
+
+        private static void CollectCollisionInLayer (LayerInfoOnEditor layer) {
+            var groups = new List<BoxCollisionGroup>();
+            
+            var groupedBoxNames = new List<string>();
+            groupedBoxNames.Add(layer.layerInfo.boxes[0].boxName);
+            var beforeBoxRect = TagTree.GetChildViewRectFromParentRectTrans(layer.collisionBaseSize.x, layer.collisionBaseSize.y, layer.layerInfo.boxes[0].rect);
+            
+            for (var i = 1; i < layer.layerInfo.boxes.Length; i++) {
+                var box = layer.layerInfo.boxes[i];
+                var rect = TagTree.GetChildViewRectFromParentRectTrans(layer.collisionBaseSize.x, layer.collisionBaseSize.y, box.rect);
+
+                // 重なっておらず、横方向での重なりがなく、縦に重なる部分がある場合、別のグループとして設定する。
+                if (beforeBoxRect.Overlaps(rect) || HorizontalOverlaps(beforeBoxRect, rect)) {
+                    groupedBoxNames.Add(box.boxName);
+                    beforeBoxRect = CombinedRect(beforeBoxRect, rect);
+                } else {
+                    groups.Add(new BoxCollisionGroup(groupedBoxNames.ToArray()));
+                    groupedBoxNames.Clear();
+                    groupedBoxNames.Add(box.boxName);
+                    beforeBoxRect = rect;
+                }
+            }
+            groups.Add(new BoxCollisionGroup(groupedBoxNames.ToArray()));
+            
+
+            layer.layerInfo.collisions = groups.ToArray();
+        }
+
+        private static bool HorizontalOverlaps (Rect before, Rect adding) {
+            if (adding.position.y + adding.size.y < before.position.y) {
+                return false;
+            }
+            if (before.position.y + before.size.y < adding.position.y) {
+                return false;
+            }
+            return true;
+        }
+
+        private static Rect CombinedRect (Rect before, Rect adding) {
+            var x = Mathf.Min(before.position.x, adding.position.x);
+            var y = Mathf.Min(before.position.y, adding.position.y);
+            var width = Mathf.Max(before.position.x + before.size.x, adding.position.x + before.size.x);
+            var height = Mathf.Max(before.position.y + before.size.y, adding.position.y + before.size.y);
+            return new Rect(x,y,width,height);
         }
 
         private static void ModifyContentInstance (string viewName, GameObject currentContentInstance, List<ContentInfo> currentContents) {
@@ -164,7 +217,7 @@ namespace AutoyaFramework.Information {
             }
         }
 
-        private static void ModifyLayerInstance (string viewName, GameObject currentLayerInstance, List<LayerInfo> currentConstraints) {
+        private static void ModifyLayerInstance (string viewName, GameObject currentLayerInstance, List<LayerInfoOnEditor> currentLayers) {
             // このインスタンスのポジションを0,0 leftTopAnchor、左上pivotにする。
             // レイヤーのインスタンスは、インスタンス化時に必ず親のサイズにフィットするように変形される。
             var rectTrans = currentLayerInstance.GetComponent<RectTransform>();
@@ -172,6 +225,8 @@ namespace AutoyaFramework.Information {
             rectTrans.anchorMin = new Vector2(0,1);
             rectTrans.anchorMax = new Vector2(0,1);
             rectTrans.pivot = new Vector2(0,1);
+
+            var size = rectTrans.sizeDelta;
 
 
             var layerName = currentLayerInstance.name.ToLower();
@@ -254,20 +309,20 @@ namespace AutoyaFramework.Information {
                         .Select(kv => new BoxConstraint(kv.Key, kv.Value))
                         .ToArray();
 
-                    var newConstraints = new LayerInfo(
+                    var newLayer = new LayerInfo(
                         layerName, 
                         newChildConstraint,
                         "resources://" + ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + viewName + "/" + layerName.ToUpper()
                     );
 
-                    currentConstraints.Add(newConstraints);
+                    currentLayers.Add(new LayerInfoOnEditor(newLayer, size));
                 }
 
                 /*
                     取り出しておいたchildに対して再帰
                 */
                 foreach (var disposableChild in copiedChildList) {
-                    ModifyLayerInstance(viewName, disposableChild, currentConstraints);
+                    ModifyLayerInstance(viewName, disposableChild, currentLayers);
                 }
             }
         }

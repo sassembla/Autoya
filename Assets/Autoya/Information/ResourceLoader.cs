@@ -191,6 +191,7 @@ namespace AutoyaFramework.Information {
                         }
                         default: {
                             var tag = GetTagFromValue(tagValue);
+                            // Debug.LogError("tag:" + tag);
                             var loadPath = GetCustomTagLoadPath(tagValue, treeType);
 
                             var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
@@ -325,6 +326,7 @@ namespace AutoyaFramework.Information {
             loadPathからcustomTag = レイヤーのprefabを返す。
          */
         public IEnumerator<GameObject> LoadCustomPrefabFromLoadPathOrCache (string loadPath) {
+            // Debug.LogError("loadPath:" + loadPath);
             var schemeAndPath = loadPath.Split(new char[]{'/'}, 2);
             var scheme = schemeAndPath[0];
 
@@ -457,68 +459,72 @@ namespace AutoyaFramework.Information {
         /**
             layout, materialize時に画像を読み込む。
          */
-        public IEnumerator LoadImageAsync (string uriSource, Action<Sprite> loaded, Action loadFailed) {
+        public IEnumerator<Sprite> LoadImageAsync (string uriSource) {
             if (spriteCache.ContainsKey(uriSource)) {
-                loaded(spriteCache[uriSource]);
-                yield break;
-            }
-
-            if (spriteDownloadingUris.Contains(uriSource)) {
+                yield return spriteCache[uriSource];
+            } else if (spriteDownloadingUris.Contains(uriSource)) {
                 while (spriteDownloadingUris.Contains(uriSource)) {
                     yield return null;
                 }
 
                 if (spriteCache.ContainsKey(uriSource)) {
                     // download is done. cached sprite exists.
-                    loaded(spriteCache[uriSource]);
+                    yield return spriteCache[uriSource];
+                } else {
                     yield break;
                 }
+            } else {
 
-                loadFailed();
-                yield break;
-            }
+                // start downloading.
+                using (new AssetLoadingConstraint(uriSource, spriteDownloadingUris)) {
+                    /*
+                        supported schemes are,
+                            
+                            ^http://		http scheme => load asset from web.
+                            ^https://		https scheme => load asset from web.
+                            ^assetbundle://	assetbundle scheme => load asset from assetBundle.
+                            ^resources://   resources scheme => (Resources/)somewhere/resource path.
+                            ^./				relative path => (Resources/)somewhere/resource path.
+                    */
+                    var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
+                    var scheme = schemeAndPath[0];
 
-            // start downloading.
-            using (new AssetLoadingConstraint(uriSource, spriteDownloadingUris)) {
-                /*
-                    supported schemes are,
-                        
-                        ^http://		http scheme => load asset from web.
-                        ^https://		https scheme => load asset from web.
-                        ^assetbundle://	assetbundle scheme => load asset from assetBundle.
-                        ^resources://   resources scheme => (Resources/)somewhere/resource path.
-                        ^./				relative path => (Resources/)somewhere/resource path.
-                */
-                var schemeAndPath = uriSource.Split(new char[]{'/'}, 2);
-                var scheme = schemeAndPath[0];
-                IEnumerator cor = null;
-                switch (scheme) {
-                    case "assetbundle:": {
-                        var bundleName = uriSource;
-                        cor = LoadImageFromAssetBundle(uriSource, loaded, loadFailed);
-                        break;
+                    IEnumerator<Sprite> cor = null;
+                    switch (scheme) {
+                        case "assetbundle:": {
+                            var bundleName = uriSource;
+                            cor = LoadImageFromAssetBundle(uriSource);
+                            break;
+                        }
+                        case "https:":
+                        case "http:": {
+                            cor = LoadImageFromWeb(uriSource);
+                            break;
+                        }
+                        case ".": {
+                            var resourcePath = uriSource.Substring(2);
+                            cor = LoadImageFromResources(resourcePath);
+                            break;
+                        }
+                        case "resources:": {
+                            cor = LoadImageFromResources(uriSource);
+                            break;
+                        }
+                        default: {// other.
+                            throw new Exception("unsupported scheme:" + scheme);
+                        }
                     }
-                    case "https:":
-                    case "http:": {
-                        cor = LoadImageFromWeb(uriSource, loaded, loadFailed);
-                        break;
-                    }
-                    case ".": {
-                        var resourcePath = uriSource.Substring(2);
-                        cor = LoadImageFromResources(resourcePath, loaded, loadFailed);
-                        break;
-                    }
-                    case "resources:": {
-                        cor = LoadImageFromResources(uriSource, loaded, loadFailed);
-                        break;
-                    }
-                    default: {// other.
-                        throw new Exception("unsupported scheme:" + scheme);
-                    }
-                }
 
-                while (cor.MoveNext()) {
-                    yield return null;
+                    while (cor.MoveNext()) {
+                        if (cor.Current != null) {
+                            // set cache.
+                            spriteCache[uriSource] = cor.Current;
+                            break;
+                        }
+                        yield return null;
+                    }
+                    
+                    yield return spriteCache[uriSource];
                 }
             }
         }
@@ -528,12 +534,12 @@ namespace AutoyaFramework.Information {
             return imageLoad iEnum functions.   
          */
 
-        private IEnumerator LoadImageFromAssetBundle (string assetName, Action<Sprite> loaded, Action loadFailed) {
+        private IEnumerator<Sprite> LoadImageFromAssetBundle (string assetName) {
             yield return null;
             Debug.LogError("LoadImageFromAssetBundle bundleName:" + assetName);
         }
 
-        private IEnumerator LoadImageFromResources (string uriSource, Action<Sprite> loaded, Action loadFailed) {
+        private IEnumerator<Sprite> LoadImageFromResources (string uriSource) {
             var extLen = Path.GetExtension(uriSource).Length;
             var uri = uriSource.Substring(0, uriSource.Length - extLen);
 
@@ -543,7 +549,6 @@ namespace AutoyaFramework.Information {
             }
             
             if (resourceLoadingCor.asset == null) {
-                loadFailed();
                 yield break;
             }
 
@@ -551,10 +556,10 @@ namespace AutoyaFramework.Information {
             var tex = resourceLoadingCor.asset as Texture2D;
             var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
             
-            loaded(spr);
+            yield return spr;
         }
 
-        private IEnumerator LoadImageFromWeb (string url, Action<Sprite> loaded, Action loadFailed) {
+        private IEnumerator<Sprite> LoadImageFromWeb (string url) {
             var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_IMAGE_PREFIX + Guid.NewGuid().ToString();
             var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
@@ -576,7 +581,6 @@ namespace AutoyaFramework.Information {
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
                         Debug.LogError("timeout. load aborted, dataPath:" + url);
                         request.Abort();
-                        loadFailed();
                         yield break;
                     }
                 }
@@ -596,12 +600,13 @@ namespace AutoyaFramework.Information {
                             throw new Exception("request encountered some kind of error.");
                         }, 
                         (conId, code, reason, autoyaStatus) => {
-                            Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
-                            loadFailed();
+                            // do nothing.
                         }
                     );
                     yield break;
                 }
+
+                Sprite spr = null;
 
                 httpResponseHandlingDelegate(
                     connectionId,
@@ -614,17 +619,16 @@ namespace AutoyaFramework.Information {
                         var tex = DownloadHandlerTexture.GetContent(request);
 
                         // cache this sprite for other requests.
-                        var spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
-                        spriteCache[url] = spr;
-                        
-                        loaded(spriteCache[url]);
+                        spr = Sprite.Create(tex, new Rect(0,0, tex.width, tex.height), Vector2.zero);
                     }, 
                     (conId, code, reason, autoyaStatus) => {
-                        Debug.LogError("failed to download image:" + url + " code:" + code + " reason:" + reason);
-                        loadFailed();
+                        // do nothing.
                     }
                 );
-            
+
+                if (spr != null) {
+                    yield return spr;
+                }
             }
         }
 
@@ -648,11 +652,6 @@ namespace AutoyaFramework.Information {
         }
 
         public void BackGameObjects (params string[] usingIds) {
-            // 使ってるものは位置変更をすればいいはず。
-            // .系は内容も変わることがある。->string全般。
-            // イベント開始から完了までロック
-            //     reloadingハンドラ？
-            
             var cachedKeys = goCache.Keys.ToArray();
 
             var unusingIds = cachedKeys.Except(usingIds);
@@ -771,7 +770,7 @@ namespace AutoyaFramework.Information {
                 var constraints = customTagList.layerConstraints;
 
                 foreach (var constraint in constraints) {
-                    constraintsDict[constraint.layerName.ToLower()] = constraint.constraints;
+                    constraintsDict[constraint.layerName.ToLower()] = constraint.boxes;
                 }
 
                 IsLoadingDepthAssetList = false;

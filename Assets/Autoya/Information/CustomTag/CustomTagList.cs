@@ -21,7 +21,7 @@ namespace AutoyaFramework.Information {
                 tagNames[content.contentName] = content.type;
             }
             foreach (var constraint in layerConstraints) {
-                if (constraint.constraints.Any()) {
+                if (constraint.boxes.Any()) {
                     tagNames[constraint.layerName] = TreeType.CustomLayer;
                 } else {
                     tagNames[constraint.layerName] = TreeType.CustomEmptyLayer;
@@ -44,13 +44,23 @@ namespace AutoyaFramework.Information {
         }
     }
 
+    [Serializable] public class LayerInfoOnEditor {
+        [SerializeField] public LayerInfo layerInfo;
+        [SerializeField] public Vector2 collisionBaseSize;
+        public LayerInfoOnEditor (LayerInfo layerInfo, Vector2 collisionBaseSize) {
+            this.layerInfo = layerInfo;
+            this.collisionBaseSize = collisionBaseSize;
+        }
+    }
+
     [Serializable] public class LayerInfo {
         [SerializeField] public string layerName;
-        [SerializeField] public BoxConstraint[] constraints;
+        [SerializeField] public BoxConstraint[] boxes;
+        [SerializeField] public BoxCollisionGroup[] collisions;
         [SerializeField] public string loadPath;
-        public LayerInfo (string layerName, BoxConstraint[] constraints, string loadPath) {
+        public LayerInfo (string layerName, BoxConstraint[] boxes, string loadPath) {
             this.layerName = layerName;
-            this.constraints = constraints;
+            this.boxes = boxes;
             this.loadPath = loadPath;
         }
     }
@@ -87,6 +97,13 @@ namespace AutoyaFramework.Information {
         
         override public string ToString () {
             return "anchoredPosition:" + this.anchoredPosition + " sizeDelta:" + this.sizeDelta + " offsetMin:" + this.offsetMin + " offsetMax:" + this.offsetMax + " pivot:" +this.pivot + " anchorMin:" + this.anchorMin + " anchorMax:" + this.anchorMax;
+        }
+    }
+
+    [Serializable] public class BoxCollisionGroup {
+        [SerializeField] public string[] boxNames;
+        public BoxCollisionGroup (string[] boxNames) {
+            this.boxNames = boxNames;
         }
     }
 }

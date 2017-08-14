@@ -4,25 +4,28 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
+    public Action OnLoadStarted;
     public Action OnLoadProgress;
-    public Action OnContentLoaded;
+    public Action OnLoaded;
     public Action OnContentLoadFailed;
     public Action OnElementTapped;
     public Action OnElementLongTapped;
     
-    void IUUebViewEventHandler.OnLoadProgress(double prog) {
-        Debug.Log("OnLoadProgress");
-        OnLoadProgress();
-    }
-
-    void IUUebViewEventHandler.OnContentLoaded() {
-        Debug.Log("OnContentLoaded");
-        if (OnContentLoaded != null) {
-            OnContentLoaded();
+    void IUUebViewEventHandler.OnLoadStarted() {
+        Debug.Log("OnLoadStarted");
+        if (OnLoadStarted != null) {
+            OnLoadStarted();
         }
     }
 
-    void IUUebViewEventHandler.OnContentLoadFailed(ContentType type, int code, string reason) {
+    void IUUebViewEventHandler.OnLoaded() {
+        Debug.Log("OnLoaded");
+        if (OnLoaded != null) {
+            OnLoaded();
+        }
+    }
+
+    void IUUebViewEventHandler.OnLoadFailed(ContentType type, int code, string reason) {
         Debug.Log("OnContentLoadFailed type:" + type + " code:" + code + " reason:" + reason);
         if (OnContentLoadFailed != null) {
             OnContentLoadFailed();
@@ -42,4 +45,6 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
             OnElementLongTapped();
         }
     }
+
+    
 }

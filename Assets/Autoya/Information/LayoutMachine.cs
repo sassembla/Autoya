@@ -190,8 +190,6 @@ namespace AutoyaFramework.Information {
 			}
 
 			
-			var additionalHeight = 0f;
-
 			foreach (var boxTree in children) {
 				// Debug.LogError("box tag:" + resLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
 
@@ -204,7 +202,7 @@ namespace AutoyaFramework.Information {
 				var viewRect = TagTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
 				// Debug.LogError("viewRect:" + viewRect);
 
-				var childView = new ViewCursor(viewRect.x, viewRect.y + additionalHeight, viewRect.width, viewRect.height);
+				var childView = new ViewCursor(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
 
 				var cor = LayoutBoxedContents(boxTree, childView);
 
@@ -216,16 +214,17 @@ namespace AutoyaFramework.Information {
 				}
 
 				childView = cor.Current;
+				
 				// Debug.LogError("boxの中身:" + resLoader.GetTagFromIndex(boxTree.parsedTag) + " の、layout後viewCursor:" + childView);
 				if (viewRect.height < childView.viewHeight) {
-					// Debug.LogError("レイアウト後のサイズが大きいので、次のrectの開始位置を差分だけズラす。");
-					additionalHeight = childView.viewHeight - viewRect.height;
+					var additionalHeight = childView.viewHeight - viewRect.height;
+					// これは干渉高さみたいなやつで、パーツごとに持っておくのがいいのかな。
 				}
 			}
 			
-			Debug.LogWarning("横揃えのものの高さを変えたい場合、boxごとの下端みたいなのの概念を持ち出さないといけないぽい。あれか、boxのめり込みグループを勝手に発掘するか。Antimaterialize時に干渉するものを出しておく的な。boxの出現順をもとに子供コンテンツを制御する必要がある。下端がめりこんでいるコンテンツのYをズラす。横はグルーピングで頑張って、みたいな。");
+			Debug.LogWarning("同じレイヤー内で要素がcrossしてるかどうかを判断して、crossしてなくてかつ干渉する可能性があるなら、みたいなことを考えるか。Antimaterializerでやれば良さげ。");
 			// Debug.LogError("ここでカスタムタグ自体のサイズを変更する。　additionalHeight:" + additionalHeight);
-			viewCursor.viewHeight += additionalHeight;
+			// viewCursor.viewHeight += additionalHeight;
 
 			// セット
 			layerTree.SetPosFromViewCursor(viewCursor);
@@ -285,24 +284,26 @@ namespace AutoyaFramework.Information {
 			if (resLoader.IsDefaultTag(imgTree.tagValue)) {
 				// default img tag. need to download image for determine size.
 
-				var cor = resLoader.LoadImageAsync(
-					src, 
-					(sprite) => {
-						imageWidth = sprite.rect.size.x;
-						
-						if (viewCursor.viewWidth < imageWidth) {
-							imageWidth = viewCursor.viewWidth;
-						}
-						
-						imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
-					},
-					() => {
-						imageHeight = 0;
-					}
-				);
+				var cor = resLoader.LoadImageAsync(src);
 
 				while (cor.MoveNext()) {
+					if (cor.Current != null) {
+						break;
+					}
 					yield return null;
+				}
+
+				if (cor.Current != null) {
+					var sprite = cor.Current;
+					imageWidth = sprite.rect.size.x;
+					
+					if (viewCursor.viewWidth < imageWidth) {
+						imageWidth = viewCursor.viewWidth;
+					}
+					
+					imageHeight = (imageWidth / sprite.rect.size.x) * sprite.rect.size.y;
+				} else {
+					imageHeight = 0;
 				}
 			} else {
 				// customtag, requires prefab.
@@ -727,7 +728,7 @@ namespace AutoyaFramework.Information {
 
 							// ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
 							childView = ViewCursor.NextLine(childView, newLineOffsetY, boxView.viewWidth);
-							Debug.LogError("box child:" + child.tagValue + " done," + child.ShowContent() + " next childView:" + childView);
+							// Debug.LogError("box child:" + child.tagValue + " done," + child.ShowContent() + " next childView:" + childView);
 							continue;
 						}
 					}

@@ -43,183 +43,210 @@ namespace AutoyaFramework.Information {
 		}
 
 		[MenuItem("/Window/TestMaterialize")] public static void RunTests () {
-			EditorSampleMaterial();
-			EditorSampleMaterialWithDepth();
-			CheckIfSameCustomTagInOneView();
-			EditorSampleMaterialWithMoreDepth();
-			ExportedCustomTagPrefabHasZeroPos();
-			ExportedCustomTagPrefabHasLeftTopFixedAnchor();
-			ExportedCustomTagPrefabHasOriginalSize();
-			ExportedCustomTagNotContainedBox();
-			ExportedCustomTagChildHasZeroPos();
+			// EditorSampleMaterial();
+			// EditorSampleMaterialWithDepth();
+			// CheckIfSameCustomTagInOneView();
+			// EditorSampleMaterialWithMoreDepth();
+			// ExportedCustomTagPrefabHasZeroPos();
+			// ExportedCustomTagPrefabHasLeftTopFixedAnchor();
+			// ExportedCustomTagPrefabHasOriginalSize();
+			// ExportedCustomTagNotContainedBox();
+			// ExportedCustomTagChildHasZeroPos();
+			MultipleBoxConstraints();
+			// LastLayerWithTextCanBeContent();
 		}
 
 		// 階層なしのものを分解する
-		private static void EditorSampleMaterial () {
-			var testTargetSampleObjName = "EditorSampleMaterial";
-			Run(testTargetSampleObjName,
-				() => {
-					Antimaterializer.Antimaterialize();
+		// private static void EditorSampleMaterial () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterial";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
 					
-					// カスタムタグを生成する。
-					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList");
-					Debug.Assert(jsonAsset, "no output file.");
-				}
-			);
-		}
+		// 			// カスタムタグを生成する。
+		// 			var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList");
+		// 			Debug.Assert(jsonAsset, "no output file.");
+		// 		}
+		// 	);
+		// }
 
-		// 階層付きのレイヤーを分解する
-		public static void EditorSampleMaterialWithDepth () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithDepth";
-			Run(testTargetSampleObjName,
-				() => {
-					Antimaterializer.Antimaterialize();
-					/*
-						で、吐き出したものが存在していて、そのツリー構造を読み込んで意図とあってれば良し。
-					 */
+		// // 階層付きのレイヤーを分解する
+		// public static void EditorSampleMaterialWithDepth () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
+		// 			/*
+		// 				で、吐き出したものが存在していて、そのツリー構造を読み込んで意図とあってれば良し。
+		// 			 */
 
-					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
-					var jsonStr = jsonAsset.text;
+		// 			var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
+		// 			var jsonStr = jsonAsset.text;
 					
-					var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
-					Debug.Assert(list.viewName == testTargetSampleObjName);
+		// 			var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
+		// 			Debug.Assert(list.viewName == testTargetSampleObjName);
 
-					var boxConstraintes = list.layerConstraints;
+		// 			var boxConstraintes = list.layerConstraints;
 					
-					// 本体 + MyImgItemの2レイヤーで2
-					Debug.Assert(boxConstraintes.Length == 2, "boxConstraints:" + boxConstraintes.Length);
+		// 			// 本体 + MyImgItemの2レイヤーで2
+		// 			Debug.Assert(boxConstraintes.Length == 2, "boxConstraints:" + boxConstraintes.Length);
 
-					// prefabファイルが生成されているかチェック
-					var createdAsset = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgItem") as GameObject;
-					Debug.Assert(createdAsset != null, "createdAsset:" + createdAsset + " is null.");
+		// 			// prefabファイルが生成されているかチェック
+		// 			var createdAsset = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgItem") as GameObject;
+		// 			Debug.Assert(createdAsset != null, "createdAsset:" + createdAsset + " is null.");
 
-					// 作成されたprefabのRectTransがあるか
-					var rectTrans = createdAsset.GetComponent<RectTransform>();
-					Debug.Assert(rectTrans != null);
+		// 			// 作成されたprefabのRectTransがあるか
+		// 			var rectTrans = createdAsset.GetComponent<RectTransform>();
+		// 			Debug.Assert(rectTrans != null);
 
-					// 原点を指しているか
-					Debug.Assert(rectTrans.anchoredPosition == Vector2.zero);
-				}
-			);
-		}
+		// 			// 原点を指しているか
+		// 			Debug.Assert(rectTrans.anchoredPosition == Vector2.zero);
+		// 		}
+		// 	);
+		// }
 
-		public static void CheckIfSameCustomTagInOneView () {
-			// 同一名称のカスタムタグが存在するという違反があるので、キャンセルされる。
-			var testTargetSampleObjName = "CheckIfSameCustomTagInOneView";
-			Run(testTargetSampleObjName,
-				() => {
-					try {
-						Antimaterializer.Antimaterialize();
-						Debug.Assert(false, "never done.");
-					} catch {
-						// pass.
-					}
-				}
-			);
-		}
+		// public static void CheckIfSameCustomTagInOneView () {
+		// 	// 同一名称のカスタムタグが存在するという違反があるので、キャンセルされる。
+		// 	var testTargetSampleObjName = "CheckIfSameCustomTagInOneView";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			try {
+		// 				Antimaterializer.Antimaterialize();
+		// 				Debug.Assert(false, "never done.");
+		// 			} catch {
+		// 				// pass.
+		// 			}
+		// 		}
+		// 	);
+		// }
 
-		public static void EditorSampleMaterialWithMoreDepth () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
-			Run(testTargetSampleObjName,
-				() => {
-					Antimaterializer.Antimaterialize();
+		// public static void EditorSampleMaterialWithMoreDepth () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
 
-					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
-					var jsonStr = jsonAsset.text;
+		// 			var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
+		// 			var jsonStr = jsonAsset.text;
 					
-					var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
-					Debug.Assert(list.viewName == testTargetSampleObjName);
+		// 			var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
+		// 			Debug.Assert(list.viewName == testTargetSampleObjName);
 
-					var boxConstraints = list.layerConstraints;
+		// 			var boxConstraints = list.layerConstraints;
 					
-					// MyImgAndTextItem, IMG, Text_CONTAINER, Text の4つが吐かれる
-					Debug.Assert(boxConstraints.Length == 4, "boxConstraints:" + boxConstraints.Length);
-				}
-			);
-		}
+		// 			// MyImgAndTextItem, IMG, Text_CONTAINER, Text の4つが吐かれる
+		// 			Debug.Assert(boxConstraints.Length == 4, "boxConstraints:" + boxConstraints.Length);
+		// 		}
+		// 	);
+		// }
 		
 
-		public static void ExportedCustomTagPrefabHasZeroPos () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
-			Run(testTargetSampleObjName,
-				() => {
-					Antimaterializer.Antimaterialize();
+		// public static void ExportedCustomTagPrefabHasZeroPos () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
 					
-					// EditorSampleMaterialWithMoreDepthプレファブの原点が0
-					var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
-					if (prefab != null) {
-						var rectTrans = prefab.GetComponent<RectTransform>();
-						Debug.Assert(rectTrans.anchoredPosition == Vector2.zero, "not zero, pos:" + rectTrans.anchoredPosition);
-					}
-				}
-			);
-		}
+		// 			// EditorSampleMaterialWithMoreDepthプレファブの原点が0
+		// 			var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
+		// 			if (prefab != null) {
+		// 				var rectTrans = prefab.GetComponent<RectTransform>();
+		// 				Debug.Assert(rectTrans.anchoredPosition == Vector2.zero, "not zero, pos:" + rectTrans.anchoredPosition);
+		// 			}
+		// 		}
+		// 	);
+		// }
 
-		public static void ExportedCustomTagPrefabHasLeftTopFixedAnchor () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
-			Run(testTargetSampleObjName,
-				() => {
-					Antimaterializer.Antimaterialize();
+		// public static void ExportedCustomTagPrefabHasLeftTopFixedAnchor () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
 					
-					var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
-					if (prefab != null) {
-						var rectTrans = prefab.GetComponent<RectTransform>();
+		// 			var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
+		// 			if (prefab != null) {
+		// 				var rectTrans = prefab.GetComponent<RectTransform>();
 						
-						Debug.Assert(rectTrans.anchorMin == new Vector2(0,1) && rectTrans.anchorMax == new Vector2(0,1), "not match.");
-					}
-				}
-			);
-		}
+		// 				Debug.Assert(rectTrans.anchorMin == new Vector2(0,1) && rectTrans.anchorMax == new Vector2(0,1), "not match.");
+		// 			}
+		// 		}
+		// 	);
+		// }
 
-		public static void ExportedCustomTagPrefabHasOriginalSize () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
-			Run(testTargetSampleObjName,
-				() => {
-					var original = GameObject.Find("MyImgAndTextItem");
+		// public static void ExportedCustomTagPrefabHasOriginalSize () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			var original = GameObject.Find("MyImgAndTextItem");
 					
-					Antimaterializer.Antimaterialize();
+		// 			Antimaterializer.Antimaterialize();
 					
-					var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
-					if (prefab != null) {
-						var rectTrans = prefab.GetComponent<RectTransform>();
-						var originalRectTrans = original.GetComponent<RectTransform>();
+		// 			var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
+		// 			if (prefab != null) {
+		// 				var rectTrans = prefab.GetComponent<RectTransform>();
+		// 				var originalRectTrans = original.GetComponent<RectTransform>();
 
-						Debug.Assert(rectTrans.sizeDelta == originalRectTrans.sizeDelta, "not match.");
-					}
-				}
-			);
-		}
+		// 				Debug.Assert(rectTrans.sizeDelta == originalRectTrans.sizeDelta, "not match.");
+		// 			}
+		// 		}
+		// 	);
+		// }
 
-		public static void ExportedCustomTagNotContainedBox () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
-			Run(testTargetSampleObjName,
-				() => {
-					Antimaterializer.Antimaterialize();
+		// public static void ExportedCustomTagNotContainedBox () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
 					
-					var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
-					if (prefab != null) {
-						var childCount = prefab.transform.childCount;
+		// 			var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/MyImgAndTextItem") as GameObject;
+		// 			if (prefab != null) {
+		// 				var childCount = prefab.transform.childCount;
 						
-						Debug.Assert(childCount == 0, "not match. childCount:" + childCount);
-					}
-				}
-			);
-		}
+		// 				Debug.Assert(childCount == 0, "not match. childCount:" + childCount);
+		// 			}
+		// 		}
+		// 	);
+		// }
 
-		public static void ExportedCustomTagChildHasZeroPos () {
-			var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// public static void ExportedCustomTagChildHasZeroPos () {
+		// 	var testTargetSampleObjName = "EditorSampleMaterialWithMoreDepth";
+		// 	Run(testTargetSampleObjName,
+		// 		() => {
+		// 			Antimaterializer.Antimaterialize();
+					
+		// 			// EditorSampleMaterialWithMoreDepthプレファブの原点が0
+		// 			var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/IMG") as GameObject;
+		// 			if (prefab != null) {
+		// 				var rectTrans = prefab.GetComponent<RectTransform>();
+		// 				Debug.Assert(rectTrans.anchoredPosition == Vector2.zero, "not zero, pos:" + rectTrans.anchoredPosition);
+		// 			}
+		// 		}
+		// 	);
+		// }
+
+		public static void MultipleBoxConstraints () {
+			var testTargetSampleObjName = "MultipleBoxConstraints";
 			Run(testTargetSampleObjName,
 				() => {
 					Antimaterializer.Antimaterialize();
 					
-					// EditorSampleMaterialWithMoreDepthプレファブの原点が0
-					var prefab = Resources.Load("Views/" + testTargetSampleObjName + "/IMG") as GameObject;
-					if (prefab != null) {
-						var rectTrans = prefab.GetComponent<RectTransform>();
-						Debug.Assert(rectTrans.anchoredPosition == Vector2.zero, "not zero, pos:" + rectTrans.anchoredPosition);
-					}
+					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
+					var jsonText = jsonAsset.text;
+					// Debug.LogError("jsontext:" + jsonText);
+					var list = JsonUtility.FromJson<CustomTagList>(jsonText);
+					var boxCol = list.layerConstraints[0].collisions;
+					Debug.Assert(boxCol.Length == 3, "not 3, boxCol.Length:" + boxCol.Length);
+
+					Debug.Assert(boxCol[0].boxNames.Contains("itemlayout_topleft"), "not contains");
+					Debug.Assert(boxCol[0].boxNames.Contains("itemlayout_topright"), "not contains");
+					Debug.Assert(boxCol[1].boxNames.Contains("itemlayout_content"), "not contains");
+					Debug.Assert(boxCol[2].boxNames.Contains("itemlayout_bottom"), "not contains");
 				}
 			);
+		}
+
+		public static void LastLayerWithTextCanBeContent () {
+			Debug.LogError("not yet implemented.");
 		}
 
 	}

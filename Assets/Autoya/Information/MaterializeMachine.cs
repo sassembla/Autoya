@@ -96,18 +96,17 @@ namespace AutoyaFramework.Information {
 			switch (tree.treeType) {
 				case TreeType.Content_Img: {
 					var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+					if (tree.viewHeight == 0) {
+						break;
+					}
+					
 					if (!cached) {
-						var imageLoadCor = resLoader.LoadImageAsync(
-							src, 
-							sprite => {
-								newGameObject.GetComponent<Image>().sprite = sprite;
-							},
-							() => {
-								// download failed. do nothing.
-							}
-						);
+						var imageLoadCor = resLoader.LoadImageAsync(src);
 
-						resLoader.LoadParallel(imageLoadCor);
+						// combine coroutine.
+						var setImageCor = SetImageCor(newGameObject, imageLoadCor);
+
+						resLoader.LoadParallel(setImageCor);
 					}
 					
 					if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
@@ -168,6 +167,20 @@ namespace AutoyaFramework.Information {
 					}
 					yield return null;
 				}
+			}
+		}
+
+		private IEnumerator SetImageCor (GameObject target, IEnumerator<Sprite> imageLoadCor) {
+			while (imageLoadCor.MoveNext()) {
+				if (imageLoadCor.Current != null) {
+					break;
+				}
+				yield return null;
+			}
+
+			if (imageLoadCor.Current != null) {
+				var sprite = imageLoadCor.Current;
+				target.GetComponent<Image>().sprite = sprite;
 			}
 		}
 

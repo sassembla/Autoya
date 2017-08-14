@@ -21,7 +21,7 @@ public class ViewGen : MonoBehaviour {
 		var posList = JsonUtility.FromJson<CustomTagList>(jsonStr);
 		var gameObj = new GameObject("test");
 
-		var pos = posList.layerConstraints[0].constraints[0].rect;
+		var pos = posList.layerConstraints[0].boxes[0].rect;
 		
 		var trans = gameObj.AddComponent<RectTransform>();
 		trans.SetParent(parent.transform);
