@@ -11,6 +11,17 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
 
+	public enum ParseErrors {
+		NOT_RESERVED_TAG_IN_LAYER,
+        FAILED_TO_PARSE_LIST_URI,
+        CLOSETAG_NOT_FOUND,
+        FAILED_TO_PARSE_COMMENT,
+        UNSUPPORTED_ATTR_FOUND,
+        UNEXPECTED_ATTR_DESCRIPTION,
+        CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY,
+        UNDEFINED_TAG
+    }
+
     /**
         パーサ。
         stringからTagTreeを生成する。
@@ -23,14 +34,27 @@ namespace AutoyaFramework.Information {
 			this.resLoader = resLoader;
 		}
 
-        public IEnumerator ParseRoot (string source, Action<TagTree> parsed) {
+		private Action<int, string> parseFailed;
+
+        public IEnumerator ParseRoot (string source, Action<ParsedTree> parsed) {
 			var lines = source.Split('\n');
 			for (var i = 0; i < lines.Length; i++) {
 				lines[i] = lines[i].TrimStart();
 			}
 
-            var root = new TagTree();
-            return Parse(root, string.Join(string.Empty, lines), parsed);
+
+            var root = new ParsedTree();
+			parseFailed = (code, reason) => {
+				root.errors.Add(new ParseError(code, reason));
+			};
+
+			var cor = Parse(root, string.Join(string.Empty, lines));
+
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+			
+			parsed(root);
         }
 
         /**
@@ -39,7 +63,7 @@ namespace AutoyaFramework.Information {
 
 			そのうち単一のArrayとしてindexのみで処理するように書き換えると、文字のコピーが減って楽。
 		 */
-        private IEnumerator Parse (TagTree parentTree, string data, Action<TagTree> parsed) {
+        private IEnumerator Parse (TagTree parentTree, string data) {
 			// Debug.LogError("data:" + data + " parentTree:" + resLoader.GetTagFromIndex(parentTree.parsedTag));
 			var charIndex = 0;
 			var readPoint = 0;
@@ -63,7 +87,10 @@ namespace AutoyaFramework.Information {
 							// <!--SOMETHING-->
 							var endPos = -1;
 							var contentStr = GetContentOfCommentTag(data, charIndex, out endPos);
-							
+							if (endPos == -1) {
+								yield break;
+							}
+
 							var cor = ParseAsComment(parentTree, contentStr);
 							while (cor.MoveNext()) {
 								yield return null;
@@ -77,6 +104,10 @@ namespace AutoyaFramework.Information {
 						// ignore !SOMETHING tag.
 						case (int)HTMLTag._IGNORED_EXCLAMATION_TAG: {
 							charIndex = GetClosePointOfIgnoredTag(data, charIndex);
+							if (charIndex == -1) {
+								yield break;
+							}
+
 							readPoint = charIndex;
 							continue;
 						}
@@ -92,11 +123,14 @@ namespace AutoyaFramework.Information {
 						// html tag will be parsed without creating html tag.
 						case (int)HTMLTag.html: {
 							var endTagStartPos = GetStartPointOfCloseTag(data, charIndex, foundTag);
+							if (endTagStartPos == -1) {
+								yield break;
+							}
 
 							// only content string should be parse.
 							var contentStr = GetTagContent(data, charIndex, foundTag, endTagStartPos);
 
-							var cor = Parse(parentTree, contentStr, parsedTree => {});
+							var cor = Parse(parentTree, contentStr);
 							while (cor.MoveNext()) {
 								yield return null;
 							}
@@ -110,6 +144,10 @@ namespace AutoyaFramework.Information {
 						case (int)HTMLTag.head:
 						case (int)HTMLTag.title:{
 							charIndex = GetClosePointOfTag(data, charIndex, foundTag);
+							if (charIndex == -1) {
+								yield break;
+							}
+
 							readPoint = charIndex;
 							continue;
 						}
@@ -162,6 +200,9 @@ namespace AutoyaFramework.Information {
 									var attrStr = data.Substring(tempCharIndex + 1, startTagEndIndex - tempCharIndex - 1);
 									
 									var kv = GetAttr(tag, attrStr);
+									if (kv == null) {
+										yield break;
+									}
 									
 									// tag closed point is tagEndIndex. next point is tagEndIndex + 1.
 									tempCharIndex = startTagEndIndex + 1;
@@ -190,17 +231,25 @@ namespace AutoyaFramework.Information {
 												contentTagPoint.SetParent(parentTree);
 											}
 										}
+										
+										{
+											var treeType = resLoader.GetTreeType(tag);
+											if (treeType == TreeType.NotFound) {
+												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+												yield break;
+											}
 
-										var tagPoint2 = new TagTree(
-											tag, 
-											kv,
-											resLoader.GetTreeType(tag)
-										);
-										tagPoint2.SetParent(parentTree);
+											var tagPoint2 = new TagTree(
+												tag, 
+												kv,
+												treeType
+											);
+											tagPoint2.SetParent(parentTree);
 
-										charIndex = tempCharIndex;
-										readPoint = tempReadPoint;
-										continue;
+											charIndex = tempCharIndex;
+											readPoint = tempReadPoint;
+											continue;
+										}
 									}
 
 									// Debug.LogError("not closed tag:" + tag + " in data:" + data);
@@ -212,7 +261,10 @@ namespace AutoyaFramework.Information {
 									var cascadedStartTagHead = "<" + rawTagName.ToLower();
 									
 									var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
-									
+									if (endTagIndex == -1) {
+										yield break;
+									}
+
 									// Debug.LogError("endTagIndex:" + endTagIndex);
 
 									// add content before tag.
@@ -230,44 +282,51 @@ namespace AutoyaFramework.Information {
 										}
 									}
 
+									{
+										var treeType = resLoader.GetTreeType(tag);
 
-									var tagPoint = new TagTree(
-										tag, 
-										kv,
-										resLoader.GetTreeType(tag)
-									);
-									tagPoint.SetParent(parentTree);
+										if (treeType == TreeType.NotFound) {
+											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+											yield break;
+										}
 
-									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
-									
-									// Debug.LogError("contents1:" + contents);
-									var cor = Parse(tagPoint, contents, parsedTree => {});
-									while (cor.MoveNext()) {
-										yield return null;
-									}
+										var tagPoint = new TagTree(
+											tag, 
+											kv,
+											treeType
+										);
+										tagPoint.SetParent(parentTree);
 
-									// one tag start & end is detected.
-									
-									tempCharIndex = endTagIndex + endTag.Length;
-									// Debug.LogError("tempCharIndex:" + tempCharIndex + " data:" + data[tempCharIndex]);
+										var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
+										
+										// Debug.LogError("contents1:" + contents);
+										var cor = Parse(tagPoint, contents);
+										while (cor.MoveNext()) {
+											yield return null;
+										}
 
-									tempReadPoint = tempCharIndex;
+										// one tag start & end is detected.
+										
+										tempCharIndex = endTagIndex + endTag.Length;
+										// Debug.LogError("tempCharIndex:" + tempCharIndex + " data:" + data[tempCharIndex]);
 
-									/*
-										<T [ATTR]>V</T><SOMETHING...
-									
-									 */
-									if (tempCharIndex < data.Length && data[tempCharIndex] == '<') {
+										tempReadPoint = tempCharIndex;
+
+										/*
+											<T [ATTR]>V</T><SOMETHING...
+										*/
+										if (tempCharIndex < data.Length && data[tempCharIndex] == '<') {
+											charIndex = tempCharIndex;
+											readPoint = tempReadPoint;
+											continue;
+										}
+										
+										tempCharIndex++;
+
 										charIndex = tempCharIndex;
 										readPoint = tempReadPoint;
 										continue;
 									}
-									
-									tempCharIndex++;
-
-									charIndex = tempCharIndex;
-									readPoint = tempReadPoint;
-									continue;;
 								}
 								case '>': {// <tag> start tag is closed.
 									// set to next char.
@@ -282,6 +341,10 @@ namespace AutoyaFramework.Information {
 									var cascadedStartTagHead = "<" + rawTagName.ToLower();
 
 									var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
+									if (endTagIndex == -1) {
+										yield break;
+									}
+
 
 									// add content before tag.
 									if (0 < readingPointLength) {
@@ -300,15 +363,21 @@ namespace AutoyaFramework.Information {
 
 									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
 									
+									var treeType = resLoader.GetTreeType(tag);
+									if (treeType == TreeType.NotFound) {
+										parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+										yield break;
+									}
+
 									var tree = new TagTree(
 										tag,
 										new AttributeKVs(),
-										resLoader.GetTreeType(tag)
+										treeType
 									);
 									tree.SetParent(parentTree);
 									
 									// Debug.LogError("contents2:" + contents);
-									var cor = Parse(tree, contents, parsedTree => {});
+									var cor = Parse(tree, contents);
 									while (cor.MoveNext()) {
 										yield return null;
 									}
@@ -321,7 +390,8 @@ namespace AutoyaFramework.Information {
 									continue;
 								}
 								default: {
-									throw new Exception("parse error. unknown keyword found:" + data[charIndex] + " at tag:" + tag);
+									parseFailed(-1, "parse error. unknown keyword found:" + data[charIndex] + " at tag:" + tag);
+									yield break;
 								}
 							}
 						}
@@ -351,13 +421,11 @@ namespace AutoyaFramework.Information {
 					break;
 				}
 			}
-
-            parsed(parentTree);
         }
 
-		private void ExpandCustomTagToLayer (TagTree tree) {
-			var adoptedConstaints = resLoader.GetConstraints(tree.tagValue);
-			var children = tree.GetChildren();
+		private void ExpandCustomTagToLayer (TagTree layerBaseTree) {
+			var adoptedConstaints = resLoader.GetConstraints(layerBaseTree.tagValue);
+			var children = layerBaseTree.GetChildren();
 
 			/*
 				これで、
@@ -369,7 +437,23 @@ namespace AutoyaFramework.Information {
 			foreach (var box in adoptedConstaints) {
 				var boxName = box.boxName;
 
-				var boxingChildren = children.Where(c => resLoader.GetLayerBoxName(tree.tagValue, c.tagValue) == boxName).ToArray();
+				var boxingChildren = children.Where(c => resLoader.GetLayerBoxName(layerBaseTree.tagValue, c.tagValue) == boxName).ToArray();
+				
+				foreach (var boxingChild in boxingChildren) {
+					var boxingChildChildren = boxingChild.GetChildren();
+					foreach (var boxingChildChild in boxingChildChildren) {
+						if (!resLoader.IsDefaultTag(boxingChildChild.tagValue)) {
+							switch (boxingChildChild.treeType) {
+								case TreeType.Content_CRLF:
+								case TreeType.Content_Text: {
+									parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + resLoader.GetTagFromValue(boxingChildChild.tagValue) + " could not contain text value directly. please wrap text content with some tag.");
+									return;
+								}
+							}
+						}
+					}
+				}
+
 				if (boxingChildren.Any()) {
 					var boxTag = resLoader.FindOrCreateTag(boxName);
 
@@ -381,16 +465,16 @@ namespace AutoyaFramework.Information {
 					var boxTree = new TagTree(boxTag, newBoxTreeAttr, TreeType.CustomBox);
 					
 					// すでに入っているchildrenを取り除いて、boxを投入
-					tree.ReplaceChildrenToBox(boxingChildren, boxTree);
+					layerBaseTree.ReplaceChildrenToBox(boxingChildren, boxTree);
 					
 					// boxTreeにchildを追加
 					boxTree.AddChildren(boxingChildren);
 				}
 			}
 
-			var errorTrees = tree.GetChildren().Where(c => c.treeType != TreeType.CustomBox);
+			var errorTrees = layerBaseTree.GetChildren().Where(c => c.treeType != TreeType.CustomBox);
 			if (errorTrees.Any()) {
-				throw new Exception("unexpected tag:" + string.Join(", ", errorTrees.Select(t => resLoader.GetTagFromValue(t.tagValue)).ToArray()) + " found at customLayer:" + resLoader.GetTagFromValue(tree.tagValue) + ". please exclude not defined tags in this layer, or define it on this layer.");
+				parseFailed((int)ParseErrors.NOT_RESERVED_TAG_IN_LAYER, "unexpected tag:" + string.Join(", ", errorTrees.Select(t => resLoader.GetTagFromValue(t.tagValue)).ToArray()) + " found at customLayer:" + resLoader.GetTagFromValue(layerBaseTree.tagValue) + ". please exclude not defined tags in this layer, or define it on this layer.");
 			}
 		}
 		
@@ -412,7 +496,8 @@ namespace AutoyaFramework.Information {
 				try {
 					var uri = new Uri(depthAssetListUrl);
 				} catch (Exception e) {
-					throw new Exception("failed to get uri from depth asset list url. error:" + e);
+					parseFailed((int)ParseErrors.FAILED_TO_PARSE_LIST_URI, "failed to get uri from depth asset list url. error:" + e);
+					yield break;
 				}
 				
 				/*
@@ -432,14 +517,18 @@ namespace AutoyaFramework.Information {
 		private string GetContentOfCommentTag (string data, int offset, out int tagEndPos) {
 			var startPos = data.IndexOf("<!--", offset);
 			if (startPos == -1) {
-				throw new Exception("failed to parse comment tag. Information feature uses specific formatted comment tag.");
+				parseFailed((int)ParseErrors.FAILED_TO_PARSE_COMMENT, "failed to parse comment tag. Information feature uses specific formatted comment tag.");
+				tagEndPos = -1;
+				return string.Empty;
 			}
 
 			var commentContentStartPos = startPos + "<!--".Length;
 
 			var commentEndPos = data.IndexOf("-->", commentContentStartPos);
 			if (commentEndPos == -1) {
-				throw new Exception("failed to find end of comment tag. Information feature uses specific formatted comment tag.");
+				parseFailed((int)ParseErrors.FAILED_TO_PARSE_COMMENT, "failed to find end of comment tag. Information feature uses specific formatted comment tag.");
+				tagEndPos = -1;
+				return string.Empty;
 			}
 
 			// set tag end pos. <!--SOMETHING-->(here)
@@ -467,7 +556,8 @@ namespace AutoyaFramework.Information {
 		private int GetClosePointOfIgnoredTag (string data, int offset) {
 			var nearestCloseTagIndex = data.IndexOf('>', offset);
 			if (nearestCloseTagIndex == -1) {
-				throw new Exception("failed to parse data. tag like <!~ is not closed properly.");
+				parseFailed((int)ParseErrors.CLOSETAG_NOT_FOUND, "failed to parse data. tag like <!~ is not closed properly.");
+				return -1;
 			}
 			return nearestCloseTagIndex + 1;
 		}
@@ -481,7 +571,8 @@ namespace AutoyaFramework.Information {
 			var closeTagStr = "</"+ foundTagStr.ToLower() + ">";
 			var nearestHeaderCloseTagIndex = data.IndexOf(closeTagStr, offset);
 			if (nearestHeaderCloseTagIndex == -1) {
-				throw new Exception("failed to parse data. tag '" + foundTagStr + "' is not closed properly.");
+				parseFailed((int)ParseErrors.CLOSETAG_NOT_FOUND, "failed to parse data. tag '" + foundTagStr + "' is not closed properly.");
+				return -1;
 			}
 			return nearestHeaderCloseTagIndex;
 		}
@@ -525,8 +616,9 @@ namespace AutoyaFramework.Information {
 					return endIndex;
 				}
 			}
-			
-			throw new Exception("parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset + " data:" + data);
+
+			parseFailed((int)ParseErrors.CLOSETAG_NOT_FOUND, "parse error. failed to find end tag:" + endTagStr + " after charIndex:" + offset + " data:" + data);
+			return -1;
 		}
         
 		private int[] GetStartTagIndexiesOf (string tagStr, string data, int offset) {
@@ -590,7 +682,8 @@ namespace AutoyaFramework.Information {
 				try {
 					keyEnum = (HTMLAttribute)Enum.Parse(typeof(HTMLAttribute), keyStr, true);
 				} catch (Exception e) {
-					throw new Exception("at tag:" + resLoader.GetTagFromValue(tagIndex) + ", found attribute:" + keyStr + " is not supported yet, e:" + e);
+					parseFailed((int)ParseErrors.UNSUPPORTED_ATTR_FOUND, "at tag:" + resLoader.GetTagFromValue(tagIndex) + ", found attribute:" + keyStr + " is not supported yet, e:" + e);
+					return null;
 				}
 				
 				var valStartIndex = eqIndex + 1;
@@ -599,7 +692,8 @@ namespace AutoyaFramework.Information {
 				var valEndIndex = source.IndexOf(delim, valStartIndex + 1);
 				if (valEndIndex == -1) {
 					// no delim end found.
-					throw new Exception("attribute at tag:" + resLoader.GetTagFromValue(tagIndex) + " contains illigal description. source:" + originalAttrSource);
+					parseFailed((int)ParseErrors.UNEXPECTED_ATTR_DESCRIPTION, "attribute at tag:" + resLoader.GetTagFromValue(tagIndex) + " contains illigal description. source:" + originalAttrSource);
+					return null;
 				}
 
 				var val = source.Substring(valStartIndex + 1, valEndIndex - (valStartIndex + 1));

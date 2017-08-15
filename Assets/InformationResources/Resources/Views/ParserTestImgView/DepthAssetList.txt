@@ -1,1 +1,1 @@
-{"viewName":"ParserTestImgView","contents":[{"contentName":"myimg","type":2,"loadPath":"resources://Views/ParserTestImgView/MYIMG"}],"layerConstraints":[]}
+{"viewName":"ParserTestImgView","contents":[{"contentName":"myimg","type":3,"loadPath":"resources://Views/ParserTestImgView/MYIMG"}],"layerConstraints":[]}

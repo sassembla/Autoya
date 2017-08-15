@@ -2,11 +2,23 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 
 namespace AutoyaFramework.Information {
+
+    public struct ParseError {
+        public readonly int code;
+        public readonly string reason;
+
+        public ParseError (int code, string reason) {
+            this.code = code;
+            this.reason = reason;
+        }
+    }
+
     public class UUebViewCore {
         private Dictionary<string, List<TagTree>> listenerDict = new Dictionary<string, List<TagTree>>();
 		public readonly UUebView view;
@@ -155,6 +167,10 @@ namespace AutoyaFramework.Information {
             var parse = parser.ParseRoot(
                 source,
                 parsedTagTree => {
+                    if (parsedTagTree.errors.Any()) {
+                        Debug.LogError("parse errors:" + parsedTagTree.errors.Count);
+                        return;
+                    }
                     reload = Update(parsedTagTree, viewRect, eventReceiverGameObj);
                 }
             );

@@ -53,9 +53,12 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 
     private TagTree CreateLayoutedTree (string sampleHtml) {
         TagTree parsedRoot = null;
-        var cor = parser.ParseRoot(sampleHtml, parsed => {
-            parsedRoot = parsed;
-        });
+        var cor = parser.ParseRoot(
+            sampleHtml, 
+            parsed => {
+                parsedRoot = parsed;
+            }
+        );
 
         RunOnMainThread(() => executor.CoroutineExecutor(cor));
         

@@ -1,1 +1,1 @@
-{"viewName":"ParserTestTextView","contents":[{"contentName":"mytext","type":0,"loadPath":"resources://Views/ParserTestTextView/MYTEXT"}],"layerConstraints":[]}
+{"viewName":"ParserTestTextView","contents":[{"contentName":"mytext","type":1,"loadPath":"resources://Views/ParserTestTextView/MYTEXT"}],"layerConstraints":[]}

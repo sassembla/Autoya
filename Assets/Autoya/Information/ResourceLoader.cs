@@ -702,7 +702,9 @@ namespace AutoyaFramework.Information {
             // foreach (var s in customTagTypeDict.Keys) {
             //     Debug.LogError("s:" + s);
             // }
-
+            if (!customTagTypeDict.ContainsKey(customTagStr)) {
+                return TreeType.NotFound;
+            }
             return customTagTypeDict[customTagStr];
         }
 

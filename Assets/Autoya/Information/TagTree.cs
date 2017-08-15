@@ -12,6 +12,7 @@ using UnityEngine.UI;
 namespace AutoyaFramework.Information {
     
     public enum TreeType {
+        NotFound,
         Container,
         Content_Text,
         Content_Img,
@@ -19,6 +20,10 @@ namespace AutoyaFramework.Information {
         CustomLayer,
         CustomBox,
         CustomEmptyLayer,
+    }
+
+    public class ParsedTree : TagTree {
+        public List<ParseError> errors = new List<ParseError>();
     }
 
     /**
@@ -112,16 +117,9 @@ namespace AutoyaFramework.Information {
         }
         
         public void SetParent (TagTree t) {
-            if (
-                t.tagValue == (int)HTMLTag._ROOT && 
-                this.treeType == TreeType.Content_Text
-            ) {
-                var val = this.keyValueStore[HTMLAttribute._CONTENT];
-                throw new Exception("invalid text contains outside of tag. val:" + val);
-            }
-            
-			t._children.Add(this);
+            t._children.Add(this);
 
+            Debug.LogWarning("そのうちなんか分けたほうがいいかも。");
             // inherit specific kv to child if child does not have kv.
             if (this.treeType == TreeType.Content_Text && t.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
                 this.keyValueStore[HTMLAttribute.HREF] = t.keyValueStore[HTMLAttribute.HREF];
