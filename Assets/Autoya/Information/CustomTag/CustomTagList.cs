@@ -47,6 +47,7 @@ namespace AutoyaFramework.Information {
     [Serializable] public class LayerInfoOnEditor {
         [SerializeField] public LayerInfo layerInfo;
         [SerializeField] public Vector2 collisionBaseSize;
+
         public LayerInfoOnEditor (LayerInfo layerInfo, Vector2 collisionBaseSize) {
             this.layerInfo = layerInfo;
             this.collisionBaseSize = collisionBaseSize;
@@ -56,7 +57,6 @@ namespace AutoyaFramework.Information {
     [Serializable] public class LayerInfo {
         [SerializeField] public string layerName;
         [SerializeField] public BoxConstraint[] boxes;
-        [SerializeField] public BoxCollisionGroup[] collisions;
         [SerializeField] public string loadPath;
         public LayerInfo (string layerName, BoxConstraint[] boxes, string loadPath) {
             this.layerName = layerName;
@@ -68,7 +68,8 @@ namespace AutoyaFramework.Information {
     [Serializable] public class BoxConstraint {
         [SerializeField] public string boxName;
         [SerializeField] public BoxPos rect;
-
+        [SerializeField] public int collisionGroupId;
+        
         public BoxConstraint (string boxName, BoxPos rect) {
             this.boxName = boxName.ToLower();
             this.rect = rect;
@@ -97,13 +98,6 @@ namespace AutoyaFramework.Information {
         
         override public string ToString () {
             return "anchoredPosition:" + this.anchoredPosition + " sizeDelta:" + this.sizeDelta + " offsetMin:" + this.offsetMin + " offsetMax:" + this.offsetMax + " pivot:" +this.pivot + " anchorMin:" + this.anchorMin + " anchorMax:" + this.anchorMax;
-        }
-    }
-
-    [Serializable] public class BoxCollisionGroup {
-        [SerializeField] public string[] boxNames;
-        public BoxCollisionGroup (string[] boxNames) {
-            this.boxNames = boxNames;
         }
     }
 }

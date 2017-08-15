@@ -234,13 +234,13 @@ namespace AutoyaFramework.Information {
 					var jsonText = jsonAsset.text;
 					// Debug.LogError("jsontext:" + jsonText);
 					var list = JsonUtility.FromJson<CustomTagList>(jsonText);
-					var boxCol = list.layerConstraints[0].collisions;
-					Debug.Assert(boxCol.Length == 3, "not 3, boxCol.Length:" + boxCol.Length);
+					var boxConstraints = list.layerConstraints[0].boxes;
+					Debug.Assert(boxConstraints.Length == 4, "not 4, boxConstraints.Length:" + boxConstraints.Length);
 
-					Debug.Assert(boxCol[0].boxNames.Contains("itemlayout_topleft"), "not contains");
-					Debug.Assert(boxCol[0].boxNames.Contains("itemlayout_topright"), "not contains");
-					Debug.Assert(boxCol[1].boxNames.Contains("itemlayout_content"), "not contains");
-					Debug.Assert(boxCol[2].boxNames.Contains("itemlayout_bottom"), "not contains");
+					Debug.Assert(boxConstraints[0].collisionGroupId == 0, "not contains");
+					Debug.Assert(boxConstraints[1].collisionGroupId == 0, "not contains");
+					Debug.Assert(boxConstraints[2].collisionGroupId == 1, "not contains");
+					Debug.Assert(boxConstraints[3].collisionGroupId == 2, "not contains");
 				}
 			);
 		}

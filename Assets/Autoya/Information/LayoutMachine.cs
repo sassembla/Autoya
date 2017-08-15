@@ -22,11 +22,16 @@ namespace AutoyaFramework.Information {
 			this.viewHeight = viewHeight;
 		}
 
-		public ViewCursor (ViewCursor viewCursor) {
-			this.offsetX = viewCursor.offsetX;
-			this.offsetY = viewCursor.offsetX;
-			this.viewWidth = viewCursor.viewWidth;
-			this.viewHeight = viewCursor.viewHeight;
+		public ViewCursor (Vector2 size) {
+			this.offsetX = 0;
+			this.offsetY = 0;
+			this.viewWidth = size.x;
+			this.viewHeight = size.y;
+		}
+
+
+		public static ViewCursor ContainedViewCursor (ViewCursor viewCursor) {
+			return new ViewCursor(0, 0, viewCursor.viewWidth, viewCursor.viewHeight);
 		}
 
 		/**
@@ -89,7 +94,7 @@ namespace AutoyaFramework.Information {
 		};
 
 		public IEnumerator Layout (TagTree rootTree, Vector2 view, Action<TagTree> layouted) {
-			var viewCursor = new ViewCursor(0, 0, view.x, view.y);
+			var viewCursor = new ViewCursor(view);
 			
 			var cor = DoLayout(rootTree, viewCursor);
 			
@@ -189,20 +194,40 @@ namespace AutoyaFramework.Information {
 				yield break;
 			}
 
-			
-			foreach (var boxTree in children) {
+			// collisionGroup単位での追加高さ、一番下まで伸びてるやつを基準にする。単純な超過度合いだと出せないな〜、開始位置と高さから一番下のポイントを叩き出したやつを見つけて、その伸び具合を次の要素の開始に追加っていう感じか。
+			var boxYPosRecords = new Dictionary<float, float>();
+			var collisionGrouId = 0;
+			float additionalHeight = 0f;
+
+			for (var i = 0; i < children.Count; i++) {
+				var boxTree = children[i];
+
 				// Debug.LogError("box tag:" + resLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
 
 				/*
 					位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
-					コンテナがここに飛び込んでくることがある。boxがないところに飛び込んでくるコンテナってことか。
 				*/
-				var layoutParam = boxTree.keyValueStore[HTMLAttribute._BOX] as BoxPos;
-				
-				var viewRect = TagTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, layoutParam);
+				var boxRect = boxTree.keyValueStore[HTMLAttribute._BOX] as BoxPos;
+				var viewRect = TagTree.GetChildViewRectFromParentRectTrans(viewCursor.viewWidth, viewCursor.viewHeight, boxRect);
 				// Debug.LogError("viewRect:" + viewRect);
 
-				var childView = new ViewCursor(viewRect.x, viewRect.y, viewRect.width, viewRect.height);
+				/*
+					collisionGroupによる区切りで、コンテンツ帯ごとの高さを出し、
+					最も下にあるコンテンツの伸び幅を次の縦並びグループの開始オフセット位置追加値としてセットする。
+				 */
+				var boxCollisionGroupId = (int)boxTree.keyValueStore[HTMLAttribute._COLLISION];
+				
+				if (collisionGrouId != boxCollisionGroupId) {
+					var tallest = boxYPosRecords.Keys.Max();
+					additionalHeight = boxYPosRecords[tallest] + additionalHeight;
+					
+					// update. entried to new collision group.
+					collisionGrouId = boxCollisionGroupId;
+
+					boxYPosRecords.Clear();
+				}
+
+				var childView = new ViewCursor(viewRect.x, viewRect.y + additionalHeight, viewRect.width, viewRect.height);
 
 				var cor = LayoutBoxedContents(boxTree, childView);
 
@@ -212,19 +237,21 @@ namespace AutoyaFramework.Information {
 					}
 					yield return null;
 				}
-
-				childView = cor.Current;
 				
-				// Debug.LogError("boxの中身:" + resLoader.GetTagFromIndex(boxTree.parsedTag) + " の、layout後viewCursor:" + childView);
-				if (viewRect.height < childView.viewHeight) {
-					var additionalHeight = childView.viewHeight - viewRect.height;
-					// これは干渉高さみたいなやつで、パーツごとに持っておくのがいいのかな。
-				}
+				// fix position.
+				childView = cor.Current;
+
+				// add record.
+				var yPos = childView.offsetY + childView.viewHeight;
+				boxYPosRecords[yPos] = childView.viewHeight - viewRect.height;
 			}
 			
-			Debug.LogWarning("同じレイヤー内で要素がcrossしてるかどうかを判断して、crossしてなくてかつ干渉する可能性があるなら、みたいなことを考えるか。Antimaterializerでやれば良さげ。");
-			// Debug.LogError("ここでカスタムタグ自体のサイズを変更する。　additionalHeight:" + additionalHeight);
-			// viewCursor.viewHeight += additionalHeight;
+			// 最終的なadd具合をviewの高さに足す
+			{
+				var tallest = boxYPosRecords.Keys.Max();
+				additionalHeight = boxYPosRecords[tallest] + additionalHeight;
+			}
+			viewCursor.viewHeight += additionalHeight;
 
 			// セット
 			layerTree.SetPosFromViewCursor(viewCursor);
@@ -242,7 +269,7 @@ namespace AutoyaFramework.Information {
 
 			var baseViewCursorHeight = viewCursor.viewHeight;
 
-			var childView = new ViewCursor(0, 0, viewCursor.viewWidth, viewCursor.viewHeight);
+			var childView = ViewCursor.ContainedViewCursor(viewCursor);
 
 			var cor = DoContainerLayout(emptyLayerTree, childView);
 			// var cor = LayoutBoxedContents(emptyLayerTree.GetChildren()[0], childView);
@@ -663,7 +690,7 @@ namespace AutoyaFramework.Information {
 			}
 
 			var linedElements = new List<TagTree>();
-			var childView = new ViewCursor(boxView);
+			var childView = ViewCursor.ContainedViewCursor(boxView);
 
 			for (var i = 0; i < childCount; i++) {
 				var child = containerChildren[i];

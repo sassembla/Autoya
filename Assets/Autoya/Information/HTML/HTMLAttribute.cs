@@ -7,6 +7,7 @@ namespace AutoyaFramework.Information {
         // system.
         _CONTENT,
 		_BOX,
+        _COLLISION,
 
         // attributes.
         ID,

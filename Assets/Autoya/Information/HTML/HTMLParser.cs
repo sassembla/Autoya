@@ -372,10 +372,11 @@ namespace AutoyaFramework.Information {
 				var boxingChildren = children.Where(c => resLoader.GetLayerBoxName(tree.tagValue, c.tagValue) == boxName).ToArray();
 				if (boxingChildren.Any()) {
 					var boxTag = resLoader.FindOrCreateTag(boxName);
-					
+
 					// 新規に中間box treeを作成する。
 					var newBoxTreeAttr = new AttributeKVs(){
-						{HTMLAttribute._BOX, box.rect}
+						{HTMLAttribute._BOX, box.rect},
+						{HTMLAttribute._COLLISION, box.collisionGroupId}
 					};
 					var boxTree = new TagTree(boxTag, newBoxTreeAttr, TreeType.CustomBox);
 					

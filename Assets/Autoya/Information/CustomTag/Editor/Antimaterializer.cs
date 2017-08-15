@@ -54,18 +54,19 @@ namespace AutoyaFramework.Information {
             FileController.RemakeDirectory(exportBasePath);
             
             // childrenがいろいろなタグの根本にあたる。
-            var layers = new List<LayerInfoOnEditor>();
+            var layersInEditor = new List<LayerInfoOnEditor>();
             var contents = new List<ContentInfo>();
 
             // recursiveに、コンテンツを分解していく。
             for (var i = 0; i < target.transform.childCount; i++) {
                 var child = target.transform.GetChild(i);
                 
-                CollectConstraintsAndContents(viewName, child.gameObject, layers, contents);
+                CollectConstraintsAndContents(viewName, child.gameObject, layersInEditor, contents);
             }
 
             var listFileName = "DepthAssetList.txt";
-            var depthAssetList = new CustomTagList(viewName, contents.ToArray(), layers.Select(l => l.layerInfo).ToArray());
+
+            var depthAssetList = new CustomTagList(viewName, contents.ToArray(), layersInEditor.Select(l => l.layerInfo).ToArray());
 
             
             var jsonStr = JsonUtility.ToJson(depthAssetList);
@@ -118,10 +119,9 @@ namespace AutoyaFramework.Information {
         }
 
         private static void CollectCollisionInLayer (LayerInfoOnEditor layer) {
-            var groups = new List<BoxCollisionGroup>();
-            
-            var groupedBoxNames = new List<string>();
-            groupedBoxNames.Add(layer.layerInfo.boxes[0].boxName);
+            var collisionGroupId = 0;
+
+            layer.layerInfo.boxes[0].collisionGroupId = collisionGroupId;
             var beforeBoxRect = TagTree.GetChildViewRectFromParentRectTrans(layer.collisionBaseSize.x, layer.collisionBaseSize.y, layer.layerInfo.boxes[0].rect);
             
             for (var i = 1; i < layer.layerInfo.boxes.Length; i++) {
@@ -130,19 +130,14 @@ namespace AutoyaFramework.Information {
 
                 // 重なっておらず、横方向での重なりがなく、縦に重なる部分がある場合、別のグループとして設定する。
                 if (beforeBoxRect.Overlaps(rect) || HorizontalOverlaps(beforeBoxRect, rect)) {
-                    groupedBoxNames.Add(box.boxName);
+                    box.collisionGroupId = collisionGroupId;
                     beforeBoxRect = CombinedRect(beforeBoxRect, rect);
                 } else {
-                    groups.Add(new BoxCollisionGroup(groupedBoxNames.ToArray()));
-                    groupedBoxNames.Clear();
-                    groupedBoxNames.Add(box.boxName);
+                    collisionGroupId++;
+                    box.collisionGroupId = collisionGroupId;
                     beforeBoxRect = rect;
                 }
             }
-            groups.Add(new BoxCollisionGroup(groupedBoxNames.ToArray()));
-            
-
-            layer.layerInfo.collisions = groups.ToArray();
         }
 
         private static bool HorizontalOverlaps (Rect before, Rect adding) {
