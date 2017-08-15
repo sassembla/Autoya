@@ -119,10 +119,14 @@ namespace AutoyaFramework.Information {
         public void SetParent (TagTree t) {
             t._children.Add(this);
 
-            Debug.LogWarning("そのうちなんか分けたほうがいいかも。");
             // inherit specific kv to child if child does not have kv.
-            if (this.treeType == TreeType.Content_Text && t.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
-                this.keyValueStore[HTMLAttribute.HREF] = t.keyValueStore[HTMLAttribute.HREF];
+            if (this.treeType == TreeType.Content_Text) {
+                var inheritableAttributes = ConstSettings.ShouldInheritAttributes.Intersect(t.keyValueStore.Keys).ToArray();
+                if (inheritableAttributes.Any()) {
+                    foreach (var attr in inheritableAttributes) {
+                        this.keyValueStore[attr] = t.keyValueStore[attr];
+                    }
+                }
             }
 		}
 

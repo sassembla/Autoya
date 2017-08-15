@@ -315,7 +315,6 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             ・そもそもレイヤーにboxが存在する場合、指定の位置に出す。
             ・レイヤーにboxが存在していてその存在を無視した別のtagが来た場合、エラー。
             ・レイヤーにboxが存在しない場合、左上から出す。
-
          */
         var sample = @"
 <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->

@@ -7,6 +7,7 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
     public Action OnLoadStarted;
     public Action OnLoadProgress;
     public Action OnLoaded;
+    public Action OnUpdated;
     public Action OnContentLoadFailed;
     public Action OnElementTapped;
     public Action OnElementLongTapped;
@@ -22,6 +23,13 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
         Debug.Log("OnLoaded");
         if (OnLoaded != null) {
             OnLoaded();
+        }
+    }
+
+    void IUUebViewEventHandler.OnUpdated() {
+        Debug.Log("OnUpdated");
+        if (OnUpdated != null) {
+            OnUpdated();
         }
     }
 

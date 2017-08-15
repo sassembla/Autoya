@@ -171,7 +171,7 @@ namespace AutoyaFramework.Information {
                         Debug.LogError("parse errors:" + parsedTagTree.errors.Count);
                         return;
                     }
-                    reload = Update(parsedTagTree, viewRect, eventReceiverGameObj);
+                    reload = Load(parsedTagTree, viewRect, eventReceiverGameObj);
                 }
             );
 
@@ -190,7 +190,7 @@ namespace AutoyaFramework.Information {
             layout -> materialize.
             if parsedTagTree was changed, materialize dirty flagged content only.
          */
-        private IEnumerator Update (TagTree tree, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
+        private IEnumerator Load (TagTree tree, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
             var usingIds = TagTree.CorrectTrees(tree);
             
             IEnumerator materialize = null;
@@ -228,11 +228,51 @@ namespace AutoyaFramework.Information {
         }
 
         /**
+            update contents.
+         */
+        private IEnumerator Update (TagTree tree, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
+            var usingIds = TagTree.CorrectTrees(tree);
+            
+            IEnumerator materialize = null;
+            var layout = layoutMachine.Layout(
+                tree, 
+                viewRect, 
+                layoutedTree => {
+                    // update layouted tree.
+                    this.layoutedTree = layoutedTree;
+                    
+                    resLoader.BackGameObjects(usingIds);
+                    materialize = materializeMachine.Materialize(
+                        view.gameObject, 
+                        this, 
+                        this.layoutedTree, 
+                        0f, 
+                        () => {
+                            if (eventReceiverGameObj != null) {
+                                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnUpdated());
+                            }
+                        }
+                    );
+                }
+            );
+
+            while (layout.MoveNext()) {
+                yield return null;
+            }
+            
+            Debug.Assert(materialize != null, "materialize is null.");
+
+            while (materialize.MoveNext()) {
+                yield return null;
+            }
+        }
+
+        /**
             すべてのGameObjectを消して、コンテンツをリロードする
          */
         public void Reload () {
             resLoader.Reset();
-            view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
+            view.CoroutineExecutor(Load(layoutedTree, viewRect, eventReceiverGameObj));
 		}
 
         public void Update () {
@@ -289,6 +329,7 @@ namespace AutoyaFramework.Information {
 	public interface IUUebViewEventHandler : IEventSystemHandler {
         void OnLoadStarted ();
 		void OnLoaded ();
+        void OnUpdated ();
 		void OnLoadFailed (ContentType type, int code, string reason);
 		void OnElementTapped (ContentType type, string param, string id);
         void OnElementLongTapped (ContentType type, string param, string id);

@@ -48,14 +48,14 @@ public class HTMLParserTests : MiyamasuTestRunner {
     }
 
     public static void ShowRecursive (TagTree tree, ResourceLoader loader) {
-        Debug.Log("parsedTag:" + loader.GetTagFromValue(tree.tagValue) + " type:" + tree.treeType);
+        // Debug.Log("parsedTag:" + loader.GetTagFromValue(tree.tagValue) + " type:" + tree.treeType);
         foreach (var child in tree.GetChildren()) {
             ShowRecursive(child, loader);
         }
     }
 
     private int CountContentsRecursive (TagTree tree) {
-        Debug.Log("tag:" + loader.GetTagFromValue(tree.tagValue));
+        // Debug.Log("tag:" + loader.GetTagFromValue(tree.tagValue));
         var children = tree.GetChildren();
         var count = 0;
         foreach (var child in children) {

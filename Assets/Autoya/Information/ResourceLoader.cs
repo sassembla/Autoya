@@ -263,7 +263,6 @@ namespace AutoyaFramework.Information {
                     default: {
                         switch (treeType) {
                             case TreeType.Container: {
-                                // Debug.LogWarning("コンテナをキャッシュ化できるかもしれない。まあただの箱なんで、その意味はないか。");
                                 var containerObj = new GameObject(tagName);
                                 var trans = containerObj.AddComponent<RectTransform>();
                                 trans.anchorMin = Vector2.up;
