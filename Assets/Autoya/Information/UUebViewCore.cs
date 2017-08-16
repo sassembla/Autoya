@@ -283,7 +283,7 @@ namespace AutoyaFramework.Information {
         }
 
         public void OnImageTapped (string tag, string key, string buttonId="") {
-			// Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
+			Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
 
 			if (!string.IsNullOrEmpty(buttonId)) {
 				if (listenerDict.ContainsKey(buttonId)) {

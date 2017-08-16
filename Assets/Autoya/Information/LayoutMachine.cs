@@ -598,7 +598,7 @@ namespace AutoyaFramework.Information {
 						var totalHeight = 0;
 						for (var i = 0; i < generator.lineCount-1; i++) {
 							var line = generator.lines[i];
-							totalHeight += line.height;
+							totalHeight += line.height+1;// この+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。
 						}
 
 						// このビューのポジションとしてセット
