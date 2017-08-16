@@ -506,7 +506,8 @@ namespace AutoyaFramework.Information {
                             break;
                         }
                         case "resources:": {
-                            cor = LoadImageFromResources(uriSource);
+                            var resourcePath = uriSource.Substring("resources:".Length + 2);
+                            cor = LoadImageFromResources(resourcePath);
                             break;
                         }
                         default: {// other.
@@ -523,6 +524,10 @@ namespace AutoyaFramework.Information {
                         yield return null;
                     }
                     
+                    if (cor.Current == null) {
+                        // failed to get image.
+                        yield break;
+                    }
                     yield return spriteCache[uriSource];
                 }
             }

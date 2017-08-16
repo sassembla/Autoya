@@ -41,7 +41,7 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
     }
 
     void IUUebViewEventHandler.OnElementTapped(ContentType type, string param, string id) {
-        Debug.Log("OnElementTapped");
+        Debug.Log("OnElementTapped type:" + type + " param:" + param + " id:" + id);
         if (OnElementTapped != null) {
             OnElementTapped();
         }

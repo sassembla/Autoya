@@ -110,15 +110,13 @@ namespace AutoyaFramework.Information {
 					}
 					
 					if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
-						Debug.LogError("enableみるとこまではきてる");
 						var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
 						if (enable) {
-							Debug.LogError("enable");
 							var buttonId = string.Empty;
 							if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
 								buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
 							}
-							Debug.LogError("buttonId:" + buttonId);
+
 							// add button component.
 							AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
 						}

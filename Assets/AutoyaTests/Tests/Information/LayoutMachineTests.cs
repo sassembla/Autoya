@@ -961,10 +961,131 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             () => layouted != null, 5, "timeout."
         );
 
-        ShowLayoutRecursive(layouted);
+        // ShowLayoutRecursive(layouted);
 
         Assert(0 < layouted.GetChildren().Count, "not match, actual:" + layouted.GetChildren().Count);
         Assert(layouted.GetChildren()[0].GetChildren()[0].offsetY == 0, "not match of 1. actual:" + layouted.GetChildren()[0].GetChildren()[0].offsetY);
         Assert(layouted.GetChildren()[0].GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + layouted.GetChildren()[0].GetChildren()[1].offsetY);
+    }
+
+    [MTest] public void SampleView2_HiddenBreakView () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<body>
+    <bg>
+    	<titlebox>
+    		<titletext>レモン一個ぶんのビタミンC</titletext>
+    	</titlebox>
+    	<newbadge></newbadge>
+    	<textbg>
+    		<textbox>
+	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
+	    		<!-- hiddenがあると、コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
+	    		<updatetext hidden='true' listen='readmore'>omake!</updatetext>
+	    	</textbox>
+	    </textbg>
+    </bg>
+</body>";
+        var tree = CreateTagTree(sampleHtml);
+
+        TagTree layouted = null;
+        var layoutMachine = new LayoutMachine(
+            loader
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            new Vector2(100,100),
+            layoutedTree => {
+                layouted = layoutedTree;
+            }
+        );
+
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+
+
+        WaitUntil(
+            () => layouted != null, 5, "timeout."
+        );
+
+        Debug.LogError("hiddenを計算できてなさそう");
+    }
+
+    [MTest] public void SampleView2_NoButtonFound () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<body>
+    <bg>
+    	<!-- 単純にボタンとして見なされてない感がある。 -->
+    	<showbutton button='true' id='readmore'/>
+    </bg>
+</body>";
+        var tree = CreateTagTree(sampleHtml);
+
+        TagTree layouted = null;
+        var layoutMachine = new LayoutMachine(
+            loader
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            new Vector2(100,100),
+            layoutedTree => {
+                layouted = layoutedTree;
+            }
+        );
+
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+
+
+        WaitUntil(
+            () => layouted != null, 5, "timeout."
+        );
+
+        Debug.LogError("ボタンが出ない(treeTypeが違う？");
+    }
+
+    [MTest] public void SampleView2 () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<body>
+    <bg>
+    	<titlebox>
+    		<titletext>レモン一個ぶんのビタミンC</titletext>
+    	</titlebox>
+    	<newbadge></newbadge>
+    	<textbg>
+    		<textbox>
+	    		<updatetext>1st line.</updatetext>
+	    	</textbox>
+            <textbox>
+	    		<updatetext>2nd line.</updatetext>
+	    	</textbox>
+	    </textbg>
+    </bg>
+</body>";
+        var tree = CreateTagTree(sampleHtml);
+
+        TagTree layouted = null;
+        var layoutMachine = new LayoutMachine(
+            loader
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            new Vector2(100,100),
+            layoutedTree => {
+                layouted = layoutedTree;
+            }
+        );
+
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+
+
+        WaitUntil(
+            () => layouted != null, 5, "timeout."
+        );
+
+        Debug.LogError("編集して途中枝分かれのコンテンツを作ってみよう。");
     }
 }

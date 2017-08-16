@@ -2,18 +2,20 @@
 <body>
     <bg>
     	<titlebox>
-    		<titletext>レモン一個ぶんのビタミンC</titletext>
+    		<titletext>aaa</titletext>
     	</titlebox>
     	<newbadge></newbadge>
     	<textbg>
     		<textbox>
-	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
-	    		<!-- hiddenがあると、コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
+	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing.<mya href='somewhere'>test</mya> long text will make large window. like this.</updatetext>
+	    		<!-- hiddenがあると、高さが壊れる。コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
 	    		<updatetext hidden='false' listen='readmore'>omake!</updatetext>
 	    	</textbox>
 	    </textbg>
-	    <!-- 単純にボタンとして見なされてない感がある。 -->
-    	<showbutton button='true' id='readmore'/>
+	    <!-- レイヤーの底の固定画像の要素をボタンにしたいな〜〜というのがある。できそうな気がする。showbuttonbg自体をhtmlからボタンにしたい。 -->
+    	<showbuttonbg>
+    		<showbutton src='resources://InformationSampleRes/button' button='true' id='readmore'/>
+    	</showbuttonbg>
     </bg>
     <bg>
     	<titlebox>
