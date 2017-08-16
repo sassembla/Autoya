@@ -469,6 +469,17 @@ namespace AutoyaFramework.Information {
 					
 					// boxTreeにchildを追加
 					boxTree.AddChildren(boxingChildren);
+
+					// boxingChildがlayerな場合、parentがboxであるというマークをつける。
+					foreach (var child in boxingChildren) {
+						switch (child.treeType) {
+							case TreeType.CustomLayer:
+							case TreeType.CustomBox: {
+								child.keyValueStore[HTMLAttribute.LAYER_PARENT_TYPE] = "box";
+								break;
+							}
+						}
+					}
 				}
 			}
 

@@ -8,6 +8,7 @@ namespace AutoyaFramework.Information {
         _CONTENT,
 		_BOX,
         _COLLISION,
+        LAYER_PARENT_TYPE,
 
         // attributes.
         ID,
@@ -16,9 +17,6 @@ namespace AutoyaFramework.Information {
         HIDDEN,
         SRC,
         HREF,
-		START,
-		TITLE,
-
     }
 
     public class AttributeKVs : Dictionary<HTMLAttribute, object> {}

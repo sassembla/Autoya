@@ -52,20 +52,26 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 	}
 
     private TagTree CreateLayoutedTree (string sampleHtml) {
-        TagTree parsedRoot = null;
+        ParsedTree parsedRoot = null;
         var cor = parser.ParseRoot(
             sampleHtml, 
             parsed => {
                 parsedRoot = parsed;
             }
         );
-
+        
         RunOnMainThread(() => executor.CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
         );
         
+        if (parsedRoot.errors.Any()) {
+            foreach (var error in parsedRoot.errors) {
+                Debug.LogError("error:" + error.code + " reason:" + error.reason);
+            }
+            throw new Exception("failed to create layouted tree.");
+        }
 
         TagTree layouted = null;
         var layoutMachine = new LayoutMachine(
@@ -311,11 +317,6 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
     }
 
     [MTest] public void MaterializeHTMLWithCustomTag () {
-        /*
-            ・そもそもレイヤーにboxが存在する場合、指定の位置に出す。
-            ・レイヤーにboxが存在していてその存在を無視した別のtagが来た場合、エラー。
-            ・レイヤーにboxが存在しない場合、左上から出す。
-         */
         var sample = @"
 <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
 <body>
@@ -371,6 +372,19 @@ else
     <img src='https://dummyimage.com/100.png/07f/fff'/>
 </bottom>
 </itemlayout>";
+        var tree = CreateLayoutedTree(sample);
+
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithCustomTagMultiple () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<body>
+<customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
+<customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>
+else
+</body>";
         var tree = CreateLayoutedTree(sample);
 
         Show(tree);

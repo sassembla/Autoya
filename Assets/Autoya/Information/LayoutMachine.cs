@@ -175,9 +175,29 @@ namespace AutoyaFramework.Information {
 			customTagLayer/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
 			ここだけ相対的なレイアウトが崩れる。
 		 */
-		private IEnumerator<ViewCursor> DoLayerLayout (TagTree layerTree, ViewCursor viewCursor) {
-			// 親コンテンツのサイズを継承
-			layerTree.SetPosFromViewCursor(viewCursor);
+		private IEnumerator<ViewCursor> DoLayerLayout (TagTree layerTree, ViewCursor boxViewCursor) {
+			var viewCursor = new ViewCursor(new Vector2(boxViewCursor.viewWidth, boxViewCursor.viewHeight));
+
+			// box外のカスタムタグは、親のサイズを使わず、prefabのサイズを使う。
+			if (!layerTree.keyValueStore.ContainsKey(HTMLAttribute.LAYER_PARENT_TYPE)) {
+				var prefabCor = resLoader.LoadPrefab(layerTree.tagValue, layerTree.treeType);
+
+				while (prefabCor.MoveNext()) {
+					if (prefabCor.Current != null) {
+						break;
+					}
+					yield return null;
+				}
+
+				var prefab = prefabCor.Current;
+				var prefabRect = prefab.GetComponent<RectTransform>();
+				var cursor = new ViewCursor(boxViewCursor.offsetX, boxViewCursor.offsetY, prefabRect.sizeDelta.x, prefabRect.sizeDelta.y);
+				viewCursor = cursor;
+				layerTree.SetPosFromViewCursor(cursor);
+			} else {
+				// 親コンテンツ = boxのサイズを継承
+				layerTree.SetPosFromViewCursor(viewCursor);
+			}
 
 			/*
 				レイヤーなので、prefabをロードして、原点位置は0,0、
@@ -216,15 +236,18 @@ namespace AutoyaFramework.Information {
 					最も下にあるコンテンツの伸び幅を次の縦並びグループの開始オフセット位置追加値としてセットする。
 				 */
 				var boxCollisionGroupId = (int)boxTree.keyValueStore[HTMLAttribute._COLLISION];
-				
+				try {
 				if (collisionGrouId != boxCollisionGroupId) {
-					var tallest = boxYPosRecords.Keys.Max();
+					var tallest = boxYPosRecords.Select(kv => kv.Key).Max();
 					additionalHeight = boxYPosRecords[tallest] + additionalHeight;
 					
 					// update. entried to new collision group.
 					collisionGrouId = boxCollisionGroupId;
 
 					boxYPosRecords.Clear();
+				}
+				} catch (Exception e) {
+					Debug.LogError("e:" + e);
 				}
 
 				var childView = new ViewCursor(viewRect.x, viewRect.y + additionalHeight, viewRect.width, viewRect.height);
@@ -260,19 +283,11 @@ namespace AutoyaFramework.Information {
 		}
 
 		private IEnumerator<ViewCursor> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor) {
-			// var childCount = emptyLayerTree.GetChildren().Count;
-			// if (childCount == 0) {
-			// 	emptyLayerTree.SetPosFromViewCursor(viewCursor);
-			// 	yield return viewCursor;
-			// 	yield break;
-			// }
-
 			var baseViewCursorHeight = viewCursor.viewHeight;
 
 			var childView = ViewCursor.ContainedViewCursor(viewCursor);
 
 			var cor = DoContainerLayout(emptyLayerTree, childView);
-			// var cor = LayoutBoxedContents(emptyLayerTree.GetChildren()[0], childView);
 			
 			while (cor.MoveNext()) {
 				if (cor.Current != null) {

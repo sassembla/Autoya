@@ -169,6 +169,9 @@ namespace AutoyaFramework.Information {
                 parsedTagTree => {
                     if (parsedTagTree.errors.Any()) {
                         Debug.LogError("parse errors:" + parsedTagTree.errors.Count);
+                        foreach (var error in parsedTagTree.errors) {
+                            Debug.LogError("code:" + error.code + " reason:" + error.reason);
+                        }
                         return;
                     }
                     reload = Load(parsedTagTree, viewRect, eventReceiverGameObj);
