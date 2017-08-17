@@ -153,65 +153,84 @@ namespace AutoyaFramework.Information {
         public IEnumerator<GameObject> LoadPrefab (int tagValue, TreeType treeType) {
             GameObject prefab = null;
             
-            switch (IsDefaultTag(tagValue)) {
-                case true: {
-
-                    switch (treeType) {
-                        case TreeType.Container: {
-                            throw new Exception("unexpected loading.");
-                        }
-                        default: {
-                            // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
-                            var prefabName = GetTagFromValue(tagValue);
-                            var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
-
-                            var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
-                            while (cor.MoveNext()) {
-                                if (cor.Current != null) {
-                                    break;
-                                }                           
-                                yield return null;
-                            }
-                            var loadedPrefab = cor.Current;
-                            
-                            prefab = loadedPrefab;
-                            break;
-                        }
-                    }
-                    break;
-                }
-
-                // 非デフォルトタグ、customBox以外はloadpathが存在する。
-                default: {
-                    switch (treeType) {
-                        case TreeType.Container: 
-                        case TreeType.CustomBox: {
-                            throw new Exception("unexpected loading.");
-                        }
-                        default: {
-                            var tag = GetTagFromValue(tagValue);
-                            // Debug.LogError("tag:" + tag);
-                            var loadPath = GetCustomTagLoadPath(tagValue, treeType);
-
-                            var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
-                            while (cor.MoveNext()) {
-                                if (cor.Current != null) {
-                                    break;
-                                }
-                                yield return null;
-                            }
-
-                            var loadedPrefab = cor.Current;
-                            
-                            prefab = loadedPrefab;
-                            break;
-                        }
-                    }
-                    break;
-                }
+            var prefabName = GetTagFromValue(tagValue);
+            
+            while (loadingPrefabNames.Contains(prefabName)) {
+                yield return null;
             }
             
-            yield return prefab;
+            if (prefabCache.ContainsKey(prefabName)) {
+                // Debug.LogError("return cached loadingPrefabName:" + loadingPrefabName);
+                yield return prefabCache[prefabName];
+            } else {
+                loadingPrefabNames.Add(prefabName);
+
+                {
+                    switch (IsDefaultTag(tagValue)) {
+                        case true: {
+
+                            switch (treeType) {
+                                case TreeType.Container: {
+                                    throw new Exception("unexpected loading.");
+                                }
+                                default: {
+                                    // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
+                                    
+                                    var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
+
+                                    var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
+                                    while (cor.MoveNext()) {
+                                        if (cor.Current != null) {
+                                            break;
+                                        }                           
+                                        yield return null;
+                                    }
+                                    var loadedPrefab = cor.Current;
+                                    
+                                    prefab = loadedPrefab;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+
+                        // 非デフォルトタグ、customBox以外はloadpathが存在する。
+                        default: {
+                            switch (treeType) {
+                                case TreeType.Container: 
+                                case TreeType.CustomBox: {
+                                    throw new Exception("unexpected loading.");
+                                }
+                                default: {
+                                    var tag = GetTagFromValue(tagValue);
+                                    // Debug.LogError("tag:" + tag);
+                                    var loadPath = GetCustomTagLoadPath(tagValue, treeType);
+
+                                    var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);
+                                    while (cor.MoveNext()) {
+                                        if (cor.Current != null) {
+                                            break;
+                                        }
+                                        yield return null;
+                                    }
+
+                                    var loadedPrefab = cor.Current;
+                                    
+                                    prefab = loadedPrefab;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                    // cache.
+                    prefabCache[prefabName] = prefab;
+                }
+                
+                loadingPrefabNames.Remove(prefabName);
+                yield return prefab;
+            }
         }
 
         public IEnumerator<GameObject> LoadGameObjectFromPrefab (string id, int tagValue, TreeType treeType) {
@@ -362,45 +381,28 @@ namespace AutoyaFramework.Information {
         }
 
         /**
-            キャッシュヒット処理込み。
             resourcesからprefabを返す。
+            キャッシュヒット処理込み。
          */
         private IEnumerator<GameObject> LoadPrefabFromResourcesOrCache (string loadingPrefabName) {
-            // Debug.LogError("loadingPrefabName:" + loadingPrefabName);
-            while (loadingPrefabNames.Contains(loadingPrefabName)) {
+            // Debug.LogError("start loadingPrefabName:" + loadingPrefabName);
+
+            var cor = Resources.LoadAsync(loadingPrefabName);
+        
+            while (!cor.isDone) {
                 yield return null;
             }
-            
-            if (prefabCache.ContainsKey(loadingPrefabName)) {
-                // Debug.LogError("return cached loadingPrefabName:" + loadingPrefabName);
-                yield return prefabCache[loadingPrefabName];
+            var obj = cor.asset as GameObject;
+
+            if (obj == null) {
+                var failedObj = new GameObject("failed to load element:" + loadingPrefabName);
+                loadingPrefabNames.Remove(loadingPrefabName);
+                yield return failedObj;
             } else {
-                // Debug.LogError("start loadingPrefabName:" + loadingPrefabName);
-                // no cache hit. start loading prefab.
-
-                // wait the end of other loading for same prefab.
-                
-                // start loading.
-                loadingPrefabNames.Add(loadingPrefabName);
-                {
-                    var cor = Resources.LoadAsync(loadingPrefabName);
-                
-                    while (!cor.isDone) {
-                        yield return null;
-                    }
-                    var obj = cor.asset as GameObject;
-
-                    if (obj == null) {
-                        var failedObj = new GameObject("failed to load element:" + loadingPrefabName);
-                        loadingPrefabNames.Remove(loadingPrefabName);
-                        yield return failedObj;
-                    } else {
-                        // cache.
-                        prefabCache[loadingPrefabName] = obj;
-                        loadingPrefabNames.Remove(loadingPrefabName);
-                        yield return obj;
-                    }
-                }
+                // cache.
+                prefabCache[loadingPrefabName] = obj;
+                loadingPrefabNames.Remove(loadingPrefabName);
+                yield return obj;
             }
         }
 
@@ -422,6 +424,7 @@ namespace AutoyaFramework.Information {
 
         /**
             layout, materialize時に画像を読み込む。
+            キャッシュヒット処理込み。
          */
         public IEnumerator<Sprite> LoadImageAsync (string uriSource) {
             while (spriteDownloadingUris.Contains(uriSource)) {
