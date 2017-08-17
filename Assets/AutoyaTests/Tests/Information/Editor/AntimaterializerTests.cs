@@ -52,7 +52,7 @@ namespace AutoyaFramework.Information {
 			ExportedCustomTagPrefabHasOriginalSize();
 			ExportedCustomTagNotContainedBox();
 			ExportedCustomTagChildHasZeroPos();
-			MultipleBoxConstraints();
+			ExportMultipleBoxConstraints();
 		}
 
 		// 階層なしのものを分解する
@@ -223,7 +223,7 @@ namespace AutoyaFramework.Information {
 			);
 		}
 
-		public static void MultipleBoxConstraints () {
+		public static void ExportMultipleBoxConstraints () {
 			var testTargetSampleObjName = "MultipleBoxConstraints";
 			Run(testTargetSampleObjName,
 				() => {

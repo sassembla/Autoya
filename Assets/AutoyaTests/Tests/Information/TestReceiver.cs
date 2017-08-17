@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
     public Action OnLoadStarted;
-    public Action OnLoadProgress;
+    public Action OnProgress;
     public Action OnLoaded;
     public Action OnUpdated;
     public Action OnContentLoadFailed;
@@ -16,6 +16,13 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
         Debug.Log("OnLoadStarted");
         if (OnLoadStarted != null) {
             OnLoadStarted();
+        }
+    }
+
+    void IUUebViewEventHandler.OnProgress(double progress) {
+        Debug.Log("OnProgress progress:" + progress);
+        if (OnProgress != null) {
+            OnProgress();
         }
     }
 

@@ -21,41 +21,42 @@ namespace AutoyaFramework.Information {
 
     public class UUebViewCore {
         private Dictionary<string, List<TagTree>> listenerDict = new Dictionary<string, List<TagTree>>();
-		public readonly UUebView view;
-        private readonly ResourceLoader resLoader;
+        public readonly UUebView view;
+        public readonly ResourceLoader resLoader;
         private LayoutMachine layoutMachine;
         private MaterializeMachine materializeMachine;
 
+
         public static GameObject GenerateSingleViewFromHTML(
-			GameObject eventReceiverGameObj, 
-			string source, 
-			Vector2 viewRect, 
-			Autoya.HttpRequestHeaderDelegate requestHeader=null,
-			Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
-		) {
+            GameObject eventReceiverGameObj, 
+            string source, 
+            Vector2 viewRect, 
+            Autoya.HttpRequestHeaderDelegate requestHeader=null,
+            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
+        ) {
             var viewObj = new GameObject("UUebView");
             viewObj.AddComponent<RectTransform>();
-			var uuebView = viewObj.AddComponent<UUebView>();
+            var uuebView = viewObj.AddComponent<UUebView>();
             var uuebViewCore = new UUebViewCore(uuebView, requestHeader, httpResponseHandlingDelegate);
-			uuebViewCore.LoadHtml(source, viewRect, eventReceiverGameObj);
+            uuebViewCore.LoadHtml(source, viewRect, eventReceiverGameObj);
 
-			return viewObj;
+            return viewObj;
         }
 
-		public static GameObject GenerateSingleViewFromUrl(
-			GameObject eventReceiverGameObj, 
-			string url, 
-			Vector2 viewRect, 
-			Autoya.HttpRequestHeaderDelegate requestHeader=null,
-			Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
-		) {
+        public static GameObject GenerateSingleViewFromUrl(
+            GameObject eventReceiverGameObj, 
+            string url, 
+            Vector2 viewRect, 
+            Autoya.HttpRequestHeaderDelegate requestHeader=null,
+            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
+        ) {
             var viewObj = new GameObject("UUebView");
             viewObj.AddComponent<RectTransform>();
-			var uuebView = viewObj.AddComponent<UUebView>();
+            var uuebView = viewObj.AddComponent<UUebView>();
             var uuebViewCore = new UUebViewCore(uuebView, requestHeader, httpResponseHandlingDelegate);
-			uuebViewCore.DownloadHtml(url, viewRect, eventReceiverGameObj);
+            uuebViewCore.DownloadHtml(url, viewRect, eventReceiverGameObj);
 
-			return viewObj;
+            return viewObj;
         }
 
         public UUebViewCore (UUebView uuebView, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
@@ -70,11 +71,64 @@ namespace AutoyaFramework.Information {
         }
 
 
+        public bool IsLoading () {
+            return view.IsLoading();
+        }
+
+        private void StartCalculateProgress () {
+            if (!IsLoading()) {
+                if (eventReceiverGameObj != null) {
+                    ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnProgress(1));
+                    ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoaded());
+                }
+                return;
+            }
+
+            var progressCor = CreateProgressCoroutine();
+            view.Internal_CoroutineExecutor(progressCor);
+        }
+
+        private IEnumerator CreateProgressCoroutine () {            
+            while (view.IsWaitStartLoading()) {
+                yield return null;
+            }
+
+            var loadingActions = view.LoadingActs();
+            var loadingCount = loadingActions.Length;
+            var perProgressUnit = 1.0 / loadingCount;
+            var perProgress = perProgressUnit;
+            
+           
+            while (view.IsLoading()) {
+                var currentLoadingCount = view.LoadingActs().Length;
+                if (currentLoadingCount != loadingCount) {
+                    var diff = loadingCount - currentLoadingCount;
+                    perProgress = perProgress + (perProgressUnit * diff);
+
+                    // notify.
+                    if (eventReceiverGameObj != null) {
+                        ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnProgress(perProgress));
+                    }
+                    
+                    // update count.
+                    loadingCount = currentLoadingCount;
+                }
+
+                yield return null;
+            }
+
+            // loaded.
+            if (eventReceiverGameObj != null) {
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoaded());
+            }
+        }
+        
+
         private TagTree layoutedTree;
         private Vector2 viewRect;
         private GameObject eventReceiverGameObj;
         
-		public void LoadHtml (string source, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
+        public void LoadHtml (string source, Vector2 viewRect, GameObject eventReceiverGameObj=null) {
             if (this.viewRect != viewRect) {
                 if (eventReceiverGameObj != null) {
                     ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoadStarted());
@@ -211,9 +265,7 @@ namespace AutoyaFramework.Information {
                         this.layoutedTree, 
                         0f, 
                         () => {
-                            if (eventReceiverGameObj != null) {
-                                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnLoaded());
-                            }
+                            StartCalculateProgress();
                         }
                     );
                 }
@@ -276,65 +328,65 @@ namespace AutoyaFramework.Information {
         public void Reload () {
             resLoader.Reset();
             view.CoroutineExecutor(Load(layoutedTree, viewRect, eventReceiverGameObj));
-		}
+        }
 
         public void Update () {
             view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
         }
 
         public void OnImageTapped (string tag, string key, string buttonId="") {
-			// Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
+            // Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
 
-			if (!string.IsNullOrEmpty(buttonId)) {
-				if (listenerDict.ContainsKey(buttonId)) {
-					listenerDict[buttonId].ForEach(t => t.ShowOrHide());
-					Update();
-				}
-			}
+            if (!string.IsNullOrEmpty(buttonId)) {
+                if (listenerDict.ContainsKey(buttonId)) {
+                    listenerDict[buttonId].ForEach(t => t.ShowOrHide());
+                    Update();
+                }
+            }
 
             if (eventReceiverGameObj != null) {
                 ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.IMAGE, key, buttonId));
             }
-		}
+        }
 
         public void OnLinkTapped (string tag, string key, string linkId="") {
-			// Debug.LogError("link. tag:" + tag + " key:" + key + " linkId:" + linkId);
+            // Debug.LogError("link. tag:" + tag + " key:" + key + " linkId:" + linkId);
 
-			if (!string.IsNullOrEmpty(linkId)) {
-				if (listenerDict.ContainsKey(linkId)) {
-					listenerDict[linkId].ForEach(t => t.ShowOrHide());
-					Update();
-				}
-			}
+            if (!string.IsNullOrEmpty(linkId)) {
+                if (listenerDict.ContainsKey(linkId)) {
+                    listenerDict[linkId].ForEach(t => t.ShowOrHide());
+                    Update();
+                }
+            }
 
             if (eventReceiverGameObj != null) {
                 ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.LINK, key, linkId));
             }
-		}
+        }
         
         public void AddListener(TagTree tree, string listenTargetId) {
             if (!listenerDict.ContainsKey(listenTargetId)) {
-				listenerDict[listenTargetId] = new List<TagTree>();
-			}
+                listenerDict[listenTargetId] = new List<TagTree>();
+            }
 
-			if (!listenerDict[listenTargetId].Contains(tree)) {
-				listenerDict[listenTargetId].Add(tree);
-			}
+            if (!listenerDict[listenTargetId].Contains(tree)) {
+                listenerDict[listenTargetId].Add(tree);
+            }
         }
 
         public void LoadParallel (IEnumerator cor) {
-            // Debug.LogWarning("並列にdlを行う。ここでDL登録すればmaterialize時のimage load progressは出せる。全体像を出した後にdl集計開始っていう感じかな? まあまだ必須ではないと思うので放置。");
             view.CoroutineExecutor(cor);
         }
     }
 
 
-	public interface IUUebViewEventHandler : IEventSystemHandler {
+    public interface IUUebViewEventHandler : IEventSystemHandler {
         void OnLoadStarted ();
-		void OnLoaded ();
+        void OnProgress (double progress);
+        void OnLoaded ();
         void OnUpdated ();
-		void OnLoadFailed (ContentType type, int code, string reason);
-		void OnElementTapped (ContentType type, string param, string id);
+        void OnLoadFailed (ContentType type, int code, string reason);
+        void OnElementTapped (ContentType type, string param, string id);
         void OnElementLongTapped (ContentType type, string param, string id);
-	}
+    }
 }

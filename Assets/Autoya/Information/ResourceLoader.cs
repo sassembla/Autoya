@@ -172,7 +172,6 @@ namespace AutoyaFramework.Information {
                                 }                           
                                 yield return null;
                             }
-
                             var loadedPrefab = cor.Current;
                             
                             prefab = loadedPrefab;
@@ -211,7 +210,7 @@ namespace AutoyaFramework.Information {
                     break;
                 }
             }
-
+            
             yield return prefab;
         }
 
@@ -368,86 +367,52 @@ namespace AutoyaFramework.Information {
          */
         private IEnumerator<GameObject> LoadPrefabFromResourcesOrCache (string loadingPrefabName) {
             // Debug.LogError("loadingPrefabName:" + loadingPrefabName);
-
-            GameObject loadedPrefab = null;
-
-            if (prefabCache.ContainsKey(loadingPrefabName)) {
-                // Debug.LogError("キャッシュから読み出す");
-
-                var cachedPrefab = prefabCache[loadingPrefabName];
-                loadedPrefab = cachedPrefab;
+            while (loadingPrefabNames.Contains(loadingPrefabName)) {
+                yield return null;
             }
-
-            // no cache hit. start loading prefab.
-
-            // wait the end of other loading for same prefab.
-            else if (loadingPrefabNames.Contains(loadingPrefabName)) {
-                // Debug.LogError("キャッシュにないけどロード中 loadingPrefabName:" + loadingPrefabName);
-                while (loadingPrefabNames.Contains(loadingPrefabName)) {
-                    yield return null;
-                }
-
-                if (!prefabCache.ContainsKey(loadingPrefabName)) {
-                    throw new Exception("キャッシュされたはずなんだけどロードに失敗");
-                } else {
-                    var cachedPrefab = prefabCache[loadingPrefabName];
-                    loadedPrefab = cachedPrefab;
-                }
+            
+            if (prefabCache.ContainsKey(loadingPrefabName)) {
+                // Debug.LogError("return cached loadingPrefabName:" + loadingPrefabName);
+                yield return prefabCache[loadingPrefabName];
             } else {
+                // Debug.LogError("start loadingPrefabName:" + loadingPrefabName);
+                // no cache hit. start loading prefab.
+
+                // wait the end of other loading for same prefab.
+                
                 // start loading.
-                using (new AssetLoadingConstraint(loadingPrefabName, loadingPrefabNames)) {
+                loadingPrefabNames.Add(loadingPrefabName);
+                {
                     var cor = Resources.LoadAsync(loadingPrefabName);
                 
                     while (!cor.isDone) {
                         yield return null;
                     }
-                    
                     var obj = cor.asset as GameObject;
 
                     if (obj == null) {
-                        // no prefab found.
-                        Debug.LogError("no prefab found in Resources:" + loadingPrefabName);
-
-                        var failedObj = new GameObject();
-                        failedObj.name = loadingPrefabName;
-                        loadedPrefab = failedObj;
+                        var failedObj = new GameObject("failed to load element:" + loadingPrefabName);
+                        loadingPrefabNames.Remove(loadingPrefabName);
+                        yield return failedObj;
                     } else {
                         // cache.
                         prefabCache[loadingPrefabName] = obj;
-
-                        loadedPrefab = obj;
+                        loadingPrefabNames.Remove(loadingPrefabName);
+                        yield return obj;
                     }
                 }
             }
-            // Debug.LogError("loaded:" + loadedPrefab);
-
-            yield return loadedPrefab;
         }
 
         private IEnumerator<GameObject> LoadPrefabFromAssetBundle (string loadingPrefabName) {
-            GameObject loadedPrefab = null;
-            if (prefabCache.ContainsKey(loadingPrefabName)) {
-                // Debug.LogError("キャッシュから読み出す");
-
-                var cachedPrefab = prefabCache[loadingPrefabName];
-                loadedPrefab = cachedPrefab;
+            while (loadingPrefabNames.Contains(loadingPrefabName)) {
+                yield return null;
             }
 
-            // no cache hit. start loading prefab.
-
-            // wait the end of other loading for same prefab.
-            else if (loadingPrefabNames.Contains(loadingPrefabName)) {
-                // Debug.LogError("キャッシュにないけどロード中 loadingPrefabName:" + loadingPrefabName);
-                while (loadingPrefabNames.Contains(loadingPrefabName)) {
-                    yield return null;
-                }
-
-                if (!prefabCache.ContainsKey(loadingPrefabName)) {
-                    throw new Exception("キャッシュされたはずなんだけどロードに失敗");
-                } else {
-                    var cachedPrefab = prefabCache[loadingPrefabName];
-                    loadedPrefab = cachedPrefab;
-                }
+            if (prefabCache.ContainsKey(loadingPrefabName)) {
+                // Debug.LogError("キャッシュから読み出す");
+                var cachedPrefab = prefabCache[loadingPrefabName];
+                yield return cachedPrefab;
             } else {
                 // アセット名が書いてあると思うんで、assetBundleListとかから取り寄せる
                 Debug.LogError("まだ実装してないassetBundleからprefabを読む仕掛け");
@@ -459,23 +424,16 @@ namespace AutoyaFramework.Information {
             layout, materialize時に画像を読み込む。
          */
         public IEnumerator<Sprite> LoadImageAsync (string uriSource) {
+            while (spriteDownloadingUris.Contains(uriSource)) {
+                yield return null;
+            }
+            
             if (spriteCache.ContainsKey(uriSource)) {
                 yield return spriteCache[uriSource];
-            } else if (spriteDownloadingUris.Contains(uriSource)) {
-                while (spriteDownloadingUris.Contains(uriSource)) {
-                    yield return null;
-                }
-
-                if (spriteCache.ContainsKey(uriSource)) {
-                    // download is done. cached sprite exists.
-                    yield return spriteCache[uriSource];
-                } else {
-                    yield break;
-                }
             } else {
-
                 // start downloading.
-                using (new AssetLoadingConstraint(uriSource, spriteDownloadingUris)) {
+                spriteDownloadingUris.Add(uriSource);
+                {
                     /*
                         supported schemes are,
                             
@@ -500,11 +458,6 @@ namespace AutoyaFramework.Information {
                             cor = LoadImageFromWeb(uriSource);
                             break;
                         }
-                        case ".": {
-                            var resourcePath = uriSource.Substring(2);
-                            cor = LoadImageFromResources(resourcePath);
-                            break;
-                        }
                         case "resources:": {
                             var resourcePath = uriSource.Substring("resources:".Length + 2);
                             cor = LoadImageFromResources(resourcePath);
@@ -526,8 +479,11 @@ namespace AutoyaFramework.Information {
                     
                     if (cor.Current == null) {
                         // failed to get image.
+                        spriteDownloadingUris.Remove(uriSource);
                         yield break;
                     }
+
+                    spriteDownloadingUris.Remove(uriSource);
                     yield return spriteCache[uriSource];
                 }
             }
@@ -728,6 +684,7 @@ namespace AutoyaFramework.Information {
 			protected virtual void Dispose (bool disposing) {
 				if (!disposedValue) {
 					if (disposing) {
+                        Debug.LogError("remove from list:" + target);
 						list.Remove(target);
 					}
 					disposedValue = true;

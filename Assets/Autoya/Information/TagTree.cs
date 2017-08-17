@@ -187,10 +187,18 @@ namespace AutoyaFramework.Information {
             ・レイアウト変更をする予定なので、InsertedTreeの解消
          */
         public static string[] CorrectTrees (TagTree rootTree) {
+            // ShowLayoutRecursive(rootTree);
             var usingIds = new List<string>();
 			CorrectRecursive(rootTree, usingIds);
             return usingIds.ToArray();
 		}
+
+        public static void ShowLayoutRecursive (TagTree tree) {
+            Debug.Log("tree:" + tree.tagValue + " treeType:" + tree.treeType + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+            foreach (var child in tree.GetChildren()) {
+                ShowLayoutRecursive(child);
+            }
+        }
 
         private static void CorrectRecursive (TagTree tree, List<string> usingIds) {
             var isUsing = !tree.hidden;

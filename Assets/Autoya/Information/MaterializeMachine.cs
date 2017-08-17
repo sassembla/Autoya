@@ -61,6 +61,7 @@ namespace AutoyaFramework.Information {
         }
 
 		private IEnumerator MaterializeRecursive (TagTree tree, GameObject parent) {
+			// Debug.LogError("materialize:" + tree.treeType + " tag:" + resLoader.GetTagFromValue(tree.tagValue));
 			if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
 				core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
 			}
@@ -105,7 +106,6 @@ namespace AutoyaFramework.Information {
 
 						// combine coroutine.
 						var setImageCor = SetImageCor(newGameObject, imageLoadCor);
-
 						resLoader.LoadParallel(setImageCor);
 					}
 					

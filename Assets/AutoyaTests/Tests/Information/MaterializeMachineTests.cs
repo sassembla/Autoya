@@ -15,15 +15,16 @@ using AutoyaFramework;
 public class MaterializeMachineTests : MiyamasuTestRunner {
     private HTMLParser parser;
 
-    private ResourceLoader loader;
-
     private GameObject canvas;
 
     
     GameObject rootObj;
-    UUebView executor;
+    UUebView view;
+
+    UUebViewCore core;
+
     private void ShowLayoutRecursive (TagTree tree) {
-        Debug.Log("tree:" + loader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+        Debug.Log("tree:" + core.resLoader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
         foreach (var child in tree.GetChildren()) {
             ShowLayoutRecursive(child);
         }
@@ -40,15 +41,21 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         RunOnMainThread(
             () => {
                 rootObj = new GameObject();
-                executor = rootObj.AddComponent<UUebView>();
+                var rectTrans = rootObj.AddComponent<RectTransform>();
+
+                view = rootObj.AddComponent<UUebView>();
+                core = new UUebViewCore(view);
                 
-                canvas = GameObject.Find("Canvas/MaterializeTestPlace");
-                loader = new ResourceLoader(executor.CoroutineExecutor);
+                var canvas = GameObject.Find("Canvas/MaterializeTestPlace");
+                rootObj.transform.SetParent(canvas.transform, false);
+
+                rectTrans.anchoredPosition = new Vector2(100 * index, 100);
+                index++;
             }
         );
 
         
-        parser = new HTMLParser(loader);
+        parser = new HTMLParser(core.resLoader);
 	}
 
     private TagTree CreateLayoutedTree (string sampleHtml) {
@@ -60,7 +67,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             }
         );
         
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+        RunOnMainThread(() => view.Internal_CoroutineExecutor(cor));
         
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
@@ -74,9 +81,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         }
 
         TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
+        var layoutMachine = new LayoutMachine(core.resLoader);
 
         var cor2 = layoutMachine.Layout(
             parsedRoot, 
@@ -86,10 +91,10 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             }
         );
 
-        RunOnMainThread(() => executor.CoroutineExecutor(cor2));
+        RunOnMainThread(() => view.Internal_CoroutineExecutor(cor2));
 
         WaitUntil(
-            () => layouted != null, 5, "timeout."
+            () => layouted != null, 5, "layout timeout."
         );
 
         return layouted;
@@ -97,40 +102,20 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 
     private int index;
     private void Show (TagTree tree) {
-        var materializeMachine = new MaterializeMachine(loader);
+        var materializeMachine = new MaterializeMachine(core.resLoader);
 
-        RectTransform rectTrans = null;
-
-        // このへんでreloadみたいなのを考える必要が出てくる。
-        // 現在はまだ適当。
+        var materializeDone = false;
         RunOnMainThread(
             () => {
-                rootObj.transform.SetParent(canvas.transform, false);
-                rectTrans = rootObj.AddComponent<RectTransform>();
-            }
-        );
-
-        var done = false;
-        
-        RunOnMainThread(
-            () => {
-                var cor = materializeMachine.Materialize(rootObj, new UUebViewCore(rootObj.GetComponent<UUebView>()), tree, 0, () => {
-                    done = true;
+                var cor = materializeMachine.Materialize(rootObj, core, tree, 0, () => {
+                    materializeDone = true;
                 });
-                executor.CoroutineExecutor(cor);
+                view.Internal_CoroutineExecutor(cor);
             }
         );
         
         WaitUntil(
-            () => done, 5, "not yet."
-        );
-        
-        RunOnMainThread(
-            () => {
-                // move to indexed pos.
-                rectTrans.anchoredPosition = new Vector2(100 * index, 100);
-                index++;
-            }
+            () => materializeDone && !view.IsLoading(), 5, "slow materialize. materializeDone:" + materializeDone + " view.IsLoading():" + view.IsLoading()
         );
     }
 
@@ -358,6 +343,7 @@ else
     }
 
     [MTest] public void MultipleBoxConstraints () {
+        
         var sample = @"
 <!--depth asset list url(resources://Views/MultipleBoxConstraints/DepthAssetList)-->
 <itemlayout>
@@ -383,6 +369,21 @@ else
 <body>
 <customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
 <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>
+else
+</body>";
+        var tree = CreateLayoutedTree(sample);
+
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<body>
+<customtag>
+    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+</customtag>
 else
 </body>";
         var tree = CreateLayoutedTree(sample);

@@ -1,24 +1,24 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace AutoyaFramework.Information {
-
+	public class LoadingCoroutineObj {
+		public bool isDone = false;
+	}
+	
 	/**
-		UUebView instance.
+		UUebView component.
 
-		なんかこのインスタンスをnewできたら使えます的な感じになったほうがいい気がしてきたぞ。
+		testing usage:
+			attach this component to gameobject and set preset urls and event receiver.
 
-		・MonoBehaviourなので、イベント送付先をuGUIのイベントで送付できる
-			レシーバを登録する形になる
-
-		・StartCoroutineが使える(executorを渡すことでOK)
-			resLoaderのあり方次第か。
+		actual usage:
+			let's use UUebViewCore.GenerateSingleViewFromHTML or UUebViewCore.GenerateSingleViewFromUrl.
 	 */
 	public class UUebView : MonoBehaviour {
-	
-
 		/*
 			preset parameters.
 			you can use this UUebView with preset paramters for testing.
@@ -40,21 +40,89 @@ namespace AutoyaFramework.Information {
 		}
 
 		object lockObj = new object();
-		Queue<IEnumerator> coroutines = new Queue<IEnumerator>();
+		private Queue<IEnumerator> queuedCoroutines = new Queue<IEnumerator>();
+		private Queue<IEnumerator> unmanagedCoroutines = new Queue<IEnumerator>();
+        private List<LoadingCoroutineObj> loadingCoroutines = new List<LoadingCoroutineObj>();
+		
+
+
 		void Update () {
 			lock (lockObj) {
-				while (0 < coroutines.Count) {
-					var cor = coroutines.Dequeue();
+				while (0 < queuedCoroutines.Count) {
+					var cor = queuedCoroutines.Dequeue();
+					var loadCorObj = new LoadingCoroutineObj();
+					var loadingCor = CreateLoadingCoroutine(cor, loadCorObj);
+					StartCoroutine(loadingCor);
+
+					// collect loading coroutines.
+					AddLoading(loadCorObj);
+				}
+
+				while (0 < unmanagedCoroutines.Count) {
+					var cor = unmanagedCoroutines.Dequeue();
 					StartCoroutine(cor);
 				}
+			}
+		}
+
+		private IEnumerator CreateLoadingCoroutine (IEnumerator cor, LoadingCoroutineObj loadCor) {
+			while (cor.MoveNext()) {
+				yield return null;
+			}
+			loadCor.isDone = true;
+		}
+
+		private void AddLoading (LoadingCoroutineObj runObj) {
+            loadingCoroutines.Add(runObj);
+        }
+
+		public void Internal_CoroutineExecutor (IEnumerator iEnum) {
+			lock (lockObj) {
+				unmanagedCoroutines.Enqueue(iEnum);
 			}
 		}
 		
 		public void CoroutineExecutor (IEnumerator iEnum) {
 			lock (lockObj) {
-				coroutines.Enqueue(iEnum);
+				queuedCoroutines.Enqueue(iEnum);
 			}
 		}
+
+		public bool IsWaitStartLoading () {
+			lock (lockObj) {
+				if (queuedCoroutines.Any()) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public bool IsLoading () {
+			lock (lockObj) {
+				if (queuedCoroutines.Any()) {
+					return true;
+				}
+
+				if (loadingCoroutines.Where(cor => !cor.isDone).Any()) {
+					// Debug.LogError("loading:" + loadingCoroutines.Count);
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+        public void EmitButtonEventById (string elementId) {
+            Core.OnImageTapped(string.Empty, string.Empty, elementId);
+        }
+
+		public void EmitLinkEventById (string elementId) {
+            Core.OnLinkTapped(string.Empty, string.Empty, elementId);
+        }
+
+        public LoadingCoroutineObj[] LoadingActs () {
+            return loadingCoroutines.Where(r => !r.isDone).ToArray();
+        }
     }
 
 	public enum ContentType {

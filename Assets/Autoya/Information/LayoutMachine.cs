@@ -105,10 +105,9 @@ namespace AutoyaFramework.Information {
 				yield return null;
 			}
 
-			// ビュー高さが出る。
 			viewCursor = cor.Current;
 			
-			// セット
+			// ビュー高さ込みのカーソルをセット
 			rootTree.SetPosFromViewCursor(viewCursor);
 			layouted(rootTree);
 		}
@@ -525,7 +524,7 @@ namespace AutoyaFramework.Information {
 				}
 				yield return null;
 			}
-
+			
 			var prefab = cor.Current;
 			
 			// use prefab's text component for using it's text setting.
@@ -598,7 +597,8 @@ namespace AutoyaFramework.Information {
 						var totalHeight = 0;
 						for (var i = 0; i < generator.lineCount-1; i++) {
 							var line = generator.lines[i];
-							totalHeight += (int)(line.height*textComponent.lineSpacing)+1;// この+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。
+							// Debug.LogWarning("この+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。");
+							totalHeight += (int)(line.height * textComponent.lineSpacing);
 						}
 
 						// このビューのポジションとしてセット
@@ -608,14 +608,14 @@ namespace AutoyaFramework.Information {
 					} else {
 						// 行頭の単一行
 						var width = textComponent.preferredWidth;
-						var height = generator.lines[0].height*textComponent.lineSpacing;
+						var height = generator.lines[0].height * textComponent.lineSpacing;
 						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
 						yield return newViewCursor;
 					}
 				} else {
 					if (isMultilined) {
 						// Debug.LogError("行中での折り返しのある文字ヒット");
-						var currentLineHeight = generator.lines[0].height*textComponent.lineSpacing;
+						var currentLineHeight = generator.lines[0].height * textComponent.lineSpacing;
 
 						// 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
 						var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
@@ -638,7 +638,7 @@ namespace AutoyaFramework.Information {
 					} else {
 						// 行の途中に追加された単一行で、いい感じに入った。
 						var width = textComponent.preferredWidth;
-						var height = generator.lines[0].height*textComponent.lineSpacing;
+						var height = generator.lines[0].height * textComponent.lineSpacing;
 						var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
 						yield return newViewCursor;
 					}
