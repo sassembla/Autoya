@@ -641,7 +641,7 @@ else
                     if (0 < localTree.GetChildren().Count) {
                         localTree = localTree.GetChildren()[localTree.GetChildren().Count-1];
                         if (localTree.offsetY != 0) {
-                            Assert(localTree.offsetY.Equals(755.6f), "not match, offsetY:" + localTree.offsetY);
+                            Assert(localTree.offsetY.Equals(754.9f), "not match, offsetY:" + localTree.offsetY);
                         }
                     } else {
                         break;
@@ -968,7 +968,7 @@ else
         Assert(layouted.GetChildren()[0].GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + layouted.GetChildren()[0].GetChildren()[1].offsetY);
     }
 
-    [MTest] public void SampleView2_HiddenBreakView () {
+    [MTest] public void LayoutSampleView2_HiddenBreakView () {
         var sampleHtml = @"
 <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
 <body>
@@ -1008,41 +1008,7 @@ else
             () => layouted != null, 5, "timeout."
         );
 
-        Debug.LogError("hiddenを計算できてなさそう");
-    }
-
-    [MTest] public void SampleView2_NoButtonFound () {
-        var sampleHtml = @"
-<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
-<body>
-    <bg>
-    	<!-- 単純にボタンとして見なされてない感がある。 -->
-    	<showbutton button='true' id='readmore'/>
-    </bg>
-</body>";
-        var tree = CreateTagTree(sampleHtml);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
-        Debug.LogError("ボタンが出ない(treeTypeが違う？");
+        Debug.LogError("hiddenを計算できてなさそう、hiddenの直前までのコンテンツが出て欲しいんだけど。");
     }
 
     [MTest] public void SampleView2 () {
