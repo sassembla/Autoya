@@ -72,9 +72,20 @@ namespace AutoyaFramework.Information {
             return source;
         }
 
+        /**
+            起点はそのまま、コンテンツのサイズがない = 0にしたカーソルを返す。
+         */
+        public static ViewCursor ZeroSizeCursor (ViewCursor baseCursor) {
+            baseCursor.viewWidth = 0;
+            baseCursor.viewHeight = 0;
+            return baseCursor;
+        }
+
         override public string ToString () {
             return "offsetX:" + offsetX + " offsetY:" + offsetY + " viewWidth:" + viewWidth + " viewHeight:" + viewHeight;
         }
+
+        
     }	
 
 
@@ -118,19 +129,23 @@ namespace AutoyaFramework.Information {
          */
         private IEnumerator<ViewCursor> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
             // Debug.LogError("tree:" + resLoader.GetTagFromValue(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
-            
+            // Debug.LogWarning("まだ実装してない、brとかhrでの改行処理。 実際にはpとかも一緒で、「このコンテンツが終わったら改行する」みたいなのが必須。区分けとしてはここではないか。");
+
             var cor = GetCoroutineByTreeType(tree, viewCursor, insertion);
 
             /*
                 もしもtreeがhiddenだった場合でも、のちのち表示するために内容のロードは行う。
+                コンテンツへのサイズの指定も0で行う。
                 ただし、同期的に読む必要はないため、並列でロードする。
              */
             if (tree.hidden) {
                 var loadThenSetHiddenPosCor = SetHiddenPosCoroutine(tree, cor);
                 resLoader.LoadParallel(loadThenSetHiddenPosCor);
 
-                // hiddenなコンテンツのサイズは存在しない。カーソルをそのまま返す。
-                yield return viewCursor;
+                var hiddenCursor = ViewCursor.ZeroSizeCursor(viewCursor);
+                
+                tree.SetPosFromViewCursor(hiddenCursor);
+                yield return hiddenCursor;
             } else {
                 while (cor.MoveNext()) {
                     if (cor.Current != null) {
@@ -138,7 +153,7 @@ namespace AutoyaFramework.Information {
                     }
                     yield return null;
                 }
-
+                
                 yield return cor.Current;
             }
         }
@@ -160,9 +175,6 @@ namespace AutoyaFramework.Information {
                 }
                 case TreeType.Content_Text: {
                     return DoTextLayout(tree, viewCursor, insertion);
-                }
-                case TreeType.Content_CRLF: {
-                    return DoCRLFLayout(tree, viewCursor);
                 }
                 default: {
                     throw new Exception("unexpected tree type:" + tree.treeType);
@@ -451,11 +463,9 @@ namespace AutoyaFramework.Information {
 
                     // レイアウトが済んだchildの位置を受け取る。
                     var layoutedChildView = cor.Current;
-                    // Debug.LogError("layoutedChildView:" + layoutedChildView);
-                    Debug.Assert(layoutedChildView != null, "layoutedChildView is null.");
-                    
-                    var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, containerViewCursor.viewWidth);
 
+                    var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedChildView, containerViewCursor.viewWidth);
+                    
                     // レイアウト直後に次のポイントの開始位置が幅を超えている場合、現行の行のライニングを行う。
                     if (containerViewCursor.viewWidth <= nextChildViewCursor.offsetX) {
                         // ライニング
@@ -471,11 +481,12 @@ namespace AutoyaFramework.Information {
                         childView = nextChildViewCursor;
                     }
 
-                    // Debug.LogError("child:" + child.parsedTag + " done," + child.ShowContent() + " next childView:" + childView);
+                    // Debug.LogError("child:" + child.tagValue + " done," + " next childView:" + childView);
                 }
 
                 // 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
             }
+
 
             // 最後の列はそのまま1列扱いになるので、整列。
             if (linedElements.Any()) {
@@ -630,12 +641,6 @@ namespace AutoyaFramework.Information {
             }
         }
 
-
-        private IEnumerator<ViewCursor> DoCRLFLayout (TagTree crlfTree, ViewCursor cursor) {
-            throw new Exception("まだ実装してない、brとかhrでの改行処理。 pとかも一緒で、「このコンテンツが終わったら改行する」みたいなのが必須。");
-            yield return null;
-        }
-
         private IEnumerator SetHiddenPosCoroutine (TagTree hiddenTree, IEnumerator<ViewCursor> cor) {
             while (cor.MoveNext()) {
                 if (cor.Current != null) {
@@ -653,24 +658,33 @@ namespace AutoyaFramework.Information {
         */
         private float DoLining (List<TagTree> linedChildren) {
             var nextOffsetY = 0f;
-            var tallestHeight = 0f;
+            var tallestOffsetY = 0f;
+            var tallestHeightPoint = 0f;
 
             for (var i = 0; i < linedChildren.Count; i++) {
                 var child = linedChildren[i];
-                if (tallestHeight < child.viewHeight) {
-                    tallestHeight = child.viewHeight;
-                    nextOffsetY = child.offsetY + tallestHeight;
+
+                // update nextOffsetY from tallest height
+                /*
+                    下端が一番下にあるコンテンツの値を取り出す
+                 */
+                if (tallestHeightPoint < child.offsetY + child.viewHeight) {
+                    tallestOffsetY = child.offsetY;
+                    tallestHeightPoint = child.offsetY + child.viewHeight;
+                    nextOffsetY = tallestHeightPoint;
                 }
             }
-            
-            // 高さを位置として反映させる。
+
+            // Debug.LogError("tallestHeightPoint:" + tallestHeightPoint);
+            // tallestHeightを最大高さとして、各コンテンツのoffsetYを、この高さのコンテンツに下揃えになるように調整する。
             for (var i = 0; i < linedChildren.Count; i++) {
                 var child = linedChildren[i];
-                var diff = tallestHeight - child.viewHeight;
+                var diff = (tallestHeightPoint - tallestOffsetY) - child.viewHeight;
                 
                 child.offsetY = child.offsetY + diff;
             }
 
+            // Debug.LogError("lining nextOffsetY:" + nextOffsetY);
             return nextOffsetY;
         }
 

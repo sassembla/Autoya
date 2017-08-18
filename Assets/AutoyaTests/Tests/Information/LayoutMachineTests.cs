@@ -52,8 +52,10 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         );
     }
 
-    private ParsedTree CreateTagTree (string sampleHtml) {
+    private TagTree CreateTagTree (string sampleHtml) {
         ParsedTree parsedRoot = null;
+        TagTree layoutedRoot = null;
+
         var cor = parser.ParseRoot(
             sampleHtml, 
             parsed => {
@@ -67,204 +69,73 @@ public class LayoutMachineTests : MiyamasuTestRunner {
             () => parsedRoot != null, 1, "too late."
         );
 
-        return parsedRoot;
+        var layoutMachine = new LayoutMachine(
+            loader
+        );
+        
+        var loaderCor = layoutMachine.Layout(
+            parsedRoot,
+            new Vector2(100,100),
+            layoutedTree => {
+                layoutedRoot = layoutedTree;
+            }
+        );
+
+        RunOnMainThread(() => executor.CoroutineExecutor(loaderCor));
+
+        WaitUntil(
+            () => layoutedRoot != null, 5, "timeout."
+        );
+
+        return layoutedRoot;
     }
 
     [MTest] public void LayoutHTML () {
         var sample = @"
 <body>something</body>";
         var tree = CreateTagTree(sample);
-        
-        
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
     }
 
     [MTest] public void LayoutHTMLHasValidView () {
         var sample = @"
 <body>something</body>";
         var tree = CreateTagTree(sample);
-        
-        
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
-
+        Assert(tree.viewHeight == 16, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithSmallTextHasValidView () {
         var sample = @"
 <body>over 100px string should be multi lined text with good separation. need some length.</body>";
         var tree = CreateTagTree(sample);
-        
-        
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 112, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
-        
+        Assert(tree.viewHeight == 112, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithImage () {
         var sample = @"
 <body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 100, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 100, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithSmallImage () {
         var sample = @"
 <body><img src='https://dummyimage.com/10.png/09f/fff'/></body>";
         var tree = CreateTagTree(sample);
-        
-        
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 10, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
-
+        Assert(tree.viewHeight == 10, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithSmallImageAndText () {
         var sample = @"
 <body><img src='https://dummyimage.com/10.png/09f/fff'/>text</body>";
         var tree = CreateTagTree(sample);
-        
-        
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithSmallImageAndSmallText () {
         var sample = @"
 <body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
         var tree = CreateTagTree(sample);
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 112, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 112, "not match.");
     }
     
 
@@ -272,55 +143,14 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
         var tree = CreateTagTree(sample);
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 26, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 26, "not match.");
     }
+
     [MTest] public void LayoutHTMLWithTextAndWideImage () {
         var sample = @"
 <body>something<img src='https://dummyimage.com/100x10/000/fff'/></body>";
         var tree = CreateTagTree(sample);
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16, "not match.");
     }
 
 
@@ -328,84 +158,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <body>something<img src='https://dummyimage.com/100x10/000/fff'/>else</body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 16+16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16+16, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithTextAndWideImageAndTextAndWideImageAndText () {
         var sample = @"
 <body>something<img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 16+16+16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16+16+16, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithWideImageAndTextAndWideImageAndText () {
         var sample = @"
 <body><img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 10+16+16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 10+16+16, "not match.");
     }
 
 
@@ -413,28 +180,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <body>something<img src='https://dummyimage.com/10x10/000/fff'/></body>";
         var tree = CreateTagTree(sample);
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16, "not match.");
     }
 
 
@@ -442,112 +188,28 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <body>something<img src='https://dummyimage.com/10x10/000/fff'/>b!</body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithTextAndSmallImageAndTextAndWideImageAndText () {
         var sample = @"
 <body>something<img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/100x10/000/fff'/>other</body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 16+16+16, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 16+16+16, "not match.");
     }
 
     [MTest] public void LayoutHTMLWithSmallImageAndTextAndSmallImageAndText () {
         var sample = @"
 <body><img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/10x20/000/fff'/>other</body>";
         var tree = CreateTagTree(sample);
-        
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                // ShowLayoutRecursive(layoutedTree);
-                done = true;
-                Assert(layoutedTree.viewHeight == 20, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
+        Assert(tree.viewHeight == 20, "not match.");
     }
 
 
     [MTest] public void LoadHTMLWithCustomTagLink () {
         var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-        ";
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->";
         var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
     }
 
     [MTest] public void LayoutHTMLWithCustomTag () {
@@ -560,26 +222,6 @@ else
 </body>
         ";
         var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
     }
 
     [MTest] public void LayoutHTMLWithCustomTagSmallText () {
@@ -592,26 +234,6 @@ something you need is not time, money, but do things fast.
 else
 </body>";
         var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
     }
 
     [MTest] public void LayoutHTMLWithCustomTagLargeText () {
@@ -624,38 +246,16 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 else
 </body>";
         var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-                
-                var localTree = layouted;
-                while (true) {
-                    if (0 < localTree.GetChildren().Count) {
-                        localTree = localTree.GetChildren()[localTree.GetChildren().Count-1];
-                        if (localTree.offsetY != 0) {
-                            Assert(localTree.offsetY.Equals(754.9f), "not match, offsetY:" + localTree.offsetY);
-                        }
-                    } else {
-                        break;
-                    }
+        while (true) {
+            if (0 < tree.GetChildren().Count) {
+                tree = tree.GetChildren()[tree.GetChildren().Count-1];
+                if (tree.offsetY != 0) {
+                    Assert(tree.offsetY.Equals(754.9f), "not match, offsetY:" + tree.offsetY);
                 }
+            } else {
+                break;
             }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
+        }
     }
 
 
@@ -765,74 +365,26 @@ else
         var sample = @"
 <body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
         var tree = CreateTagTree(sample);
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader      
-        );
-
-        TagTree currentLayoutedTree = null;
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                currentLayoutedTree = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-        
-        WaitUntil(
-            () => done, 5, "too late."
+        Assert(
+            tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.treeType == TreeType.Content_Text, "not match, type:" + tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.treeType
         );
 
         Assert(
-            currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.treeType == TreeType.Content_Text, "not match, type:" + currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.treeType
+            tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.treeType == TreeType.Content_Img, "not match, type:" + tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.treeType
         );
-
-        Assert(
-            currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.treeType == TreeType.Content_Img, "not match, type:" + currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.treeType
-        );
-
     }
 
     [MTest] public void Position () {
         var sample = @"
 <body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
         var tree = CreateTagTree(sample);
-
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader      
-        );
-
-        TagTree currentLayoutedTree = null;
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                currentLayoutedTree = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-        
-        WaitUntil(
-            () => done, 5, "too late."
+        Assert(
+            tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.offsetY == 6f, "not match, offsetY:" + tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.offsetY
         );
 
         Assert(
-            currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.offsetY == 6f, "not match, offsetY:" + currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[0]/*text of body*/.offsetY
+            tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.offsetY == 0, "not match, offsetY:" + tree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.offsetY
         );
-
-        Assert(
-            currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.offsetY == 0, "not match, offsetY:" + currentLayoutedTree/*root*/.GetChildren()[0]/*body*/.GetChildren()[1]/*img*/.offsetY
-        );
-
     }
 
     [MTest] public void MultipleBoxConstraints () {
@@ -851,52 +403,13 @@ else
 </bottom>
 </itemlayout>";
         var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-                var itemLayout = layoutedTree.GetChildren()[0];
-                var topleft = itemLayout.GetChildren()[0];
-                var topright = itemLayout.GetChildren()[1];
-                Assert(topleft.offsetY == 0, "not match, topleft.offsetY:" + topleft.offsetY);
-                Assert(topright.offsetY == 0, "not match, topright.offsetY:" + topright.offsetY);
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
+        var itemLayout = tree.GetChildren()[0];
+        var topleft = itemLayout.GetChildren()[0];
+        var topright = itemLayout.GetChildren()[1];
+        Assert(topleft.offsetY == 0, "not match, topleft.offsetY:" + topleft.offsetY);
+        Assert(topright.offsetY == 0, "not match, topright.offsetY:" + topright.offsetY);
     }
 
-    [MTest] public void LayoutErrorAtDirectContentUnderLayer () {
-        var sampleHtml = @"
-<!--depth asset list url(resources://Views/MultipleBoxConstraints/DepthAssetList)-->
-<itemlayout>
-<topleft>
-    <img src='https://dummyimage.com/100.png/09f/fff'/>
-</topleft>
-<topright>
-    <img src='https://dummyimage.com/100.png/08f/fff'/>
-</topright>
-<content>something!</content>
-<bottom>
-    <img src='https://dummyimage.com/100.png/07f/fff'/>
-</bottom>
-</itemlayout>";
-        var tree = CreateTagTree(sampleHtml);
-
-        Assert(tree.errors[0].code == (int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "not match.");
-    }
 
     [MTest] public void LayoutHTMLWithCustomTagMultiple () {
         var sampleHtml = @"
@@ -904,32 +417,9 @@ else
 <customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
 <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>";
         var tree = CreateTagTree(sampleHtml);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
-        // ShowLayoutRecursive(layouted);
-
-        Assert(0 < layouted.GetChildren().Count, "not match, actual:" + layouted.GetChildren().Count);
-        Assert(layouted.GetChildren()[0].offsetY == 0, "not match of 1. actual:" + layouted.GetChildren()[0].offsetY);
-        Assert(layouted.GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + layouted.GetChildren()[1].offsetY);
+        Assert(0 < tree.GetChildren().Count, "not match, actual:" + tree.GetChildren().Count);
+        Assert(tree.GetChildren()[0].offsetY == 0, "not match of 1. actual:" + tree.GetChildren()[0].offsetY);
+        Assert(tree.GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + tree.GetChildren()[1].offsetY);
     }
 
     [MTest] public void LayoutHTMLWithCustomTagMultipleInBody () {
@@ -940,32 +430,9 @@ else
 <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>
 </body>";
         var tree = CreateTagTree(sampleHtml);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
-        // ShowLayoutRecursive(layouted);
-
-        Assert(0 < layouted.GetChildren().Count, "not match, actual:" + layouted.GetChildren().Count);
-        Assert(layouted.GetChildren()[0].GetChildren()[0].offsetY == 0, "not match of 1. actual:" + layouted.GetChildren()[0].GetChildren()[0].offsetY);
-        Assert(layouted.GetChildren()[0].GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + layouted.GetChildren()[0].GetChildren()[1].offsetY);
+        Assert(0 < tree.GetChildren().Count, "not match, actual:" + tree.GetChildren().Count);
+        Assert(tree.GetChildren()[0].GetChildren()[0].offsetY == 0, "not match of 1. actual:" + tree.GetChildren()[0].GetChildren()[0].offsetY);
+        Assert(tree.GetChildren()[0].GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + tree.GetChildren()[0].GetChildren()[1].offsetY);        
     }
 
     [MTest] public void LayoutSampleView2_HiddenBreakView () {
@@ -973,42 +440,19 @@ else
 <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
 <body>
     <bg>
-    	<titlebox>
-    		<titletext>レモン一個ぶんのビタミンC</titletext>
-    	</titlebox>
-    	<newbadge></newbadge>
     	<textbg>
     		<textbox>
 	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
-	    		<!-- hiddenがあると、コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
 	    		<updatetext hidden='true' listen='readmore'>omake!</updatetext>
 	    	</textbox>
 	    </textbg>
     </bg>
 </body>";
         var tree = CreateTagTree(sampleHtml);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
-        Debug.LogError("hiddenを計算できてなさそう、hiddenの直前までのコンテンツが出て欲しいんだけど。");
+        var textBox = tree.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0];
+        var updatetextBox = textBox.GetChildren()[0];
+        // Debug.LogError("updatetextBox:" + updatetextBox.viewHeight);
+        Assert(textBox.viewHeight == 100.4f, "not match, textBox.viewHeight:" + textBox.viewHeight);
     }
 
     [MTest] public void SampleView2 () {
@@ -1031,58 +475,6 @@ else
     </bg>
 </body>";
         var tree = CreateTagTree(sampleHtml);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-    }
-
-    [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContent () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<customtext>something1</customtext>
-<customtext>something1</customtext>";
-
-        var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-                // 0,16だったらOK
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
-        // ShowLayoutRecursive(layouted);
     }
 
     [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
@@ -1093,31 +485,8 @@ else
     <custombg><textbg><customtext>something2</customtext></textbg></custombg>
 </customtag>";
         var tree = CreateTagTree(sample);
-
-        TagTree layouted = null;
-        var layoutMachine = new LayoutMachine(
-            loader
-        );
-
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                layouted = layoutedTree;
-                // 0,60.7fだったらOK
-                var custombgs = layouted.GetChildren()[0]/*customtag*/.GetChildren()[0]/*box*/.GetChildren();
-                Assert(custombgs[0].offsetY == 0, "not match. custombgs[0].offsetY:" + custombgs[0].offsetY);
-                Assert(custombgs[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + custombgs[1].offsetY);
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
-
-
-        WaitUntil(
-            () => layouted != null, 5, "timeout."
-        );
-
-        // ShowLayoutRecursive(layouted);
+        var custombgs = tree.GetChildren()[0]/*customtag*/.GetChildren()[0]/*box*/.GetChildren();
+        Assert(custombgs[0].offsetY == 0, "not match. custombgs[0].offsetY:" + custombgs[0].offsetY);
+        Assert(custombgs[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + custombgs[1].offsetY);
     }
 }

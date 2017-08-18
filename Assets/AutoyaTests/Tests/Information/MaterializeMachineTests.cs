@@ -425,7 +425,21 @@ else
         var tree = CreateLayoutedTree(sampleHtml);
 
         Show(tree);
-
-        Debug.LogError("hiddenを計算できてなさそう、hiddenの直前までのコンテンツが出て欲しいんだけど。");
+    }
+    [MTest] public void LayoutSampleView2_HiddenBreakView () {
+        var sampleHtml = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<body>
+    <bg>
+    	<textbg>
+    		<textbox>
+	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
+	    		<updatetext hidden='true' listen='readmore'>omake!</updatetext>
+	    	</textbox>
+	    </textbg>
+    </bg>
+</body>";
+        var tree = CreateLayoutedTree(sampleHtml);
+        Show(tree);
     }
 }
