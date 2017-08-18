@@ -172,8 +172,8 @@ namespace AutoyaFramework.Information {
         
         /**
             カスタムタグのレイヤーのレイアウトを行う。
-            customTagLayer/box/boxContents というレイヤーになっていて、必ず規定のポジションでレイアウトされる。
-            ここだけ相対的なレイアウトが崩れる。
+            customTagLayer/box/boxContents(layerとか) という構造になっていて、boxはlayer内に必ず規定のポジションでレイアウトされる。
+            ここだけ相対的なレイアウトが確実に崩れる。
          */
         private IEnumerator<ViewCursor> DoLayerLayout (TagTree layerTree, ViewCursor parentBoxViewCursor) {
             ViewCursor layerViewCursor = null;
@@ -199,13 +199,7 @@ namespace AutoyaFramework.Information {
             */
             var children = layerTree.GetChildren();
 
-            if (children.Count == 0) {
-                layerTree.SetPosFromViewCursor(layerViewCursor);
-                yield return layerViewCursor;
-                yield break;
-            }
-
-            // collisionGroup単位での追加高さ、一番下まで伸びてるやつを基準にする。単純な超過度合いだと出せないな〜、開始位置と高さから一番下のポイントを叩き出したやつを見つけて、その伸び具合を次の要素の開始に追加っていう感じか。
+            // collisionGroup単位での追加高さ、一番下まで伸びてるやつを基準にする。
             var boxYPosRecords = new Dictionary<float, float>();
             var collisionGrouId = 0;
             float additionalHeight = 0f;
