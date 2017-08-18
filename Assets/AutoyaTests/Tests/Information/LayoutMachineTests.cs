@@ -1052,4 +1052,72 @@ else
             () => layouted != null, 5, "timeout."
         );
     }
+
+    [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContent () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<customtext>something1</customtext>
+<customtext>something1</customtext>";
+
+        var tree = CreateTagTree(sample);
+
+        TagTree layouted = null;
+        var layoutMachine = new LayoutMachine(
+            loader
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            new Vector2(100,100),
+            layoutedTree => {
+                layouted = layoutedTree;
+                // 0,16だったらOK
+            }
+        );
+
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+
+
+        WaitUntil(
+            () => layouted != null, 5, "timeout."
+        );
+
+        // ShowLayoutRecursive(layouted);
+    }
+
+    [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<customtag>
+    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+</customtag>";
+        var tree = CreateTagTree(sample);
+
+        TagTree layouted = null;
+        var layoutMachine = new LayoutMachine(
+            loader
+        );
+
+        var cor = layoutMachine.Layout(
+            tree,
+            new Vector2(100,100),
+            layoutedTree => {
+                layouted = layoutedTree;
+                // 0,60.7fだったらOK
+                var custombgs = layouted.GetChildren()[0]/*customtag*/.GetChildren()[0]/*box*/.GetChildren();
+                Assert(custombgs[0].offsetY == 0, "not match. custombgs[0].offsetY:" + custombgs[0].offsetY);
+                Assert(custombgs[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + custombgs[1].offsetY);
+            }
+        );
+
+        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+
+
+        WaitUntil(
+            () => layouted != null, 5, "timeout."
+        );
+
+        // ShowLayoutRecursive(layouted);
+    }
 }

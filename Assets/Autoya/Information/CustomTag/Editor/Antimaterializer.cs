@@ -225,6 +225,7 @@ namespace AutoyaFramework.Information {
 
 
             var layerName = currentLayerInstance.name.ToLower();
+            var unboxedLayerSize = rectTrans.sizeDelta;
 
             var childrenConstraintDict = new Dictionary<string, BoxPos>();
             var copiedChildList = new List<GameObject>();
@@ -278,10 +279,29 @@ namespace AutoyaFramework.Information {
                     }
                 }
                 
+
+                /*
+                    このレイヤーのunboxed時のサイズと、内包しているboxの情報を追加
+                */
+                {
+                    var newChildConstraint = childrenConstraintDict
+                        .Select(kv => new BoxConstraint(kv.Key, kv.Value))
+                        .ToArray();
+
+                    var newLayer = new LayerInfo(
+                        layerName, 
+                        unboxedLayerSize,
+                        newChildConstraint,
+                        "resources://" + ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + viewName + "/" + layerName.ToUpper()
+                    );
+
+                    currentLayers.Add(new LayerInfoOnEditor(newLayer, size));
+                }
+
                 /*
                     このprefabはlayer = レイアウトを行う前提の箱として使われる。
-                    box = 特定の名前の要素(prefabになる前の子供ゲームオブジェクト名のタグ要素)のみをレイアウトする。
-                    その中身にはなんでも入っていい。
+                    レイヤー内には、box = 特定の名前の要素(prefabになる前の子供ゲームオブジェクト名のタグ要素)のみをレイアウトする。
+                    そのboxタグの中身にはなんでも入れることができる。
 
                     prefab名は大文字 になる。
                 */
@@ -294,23 +314,6 @@ namespace AutoyaFramework.Information {
 
                     // layer自体の削除
                     GameObject.DestroyImmediate(currentLayerInstance);
-                }
-
-                /*
-                    このレイヤーのboxの情報を追加
-                */
-                {
-                    var newChildConstraint = childrenConstraintDict
-                        .Select(kv => new BoxConstraint(kv.Key, kv.Value))
-                        .ToArray();
-
-                    var newLayer = new LayerInfo(
-                        layerName, 
-                        newChildConstraint,
-                        "resources://" + ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + viewName + "/" + layerName.ToUpper()
-                    );
-
-                    currentLayers.Add(new LayerInfoOnEditor(newLayer, size));
                 }
 
                 /*

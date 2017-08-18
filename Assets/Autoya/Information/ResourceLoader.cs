@@ -227,7 +227,7 @@ namespace AutoyaFramework.Information {
                     // cache.
                     prefabCache[prefabName] = prefab;
                 }
-                
+
                 loadingPrefabNames.Remove(prefabName);
                 yield return prefab;
             }
@@ -602,7 +602,7 @@ namespace AutoyaFramework.Information {
             switch (treeType) {
                 case TreeType.CustomLayer:
                 case TreeType.CustomEmptyLayer: {
-                    return customTagList.layerConstraints.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
+                    return customTagList.layerInfos.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
                 }
                 case TreeType.Content_Img:
                 case TreeType.Content_Text: {
@@ -712,12 +712,13 @@ namespace AutoyaFramework.Information {
         }
 
         private Dictionary<string, TreeType> customTagTypeDict = new Dictionary<string, TreeType>();
-        private Dictionary<string, BoxConstraint[]> constraintsDict;
+        private Dictionary<string, BoxConstraint[]> layerDict;
+        private Dictionary<string, Vector2>unboxedLayerSizeDict;
         
 
         public IEnumerator LoadCustomTagList (string uriSource) {
             if (IsLoadingDepthAssetList) {
-                throw new Exception("multiple depth description found. only one description is valid.");
+                throw new Exception("multiple customTagList description found. only one customTagList description is valid.");
             }
 
             var schemeEndIndex = uriSource.IndexOf("//");
@@ -731,19 +732,21 @@ namespace AutoyaFramework.Information {
                 this.customTagTypeDict = this.customTagList.GetTagTypeDict();
 
                 // レイヤー名:constraintsの辞書を生成しておく。
-                this.constraintsDict = new Dictionary<string, BoxConstraint[]>();
+                this.layerDict = new Dictionary<string, BoxConstraint[]>();
+                this.unboxedLayerSizeDict = new Dictionary<string, Vector2>();
 
-                var constraints = customTagList.layerConstraints;
+                var layerInfos = customTagList.layerInfos;
 
-                foreach (var constraint in constraints) {
-                    constraintsDict[constraint.layerName.ToLower()] = constraint.boxes;
+                foreach (var layerInfo in layerInfos) {
+                    layerDict[layerInfo.layerName.ToLower()] = layerInfo.boxes;
+                    unboxedLayerSizeDict[layerInfo.layerName.ToLower()] = layerInfo.unboxedLayerSize;
                 }
 
                 IsLoadingDepthAssetList = false;
             };
             
-            Action failed = () => {
-                Debug.LogError("failed to load depthAssetList from url:" + uriSource + ". use default empty customTagList automatically.");
+            Action<int, string> failed = (code, reason) => {
+                throw new Exception("未対処なリストのロードエラー。failed to load customTagList. code:" + code + " reason:" + reason);
                 this.customTagList = new CustomTagList(ConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
                 IsLoadingDepthAssetList = false;
             };
@@ -775,22 +778,27 @@ namespace AutoyaFramework.Information {
             }
         }
 
+        public Vector2 GetUnboxedLayerSize (int tagValue) {
+            var key = GetTagFromValue(tagValue);
+            return unboxedLayerSizeDict[key];
+        }
+
         public BoxConstraint[] GetConstraints (int tagValue) {
             var key = GetTagFromValue(tagValue);
-            return constraintsDict[key];
+            return layerDict[key];
         }
 
         public string GetLayerBoxName (int layerTag, int boxTag) {
             return GetTagFromValue(layerTag) + "_" + GetTagFromValue(boxTag);
         }
 
-        private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action failed) {
+        private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action<int, string> failed) {
             Debug.LogError("not yet applied. LoadListFromAssetBundle url:" + url);
-            failed();
+            failed(-1, "not yet applied.");
             yield break;
         }
         
-        private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action loadFailed) {
+        private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action<int, string> loadFailed) {
             var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_CUSTOMTAGLIST_PREFIX + Guid.NewGuid().ToString();
             var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
@@ -809,9 +817,8 @@ namespace AutoyaFramework.Information {
 
                     // check timeout.
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-                        Debug.LogError("timeout. load aborted, dataPath:" + url);
                         request.Abort();
-                        loadFailed();
+                        loadFailed(-1, "timeout to download list from url:" + url);
                         yield break;
                     }
                 }
@@ -830,8 +837,7 @@ namespace AutoyaFramework.Information {
                             throw new Exception("request encountered some kind of error.");
                         }, 
                         (conId, code, reason, autoyaStatus) => {
-                            Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
-                            loadFailed();
+                            loadFailed(code, reason);
                         }
                     );
                     yield break;
@@ -850,14 +856,13 @@ namespace AutoyaFramework.Information {
                         loadSucceeded(newDepthAssetList);
                     }, 
                     (conId, code, reason, autoyaStatus) => {
-                        Debug.LogError("failed to download list:" + url + " code:" + code + " reason:" + reason);
-                        loadFailed();
+                        loadFailed(code, reason);
                     }
                 );
             }
         }
         
-        private IEnumerator LoadListFromResources (string path, Action<CustomTagList> succeeded, Action failed) {
+        private IEnumerator LoadListFromResources (string path, Action<CustomTagList> succeeded, Action<int, string> failed) {
             var requestCor = Resources.LoadAsync(path);
 
             while (!requestCor.isDone) {
@@ -865,7 +870,7 @@ namespace AutoyaFramework.Information {
             }
 
             if (requestCor.asset == null) {
-                failed();
+                failed(-1, "no list found in resources.");
                 yield break;
             }
 

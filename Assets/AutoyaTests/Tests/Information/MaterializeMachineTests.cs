@@ -391,6 +391,19 @@ else
         Show(tree);
     }
 
+    [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<customtag>
+    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+</customtag>";
+        var tree = CreateLayoutedTree(sample);
+
+        Show(tree);
+    }
+
+
     [MTest] public void MaterializeSampleView2_HiddenBreakView () {
         var sampleHtml = @"
 <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
