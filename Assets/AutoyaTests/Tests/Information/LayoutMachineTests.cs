@@ -262,103 +262,135 @@ else
     [MTest] public void Re_LayoutHTMLWithSmallImageAndSmallText () {
         var sample = @"
 <body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
-        var tree = CreateTagTree(sample);
+        ParsedTree parsedRoot = null;
+        {
+            var cor = parser.ParseRoot(
+                sample, 
+                parsed => {
+                    parsedRoot = parsed;
+                }
+            );
 
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader      
-        );
+            RunOnMainThread(() => executor.CoroutineExecutor(cor));
+            
+            WaitUntil(
+                () => parsedRoot != null, 1, "too late."
+            );
+        }
 
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 112, "not match.");
-            }
-        );
+        {
+            var done = false;
+            var layoutMachine = new LayoutMachine(
+                loader      
+            );
 
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+            var cor = layoutMachine.Layout(
+                parsedRoot,
+                new Vector2(100,100),
+                layoutedTree => {
+                    done = true;
+                    Assert(layoutedTree.viewHeight == 112, "not match.");
+                }
+            );
 
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
-
-        /*
-            re-layout.
-         */
-        var done2 = false;
-        var layoutMachine2 = new LayoutMachine(
-            loader
-        );
-
-        var cor2 = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done2 = true;
-                Assert(layoutedTree.viewHeight == 112, "not match.");
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor2));
+            RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
-        WaitUntil(
-            () => done2, 5, "timeout."
-        );
+            WaitUntil(
+                () => done, 5, "timeout."
+            );
+
+            /*
+                re-layout.
+            */
+            var done2 = false;
+            var layoutMachine2 = new LayoutMachine(
+                loader
+            );
+
+            var cor2 = layoutMachine.Layout(
+                parsedRoot,
+                new Vector2(100,100),
+                layoutedTree => {
+                    done2 = true;
+                    Assert(layoutedTree.viewHeight == 112, "not match.");
+                }
+            );
+
+            RunOnMainThread(() => executor.CoroutineExecutor(cor2));
+
+
+            WaitUntil(
+                () => done2, 5, "timeout."
+            );
+        }
     }
 
     [MTest] public void RevertLayoutHTMLWithSmallImageAndSmallText () {
         var sample = @"
 <body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
         
-        var tree = CreateTagTree(sample);
+        ParsedTree parsedRoot = null;
+        {
+            var cor = parser.ParseRoot(
+                sample, 
+                parsed => {
+                    parsedRoot = parsed;
+                }
+            );
 
-        var done = false;
-        var layoutMachine = new LayoutMachine(
-            loader      
-        );
+            RunOnMainThread(() => executor.CoroutineExecutor(cor));
+            
+            WaitUntil(
+                () => parsedRoot != null, 1, "too late."
+            );
+        }
 
-        var cor = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done = true;
-                Assert(layoutedTree.viewHeight == 112, "not match.");
-            }
-        );
+        {
+            var done = false;
+            var layoutMachine = new LayoutMachine(
+                loader      
+            );
 
-        RunOnMainThread(() => executor.CoroutineExecutor(cor));
+            var cor = layoutMachine.Layout(
+                parsedRoot,
+                new Vector2(100,100),
+                layoutedTree => {
+                    done = true;
+                    Assert(layoutedTree.viewHeight == 112, "not match.");
+                }
+            );
 
-
-        WaitUntil(
-            () => done, 5, "timeout."
-        );
-
-        TagTree.CorrectTrees(tree);
-
-        /*
-            revert-layout.
-         */
-        var done2 = false;
-        
-        var cor2 = layoutMachine.Layout(
-            tree,
-            new Vector2(100,100),
-            layoutedTree => {
-                done2 = true;
-                Assert(layoutedTree.viewHeight == 112, "not match. actual:" + layoutedTree.viewHeight);
-            }
-        );
-
-        RunOnMainThread(() => executor.CoroutineExecutor(cor2));
+            RunOnMainThread(() => executor.CoroutineExecutor(cor));
 
 
-        WaitUntil(
-            () => done2, 5, "timeout."
-        );
+            WaitUntil(
+                () => done, 5, "timeout."
+            );
+
+            TagTree.CorrectTrees(parsedRoot);
+
+            /*
+                revert-layout.
+            */
+            var done2 = false;
+            
+            var cor2 = layoutMachine.Layout(
+                parsedRoot,
+                new Vector2(100,100),
+                layoutedTree => {
+                    done2 = true;
+                    Assert(layoutedTree.viewHeight == 112, "not match. actual:" + layoutedTree.viewHeight);
+                }
+            );
+
+            RunOnMainThread(() => executor.CoroutineExecutor(cor2));
+
+
+            WaitUntil(
+                () => done2, 5, "timeout."
+            );
+        }
     }
 
     [MTest] public void Order () {
