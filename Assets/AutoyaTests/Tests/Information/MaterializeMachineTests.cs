@@ -1,123 +1,123 @@
-// using Miyamasu;
-// using UnityEngine;
-// using System.Collections.Generic;
-// using System;
-// using System.Linq;
-// using UnityEngine.UI;
-// using UnityEngine.Events;
-// using AutoyaFramework.Information;
-// using System.Collections;
-// using AutoyaFramework;
+using Miyamasu;
+using UnityEngine;
+using System.Collections.Generic;
+using System;
+using System.Linq;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using AutoyaFramework.Information;
+using System.Collections;
+using AutoyaFramework;
 
-// /**
-// 	test for customizer.
-//  */
-// public class MaterializeMachineTests : MiyamasuTestRunner {
-//     private HTMLParser parser;
+/**
+	test for customizer.
+ */
+public class MaterializeMachineTests : MiyamasuTestRunner {
+    private HTMLParser parser;
 
-//     private GameObject canvas;
+    private GameObject canvas;
 
     
-//     GameObject rootObj;
-//     UUebView view;
+    GameObject rootObj;
+    UUebView view;
 
-//     UUebViewCore core;
+    UUebViewCore core;
 
-//     private void ShowLayoutRecursive (TagTree tree) {
-//         Debug.Log("tree:" + core.resLoader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
-//         foreach (var child in tree.GetChildren()) {
-//             ShowLayoutRecursive(child);
-//         }
-//     }
+    private void ShowLayoutRecursive (TagTree tree) {
+        Debug.Log("tree:" + core.resLoader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+        foreach (var child in tree.GetChildren()) {
+            ShowLayoutRecursive(child);
+        }
+    }
 
 
-// 	[MSetup] public void Setup () {
+	[MSetup] public void Setup () {
 
-// 		// GetTexture(url) runs only Play mode.
-// 		if (!IsTestRunningInPlayingMode()) {
-// 			SkipCurrentTest("Information feature should run on MainThread.");
-// 		};
+		// GetTexture(url) runs only Play mode.
+		if (!IsTestRunningInPlayingMode()) {
+			SkipCurrentTest("Information feature should run on MainThread.");
+		};
 
-//         RunOnMainThread(
-//             () => {
-//                 rootObj = new GameObject();
-//                 var rectTrans = rootObj.AddComponent<RectTransform>();
+        RunOnMainThread(
+            () => {
+                rootObj = new GameObject();
+                var rectTrans = rootObj.AddComponent<RectTransform>();
 
-//                 view = rootObj.AddComponent<UUebView>();
-//                 core = new UUebViewCore(view);
+                view = rootObj.AddComponent<UUebView>();
+                core = new UUebViewCore(view);
                 
-//                 var canvas = GameObject.Find("Canvas/MaterializeTestPlace");
-//                 rootObj.transform.SetParent(canvas.transform, false);
+                var canvas = GameObject.Find("Canvas/MaterializeTestPlace");
+                rootObj.transform.SetParent(canvas.transform, false);
 
-//                 rectTrans.anchoredPosition = new Vector2(100 * index, 100);
-//                 index++;
-//             }
-//         );
+                rectTrans.anchoredPosition = new Vector2(100 * index, 100);
+                index++;
+            }
+        );
 
         
-//         parser = new HTMLParser(core.resLoader);
-// 	}
+        parser = new HTMLParser(core.resLoader);
+	}
 
-//     private TagTree CreateLayoutedTree (string sampleHtml) {
-//         ParsedTree parsedRoot = null;
-//         var cor = parser.ParseRoot(
-//             sampleHtml, 
-//             parsed => {
-//                 parsedRoot = parsed;
-//             }
-//         );
+    private TagTree CreateLayoutedTree (string sampleHtml) {
+        ParsedTree parsedRoot = null;
+        var cor = parser.ParseRoot(
+            sampleHtml, 
+            parsed => {
+                parsedRoot = parsed;
+            }
+        );
         
-//         RunOnMainThread(() => view.Internal_CoroutineExecutor(cor));
+        RunOnMainThread(() => view.Internal_CoroutineExecutor(cor));
         
-//         WaitUntil(
-//             () => parsedRoot != null, 1, "too late."
-//         );
+        WaitUntil(
+            () => parsedRoot != null, 1, "too late."
+        );
         
-//         if (parsedRoot.errors.Any()) {
-//             foreach (var error in parsedRoot.errors) {
-//                 Debug.LogError("error:" + error.code + " reason:" + error.reason);
-//             }
-//             throw new Exception("failed to create layouted tree.");
-//         }
+        if (parsedRoot.errors.Any()) {
+            foreach (var error in parsedRoot.errors) {
+                Debug.LogError("error:" + error.code + " reason:" + error.reason);
+            }
+            throw new Exception("failed to create layouted tree.");
+        }
 
-//         TagTree layouted = null;
-//         var layoutMachine = new LayoutMachine(core.resLoader);
+        TagTree layouted = null;
+        var layoutMachine = new LayoutMachine(core.resLoader);
 
-//         var cor2 = layoutMachine.Layout(
-//             parsedRoot, 
-//             new Vector2(100,100),
-//             layoutedTree => {
-//                 layouted = layoutedTree;
-//             }
-//         );
+        var cor2 = layoutMachine.Layout(
+            parsedRoot, 
+            new Vector2(100,100),
+            layoutedTree => {
+                layouted = layoutedTree;
+            }
+        );
 
-//         RunOnMainThread(() => view.Internal_CoroutineExecutor(cor2));
+        RunOnMainThread(() => view.Internal_CoroutineExecutor(cor2));
 
-//         WaitUntil(
-//             () => layouted != null, 5, "layout timeout."
-//         );
+        WaitUntil(
+            () => layouted != null, 5, "layout timeout."
+        );
 
-//         return layouted;
-//     }
+        return layouted;
+    }
 
-//     private int index;
-//     private void Show (TagTree tree) {
-//         var materializeMachine = new MaterializeMachine(core.resLoader);
+    private int index;
+    private void Show (TagTree tree) {
+        var materializeMachine = new MaterializeMachine(core.resLoader);
 
-//         var materializeDone = false;
-//         RunOnMainThread(
-//             () => {
-//                 var cor = materializeMachine.Materialize(rootObj, core, tree, 0, () => {
-//                     materializeDone = true;
-//                 });
-//                 view.Internal_CoroutineExecutor(cor);
-//             }
-//         );
+        var materializeDone = false;
+        RunOnMainThread(
+            () => {
+                var cor = materializeMachine.Materialize(rootObj, core, tree, 0, () => {
+                    materializeDone = true;
+                });
+                view.Internal_CoroutineExecutor(cor);
+            }
+        );
         
-//         WaitUntil(
-//             () => materializeDone && !view.IsLoading(), 5, "slow materialize. materializeDone:" + materializeDone + " view.IsLoading():" + view.IsLoading()
-//         );
-//     }
+        WaitUntil(
+            () => materializeDone && !view.IsLoading(), 5, "slow materialize. materializeDone:" + materializeDone + " view.IsLoading():" + view.IsLoading()
+        );
+    }
 
 //     [MTest] public void MaterializeHTML () {
 //         var sample = @"
@@ -183,16 +183,28 @@
 //         Show(tree);
 //     }
 
-//     [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
-//         var sample = @"
-// <body>
-// <p listen='imageId' hidden='true'>something</p>
-// <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
-// </body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
+        var sample = @"
+<body>
+<p listen='imageId' hidden='true'>something</p>
+<img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
+</body>";
+        var tree = CreateLayoutedTree(sample);
         
-//         Show(tree);
-//     }
+        Show(tree);
+    }
+
+    [MTest] public void MaterializeHTMLWithDoubleBoxedLayer () {
+        var sample = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<textbox>
+    <updatetext>like this.</updatetext>
+    <updatetext>omake!</updatetext>
+</textbox>";
+        var tree = CreateLayoutedTree(sample);
+        
+        Show(tree);
+    }
 
 //     [MTest] public void MaterializeHTMLWithSmallImage () {
 //         var sample = @"
@@ -376,20 +388,20 @@
 //         Show(tree);
 //     }
 
-//     [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
-//         var sample = @"
-// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-// <body>
-// <customtag>
-//     <custombg><textbg><customtext>something1</customtext></textbg></custombg>
-//     <custombg><textbg><customtext>something2</customtext></textbg></custombg>
-// </customtag>
-// else
-// </body>";
-//         var tree = CreateLayoutedTree(sample);
+    [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
+        var sample = @"
+<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+<body>
+<customtag>
+    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+</customtag>
+else
+</body>";
+        var tree = CreateLayoutedTree(sample);
 
-//         Show(tree);
-//     }
+        Show(tree);
+    }
 
 //     [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
 //         var sample = @"
@@ -447,14 +459,21 @@
 
 //     [MTest] public void PSupport () {
 //         var sampleHtml = @"
-// <body>
 // <p>
-//     p1<a href=''>a1</a><img src='https://dummyimage.com/10.png/09f/fff'/>
-// </p><p>
-//     p2
-// </p>
-// </body>";
-//        var tree = CreateLayoutedTree(sampleHtml);
+//     p1<a href=''>a1</a>p2
+// </p>";
+//         var tree = CreateLayoutedTree(sampleHtml);
 //         Show(tree);
 //     }
-// }
+
+//     [MTest] public void PSupport2 () {
+//         var sampleHtml = @"
+// <p>
+//     p1<a href=''>a1</a>p2
+// </p><p>
+//     p3
+// </p>";
+//         var tree = CreateLayoutedTree(sampleHtml);
+//         Show(tree);
+//     }
+}

@@ -14,6 +14,13 @@ namespace AutoyaFramework.Information {
             this.viewHeight = viewHeight;
         }
 
+        public ViewCursor (ViewCursor baseCursor) {
+            this.offsetX = baseCursor.offsetX;
+            this.offsetY = baseCursor.offsetY;
+            this.viewWidth = baseCursor.viewWidth;
+            this.viewHeight = baseCursor.viewHeight;
+        }
+
         public ViewCursor (Vector2 size) {
             this.offsetX = 0;
             this.offsetY = 0;
@@ -46,6 +53,8 @@ namespace AutoyaFramework.Information {
         public static ViewCursor NextRightCursor(ViewCursor childView, float viewWidth){
             // オフセットを直前のオフセット + 幅のポイントにずらす。
             childView.offsetX = childView.offsetX + childView.viewWidth;
+            
+            // offsetYは変わらず
 
             // コンテンツが取り得る幅を、大元の幅 - 現在のオフセットから計算。
             childView.viewWidth = viewWidth - childView.offsetX;
@@ -53,15 +62,6 @@ namespace AutoyaFramework.Information {
             // offsetYは変わらず、高さに関しては特に厳密な計算をしない。
             childView.viewHeight = 0;
             return childView;
-        }
-
-        /**
-            sourceのwidthを使い、
-            lastChildのあるポイントからの最大高さを返す。
-         */
-        public static ViewCursor Wrap(ViewCursor source, float lastChildEndY){
-            source.viewHeight = lastChildEndY;
-            return source;
         }
 
         /**

@@ -386,5 +386,18 @@
 //         // }
 //         Assert(p.Count == 3, "not match, count:" + p.Count);   
 //     }
+
+//     [MTest] public void PSupport () {
+//         var sampleHtml = @"
+// <p>
+//     p1<a href=''>a</a>p2
+// </p>";
+//         var parsedRoot = GetParsedRoot(sampleHtml);
+//         var pChildren = parsedRoot.GetChildren()[0].GetChildren();
+//         // foreach (var pp in pChildren) {
+//         //     Debug.LogError("pp:" + pp.tagValue);
+//         // }
+//         Assert(pChildren.Count == 3, "not match, count:" + pChildren.Count);
+//     }
     
 // }

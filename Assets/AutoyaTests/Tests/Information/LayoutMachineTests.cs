@@ -594,6 +594,21 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 //         Assert(custombgs[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + custombgs[1].offsetY);
 //     }
 
+    [MTest] public void LayoutHTMLWithDoubleBoxedLayer () {
+        var sample = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<textbox>
+    <updatetext>like this.</updatetext>
+    <updatetext>omake!</updatetext>
+</textbox>";
+        var tree = CreateTagTree(sample);
+
+        var updatetexts = tree.GetChildren()[0]/*textbox*/.GetChildren();
+        Assert(updatetexts[0].offsetY == 0, "not match. custombgs[0].offsetY:" + updatetexts[0].offsetY);
+        Assert(updatetexts[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + updatetexts[1].offsetY);
+    }
+
+
 //     [MTest] public void BrSupport () {
 //         var sample = @"
 // <p>
@@ -607,20 +622,31 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 //         Assert(p[1].offsetY == 16f, "not match. custombgs[1].offsetY:" + p[1].offsetY);
 //     }
 
-    [MTest] public void PSupport () {
-        var sample = @"
-<body>
-<p>
-    p1<a href=''>a1</a>b
-</p><p>
-    p2
-</p>
-</body>";
-        var bodytree = CreateTagTree(sample).GetChildren()[0];
-        var p1 = bodytree.GetChildren()[0];
-        var p2 = bodytree.GetChildren()[1];
+//     [MTest] public void PSupport () {
+//         var sample = @"
+// <p>
+//     p1<a href=''>a1</a>p2
+// </p>";
+//         var tree = CreateTagTree(sample);
+//         var p1 = tree.GetChildren()[0];
         
-        Assert(p1.offsetY == 0, "not match. p1.offsetY:" + p1.offsetY);
-        Assert(p2.offsetY == 16f, "not match. p2.offsetY:" + p2.offsetY);
-    }
+//         Assert(p1.GetChildren().Count == 3, "not match, p1.GetChildren().Count:" + p1.GetChildren().Count);
+//     }
+
+// //     [MTest] public void PSupport2 () {
+// //         var sample = @"
+// // <p>
+// //     p1<a href=''>a1</a>p2
+// // </p><p>
+// //     p3
+// // </p>";
+// //         var tree = CreateTagTree(sample);
+// //         var p1 = tree.GetChildren()[0];
+// //         var p2 = tree.GetChildren()[1];
+        
+// //         Assert(p1.GetChildren().Count == 3, "not match, p1.GetChildren().Count:" + p1.GetChildren().Count);
+
+// //         Assert(p1.offsetY == 0, "not match. p1.offsetY:" + p1.offsetY);
+// //         Assert(p2.offsetY == 16f, "not match. p2.offsetY:" + p2.offsetY);
+// //     }
 }
