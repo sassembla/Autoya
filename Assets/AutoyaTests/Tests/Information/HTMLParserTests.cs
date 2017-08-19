@@ -372,4 +372,19 @@ public class HTMLParserTests : MiyamasuTestRunner {
         // parse failed by ErrorAtDirectContentUnderLayer. returns empty tree.
         Assert(parsedRoot.errors[0].code == (int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "not match.");
     }
+    
+    [MTest] public void BrSupport () {
+        var sampleHtml = @"
+<p>
+    something<br>
+    else
+</p>";
+        var parsedRoot = GetParsedRoot(sampleHtml);
+        var p = parsedRoot.GetChildren()[0].GetChildren();
+        // foreach (var pp in p) {
+        //     Debug.LogError("pp:" + pp.tagValue);
+        // }
+        Assert(p.Count == 3, "not match, count:" + p.Count);   
+    }
+    
 }

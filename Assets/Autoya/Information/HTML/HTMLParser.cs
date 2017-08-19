@@ -214,24 +214,24 @@ namespace AutoyaFramework.Information {
 										single close tag found.
 										this tag content is just closed.
 									 */
+									// add content before tag.
+									if (0 < readingPointLength) {
+										var str = data.Substring(readingPointStartIndex, readingPointLength);
+							
+										// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
+
+										if (!string.IsNullOrEmpty(str)) {
+											var contentTagPoint = new TagTree(
+												str,
+												parentTree.tagValue
+											);
+											contentTagPoint.SetParent(parentTree);
+										}
+									}
+									
 									if (data[startTagEndIndex - 1] == '/') {// <tag [attr]/>
 										// Debug.LogError("-1 is / @tag:" + tag);
 
-										// add content before tag.
-										if (0 < readingPointLength) {
-											var str = data.Substring(readingPointStartIndex, readingPointLength);
-								
-											// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
-
-											if (!string.IsNullOrEmpty(str)) {
-												var contentTagPoint = new TagTree(
-													str,
-													parentTree.tagValue
-												);
-												contentTagPoint.SetParent(parentTree);
-											}
-										}
-										
 										{
 											var treeType = resLoader.GetTreeType(tag);
 											if (treeType == TreeType.NotFound) {
@@ -266,21 +266,6 @@ namespace AutoyaFramework.Information {
 									}
 
 									// Debug.LogError("endTagIndex:" + endTagIndex);
-
-									// add content before tag.
-									if (0 < readingPointLength) {
-										var str = data.Substring(readingPointStartIndex, readingPointLength);
-							
-										// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
-
-										if (!string.IsNullOrEmpty(str)) {
-											var contentTagPoint = new TagTree(
-												str,
-												parentTree.tagValue
-											);
-											contentTagPoint.SetParent(parentTree);
-										}
-									}
 
 									{
 										var treeType = resLoader.GetTreeType(tag);
@@ -329,21 +314,11 @@ namespace AutoyaFramework.Information {
 									}
 								}
 								case '>': {// <tag> start tag is closed.
-									// set to next char.
-									tempCharIndex = tempCharIndex + 1;
 
 									// Debug.LogError("> found at tag:" + tag + " cont:" + data.Substring(tempCharIndex) + "___ finding end tag of tag:" + tag);
 
-									/*
-										finding end-tag of this tag.
-									*/
-									var endTag = "</" + rawTagName.ToLower() + ">";
-									var cascadedStartTagHead = "<" + rawTagName.ToLower();
-
-									var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
-									if (endTagIndex == -1) {
-										yield break;
-									}
+									// set to next char.
+									tempCharIndex = tempCharIndex + 1;
 
 
 									// add content before tag.
@@ -361,6 +336,27 @@ namespace AutoyaFramework.Information {
 										}
 									}
 
+									if (tag == (int)HTMLTag.br) {
+										var brTree = new TagTree(tag);
+										brTree.SetParent(parentTree);
+
+										charIndex = tempCharIndex;
+										readPoint = charIndex;
+										continue;
+									}
+
+									/*
+										finding end-tag of this tag.
+									*/
+									var endTag = "</" + rawTagName.ToLower() + ">";
+									var cascadedStartTagHead = "<" + rawTagName.ToLower();
+
+									var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
+									if (endTagIndex == -1) {
+										yield break;
+									}
+
+									// treat tag contained contents.
 									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
 									
 									var treeType = resLoader.GetTreeType(tag);
@@ -402,7 +398,7 @@ namespace AutoyaFramework.Information {
 
 			if (readPoint < data.Length) { 
 				var restStr = data.Substring(readPoint);
-				// Debug.LogError("2 restStr:" + restStr + " parentTagPoint:" + parentTagPoint.tag);
+				// Debug.LogError("restStr:" + restStr);
 				if (!string.IsNullOrEmpty(restStr)) {
 					var contentTree = new TagTree(
 						restStr,
@@ -524,7 +520,6 @@ namespace AutoyaFramework.Information {
 			}
 		}
 
-		
 		private string GetContentOfCommentTag (string data, int offset, out int tagEndPos) {
 			var startPos = data.IndexOf("<!--", offset);
 			if (startPos == -1) {

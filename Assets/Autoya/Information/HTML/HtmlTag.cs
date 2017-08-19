@@ -18,9 +18,11 @@ namespace AutoyaFramework.Information {
         a,
 		p,
 		
-		// value itself tags.
+		// crlf tags.
 		br,
 		hr,
+
+		// single content tag.
 		img, 
 		
 		// table.

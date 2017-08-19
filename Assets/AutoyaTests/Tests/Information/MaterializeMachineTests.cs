@@ -417,7 +417,8 @@ else
     		<textbox>
 	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
 	    		<!-- hiddenがあると、コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
-	    		<updatetext hidden='true' listen='readmore'>omake!</updatetext>
+	    		<updatetext hidden='true' listen='readmore'>omake!<img src='https://dummyimage.com/100.png/07f/fff'/></updatetext>
+                <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='readmore'/>
 	    	</textbox>
 	    </textbg>
     </bg>

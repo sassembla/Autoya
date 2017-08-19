@@ -40,6 +40,13 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
         );
     }
 
+    private void ShowLayoutRecursive (TagTree tree, ResourceLoader loader) {
+        Debug.Log("tree:" + loader.GetTagFromValue(tree.tagValue) + " offsetX:" + tree.offsetX + " offsetY:" + tree.offsetY + " width:" + tree.viewWidth + " height:" + tree.viewHeight);
+        foreach (var child in tree.GetChildren()) {
+            ShowLayoutRecursive(child, loader);
+        }
+    }
+
     [MTest] public void GenerateSingleViewFromSource () {
         var source = @"
 <body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
@@ -290,5 +297,117 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
         WaitUntil(
             () => done, 5, "too late."
         );
+    }
+
+    [MTest] public void Sample2 () {
+        var source = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<body>
+    <bg>
+    	<titlebox>
+    		<titletext>レモン一個ぶんのビタミンC</titletext>
+    	</titlebox>
+    	<newbadge></newbadge>
+    	<textbg>
+    		<textbox>
+	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
+	    		<updatetext hidden='true' listen='readmore'>omake!<img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/><img src='https://dummyimage.com/100.png/07f/fff'/></updatetext>
+                <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='readmore'/>
+	    	</textbox>
+	    </textbg>
+    </bg>
+</body>";
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
+    
+    [MTest] public void Sample2WithBr () {
+        var source = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<bg>
+    <textbg>
+        <textbox>
+            <updatetext>koko ni nihongo ga iikanji ni hairu.<br> good thing. long text will make large window. like this.</updatetext>
+            <updatetext hidden='true' listen='readmore'>omake!</updatetext>
+        </textbox>
+    </textbg>
+</bg>";
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+
+        UUebView uUebView = null;
+        
+        // show hidden contents.
+        {
+            var updated = false;
+            RunOnMainThread(
+                () => {
+                    eventReceiverGameObj.GetComponent<TestReceiver>().OnUpdated = () => {
+                        updated = true;
+                    };
+                    uUebView = view.GetComponent<UUebView>();
+                    uUebView.EmitButtonEventById("readmore");
+                }
+            );
+
+            WaitUntil(
+                () => updated, 5, "too late."
+            );
+        }
+        
+        // hide hidden contents again.
+        {
+            var updated = false;
+            RunOnMainThread(
+                () => {
+                    eventReceiverGameObj.GetComponent<TestReceiver>().OnUpdated = () => {
+                        updated = true;
+                    };
+                    uUebView.EmitButtonEventById("readmore");
+                }
+            );
+
+            WaitUntil(
+                () => updated, 5, "too late."
+            );
+        }
+
+        // 特定のコンテンツの高さが変動する？なんか差分が出るところがある。
+
+
+        // この時点で、特定の位置のコンテンツが移動するというケースがわかっている。
+        var tree = uUebView.Core.layoutedTree;
+        var targetTextBox = tree.GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[0].GetChildren()[1];
+        // Assert(targetTextBox.offsetY == 20f, "not match, targetTextBox.offsetY:" + targetTextBox.offsetY);
+        Assert(targetTextBox.offsetY == 20f, "not match, targetTextBox.offsetY:" + targetTextBox.offsetY);
+        // ShowLayoutRecursive(tree, uUebView.Core.resLoader);
     }
 }

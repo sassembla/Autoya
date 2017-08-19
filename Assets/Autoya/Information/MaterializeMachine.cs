@@ -66,7 +66,7 @@ namespace AutoyaFramework.Information {
 				core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
 			}
 			
-			if (tree.hidden) {
+			if (tree.hidden || tree.treeType == TreeType.Content_CRLF) {
 				// cancel materialize of this tree.
 				yield break;
 			}

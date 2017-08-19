@@ -56,6 +56,13 @@ namespace AutoyaFramework.Information {
             this.treeType = TreeType.Container;
         }
 
+        public TagTree (int tagValue) {
+            this.id = Guid.NewGuid().ToString();
+            this.tagValue = tagValue;
+            this.keyValueStore = new AttributeKVs();
+            this.treeType = TreeType.Content_CRLF;
+        }
+
         public TagTree (string textContent, int baseTagValue) {// as text_content.
             this.id = Guid.NewGuid().ToString();
             this.tagValue = baseTagValue;

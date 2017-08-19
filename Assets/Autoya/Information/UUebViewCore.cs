@@ -124,7 +124,10 @@ namespace AutoyaFramework.Information {
         }
         
 
-        private TagTree layoutedTree;
+        public TagTree layoutedTree {
+            private set; get;
+        }
+        
         private Vector2 viewRect;
         private GameObject eventReceiverGameObj;
         

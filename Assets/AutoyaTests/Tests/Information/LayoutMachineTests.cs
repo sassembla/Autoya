@@ -68,6 +68,10 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         WaitUntil(
             () => parsedRoot != null, 1, "too late."
         );
+        
+        if (parsedRoot.errors.Any()) {
+            throw new Exception("failed to parse. error:" + parsedRoot.errors[0].reason);
+        }
 
         var layoutMachine = new LayoutMachine(
             loader
@@ -393,6 +397,74 @@ else
         }
     }
 
+    [MTest] public void RevertLayoutHTMLWithSmallImageAndSmallTextAndBr () {
+        var sample = @"
+<body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation.
+<br>need some length.</body>";
+        
+        ParsedTree parsedRoot = null;
+        {
+            var cor = parser.ParseRoot(
+                sample, 
+                parsed => {
+                    parsedRoot = parsed;
+                }
+            );
+
+            RunOnMainThread(() => executor.CoroutineExecutor(cor));
+            
+            WaitUntil(
+                () => parsedRoot != null, 1, "too late."
+            );
+        }
+
+        {
+            var done = false;
+            var layoutMachine = new LayoutMachine(
+                loader      
+            );
+
+            var cor = layoutMachine.Layout(
+                parsedRoot,
+                new Vector2(100,100),
+                layoutedTree => {
+                    done = true;
+                    Assert(layoutedTree.viewHeight == 112, "not match. layoutedTree.viewHeight:" + layoutedTree.viewHeight);
+                }
+            );
+
+            RunOnMainThread(() => executor.CoroutineExecutor(cor));
+
+
+            WaitUntil(
+                () => done, 5, "timeout."
+            );
+
+            TagTree.CorrectTrees(parsedRoot);
+
+            /*
+                revert-layout.
+            */
+            var done2 = false;
+            
+            var cor2 = layoutMachine.Layout(
+                parsedRoot,
+                new Vector2(100,100),
+                layoutedTree => {
+                    done2 = true;
+                    Assert(layoutedTree.viewHeight == 112, "not match. actual:" + layoutedTree.viewHeight);
+                }
+            );
+
+            RunOnMainThread(() => executor.CoroutineExecutor(cor2));
+
+
+            WaitUntil(
+                () => done2, 5, "timeout."
+            );
+        }
+    }
+
     [MTest] public void Order () {
         var sample = @"
 <body>something1.<img src='https://dummyimage.com/100.png/09f/fff'/></body>";
@@ -520,5 +592,18 @@ else
         var custombgs = tree.GetChildren()[0]/*customtag*/.GetChildren()[0]/*box*/.GetChildren();
         Assert(custombgs[0].offsetY == 0, "not match. custombgs[0].offsetY:" + custombgs[0].offsetY);
         Assert(custombgs[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + custombgs[1].offsetY);
+    }
+
+    [MTest] public void BrSupport () {
+        var sample = @"
+<p>
+    something<br>
+    else
+</p>";
+        var tree = CreateTagTree(sample);
+        var p = tree.GetChildren()[0]/*p*/.GetChildren();
+        
+        Assert(p[0].offsetY == 0, "not match. custombgs[0].offsetY:" + p[0].offsetY);
+        Assert(p[1].offsetY == 16f, "not match. custombgs[1].offsetY:" + p[1].offsetY);
     }
 }
