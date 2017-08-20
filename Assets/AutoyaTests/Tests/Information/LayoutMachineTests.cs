@@ -616,7 +616,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         }
         
         var pContainer = pAndUpdateText[0];
-        Assert(pContainer.viewWidth == 208.9f, "not match. pContainer.viewWidth:" + pContainer.viewWidth);
+        Assert(pContainer.viewWidth.ToString() == "208.9", "not match. pContainer.viewWidth:" + pContainer.viewWidth);
 
         var lastPContents = pContainer.GetChildren().Last();
         Assert(lastPContents.offsetY == 68.39999f, "not match. lastPContents.offsetY:" + lastPContents.offsetY);

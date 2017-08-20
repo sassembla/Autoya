@@ -108,7 +108,7 @@ namespace AutoyaFramework.Information {
             viewHeight = 0;
         }
 
-        public ViewCursor SetPos (float offsetX, float offsetY, float viewWidth, float viewHeight) {
+        public ViewCursor SetPosThenCreateNewCursor (float offsetX, float offsetY, float viewWidth, float viewHeight) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.viewWidth = viewWidth;

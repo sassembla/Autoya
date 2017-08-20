@@ -73,7 +73,7 @@ namespace AutoyaFramework.Information {
                     yield return null;
                 }
                 
-                // Debug.LogError("done layouted tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + cor.Current);
+                Debug.LogError("done layouted tree:" + Debug_GetTagStrAndType(tree) + " next cursor:" + cor.Current);
                 yield return cor.Current;
             }
         }
@@ -229,7 +229,7 @@ namespace AutoyaFramework.Information {
         private IEnumerator<ViewCursor> DoImgLayout (TagTree imgTree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
             var contentViewCursor = viewCursor;
             if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
-                throw new Exception("image element should define src param.");
+                throw new Exception("srcがないんだけどどうするか。カスタムコンテンツならデフォ画像をセットできるんでなくてもいいはず。あとエラーをつけるならパースエラー。image element should define src param.");
             }
 
             var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
@@ -346,6 +346,12 @@ namespace AutoyaFramework.Information {
                         }		
                         yield return null;
                     }
+
+                    // update rightest point.
+                    if (rightestPoint < child.offsetX + child.viewWidth) {
+                        rightestPoint = child.offsetX + child.viewWidth;
+                        // Debug.LogError("rightestPoint:" + rightestPoint + " of container:" + Debug_GetTagStrAndType(containerTree));
+                    }
                     
                     switch (currentInsertType) {
                         case InsertType.RetryWithNextLine: {
@@ -393,16 +399,10 @@ namespace AutoyaFramework.Information {
                     //     throw new Exception("content height is 0. tag:" + GetTagStr(child.tagValue) + " treeType:" + child.treeType);
                     // }
 
-                    var layoutedCursor = new ViewCursor(cor.Current);
+                    var layoutedCursor = new ViewCursor(cor.Current);// この時点では、子供の位置が確定されていて、その値とこのカーソルが一致する。
 
-                    // この時点で右が超えてる場合、コンテンツ以外 = コンテナで端を突破した、という感じになる。
-                    Debug.LogError("layoutedCursor:" + layoutedCursor + " of tag:" + Debug_GetTagStrAndType(child));
-
-                    // update rightest point.
-                    if (rightestPoint < layoutedCursor.offsetX + layoutedCursor.viewWidth) {
-                        rightestPoint = layoutedCursor.offsetX + layoutedCursor.viewWidth;
-                        Debug.LogError("rightestPoint:" + rightestPoint);
-                    }
+                    // この時点で右が画面幅を超えてる場合、コンテンツ以外 = コンテナで端を突破した、という感じになる。
+                    // Debug.LogWarning("layoutedCursor:" + layoutedCursor + " of tag:" + Debug_GetTagStrAndType(child) + " inside container:" + Debug_GetTagStrAndType(containerTree));
 
                     // 次のコンテンツの開始位置をセットする。
                     var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedCursor, containerViewCursor.viewWidth);
@@ -450,10 +450,18 @@ namespace AutoyaFramework.Information {
                 var lastChild = containerChildren[containerChildren.Count - 1];
                 lastY = lastChild.offsetY + lastChild.viewHeight;
             }
+            /*
+                viewCursorに関して勘違いしてた、
+                ・親から渡される制約
+                ・帰って来るまでには幅と高さが追加されている
+                ・幅、高さを元に次のカーソルをセットする
 
-            // Debug.LogError("lastY:" + lastY);
+                うーん、変えられそうな気がする。
 
-            // このコンテナが入る箱を作成する。0,0,一番最後の子供の下位置(offset+height),うーん、、most rightを出さんといけないか。
+                ・カーソルを元に子供の位置が決定される
+                ・帰って来るのは子供の位置を表すカーソル
+                ここがものごとを難しくしてるのか。
+             */
             containerViewCursor.viewWidth = rightestPoint;
             containerViewCursor.viewHeight = lastY;
             // Debug.LogError("containerViewCursor:" + containerViewCursor);
@@ -461,7 +469,10 @@ namespace AutoyaFramework.Information {
             // 自分自身のサイズを規定
             containerTree.SetPosFromViewCursor(containerViewCursor);
 
-            // そして次のカーソルは、一番右下のコンテンツのoffset、になるのか。その場合タグの単位ではliningは発生させられないような気がする。コンテナレベルでの移動が必要。これ後で解除するのもできる？ -> ちょっと大変だな。たぶん前方も特別扱いできない。となると親ツリーの参照をもったほうがいい感じか。idはそのままの概念でいいとして。
+            // カーソルはコンテンツの続きとしてのカーソルを返す。この場合、一番下のコンテンツの右上を返すのが正しい。
+            // childViewがそんな感じになってるはず。
+            var nextLeftTopPos = ViewCursor.NextLeftTopView(containerChildren.Last(), containerViewCursor.viewWidth);
+            Debug.LogError("nextLeftTopPos:" + nextLeftTopPos);
             /*
                 上記を行わず、親コンテナ内の子コンテナが幅まんなかあたりで終わった場合、そのコンテナをライニングから外す、という特殊処理をするかどうか。
                 ・複数行化コンテナの最後のコンテンツをライン対応要素として参照渡しして、コンテナそれ自体と入れ替える
@@ -578,19 +589,19 @@ namespace AutoyaFramework.Information {
                         var totalHeight = 0;
                         for (var i = 0; i < generator.lineCount-1; i++) {
                             var line = generator.lines[i];
-                            // Debug.LogWarning("この+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。");
+                            // Debug.LogWarning("ここに+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。");
                             totalHeight += (int)(line.height * textComponent.lineSpacing);
                         }
                         
                         // このビューのポジションとしてセット
-                        var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
-                        // Debug.LogError("newViewCursor:" + newViewCursor);
+                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
+                        // Debug.LogError("複数行の頭、オフセットとwidthを足したら画面幅なはず。 newViewCursor:" + newViewCursor);
                         yield return newViewCursor;
                     } else {
                         // 行頭の単一行
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
-                        var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
                         // Debug.LogError("行頭の単一行 newViewCursor:" + newViewCursor);
                         yield return newViewCursor;
                     }
@@ -614,7 +625,7 @@ namespace AutoyaFramework.Information {
                         // 次のコンテンツを新しい行から開始する。
                         insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
-                        var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
+                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
                         // Debug.LogError("newViewCursor:" + newViewCursor);
                         yield return newViewCursor;
                     } else {
@@ -622,7 +633,7 @@ namespace AutoyaFramework.Information {
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
                         
-                        var newViewCursor = textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
                         // Debug.LogError("newViewCursor:" + newViewCursor);
                         yield return newViewCursor;
                     }
@@ -640,7 +651,7 @@ namespace AutoyaFramework.Information {
         }
 
         private string Debug_GetTagStrAndType (TagTree tree) {
-            return resLoader.GetTagFromValue(tree.tagValue) + " treeType:" + tree.treeType;
+            return resLoader.GetTagFromValue(tree.tagValue) + "_" + tree.treeType;
         }
 
         private IEnumerator SetHiddenPosCoroutine (TagTree hiddenTree, IEnumerator<ViewCursor> cor) {

@@ -1,6 +1,7 @@
 using UnityEngine;
 
 namespace AutoyaFramework.Information {
+
     public class ViewCursor {
         public float offsetX;
         public float offsetY;
@@ -71,6 +72,11 @@ namespace AutoyaFramework.Information {
             baseCursor.viewWidth = 0;
             baseCursor.viewHeight = 0;
             return baseCursor;
+        }
+
+        public static ViewCursor NextLeftTopView (TagTree baseTree, float viewWidth) {
+            var nextLeftTopCursor = new ViewCursor(baseTree.offsetX + baseTree.viewWidth, baseTree.offsetY, viewWidth, 0);
+            return nextLeftTopCursor;
         }
 
         override public string ToString () {
