@@ -401,8 +401,6 @@ namespace AutoyaFramework.Information {
                                 // 処理の開始時にラインにいれていたものを削除
                                 linedElements.Remove(child);
 
-                                Debug.LogError("受け取ったchildと同じ相対位置を持ったコンテンツを足して、その高さを加えてLiningする必要がある。");
-
                                 // 含まれているものの整列処理をし、列の高さを受け取る
                                 var newLineOffsetY = DoLining(linedElements);
 
@@ -422,8 +420,12 @@ namespace AutoyaFramework.Information {
                                  */
                                 if (0 < containerViewCursor.offsetX && insertion != null) {
                                     /*
+                                        親がコンテナで、かつ、現在レイアウト中のこのコンテナで、行の途中から始まっていたコンテンツが幅を使い果たして
+                                        自身のコンテナに対して改行(コンテンツの分割と挿入)を行なった。
+
                                         このコンテナからさらに親のコンテナに対して、折り返しが発生した要素を送りつける。
-                                        親コンテナで、このコンテナが行途中から開始したコンテナかどうかを判定、
+
+                                        親コンテナ側でさらにこのコンテナが行途中から開始したコンテナかどうかを判定、
                                         もし行途中から発生したコンテナであれば、その要素の中で送りつけられたtreeの要素をLiningに掛け、
                                         そのy位置を調整する。
 
@@ -439,7 +441,7 @@ namespace AutoyaFramework.Information {
                                      */
                                     
                                     if (!newView.Equals(ViewCursor.Empty)) {
-                                        Debug.LogError("viewが変更されてるので、コンテナ自体のviewが変更される。で、それに伴ってinsertしたコンテンツのx位置をズラさないといけない。 newView:" + newView);
+                                        // Debug.LogError("viewが変更されてるので、コンテナ自体のviewが変更される。で、それに伴ってinsertしたコンテンツのx位置をズラさないといけない。 newView:" + newView);
 
                                         // 子のコンテンツのxOffsetを、コンテナのoffsetXが0になった際に相対的に移動しない、という前提でズラす。
                                         child.offsetX = containerViewCursor.offsetX;
@@ -487,21 +489,25 @@ namespace AutoyaFramework.Information {
                             case InsertType.LastLineEndedInTheMiddleOfLine: {
                                 /*
                                     ここで送られて来た子を、ラインへと加える必要がある。うわーー未来にレイアウトが完成する感じだ、そのまま足してると死ぬな〜〜。ハンドル足す形にするか。
-                                    最終行のコンテンツ高さをどうするかな〜〜面倒くさいな〜〜、、幅さえあってれば文句ないみたいなのをまずやってみるか。
+                                    最終行のコンテンツ高さをどうするかな〜〜liningRefみたいなのを作って持っとかないといけないの面倒くさいな〜〜、、幅さえあってれば文句ないみたいなのをまずやってみるか。
                                     ここで、子のコンテナがこのコンテンツを最後にレイアウトを終えているので、カーソルが弄れる。
                                  */
 
-                                // とりあえずイベント発行元である子コンテナ自身はLiningから除外
+                                // イベント発行元である子コンテナ自身はLiningから除外
                                 linedElements.Remove(child);
+
+                                // このへんで、child = childContainerに含まれる末尾要素のコピーを作り出してlineにいれておいて、
+                                // lining処理が終わった後でchildそれ自体に反映、みたいなのをやれるといいな〜と思うが利益が少なすぎて泣ける。
+                                // だいたい見た目的に変になるの確定してるし。避けるっしょみたいな。
 
                                 var childContainer = child;
                                 var containersLastChild = childContainer.GetChildren().Last();
 
-                                // 次のコンテンツのオフセットをセット。
+                                // コンテナ内の最後のコンテンツの右から次のコンテンツが出るように、オフセットをセット。
                                 nextChildViewCursor = new ViewCursor(
                                     containersLastChild.viewWidth, 
                                     (childContainer.offsetY + childContainer.viewHeight) - containersLastChild.viewHeight, 
-                                    containerViewCursor.viewWidth,
+                                    containerViewCursor.viewWidth - containersLastChild.viewWidth,
                                     containerViewCursor.viewHeight
                                 );
                                 continue;
@@ -520,36 +526,6 @@ namespace AutoyaFramework.Information {
                         // 子供の設置位置を取得
                         var layoutedPos = cor.Current;
 
-                        /*
-                            今回の場合、pコンテンツの改行によって末尾が行中で余った状態で出る。
-                            で、この情報を上位に伝えることで、後続のコンテンツと同じラインに「pの末尾」を入れ込んで変形させる、ということがしたい感じ。コンテナ内要素の参照渡し。一個上までしか需要がない。ので、コンテナで下がコンテナの時だけ何かすればいいはず。
-                            
-                            cont
-                                [cont, cont]
-                            
-                                とかが例か。
-
-                            ・複数行化コンテナが出た場合、その処理は上位のコンテナに対して伝えられる。
-
-                                ・前方コンテンツからの頭の複数行巻き込まれ
-                                ・広報コンテンツへの尻尾の複数行巻き込み
-                                の2つの場合があるんだけど、
-
-                                あたま改行イベントが発生した際、その時点で親のLiningを走らせることが可能。
-                                1.あたま改行イベント発生
-                                2.親のライニングを部分で発動(親のなかでのliningの末尾要素 = イベント元であるコンテナ)の参照を、あたまコンテンツのサイズで一旦確定したとして実行
-                                3.あたまコンテンツの位置 = コンテナのoffsetYのみが変更される。
-                                4.帰ってきたら、カーソル位置を次の行からにセット。offsetYの変更を受けられるようにしとく。
-                                5.続く
-
-
-                                しっぽ改行
-                                1.しっぽ改行イベントが発生
-                                2.胴体はそのままでいいはず。
-                                3.しっぽ部分まで終わったら、しっぽがliningに巻き込まれるようにliningRefみたいなのにセットしとく必要がある。
-                                4.しっぽのliningが発生したら、コンテナの末尾の位置が変わる(しっぽの位置をもとにviewHeightが変わるだけ)
-                         */
-                        
                         // 次のコンテンツの開始位置をセットする。
                         var nextPos = ChildPos.NextRightCursor(layoutedPos, containerViewCursor.viewWidth);
                         
