@@ -108,19 +108,28 @@ namespace AutoyaFramework.Information {
             viewHeight = 0;
         }
 
-        public ViewCursor SetPosThenCreateNewCursor (float offsetX, float offsetY, float viewWidth, float viewHeight) {
+        public ChildPos SetPos (float offsetX, float offsetY, float viewWidth, float viewHeight) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.viewWidth = viewWidth;
             this.viewHeight = viewHeight;
-            return new ViewCursor(offsetX, offsetY, viewWidth, viewHeight);
+            return new ChildPos(this);
         }
 
-        public void SetPosFromViewCursor (ViewCursor source) {
+        public ChildPos SetPos (ChildPos pos) {
+            this.offsetX = pos.offsetX;
+            this.offsetY = pos.offsetY;
+            this.viewWidth = pos.viewWidth;
+            this.viewHeight = pos.viewHeight;
+            return pos;
+        }
+
+        public ChildPos SetPosFromViewCursor (ViewCursor source) {
             this.offsetX = source.offsetX;
             this.offsetY = source.offsetY;
             this.viewWidth = source.viewWidth;
             this.viewHeight = source.viewHeight;
+            return new ChildPos(this);
         }
         
         public bool SetParent (TagTree parent) {

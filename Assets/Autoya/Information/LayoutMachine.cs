@@ -35,17 +35,18 @@ namespace AutoyaFramework.Information {
                 yield return null;
             }
 
-            viewCursor = cor.Current;
+            var childViewCursor = cor.Current;
             
-            // ビュー高さ込みのカーソルをセット
-            rootTree.SetPosFromViewCursor(viewCursor);
+            // ビュー高さをセット
+            rootTree.viewHeight = childViewCursor.viewHeight;
+            
             layouted(rootTree);
         }
 
         /**
             コンテンツ単位でのレイアウトの起点。ここからtreeTypeごとのレイアウトを実行する。
          */
-        private IEnumerator<ViewCursor> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
+        private IEnumerator<ChildPos> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
             // Debug.LogError("tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
             // Debug.LogWarning("まだ実装してない、brとかhrでの改行処理。 実際にはpとかも一緒で、「このコンテンツが終わったら改行する」みたいな属性が必須。区分けとしてはここではないか。＿なんちゃらシリーズと一緒に分けちゃうのもありかな〜");
 
@@ -61,10 +62,10 @@ namespace AutoyaFramework.Information {
                 resLoader.LoadParallel(loadThenSetHiddenPosCor);
 
                 var hiddenCursor = ViewCursor.ZeroSizeCursor(viewCursor);
-                
-                tree.SetPosFromViewCursor(hiddenCursor);
                 // Debug.LogError("hidden tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
-                yield return hiddenCursor;
+
+                yield return tree.SetPosFromViewCursor(hiddenCursor);
+                throw new Exception("never come here.");
             } else {
                 while (cor.MoveNext()) {
                     if (cor.Current != null) {
@@ -73,12 +74,12 @@ namespace AutoyaFramework.Information {
                     yield return null;
                 }
                 
-                Debug.LogError("done layouted tree:" + Debug_GetTagStrAndType(tree) + " next cursor:" + cor.Current);
+                // Debug.LogError("done layouted tree:" + Debug_GetTagStrAndType(tree) + " next cursor:" + cor.Current);
                 yield return cor.Current;
             }
         }
 
-        private IEnumerator<ViewCursor> GetCoroutineByTreeType (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
+        private IEnumerator<ChildPos> GetCoroutineByTreeType (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
             
             switch (tree.treeType) {
                 case TreeType.CustomLayer: {
@@ -110,97 +111,97 @@ namespace AutoyaFramework.Information {
             customTagLayer/box/boxContents(layerとか) という構造になっていて、boxはlayer内に必ず規定のポジションでレイアウトされる。
             ここだけ相対的なレイアウトが確実に崩れる。
          */
-        private IEnumerator<ViewCursor> DoLayerLayout (TagTree layerTree, ViewCursor parentBoxViewCursor) {
-            ViewCursor layerViewCursor = null;
+        private IEnumerator<ChildPos> DoLayerLayout (TagTree layerTree, ViewCursor parentBoxViewCursor) {
+            ViewCursor basePos;
             
             if (!layerTree.keyValueStore.ContainsKey(HTMLAttribute.LAYER_PARENT_TYPE)) {
                 // 親がboxではないレイヤーは、親のサイズを使わず、layer自体のprefabのサイズを使うという特例を当てる。
                 var size = resLoader.GetUnboxedLayerSize(layerTree.tagValue);
-                layerViewCursor = new ViewCursor(parentBoxViewCursor.offsetX, parentBoxViewCursor.offsetY, size.x, size.y);
+                basePos = new ViewCursor(parentBoxViewCursor.offsetX, parentBoxViewCursor.offsetY, size.x, size.y);
             } else {
                 // 親がboxなので、boxのoffsetYとサイズを継承。offsetXは常に0で来る。継承しない。
-                layerViewCursor = new ViewCursor(0, parentBoxViewCursor.offsetY, parentBoxViewCursor.viewWidth, parentBoxViewCursor.viewHeight);
+                basePos = new ViewCursor(0, parentBoxViewCursor.offsetY, parentBoxViewCursor.viewWidth, parentBoxViewCursor.viewHeight);
             }
-            layerTree.SetPosFromViewCursor(layerViewCursor);
 
-            // Debug.LogWarning("before layerTree:" + GetTagStr(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
-
-            /*
-                レイヤーなので、prefabをロードして、原点位置は0,0、
-                    サイズは親サイズ、という形で生成する。
-                
-                ・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
-                ・この際のchildのサイズは、layerであれば必ずboxのサイズになる。このへんがキモかな。
-            */
-            var children = layerTree.GetChildren();
 
             // collisionGroup単位での追加高さ、一番下まで伸びてるやつを基準にする。
-            var boxYPosRecords = new Dictionary<float, float>();
-            var collisionGrouId = 0;
             float additionalHeight = 0f;
 
-            for (var i = 0; i < children.Count; i++) {
-                var boxTree = children[i];
-
-                // Debug.LogError("box tag:" + resLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
-
-                /*
-                    位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
-                */
-                var boxRect = boxTree.keyValueStore[HTMLAttribute._BOX] as BoxPos;
-                var childBoxViewRect = TagTree.GetChildViewRectFromParentRectTrans(layerViewCursor.viewWidth, layerViewCursor.viewHeight, boxRect);
-                
-                /*
-                    collisionGroupによる区切りで、コンテンツ帯ごとの高さを出し、
-                    最も下にあるコンテンツの伸び幅を次の縦並びグループの開始オフセット位置追加値としてセットする。
-                 */
-                var boxCollisionGroupId = (int)boxTree.keyValueStore[HTMLAttribute._COLLISION];
-                
-                if (collisionGrouId != boxCollisionGroupId) {
-                    var tallest = boxYPosRecords.Select(kv => kv.Key).Max();
-                    additionalHeight = boxYPosRecords[tallest] + additionalHeight;
-                    
-                    // update. entried to new collision group.
-                    collisionGrouId = boxCollisionGroupId;
-
-                    boxYPosRecords.Clear();
-                }
-                
-                var childView = new ViewCursor(childBoxViewRect.x, childBoxViewRect.y + additionalHeight, childBoxViewRect.width, childBoxViewRect.height);
-                
-                var cor = LayoutBoxedContents(boxTree, childView);
-
-                while (cor.MoveNext()) {
-                    if (cor.Current != null) {
-                        break;
-                    }
-                    yield return null;
-                }
-                
-                // fix position.
-                childView = cor.Current;
-
-                // add record.
-                var yPos = childView.offsetY + childView.viewHeight;
-                boxYPosRecords[yPos] = childView.viewHeight - childBoxViewRect.height;
-            }
-            
-            // 最終グループの追加値をviewの高さに足す
             {
-                var tallest = boxYPosRecords.Keys.Max();
-                additionalHeight = boxYPosRecords[tallest] + additionalHeight;
-            }
+                var boxYPosRecords = new Dictionary<float, float>();
+                var collisionGrouId = 0;
             
-            layerViewCursor.viewHeight += additionalHeight;
+                var childViewCursor = basePos;
+                /*
+                    レイヤーなので、prefabをロードして、原点位置は0,0、
+                        サイズは親サイズ、という形で生成する。
+                    
+                    ・childlenにboxの中身が含まれている場合(IsContainedThisCustomTag)、childlenの要素を生成する。そうでない要素の場合は生成しない。
+                    ・この際のchildのサイズは、layerであれば必ずboxのサイズになる。このへんがキモかな。
+                */
+                var children = layerTree.GetChildren();
+
+                for (var i = 0; i < children.Count; i++) {
+                    var boxTree = children[i];
+
+                    // Debug.LogError("box tag:" + resLoader.GetTagFromIndex(boxTree.parsedTag) + " boxTree:" + boxTree.treeType);
+
+                    /*
+                        位置情報はkvに入っているが、親のviewの値を使ってレイアウト後の位置に関する数値を出す。
+                    */
+                    var boxRect = boxTree.keyValueStore[HTMLAttribute._BOX] as BoxPos;
+                    var childBoxViewRect = TagTree.GetChildViewRectFromParentRectTrans(basePos.viewWidth, basePos.viewHeight, boxRect);
+                    
+                    /*
+                        collisionGroupによる区切りで、コンテンツ帯ごとの高さを出し、
+                        最も下にあるコンテンツの伸び幅を次の縦並びグループの開始オフセット位置追加値としてセットする。
+                    */
+                    var boxCollisionGroupId = (int)boxTree.keyValueStore[HTMLAttribute._COLLISION];
+                    
+                    if (collisionGrouId != boxCollisionGroupId) {
+                        var tallest = boxYPosRecords.Select(kv => kv.Key).Max();
+                        additionalHeight = boxYPosRecords[tallest] + additionalHeight;
+                        
+                        // update. entried to new collision group.
+                        collisionGrouId = boxCollisionGroupId;
+
+                        boxYPosRecords.Clear();
+                    }
+                    
+                    var childView = new ViewCursor(childBoxViewRect.x, childBoxViewRect.y + additionalHeight, childBoxViewRect.width, childBoxViewRect.height);
+                    
+                    var cor = LayoutBoxedContents(boxTree, childView);
+
+                    while (cor.MoveNext()) {
+                        if (cor.Current != null) {
+                            break;
+                        }
+                        yield return null;
+                    }
+                    
+                    // fix position.
+                    var childCursor = cor.Current;
+
+                    // add record.
+                    var yPos = childCursor.offsetY + childCursor.viewHeight;
+                    boxYPosRecords[yPos] = childCursor.viewHeight - childBoxViewRect.height;
+                }
+
+                // 最終グループの追加値をviewの高さに足す
+                var tallestInGroup = boxYPosRecords.Keys.Max();
+                additionalHeight = boxYPosRecords[tallestInGroup] + additionalHeight;    
+            }
+
+            // 基礎高さ + 増加分高さ
+            var newHeight = basePos.viewHeight + additionalHeight;
 
             // Debug.LogWarning("after layerTree:" + GetTagStr(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
 
-            // セット
-            layerTree.SetPosFromViewCursor(layerViewCursor);
-            yield return layerViewCursor;
+            // treeに位置をセットしてposを返す
+            yield return layerTree.SetPos(basePos.offsetX, basePos.offsetY, basePos.viewWidth, newHeight);
         }
 
-        private IEnumerator<ViewCursor> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor) {
+        private IEnumerator<ChildPos> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor) {
             var baseViewCursorHeight = viewCursor.viewHeight;
 
             var childView = ViewCursor.ContainedViewCursor(viewCursor);
@@ -220,13 +221,12 @@ namespace AutoyaFramework.Information {
             if (resultViewCursor.viewHeight < baseViewCursorHeight) {
                 resultViewCursor.viewHeight = baseViewCursorHeight;
             }
-
-            emptyLayerTree.SetPosFromViewCursor(resultViewCursor);
-
-            yield return resultViewCursor;
+            
+            // treeに位置をセットしてposを返す
+            yield return emptyLayerTree.SetPos(resultViewCursor);
         }
 
-        private IEnumerator<ViewCursor> DoImgLayout (TagTree imgTree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
+        private IEnumerator<ChildPos> DoImgLayout (TagTree imgTree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
             var contentViewCursor = viewCursor;
             if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
                 throw new Exception("srcがないんだけどどうするか。カスタムコンテンツならデフォ画像をセットできるんでなくてもいいはず。あとエラーをつけるならパースエラー。image element should define src param.");
@@ -283,166 +283,158 @@ namespace AutoyaFramework.Information {
             }
 
             // 画像のアスペクト比に則ったサイズを返す。
-            contentViewCursor.viewWidth = imageWidth;
-            contentViewCursor.viewHeight = imageHeight;
-
-            // 自己のサイズに反映
-            imgTree.SetPosFromViewCursor(contentViewCursor);
-            // Debug.LogError("contentViewCursor:" + contentViewCursor);
-
-            yield return contentViewCursor;
+            // treeに位置をセットしてposを返す
+            yield return imgTree.SetPos(contentViewCursor.offsetX, contentViewCursor.offsetY, imageWidth, imageHeight);
         }
 
-        private IEnumerator<ViewCursor> DoContainerLayout (TagTree containerTree, ViewCursor containerViewCursor) {
+        private IEnumerator<ChildPos> DoContainerLayout (TagTree containerTree, ViewCursor containerViewCursor) {
             /*
                 子供のタグを整列させる処理。
                 横に整列、縦に並ぶ、などが実行される。
 
                 親カーソルから子カーソルを生成。高さに関しては適当。
             */
-            var childView = new ViewCursor(0, 0, containerViewCursor.viewWidth - containerViewCursor.offsetX, containerViewCursor.viewHeight);
-            var linedElements = new List<TagTree>();
-            
             var containerChildren = containerTree.GetChildren();
             var childCount = containerChildren.Count;
 
             if (childCount == 0) {
-                containerTree.SetPosFromViewCursor(containerViewCursor);
-                yield return containerViewCursor;
-                yield break;
+                // treeに位置をセットしてposを返す
+                yield return containerTree.SetPosFromViewCursor(containerViewCursor);
+                throw new Exception("never come here.");
             }
 
+            var linedElements = new List<TagTree>();
             var rightestPoint = 0f;
+            {
+                var viewCursor = new ViewCursor(0, 0, containerViewCursor.viewWidth - containerViewCursor.offsetX, containerViewCursor.viewHeight);
+                for (var i = 0; i < childCount; i++) {
+                    var child = containerChildren[i];
+                    
+                    currentLineRetry: {
+                        linedElements.Add(child);
 
-            for (var i = 0; i < childCount; i++) {
-                var child = containerChildren[i];
-                
-                currentLineRetry: {
-                    linedElements.Add(child);
+                        // set insertion type.
+                        var currentInsertType = InsertType.Continue;
+                        // 子供ごとにレイアウトし、結果を受け取る
+                        var cor = DoLayout(
+                            child, 
+                            viewCursor, 
+                            (insertType, newChild) => {
+                                currentInsertType = insertType;
 
-                    // set insertion type.
-                    var currentInsertType = InsertType.Continue;
-                    // 子供ごとにレイアウトし、結果を受け取る
-                    var cor = DoLayout(
-                        child, 
-                        childView, 
-                        (insertType, newChild) => {
-                            currentInsertType = insertType;
-
-                            switch (insertType) {
-                                case InsertType.InsertContentToNextLine: {
-                                    // 次に処理するコンテンツを差し込む。
-                                    containerChildren.Insert(i+1, newChild);
-                                    childCount++;
-                                    break;
+                                switch (insertType) {
+                                    case InsertType.InsertContentToNextLine: {
+                                        // 次に処理するコンテンツを差し込む。
+                                        containerChildren.Insert(i+1, newChild);
+                                        childCount++;
+                                        break;
+                                    }
                                 }
                             }
+                        );
+                        
+                        while (cor.MoveNext()) {
+                            if (cor.Current != null) {
+                                break;
+                            }		
+                            yield return null;
                         }
-                    );
-                    
-                    while (cor.MoveNext()) {
-                        if (cor.Current != null) {
-                            break;
-                        }		
-                        yield return null;
-                    }
 
-                    // update rightest point.
-                    if (rightestPoint < child.offsetX + child.viewWidth) {
-                        rightestPoint = child.offsetX + child.viewWidth;
-                        // Debug.LogError("rightestPoint:" + rightestPoint + " of container:" + Debug_GetTagStrAndType(containerTree));
-                    }
-                    
-                    switch (currentInsertType) {
-                        case InsertType.RetryWithNextLine: {
-                            // Debug.LogError("テキストコンテンツが0行を叩き出したので、このコンテンツ自体をもう一度レイアウトする。");
-                            
-                            // 処理の開始時にラインにいれていたものを削除
-                            linedElements.Remove(child);
+                        // update rightest point.
+                        if (rightestPoint < child.offsetX + child.viewWidth) {
+                            rightestPoint = child.offsetX + child.viewWidth;
+                            // Debug.LogError("rightestPoint:" + rightestPoint + " of container:" + Debug_GetTagStrAndType(containerTree));
+                        }
+                        
+                        switch (currentInsertType) {
+                            case InsertType.RetryWithNextLine: {
+                                // Debug.LogError("テキストコンテンツが0行を叩き出したので、このコンテンツ自体をもう一度レイアウトする。");
+                                
+                                // 処理の開始時にラインにいれていたものを削除
+                                linedElements.Remove(child);
 
-                            // 含まれているものの整列処理をし、列の高さを受け取る
-                            var newLineOffsetY = DoLining(linedElements);
+                                // 含まれているものの整列処理をし、列の高さを受け取る
+                                var newLineOffsetY = DoLining(linedElements);
 
-                            // 整列と高さ取得が完了したのでリセット
+                                // 整列と高さ取得が完了したのでリセット
+                                linedElements.Clear();
+
+                                // ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+                                // Debug.LogError("リトライでの改行");
+                                viewCursor = ViewCursor.NextLine(newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+
+                                // もう一度この行を処理する。
+                                goto currentLineRetry;
+                            }
+                            case InsertType.InsertContentToNextLine: {
+                                // Debug.LogError("ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。");
+
+                                // ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。
+                                var newLineOffsetY = DoLining(linedElements);
+
+                                // 整列と高さ取得が完了したのでリセット
+                                linedElements.Clear();
+
+                                // ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
+                                // Debug.LogError("コンテンツ挿入での改行");
+                                viewCursor = ViewCursor.NextLine(newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                                // Debug.LogError("child:" + child.tagValue + " done," + child.ShowContent() + " next childView:" + childView);
+                                continue;
+                            }
+                        }
+
+                        /*
+                            コンテンツがwidth内に置けた
+                        */
+
+                        // hiddenコンテンツ以下が来る場合は想定されてないのが惜しいな、なんかないかな、、ないか、、デバッグ用。crlf以外でheightが0になるコンテンツがあれば、それは異常なので蹴る
+                        // if (!child.hidden && child.treeType != TreeType.Content_CRLF && cor.Current.viewHeight == 0) {
+                        //     throw new Exception("content height is 0. tag:" + GetTagStr(child.tagValue) + " treeType:" + child.treeType);
+                        // }
+
+                        // 子供の位置カーソルから次のコンテンツ位置を変更する。
+                        var layoutedCursor = cor.Current;
+
+                        
+                        // 次のコンテンツの開始位置をセットする。
+                        var nextChildViewCursor = ChildPos.NextRightCursor(layoutedCursor, containerViewCursor.viewWidth);
+                        
+                        // レイアウト直後に次のポイントの開始位置が規定幅を超えているか、改行要素が来た場合、現行の行のライニングを行う。
+                        if (child.treeType == TreeType.Content_CRLF) {
+                            // 行化
+                            var nextLineOffsetY = DoLining(linedElements);
+
+                            // ライン解消
                             linedElements.Clear();
+                            // Debug.LogError("crlf over.");
 
-                            // ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
-                            // Debug.LogError("リトライでの改行");
-                            childView = ViewCursor.NextLine(childView, newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                            // 改行処理を加えた次の開始位置
+                            viewCursor = ViewCursor.NextLine(nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                        } else if (containerViewCursor.viewWidth <= nextChildViewCursor.offsetX) {
+                            // 行化
+                            var nextLineOffsetY = DoLining(linedElements);
 
-                            // もう一度この行を処理する。
-                            goto currentLineRetry;
-                        }
-                        case InsertType.InsertContentToNextLine: {
-                            // Debug.LogError("ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。");
-
-                            // ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。
-                            var newLineOffsetY = DoLining(linedElements);
-
-                            // 整列と高さ取得が完了したのでリセット
+                            // ライン解消
                             linedElements.Clear();
+                            // Debug.LogError("over. child:" + GetTagStr(child.tagValue) + " vs containerViewCursor.viewWidth:" + containerViewCursor.viewWidth + " vs nextChildViewCursor.offsetX:" + nextChildViewCursor.offsetX);
 
-                            // ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
-                            // Debug.LogError("コンテンツ挿入での改行");
-                            childView = ViewCursor.NextLine(childView, newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
-                            // Debug.LogError("child:" + child.tagValue + " done," + child.ShowContent() + " next childView:" + childView);
-                            continue;
+                            // 改行処理を加えた次の開始位置
+                            viewCursor = ViewCursor.NextLine(nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                        } else {
+                            // 次のchildの開始ポイントを現在のchildの右にセット
+                            viewCursor = new ViewCursor(nextChildViewCursor);
                         }
+
+                        // Debug.LogError("child:" + GetTagStr(child.tagValue) + " is done," + " next childView:" + childView);
                     }
 
-                    /*
-                        コンテンツがwidth内に置けた
-                     */
-
-                    // hiddenコンテンツ以下が来る場合は想定されてないのが惜しいな、なんかないかな、、ないか、、デバッグ用。crlf以外でheightが0になるコンテンツがあれば、それは異常なので蹴る
-                    // if (!child.hidden && child.treeType != TreeType.Content_CRLF && cor.Current.viewHeight == 0) {
-                    //     throw new Exception("content height is 0. tag:" + GetTagStr(child.tagValue) + " treeType:" + child.treeType);
-                    // }
-
-                    var layoutedCursor = new ViewCursor(cor.Current);// この時点では、子供の位置が確定されていて、その値とこのカーソルが一致する。
-
-                    // この時点で右が画面幅を超えてる場合、コンテンツ以外 = コンテナで端を突破した、という感じになる。
-                    // Debug.LogWarning("layoutedCursor:" + layoutedCursor + " of tag:" + Debug_GetTagStrAndType(child) + " inside container:" + Debug_GetTagStrAndType(containerTree));
-
-                    // 次のコンテンツの開始位置をセットする。
-                    var nextChildViewCursor = ViewCursor.NextRightCursor(layoutedCursor, containerViewCursor.viewWidth);
-                    // Debug.LogError("nextChildViewCursor:" + nextChildViewCursor);
-
-                    // レイアウト直後に次のポイントの開始位置が規定幅を超えているか、改行要素が来た場合、現行の行のライニングを行う。
-                    if (child.treeType == TreeType.Content_CRLF) {
-                        // 行化
-                        var nextLineOffsetY = DoLining(linedElements);
-
-                        // ライン解消
-                        linedElements.Clear();
-                        // Debug.LogError("crlf over.");
-
-                        // 改行処理
-                        childView = ViewCursor.NextLine(childView, nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
-                    } else if (containerViewCursor.viewWidth <= nextChildViewCursor.offsetX) {
-                        // 行化
-                        var nextLineOffsetY = DoLining(linedElements);
-
-                        // ライン解消
-                        linedElements.Clear();
-                        // Debug.LogError("over. child:" + GetTagStr(child.tagValue) + " vs containerViewCursor.viewWidth:" + containerViewCursor.viewWidth + " vs nextChildViewCursor.offsetX:" + nextChildViewCursor.offsetX);
-
-                        // 改行処理
-                        childView = ViewCursor.NextLine(childView, nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
-                    } else {
-                        // 次のchildの開始ポイントを現在のchildの右にセット
-                        childView = nextChildViewCursor;
-                    }
-
-                    // Debug.LogError("child:" + GetTagStr(child.tagValue) + " is done," + " next childView:" + childView);
+                    // 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
                 }
-
-                // 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
             }
 
             var lastY = 0f;
 
-            // 最後の列が存在する場合、整列。
+            // 最後の列が存在する場合、整列。(最後の要素が改行要因とかだと最後の列が存在しない場合がある)
             if (linedElements.Any()) {
                 lastY = DoLining(linedElements);
             } else {
@@ -450,29 +442,14 @@ namespace AutoyaFramework.Information {
                 var lastChild = containerChildren[containerChildren.Count - 1];
                 lastY = lastChild.offsetY + lastChild.viewHeight;
             }
-            /*
-                viewCursorに関して勘違いしてた、
-                ・親から渡される制約
-                ・帰って来るまでには幅と高さが追加されている
-                ・幅、高さを元に次のカーソルをセットする
-
-                うーん、変えられそうな気がする。
-
-                ・カーソルを元に子供の位置が決定される
-                ・帰って来るのは子供の位置を表すカーソル
-                ここがものごとを難しくしてるのか。
-             */
-            containerViewCursor.viewWidth = rightestPoint;
-            containerViewCursor.viewHeight = lastY;
-            // Debug.LogError("containerViewCursor:" + containerViewCursor);
 
             // 自分自身のサイズを規定
-            containerTree.SetPosFromViewCursor(containerViewCursor);
+            containerTree.SetPos(containerViewCursor.offsetX, containerViewCursor.offsetY, rightestPoint, lastY);
 
             // カーソルはコンテンツの続きとしてのカーソルを返す。この場合、一番下のコンテンツの右上を返すのが正しい。
             // childViewがそんな感じになってるはず。
             var nextLeftTopPos = ViewCursor.NextLeftTopView(containerChildren.Last(), containerViewCursor.viewWidth);
-            Debug.LogError("nextLeftTopPos:" + nextLeftTopPos);
+            // Debug.LogError("nextLeftTopPos:" + nextLeftTopPos);
             /*
                 上記を行わず、親コンテナ内の子コンテナが幅まんなかあたりで終わった場合、そのコンテナをライニングから外す、という特殊処理をするかどうか。
                 ・複数行化コンテナの最後のコンテンツをライン対応要素として参照渡しして、コンテナそれ自体と入れ替える
@@ -498,14 +475,14 @@ namespace AutoyaFramework.Information {
                     3.しっぽ部分まで終わったら、しっぽがliningに巻き込まれるようにliningRefみたいなのにセットしとく必要がある。
                     4.しっぽのliningが発生したら、コンテナの末尾の位置が変わる(しっぽの位置をもとにviewHeightが変わるだけ)
              */
-            yield return containerViewCursor;
+            yield return new ChildPos(containerTree);
         }
 
         /**
             テキストコンテンツのレイアウトを行う。
             もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
          */
-        private IEnumerator<ViewCursor> DoTextLayout (TagTree textTree, ViewCursor textViewCursor, Action<InsertType, TagTree> insertion) {
+        private IEnumerator<ChildPos> DoTextLayout (TagTree textTree, ViewCursor textViewCursor, Action<InsertType, TagTree> insertion) {
             var text = textTree.keyValueStore[HTMLAttribute._CONTENT] as string;
             
             var cor = resLoader.LoadPrefab(textTree.tagValue, textTree.treeType);
@@ -594,16 +571,16 @@ namespace AutoyaFramework.Information {
                         }
                         
                         // このビューのポジションとしてセット
-                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
+                        
                         // Debug.LogError("複数行の頭、オフセットとwidthを足したら画面幅なはず。 newViewCursor:" + newViewCursor);
-                        yield return newViewCursor;
+                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
                     } else {
                         // 行頭の単一行
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
-                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
+                        
                         // Debug.LogError("行頭の単一行 newViewCursor:" + newViewCursor);
-                        yield return newViewCursor;
+                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
                     }
                 } else {
                     if (isMultilined) {
@@ -625,36 +602,33 @@ namespace AutoyaFramework.Information {
                         // 次のコンテンツを新しい行から開始する。
                         insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
-                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
                         // Debug.LogError("newViewCursor:" + newViewCursor);
-                        yield return newViewCursor;
+                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
                     } else {
                         // 行の途中に追加された単一行で、いい感じに入った。
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
                         
-                        var newViewCursor = textTree.SetPosThenCreateNewCursor(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
                         // Debug.LogError("newViewCursor:" + newViewCursor);
-                        yield return newViewCursor;
+                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
                     }
                 }
             }
         }
 
-        private IEnumerator<ViewCursor> DoCRLFLayout (TagTree crlfTree, ViewCursor viewCursor) {
+        private IEnumerator<ChildPos> DoCRLFLayout (TagTree crlfTree, ViewCursor viewCursor) {
             // return empty size cursor.
             var zeroSizeCursor = ViewCursor.ZeroSizeCursor(viewCursor);
 
-            // set content pos.
-            crlfTree.SetPosFromViewCursor(zeroSizeCursor);
-            yield return zeroSizeCursor;
+            // treeに位置をセットしてposを返す
+            yield return crlfTree.SetPosFromViewCursor(zeroSizeCursor);
         }
 
         private string Debug_GetTagStrAndType (TagTree tree) {
             return resLoader.GetTagFromValue(tree.tagValue) + "_" + tree.treeType;
         }
 
-        private IEnumerator SetHiddenPosCoroutine (TagTree hiddenTree, IEnumerator<ViewCursor> cor) {
+        private IEnumerator SetHiddenPosCoroutine (TagTree hiddenTree, IEnumerator<ChildPos> cor) {
             while (cor.MoveNext()) {
                 if (cor.Current != null) {
                     break;
@@ -703,16 +677,16 @@ namespace AutoyaFramework.Information {
         /**
             ボックス内部のコンテンツのレイアウトを行う
          */
-        private IEnumerator<ViewCursor> LayoutBoxedContents (TagTree boxTree, ViewCursor boxView) {
+        private IEnumerator<ChildPos> LayoutBoxedContents (TagTree boxTree, ViewCursor boxView) {
             // Debug.LogError("boxTree:" + GetTagStr(boxTree.tagValue) + " boxView:" + boxView);
             
             var containerChildren = boxTree.GetChildren();
             var childCount = containerChildren.Count;
 
             if (childCount == 0) {
-                boxTree.SetPosFromViewCursor(boxView);
-                yield return boxView;
-                yield break;
+                // treeに位置をセットしてposを返す
+                yield return boxTree.SetPosFromViewCursor(boxView);
+                throw new Exception("never come here.");
             }
 
             // 内包されたviewCursorを生成する。
@@ -742,7 +716,7 @@ namespace AutoyaFramework.Information {
 
                 // レイアウトが済んだchildの位置を受け取り、改行
                 // Debug.LogError("layoutbox 改行");
-                childView = ViewCursor.NextLine(cor.Current, cor.Current.offsetY + cor.Current.viewHeight, boxView.viewWidth, boxView.viewHeight);
+                childView = ViewCursor.NextLine(cor.Current.offsetY + cor.Current.viewHeight, boxView.viewWidth, boxView.viewHeight);
                 
                 // 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
             }
@@ -750,12 +724,8 @@ namespace AutoyaFramework.Information {
             // Debug.Log("lastChildEndY:" + lastChildEndY + " これが更新されない場合、レイアウトされたパーツにサイズが入ってない。");
 
             // 最終コンテンツのoffsetを使ってboxの高さをセット
-            boxView .viewHeight = childView.offsetY;
-            // Debug.LogError("layoutBoxedContent boxView:" + boxView);
-
-            // 自分自身のサイズを再規定
-            boxTree.SetPosFromViewCursor(boxView);
-            yield return boxView;
+            // treeに位置をセットしてposを返す
+            yield return boxTree.SetPos(boxView.offsetX, boxView.offsetY, boxView.viewWidth, childView.offsetY);
         }
 
         
