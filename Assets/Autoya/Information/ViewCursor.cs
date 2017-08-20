@@ -38,7 +38,21 @@ namespace AutoyaFramework.Information {
         public readonly float offsetY;
         public readonly float viewWidth;
         public readonly float viewHeight;
-        
+
+        public readonly static ViewCursor Empty = new ViewCursor(-1, -1, -1, -1);
+
+        public bool Equals (ViewCursor source) {
+            if (source.offsetX != this.offsetX || 
+                source.offsetY != this.offsetY ||
+                source.viewWidth != this.viewWidth ||
+                source.viewHeight != this.viewHeight
+            ) {
+                return false;
+            }
+
+            return true;
+        }
+
         public ViewCursor (float offsetX, float offsetY, float viewWidth, float viewHeight) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
@@ -79,11 +93,6 @@ namespace AutoyaFramework.Information {
          */
         public static ViewCursor ZeroSizeCursor (ViewCursor baseCursor) {
             return new ViewCursor(baseCursor.offsetX, baseCursor.offsetY, 0, 0);
-        }
-
-        public static ViewCursor NextLeftTopView (TagTree baseTree, float viewWidth) {
-            var nextLeftTopCursor = new ViewCursor(baseTree.offsetX + baseTree.viewWidth, baseTree.offsetY, viewWidth, 0);
-            return nextLeftTopCursor;
         }
 
         override public string ToString () {

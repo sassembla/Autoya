@@ -119,304 +119,304 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         );
     }
 
-    [MTest] public void MaterializeHTML () {
-        var sample = @"
-<body>something</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTML () {
+//         var sample = @"
+// <body>something</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLHasValidView () {
-        var sample = @"
-<body>something</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLHasValidView () {
+//         var sample = @"
+// <body>something</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithSmallTextHasValidView () {
-        var sample = @"
-<body>over 100px string should be multi lined text with good separation. need some length.</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithSmallTextHasValidView () {
+//         var sample = @"
+// <body>over 100px string should be multi lined text with good separation. need some length.</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithLink () {
-        var sample = @"
-<body><a href='https://dummyimage.com/100.png/09f/fff'>link!</a></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithLink () {
+//         var sample = @"
+// <body><a href='https://dummyimage.com/100.png/09f/fff'>link!</a></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithLinkWithId () {
-        var sample = @"
-<body><a href='https://dummyimage.com/100.png/09f/fff' id='linkId'>link!</a></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithLinkWithId () {
+//         var sample = @"
+// <body><a href='https://dummyimage.com/100.png/09f/fff' id='linkId'>link!</a></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithImage () {
-        var sample = @"
-<body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithImage () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/100.png/09f/fff'/></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithImageAsButton () {
-        var sample = @"
-<body><img src='https://dummyimage.com/100.png/09f/fff' button='true''/></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithImageAsButton () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/100.png/09f/fff' button='true''/></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithImageAsButtonWithId () {
-        var sample = @"
-<body><img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithImageAsButtonWithId () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
-        Debug.LogWarning("保留。");
-        return;
-        var sample = @"
-<body>
-<p listen='imageId' hidden='true'>something</p>
-<img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
+//         Debug.LogWarning("保留。");
+//         return;
+//         var sample = @"
+// <body>
+// <p listen='imageId' hidden='true'>something</p>
+// <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithDoubleBoxedLayer () {
-        var sample = @"
-<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
-<textbox>
-    <p>fmmm???</p>
-    <updatetext>something.</updatetext>
-    <updatetext>omake!</updatetext>
-</textbox>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithDoubleBoxedLayer () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+// <textbox>
+//     <p>fmmm???</p>
+//     <updatetext>something.</updatetext>
+//     <updatetext>omake!</updatetext>
+// </textbox>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithSmallImage () {
-        var sample = @"
-<body><img src='https://dummyimage.com/10.png/09f/fff'/></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithSmallImage () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/10.png/09f/fff'/></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithSmallImageAndText () {
-        var sample = @"
-<body><img src='https://dummyimage.com/10.png/09f/fff'/>text</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithSmallImageAndText () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/10.png/09f/fff'/>text</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithSmallImageAndSmallText () {
-        var sample = @"
-<body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithSmallImageAndSmallText () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/10.png/09f/fff'/>over 100px string should be multi lined text with good separation. need some length.</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithWideImageAndText () {
-        var sample = @"
-<body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithWideImageAndText () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
-    [MTest] public void MaterializeHTMLWithTextAndWideImage () {
-        var sample = @"
-<body>something<img src='https://dummyimage.com/100x10/000/fff'/></body>";
-        var tree = CreateLayoutedTree(sample);
+//         Show(tree);
+//     }
+//     [MTest] public void MaterializeHTMLWithTextAndWideImage () {
+//         var sample = @"
+// <body>something<img src='https://dummyimage.com/100x10/000/fff'/></body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 
-    [MTest] public void MaterializeHTMLWithTextAndWideImageAndText () {
-        var sample = @"
-<body>something<img src='https://dummyimage.com/100x10/000/fff'/>else</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithTextAndWideImageAndText () {
+//         var sample = @"
+// <body>something<img src='https://dummyimage.com/100x10/000/fff'/>else</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithTextAndWideImageAndTextAndWideImageAndText () {
-        var sample = @"
-<body>something<img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithTextAndWideImageAndTextAndWideImageAndText () {
+//         var sample = @"
+// <body>something<img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithWideImageAndTextAndWideImageAndText () {
-        var sample = @"
-<body><img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithWideImageAndTextAndWideImageAndText () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/100x10/000/fff'/>else<img src='https://dummyimage.com/100x20/000/fff'/>other</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 
-    [MTest] public void MaterializeHTMLWithTextAndSmallImage () {
-        var sample = @"
-<body>something<img src='https://dummyimage.com/10x10/000/fff'/></body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithTextAndSmallImage () {
+//         var sample = @"
+// <body>something<img src='https://dummyimage.com/10x10/000/fff'/></body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 
-    [MTest] public void MaterializeHTMLWithTextAndSmallImageAndText () {
-        var sample = @"
-<body>something<img src='https://dummyimage.com/10x10/000/fff'/>b!</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithTextAndSmallImageAndText () {
+//         var sample = @"
+// <body>something<img src='https://dummyimage.com/10x10/000/fff'/>b!</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithTextAndSmallImageAndTextAndWideImageAndText () {
-        var sample = @"
-<body>something<img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/100x10/000/fff'/>other</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithTextAndSmallImageAndTextAndWideImageAndText () {
+//         var sample = @"
+// <body>something<img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/100x10/000/fff'/>other</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithSmallImageAndTextAndSmallImageAndText () {
-        var sample = @"
-<body><img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/10x20/000/fff'/>other</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithSmallImageAndTextAndSmallImageAndText () {
+//         var sample = @"
+// <body><img src='https://dummyimage.com/10x10/000/fff'/>else<img src='https://dummyimage.com/10x20/000/fff'/>other</body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 
-    [MTest] public void LoadHTMLWithCustomTagLink () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void LoadHTMLWithCustomTagLink () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithCustomTag () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<body>
-<customtag><custombg><textbg><customtext>something</customtext></textbg></custombg></customtag>
-else
+//     [MTest] public void MaterializeHTMLWithCustomTag () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <body>
+// <customtag><custombg><textbg><customtext>something</customtext></textbg></custombg></customtag>
+// else
 
-</body>";
-        var tree = CreateLayoutedTree(sample);
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithCustomTagSmallText () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<body>
-<customtag><custombg><textbg><customtext>
-something you need is not time, money, but do things fast.</customtext></textbg></custombg></customtag>
-else
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithCustomTagSmallText () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <body>
+// <customtag><custombg><textbg><customtext>
+// something you need is not time, money, but do things fast.</customtext></textbg></custombg></customtag>
+// else
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithCustomTagLargeText () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<body>
-<customtag><custombg><textbg><customtext>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-</customtext></textbg></custombg></customtag>
-else
-<customimg src='https://dummyimage.com/10x20/000/fff'/>
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithCustomTagLargeText () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <body>
+// <customtag><custombg><textbg><customtext>
+// Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+// </customtext></textbg></custombg></customtag>
+// else
+// <customimg src='https://dummyimage.com/10x20/000/fff'/>
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MultipleBoxConstraints () {
+//     [MTest] public void MultipleBoxConstraints () {
         
-        var sample = @"
-<!--depth asset list url(resources://Views/MultipleBoxConstraints/DepthAssetList)-->
-<itemlayout>
-<topleft>
-    <img src='https://dummyimage.com/100.png/09f/fff'/>
-</topleft>
-<topright>
-    <img src='https://dummyimage.com/100.png/08f/fff'/>
-</topright>
-<content><p>something! need more lines for test. get wild and tough is really good song. really really good song. forever. long lives get wild and tough!</p></content>
-<bottom>
-    <img src='https://dummyimage.com/100.png/07f/fff'/>
-</bottom>
-</itemlayout>";
-        var tree = CreateLayoutedTree(sample);
+//         var sample = @"
+// <!--depth asset list url(resources://Views/MultipleBoxConstraints/DepthAssetList)-->
+// <itemlayout>
+// <topleft>
+//     <img src='https://dummyimage.com/100.png/09f/fff'/>
+// </topleft>
+// <topright>
+//     <img src='https://dummyimage.com/100.png/08f/fff'/>
+// </topright>
+// <content><p>something! need more lines for test. get wild and tough is really good song. really really good song. forever. long lives get wild and tough!</p></content>
+// <bottom>
+//     <img src='https://dummyimage.com/100.png/07f/fff'/>
+// </bottom>
+// </itemlayout>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithCustomTagMultiple () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<body>
-<customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
-<customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>
-else
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithCustomTagMultiple () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <body>
+// <customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
+// <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>
+// else
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<body>
-<customtag>
-    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
-    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
-</customtag>
-else
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <body>
+// <customtag>
+//     <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+//     <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+// </customtag>
+// else
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<customtag>
-    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
-    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
-</customtag>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <customtag>
+//     <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+//     <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+// </customtag>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 
 
@@ -436,7 +436,9 @@ else
     	<textbg>
     		<textbox>
 	    		<p>koko ni nihongo ga iikanji ni hairu. <br>a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
-	    		<updatetext>omake!</updatetext>
+	    		<updatetext>omake! abc d</updatetext>
+                <p>ef ghijklm</p>
+                <updatetext>aaaaaaaaaaaaabcdefghijk</updatetext>
 	    	</textbox>
 	    </textbg>
     </bg>
@@ -447,64 +449,64 @@ else
     }
 
 
-    [MTest] public void MaterializeSampleView2_HiddenBreakView () {
-        var sampleHtml = @"
-<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
-<body>
-    <bg>
-    	<titlebox>
-    		<titletext>レモン一個ぶんのビタミンC</titletext>
-    	</titlebox>
-    	<newbadge></newbadge>
-    	<textbg>
-    		<textbox>
-	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
-	    		<!-- hiddenがあると、コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
-	    		<updatetext hidden='true' listen='readmore'>omake!<img src='https://dummyimage.com/100.png/07f/fff'/></updatetext>
-                <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='readmore'/>
-	    	</textbox>
-	    </textbg>
-    </bg>
-</body>";
-        var tree = CreateLayoutedTree(sampleHtml);
+//     [MTest] public void MaterializeSampleView2_HiddenBreakView () {
+//         var sampleHtml = @"
+// <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+// <body>
+//     <bg>
+//     	<titlebox>
+//     		<titletext>レモン一個ぶんのビタミンC</titletext>
+//     	</titlebox>
+//     	<newbadge></newbadge>
+//     	<textbg>
+//     		<textbox>
+// 	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
+// 	    		<!-- hiddenがあると、コンテンツが出ないみたいなのがある。連続するのがいけないのかな。 -->
+// 	    		<updatetext hidden='true' listen='readmore'>omake!<img src='https://dummyimage.com/100.png/07f/fff'/></updatetext>
+//                 <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='readmore'/>
+// 	    	</textbox>
+// 	    </textbg>
+//     </bg>
+// </body>";
+//         var tree = CreateLayoutedTree(sampleHtml);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void LayoutSampleView2_HiddenBreakView () {
-        var sampleHtml = @"
-<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
-<body>
-    <bg>
-    	<textbg>
-    		<textbox>
-	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
-	    		<updatetext hidden='true' listen='readmore'>omake!</updatetext>
-	    	</textbox>
-	    </textbg>
-    </bg>
-</body>";
-        var tree = CreateLayoutedTree(sampleHtml);
-        Show(tree);
-    }
+//     [MTest] public void LayoutSampleView2_HiddenBreakView () {
+//         var sampleHtml = @"
+// <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+// <body>
+//     <bg>
+//     	<textbg>
+//     		<textbox>
+// 	    		<updatetext>koko ni nihongo ga iikanji ni hairu. good thing. long text will make large window. like this.</updatetext>
+// 	    		<updatetext hidden='true' listen='readmore'>omake!</updatetext>
+// 	    	</textbox>
+// 	    </textbg>
+//     </bg>
+// </body>";
+//         var tree = CreateLayoutedTree(sampleHtml);
+//         Show(tree);
+//     }
 
-    [MTest] public void PSupport () {
-        var sampleHtml = @"
-<p>
-    p1<a href=''>a1</a>p2
-</p>";
-        var tree = CreateLayoutedTree(sampleHtml);
-        Show(tree);
-    }
+//     [MTest] public void PSupport () {
+//         var sampleHtml = @"
+// <p>
+//     p1<a href=''>a1</a>p2
+// </p>";
+//         var tree = CreateLayoutedTree(sampleHtml);
+//         Show(tree);
+//     }
 
-    [MTest] public void PSupport2 () {
-        var sampleHtml = @"
-<p>
-    p1<a href=''>a1</a>p2
-</p><p>
-    p3
-</p>";
-        var tree = CreateLayoutedTree(sampleHtml);
-        Show(tree);
-    }
+//     [MTest] public void PSupport2 () {
+//         var sampleHtml = @"
+// <p>
+//     p1<a href=''>a1</a>p2
+// </p><p>
+//     p3
+// </p>";
+//         var tree = CreateLayoutedTree(sampleHtml);
+//         Show(tree);
+//     }
 }

@@ -21,6 +21,9 @@ namespace AutoyaFramework.Information {
             Continue,
             InsertContentToNextLine,
             RetryWithNextLine,
+            HeadInsertedToTheEndOfLine,
+            TailInsertedToLine,
+            LastLineEndedInTheMiddleOfLine,
         };
 
         public IEnumerator Layout (TagTree rootTree, Vector2 view, Action<TagTree> layouted) {
@@ -46,11 +49,40 @@ namespace AutoyaFramework.Information {
         /**
             コンテンツ単位でのレイアウトの起点。ここからtreeTypeごとのレイアウトを実行する。
          */
-        private IEnumerator<ChildPos> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
-            // Debug.LogError("tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
+        private IEnumerator<ChildPos> DoLayout (TagTree tree, ViewCursor viewCursor, Func<InsertType, TagTree, ViewCursor> insertion=null) {
+            // Debug.LogError("tree:" + Debug_GetTagStrAndType(tree) + " viewCursor:" + viewCursor);
             // Debug.LogWarning("まだ実装してない、brとかhrでの改行処理。 実際にはpとかも一緒で、「このコンテンツが終わったら改行する」みたいな属性が必須。区分けとしてはここではないか。＿なんちゃらシリーズと一緒に分けちゃうのもありかな〜");
 
-            var cor = GetCoroutineByTreeType(tree, viewCursor, insertion);
+            IEnumerator<ChildPos> cor = null;
+            switch (tree.treeType) {
+                case TreeType.CustomLayer: {
+                    cor = DoLayerLayout(tree, viewCursor);
+                    break;
+                }
+                case TreeType.CustomEmptyLayer: {
+                    cor = DoEmptyLayerLayout(tree, viewCursor, insertion);
+                    break;
+                }
+                case TreeType.Container: {
+                    cor = DoContainerLayout(tree, viewCursor, insertion);
+                    break;
+                }
+                case TreeType.Content_Img: {
+                    cor = DoImgLayout(tree, viewCursor);
+                    break;
+                }
+                case TreeType.Content_Text: {
+                    cor = DoTextLayout(tree, viewCursor, insertion);
+                    break;
+                }
+                case TreeType.Content_CRLF: {
+                    cor = DoCRLFLayout(tree, viewCursor);
+                    break;
+                }
+                default: {
+                    throw new Exception("unexpected tree type:" + tree.treeType);
+                }
+            }
 
             /*
                 もしもtreeがhiddenだった場合でも、のちのち表示するために内容のロードは行う。
@@ -76,33 +108,6 @@ namespace AutoyaFramework.Information {
                 
                 // Debug.LogError("done layouted tree:" + Debug_GetTagStrAndType(tree) + " next cursor:" + cor.Current);
                 yield return cor.Current;
-            }
-        }
-
-        private IEnumerator<ChildPos> GetCoroutineByTreeType (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
-            
-            switch (tree.treeType) {
-                case TreeType.CustomLayer: {
-                    return DoLayerLayout(tree, viewCursor);
-                }
-                case TreeType.CustomEmptyLayer: {
-                    return DoEmptyLayerLayout(tree, viewCursor);
-                }
-                case TreeType.Container: {
-                    return DoContainerLayout(tree, viewCursor);
-                }
-                case TreeType.Content_Img: {
-                    return DoImgLayout(tree, viewCursor, insertion);
-                }
-                case TreeType.Content_Text: {
-                    return DoTextLayout(tree, viewCursor, insertion);
-                }
-                case TreeType.Content_CRLF: {
-                    return DoCRLFLayout(tree, viewCursor);
-                }
-                default: {
-                    throw new Exception("unexpected tree type:" + tree.treeType);
-                }
             }
         }
         
@@ -201,12 +206,12 @@ namespace AutoyaFramework.Information {
             yield return layerTree.SetPos(basePos.offsetX, basePos.offsetY, basePos.viewWidth, newHeight);
         }
 
-        private IEnumerator<ChildPos> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor) {
+        private IEnumerator<ChildPos> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor, Func<InsertType, TagTree, ViewCursor> insertion=null) {
             var baseViewCursorHeight = viewCursor.viewHeight;
 
             var childView = ViewCursor.ContainedViewCursor(viewCursor);
 
-            var cor = DoContainerLayout(emptyLayerTree, childView);
+            var cor = DoContainerLayout(emptyLayerTree, childView, (type, tree) => {throw new Exception("なんか無視した方がよさそう。");});
             
             while (cor.MoveNext()) {
                 if (cor.Current != null) {
@@ -215,18 +220,20 @@ namespace AutoyaFramework.Information {
                 yield return null;
             }
             
-            var resultViewCursor = cor.Current;
+            var layoutedContainerPos = cor.Current;
             
-            // 伸びるぶんには伸ばす。
-            if (resultViewCursor.viewHeight < baseViewCursorHeight) {
-                resultViewCursor.viewHeight = baseViewCursorHeight;
+            /*
+                レイアウト済みの高さがlayer本来の高さより低い場合、レイヤー本来の高さを使用する(隙間ができる)
+             */
+            if (layoutedContainerPos.viewHeight < baseViewCursorHeight) {
+                layoutedContainerPos.viewHeight = baseViewCursorHeight;
             }
             
             // treeに位置をセットしてposを返す
-            yield return emptyLayerTree.SetPos(resultViewCursor);
+            yield return emptyLayerTree.SetPos(layoutedContainerPos);
         }
 
-        private IEnumerator<ChildPos> DoImgLayout (TagTree imgTree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
+        private IEnumerator<ChildPos> DoImgLayout (TagTree imgTree, ViewCursor viewCursor) {
             var contentViewCursor = viewCursor;
             if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
                 throw new Exception("srcがないんだけどどうするか。カスタムコンテンツならデフォ画像をセットできるんでなくてもいいはず。あとエラーをつけるならパースエラー。image element should define src param.");
@@ -287,7 +294,7 @@ namespace AutoyaFramework.Information {
             yield return imgTree.SetPos(contentViewCursor.offsetX, contentViewCursor.offsetY, imageWidth, imageHeight);
         }
 
-        private IEnumerator<ChildPos> DoContainerLayout (TagTree containerTree, ViewCursor containerViewCursor) {
+        private IEnumerator<ChildPos> DoContainerLayout (TagTree containerTree, ViewCursor containerViewCursor, Func<InsertType, TagTree, ViewCursor> insertion=null) {
             /*
                 子供のタグを整列させる処理。
                 横に整列、縦に並ぶ、などが実行される。
@@ -304,10 +311,11 @@ namespace AutoyaFramework.Information {
             }
 
             var linedElements = new List<TagTree>();
-            var rightestPoint = 0f;
+            var mostRightPoint = 0f;
             {
-                var viewCursor = new ViewCursor(0, 0, containerViewCursor.viewWidth - containerViewCursor.offsetX, containerViewCursor.viewHeight);
+                var nextChildViewCursor = new ViewCursor(0, 0, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
                 for (var i = 0; i < childCount; i++) {
+
                     var child = containerChildren[i];
                     
                     currentLineRetry: {
@@ -318,18 +326,54 @@ namespace AutoyaFramework.Information {
                         // 子供ごとにレイアウトし、結果を受け取る
                         var cor = DoLayout(
                             child, 
-                            viewCursor, 
-                            (insertType, newChild) => {
+                            nextChildViewCursor, 
+                            /*
+                                このブロックは<このコンテナ発のinsertion発動地点>か、
+                                このコンテナの内部のコンテナから呼ばれる。
+                             */
+                            (insertType, insertingChild) => {
                                 currentInsertType = insertType;
 
                                 switch (insertType) {
                                     case InsertType.InsertContentToNextLine: {
-                                        // 次に処理するコンテンツを差し込む。
-                                        containerChildren.Insert(i+1, newChild);
+                                        /*
+                                            現在のコンテンツを分割し、後続の列へと分割後の後部コンテンツを差し込む。
+                                            あたまが生成され、後続部分が存在し、それらが改行後のコンテンツとして分割、ここに挿入される。
+                                        */
+                                        containerChildren.Insert(i+1, insertingChild);
                                         childCount++;
                                         break;
                                     }
+                                    case InsertType.HeadInsertedToTheEndOfLine: {
+                                        // Debug.LogError("received:" + Debug_GetTagStrAndType(containerTree) + " inserting:" + Debug_GetTagStrAndType(insertingChild) + " text:" + insertingChild.keyValueStore[HTMLAttribute._CONTENT]);
+                                        if (0 < nextChildViewCursor.offsetX) {
+                                            // 行中開始の子コンテナ内での改行イベントを受け取った
+                                            
+                                            // 子コンテナ自体は除外
+                                            linedElements.Remove(child);
+
+                                            var childContainer = child;
+
+                                            // 現在整列してるコンテンツの整列を行う。
+                                            linedElements.Add(insertingChild);
+
+                                            // ライン化処理
+                                            DoLining(linedElements);
+                                            
+                                            // 消化
+                                            linedElements.Clear();
+
+                                            /*
+                                                子供コンテナの基礎viewを、行頭からのものに更新する。
+                                             */
+                                            return new ViewCursor(0, nextChildViewCursor.offsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                                        }
+                                        break;
+                                    }
                                 }
+
+                                // 特に何もないのでemptyを返す
+                                return ViewCursor.Empty;
                             }
                         );
                         
@@ -340,11 +384,15 @@ namespace AutoyaFramework.Information {
                             yield return null;
                         }
 
-                        // update rightest point.
-                        if (rightestPoint < child.offsetX + child.viewWidth) {
-                            rightestPoint = child.offsetX + child.viewWidth;
-                            // Debug.LogError("rightestPoint:" + rightestPoint + " of container:" + Debug_GetTagStrAndType(containerTree));
+                        // update most right point.
+                        if (mostRightPoint < child.offsetX + child.viewWidth) {
+                            mostRightPoint = child.offsetX + child.viewWidth;
                         }
+
+                        /*
+                            <このコンテナ発のinsertion発動地点>
+                            この時点でinsertionは発生済み or No で、発生している場合、そのタイプによって上位へと伝搬するイベントが変わる。
+                         */
                         
                         switch (currentInsertType) {
                             case InsertType.RetryWithNextLine: {
@@ -352,6 +400,8 @@ namespace AutoyaFramework.Information {
                                 
                                 // 処理の開始時にラインにいれていたものを削除
                                 linedElements.Remove(child);
+
+                                Debug.LogError("受け取ったchildと同じ相対位置を持ったコンテンツを足して、その高さを加えてLiningする必要がある。");
 
                                 // 含まれているものの整列処理をし、列の高さを受け取る
                                 var newLineOffsetY = DoLining(linedElements);
@@ -361,30 +411,105 @@ namespace AutoyaFramework.Information {
 
                                 // ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
                                 // Debug.LogError("リトライでの改行");
-                                viewCursor = ViewCursor.NextLine(newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                                nextChildViewCursor = ViewCursor.NextLine(newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
 
                                 // もう一度この行を処理する。
                                 goto currentLineRetry;
                             }
                             case InsertType.InsertContentToNextLine: {
-                                // Debug.LogError("ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。");
+                                /*
+                                    子側、InsertContentToNextLineを発行してそれを親まで伝達するか、そのままにするか判定する。
+                                 */
+                                if (0 < containerViewCursor.offsetX && insertion != null) {
+                                    /*
+                                        このコンテナからさらに親のコンテナに対して、折り返しが発生した要素を送りつける。
+                                        親コンテナで、このコンテナが行途中から開始したコンテナかどうかを判定、
+                                        もし行途中から発生したコンテナであれば、その要素の中で送りつけられたtreeの要素をLiningに掛け、
+                                        そのy位置を調整する。
 
-                                // ここまでで前の行が終わり、次の行のコンテンツが入れ終わってるので、改行する。
+                                        このイベント発生後の次の行以降のコンテンツは、そのy位置調整を経て調整される。
+                                     */
+
+                                    // Debug.LogError("insertion発生、現在の子コンテナ:" + Debug_GetTagStrAndType(containerTree));
+                                    var newView = insertion(InsertType.HeadInsertedToTheEndOfLine, child);
+
+                                    /*
+                                        親コンテナからみて条件を満たしていれば、このコンテナに新たなviewが与えられる。
+                                        条件は、このコンテナが、親から見て行途中に開始されたコンテナだったかどうか。
+                                     */
+                                    
+                                    if (!newView.Equals(ViewCursor.Empty)) {
+                                        Debug.LogError("viewが変更されてるので、コンテナ自体のviewが変更される。で、それに伴ってinsertしたコンテンツのx位置をズラさないといけない。 newView:" + newView);
+
+                                        // 子のコンテンツのxOffsetを、コンテナのoffsetXが0になった際に相対的に移動しない、という前提でズラす。
+                                        child.offsetX = containerViewCursor.offsetX;
+                                        
+                                        // update most right point again.
+                                        if (mostRightPoint < child.offsetX + child.viewWidth) {
+                                            mostRightPoint = child.offsetX + child.viewWidth;
+                                        }
+
+                                        // 改行が予定されているのでライン化を解除
+                                        linedElements.Clear();
+
+                                        // ビュー自体を更新
+                                        containerViewCursor = newView;
+
+                                        // 次の行のカーソルをセット
+                                        nextChildViewCursor = ViewCursor.NextLine(
+                                            child.offsetY + child.viewHeight, 
+                                            containerViewCursor.viewWidth, 
+                                            containerViewCursor.viewHeight
+                                        );
+                                        continue;
+                                    }
+                                }
+                                
+                                /*
+                                    これ以降のコンテンツは次行になるため、現在の行についてLining処理を行う。
+                                 */ 
                                 var newLineOffsetY = DoLining(linedElements);
 
                                 // 整列と高さ取得が完了したのでリセット
                                 linedElements.Clear();
 
                                 // ここまでの行の高さがcurrentHeightに出ているので、currentHeightから次の行を開始する。
-                                // Debug.LogError("コンテンツ挿入での改行");
-                                viewCursor = ViewCursor.NextLine(newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                                nextChildViewCursor = ViewCursor.NextLine(newLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
                                 // Debug.LogError("child:" + child.tagValue + " done," + child.ShowContent() + " next childView:" + childView);
+                                continue;
+                            }
+                            case InsertType.TailInsertedToLine: {
+                                if (1 < containerChildren.Count && i == containerChildren.Count - 1 && insertion != null) {
+                                    insertion(InsertType.LastLineEndedInTheMiddleOfLine, child);
+                                }
+                                break;
+                            }
+                            case InsertType.LastLineEndedInTheMiddleOfLine: {
+                                /*
+                                    ここで送られて来た子を、ラインへと加える必要がある。うわーー未来にレイアウトが完成する感じだ、そのまま足してると死ぬな〜〜。ハンドル足す形にするか。
+                                    最終行のコンテンツ高さをどうするかな〜〜面倒くさいな〜〜、、幅さえあってれば文句ないみたいなのをまずやってみるか。
+                                    ここで、子のコンテナがこのコンテンツを最後にレイアウトを終えているので、カーソルが弄れる。
+                                 */
+
+                                // とりあえずイベント発行元である子コンテナ自身はLiningから除外
+                                linedElements.Remove(child);
+
+                                var childContainer = child;
+                                var containersLastChild = childContainer.GetChildren().Last();
+
+                                // 次のコンテンツのオフセットをセット。
+                                nextChildViewCursor = new ViewCursor(
+                                    containersLastChild.viewWidth, 
+                                    (childContainer.offsetY + childContainer.viewHeight) - containersLastChild.viewHeight, 
+                                    containerViewCursor.viewWidth,
+                                    containerViewCursor.viewHeight
+                                );
                                 continue;
                             }
                         }
 
                         /*
-                            コンテンツがwidth内に置けた
+                            コンテンツがwidth内に置けた(少なくとも起点はwidth内にある)
                         */
 
                         // hiddenコンテンツ以下が来る場合は想定されてないのが惜しいな、なんかないかな、、ないか、、デバッグ用。crlf以外でheightが0になるコンテンツがあれば、それは異常なので蹴る
@@ -392,12 +517,41 @@ namespace AutoyaFramework.Information {
                         //     throw new Exception("content height is 0. tag:" + GetTagStr(child.tagValue) + " treeType:" + child.treeType);
                         // }
 
-                        // 子供の位置カーソルから次のコンテンツ位置を変更する。
-                        var layoutedCursor = cor.Current;
+                        // 子供の設置位置を取得
+                        var layoutedPos = cor.Current;
 
+                        /*
+                            今回の場合、pコンテンツの改行によって末尾が行中で余った状態で出る。
+                            で、この情報を上位に伝えることで、後続のコンテンツと同じラインに「pの末尾」を入れ込んで変形させる、ということがしたい感じ。コンテナ内要素の参照渡し。一個上までしか需要がない。ので、コンテナで下がコンテナの時だけ何かすればいいはず。
+                            
+                            cont
+                                [cont, cont]
+                            
+                                とかが例か。
+
+                            ・複数行化コンテナが出た場合、その処理は上位のコンテナに対して伝えられる。
+
+                                ・前方コンテンツからの頭の複数行巻き込まれ
+                                ・広報コンテンツへの尻尾の複数行巻き込み
+                                の2つの場合があるんだけど、
+
+                                あたま改行イベントが発生した際、その時点で親のLiningを走らせることが可能。
+                                1.あたま改行イベント発生
+                                2.親のライニングを部分で発動(親のなかでのliningの末尾要素 = イベント元であるコンテナ)の参照を、あたまコンテンツのサイズで一旦確定したとして実行
+                                3.あたまコンテンツの位置 = コンテナのoffsetYのみが変更される。
+                                4.帰ってきたら、カーソル位置を次の行からにセット。offsetYの変更を受けられるようにしとく。
+                                5.続く
+
+
+                                しっぽ改行
+                                1.しっぽ改行イベントが発生
+                                2.胴体はそのままでいいはず。
+                                3.しっぽ部分まで終わったら、しっぽがliningに巻き込まれるようにliningRefみたいなのにセットしとく必要がある。
+                                4.しっぽのliningが発生したら、コンテナの末尾の位置が変わる(しっぽの位置をもとにviewHeightが変わるだけ)
+                         */
                         
                         // 次のコンテンツの開始位置をセットする。
-                        var nextChildViewCursor = ChildPos.NextRightCursor(layoutedCursor, containerViewCursor.viewWidth);
+                        var nextPos = ChildPos.NextRightCursor(layoutedPos, containerViewCursor.viewWidth);
                         
                         // レイアウト直後に次のポイントの開始位置が規定幅を超えているか、改行要素が来た場合、現行の行のライニングを行う。
                         if (child.treeType == TreeType.Content_CRLF) {
@@ -409,8 +563,8 @@ namespace AutoyaFramework.Information {
                             // Debug.LogError("crlf over.");
 
                             // 改行処理を加えた次の開始位置
-                            viewCursor = ViewCursor.NextLine(nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
-                        } else if (containerViewCursor.viewWidth <= nextChildViewCursor.offsetX) {
+                            nextChildViewCursor = ViewCursor.NextLine(nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                        } else if (containerViewCursor.viewWidth <= nextPos.offsetX) {
                             // 行化
                             var nextLineOffsetY = DoLining(linedElements);
 
@@ -419,10 +573,10 @@ namespace AutoyaFramework.Information {
                             // Debug.LogError("over. child:" + GetTagStr(child.tagValue) + " vs containerViewCursor.viewWidth:" + containerViewCursor.viewWidth + " vs nextChildViewCursor.offsetX:" + nextChildViewCursor.offsetX);
 
                             // 改行処理を加えた次の開始位置
-                            viewCursor = ViewCursor.NextLine(nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
+                            nextChildViewCursor = ViewCursor.NextLine(nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
                         } else {
                             // 次のchildの開始ポイントを現在のchildの右にセット
-                            viewCursor = new ViewCursor(nextChildViewCursor);
+                            nextChildViewCursor = new ViewCursor(nextPos);
                         }
 
                         // Debug.LogError("child:" + GetTagStr(child.tagValue) + " is done," + " next childView:" + childView);
@@ -439,50 +593,23 @@ namespace AutoyaFramework.Information {
                 lastY = DoLining(linedElements);
             } else {
                 // 存在しない場合、子要素の最後の一つのoffset+height
-                var lastChild = containerChildren[containerChildren.Count - 1];
+                var lastChild = containerChildren.Last();
                 lastY = lastChild.offsetY + lastChild.viewHeight;
             }
 
             // 自分自身のサイズを規定
-            containerTree.SetPos(containerViewCursor.offsetX, containerViewCursor.offsetY, rightestPoint, lastY);
-
-            // カーソルはコンテンツの続きとしてのカーソルを返す。この場合、一番下のコンテンツの右上を返すのが正しい。
-            // childViewがそんな感じになってるはず。
-            var nextLeftTopPos = ViewCursor.NextLeftTopView(containerChildren.Last(), containerViewCursor.viewWidth);
-            // Debug.LogError("nextLeftTopPos:" + nextLeftTopPos);
-            /*
-                上記を行わず、親コンテナ内の子コンテナが幅まんなかあたりで終わった場合、そのコンテナをライニングから外す、という特殊処理をするかどうか。
-                ・複数行化コンテナの最後のコンテンツをライン対応要素として参照渡しして、コンテナそれ自体と入れ替える
-                
-                ってのをやればいいのか。複雑〜〜でもできそう。
-
-                ・複数行化コンテナが出た場合、
-                    ・前方コンテンツからの頭の複数行巻き込まれ
-                    ・広報コンテンツへの尻尾の複数行巻き込み
-                    の2つの場合があるんだけど、
-
-                    あたま改行イベントが発生した際、その時点で親のLiningを走らせることが可能。
-                    1.あたま改行イベント発生
-                    2.親のライニングを部分で発動(親のなかでのliningの末尾要素 = イベント元であるコンテナ)の参照を、あたまコンテンツのサイズで一旦確定したとして実行
-                    3.あたまコンテンツの位置 = コンテナのoffsetYのみが変更される。
-                    4.帰ってきたら、カーソル位置を次の行からにセット。offsetYの変更を受けられるようにしとく。
-                    5.続く
-
-
-                    しっぽ改行
-                    1.しっぽ改行イベントが発生
-                    2.胴体はそのままでいいはず。
-                    3.しっぽ部分まで終わったら、しっぽがliningに巻き込まれるようにliningRefみたいなのにセットしとく必要がある。
-                    4.しっぽのliningが発生したら、コンテナの末尾の位置が変わる(しっぽの位置をもとにviewHeightが変わるだけ)
-             */
-            yield return new ChildPos(containerTree);
+            yield return containerTree.SetPos(containerViewCursor.offsetX, containerViewCursor.offsetY, mostRightPoint, lastY);
         }
 
         /**
             テキストコンテンツのレイアウトを行う。
             もしテキストが複数行に渡る場合、最終行だけを新規コンテンツとして上位に返す。
          */
-        private IEnumerator<ChildPos> DoTextLayout (TagTree textTree, ViewCursor textViewCursor, Action<InsertType, TagTree> insertion) {
+        private IEnumerator<ChildPos> DoTextLayout (TagTree textTree, ViewCursor textViewCursor, Func<InsertType, TagTree, ViewCursor> insertion=null) {
+            if (textViewCursor.viewWidth < 0) {
+                throw new Exception("DoTextLayout cannot use negative width. textViewCursor:" + textViewCursor);
+            }
+
             var text = textTree.keyValueStore[HTMLAttribute._CONTENT] as string;
             
             var cor = resLoader.LoadPrefab(textTree.tagValue, textTree.treeType);
@@ -546,39 +673,36 @@ namespace AutoyaFramework.Information {
 
                 if (isStartAtZeroOffset) {
                     if (isMultilined) {
-                        // 複数行が頭から出ている状態で、改行を含んでいる。最終行が中途半端なところにあるのが確定しているので、切り離して別コンテンツとして処理する必要がある。
-                        var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
-                        
-                        // 内容の反映
-                        textTree.keyValueStore[HTMLAttribute._CONTENT] = bodyContent;
+                        // Debug.LogError("行頭での折り返しのある文字ヒット");
+                        var currentLineHeight = generator.lines[0].height * textComponent.lineSpacing;
 
-                        // 最終行
-                        var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
+                        // 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
+                        var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
+                        textTree.keyValueStore[HTMLAttribute._CONTENT] = currentLineContent;
 
-                        // Debug.LogError("lastLineContent:" + lastLineContent);
-                        // 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
-                        var nextLineContent = new InsertedTree(textTree, lastLineContent, textTree.tagValue);
+                        // get preferredWidht of text from trimmed line.
+                        textComponent.text = currentLineContent;
+
+                        var currentLineWidth = textComponent.preferredWidth;
+
+                        var restContent = text.Substring(generator.lines[1].startCharIdx);
+                        var nextLineContent = new InsertedTree(textTree, restContent, textTree.tagValue);
+
+                        // 次のコンテンツを新しい行から開始する。
                         insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
-                        // 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
-
-                        // 最終一つ前までの高さを出して、
-                        var totalHeight = 0;
-                        for (var i = 0; i < generator.lineCount-1; i++) {
-                            var line = generator.lines[i];
-                            // Debug.LogWarning("ここに+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。");
-                            totalHeight += (int)(line.height * textComponent.lineSpacing);
-                        }
-                        
-                        // このビューのポジションとしてセット
-                        
-                        // Debug.LogError("複数行の頭、オフセットとwidthを足したら画面幅なはず。 newViewCursor:" + newViewCursor);
-                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
+                        // Debug.LogError("newViewCursor:" + newViewCursor);
+                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
                     } else {
                         // 行頭の単一行
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
                         
+                        // 最終行かどうかの判断はここでできないので、単一行の入力が終わったことを親コンテナへと通知する。
+                        insertion(InsertType.TailInsertedToLine, textTree);
+                        
+                        // Debug.LogError("行頭の単一行 text:" + text + " textViewCursor:" + textViewCursor);
+
                         // Debug.LogError("行頭の単一行 newViewCursor:" + newViewCursor);
                         yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
                     }
@@ -608,6 +732,10 @@ namespace AutoyaFramework.Information {
                         // 行の途中に追加された単一行で、いい感じに入った。
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
+                        
+                        // Debug.LogError("行中の単一行 text:" + text + " textViewCursor:" + textViewCursor);
+                        // 最終行かどうかの判断はここでできないので、単一行の入力が終わったことを親コンテナへと通知する。
+                        insertion(InsertType.TailInsertedToLine, textTree);
                         
                         // Debug.LogError("newViewCursor:" + newViewCursor);
                         yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textComponent.preferredWidth, height);
