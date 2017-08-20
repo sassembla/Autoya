@@ -594,18 +594,38 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 //         Assert(custombgs[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + custombgs[1].offsetY);
 //     }
 
-    [MTest] public void LayoutHTMLWithDoubleBoxedLayer () {
+    [MTest] public void LayoutHTMLWithDoubleBoxedLayerNeverOverLayout () {
+        // emptyBoxの中にあるタグは、なんであれそのまま並べられる。で、この場合は、最後のpの破片の位置がおかしい。直前のPのコンテンツの末尾に入ってくれればいいんだけど。そのためにはアンカーの位置を調整せねば。
         var sample = @"
 <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
-<textbox>
-    <updatetext>like this.</updatetext>
-    <updatetext>omake!</updatetext>
-</textbox>";
+<body>
+    <bg>
+    	<textbg>
+    		<textbox>
+	    		<p>koko ni nihongo ga iikanji ni hairu. <br>a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
+	    		<updatetext>omake!</updatetext>
+	    	</textbox>
+	    </textbg>
+    </bg>
+</body>";
         var tree = CreateTagTree(sample);
 
-        var updatetexts = tree.GetChildren()[0]/*textbox*/.GetChildren();
-        Assert(updatetexts[0].offsetY == 0, "not match. custombgs[0].offsetY:" + updatetexts[0].offsetY);
-        Assert(updatetexts[1].offsetY == 60.7f, "not match. custombgs[1].offsetY:" + updatetexts[1].offsetY);
+        var pAndUpdateText = tree.GetChildren()[0]/*body*/.GetChildren()[0]/*bg*/.GetChildren()[0]/*textbg*/.GetChildren()[0]/*textbox*/.GetChildren()[0]/*textbox_box*/.GetChildren()[0].GetChildren();
+        foreach (var s in pAndUpdateText) {
+            Debug.LogError("s:" + loader.GetTagFromValue(s.tagValue) + " treeType:" + s.treeType);
+        }
+        
+        var pContainer = pAndUpdateText[0];
+        Assert(pContainer.viewWidth == 208.9f, "not match. pContainer.viewWidth:" + pContainer.viewWidth);
+
+        var lastPContents = pContainer.GetChildren().Last();
+        Assert(lastPContents.offsetY == 68.39999f, "not match. lastPContents.offsetY:" + lastPContents.offsetY);
+
+        var updateTextContainer = pAndUpdateText[1];
+        Assert(updateTextContainer.offsetX == 51f, "not match. ps[1].offsetX:" + updateTextContainer.offsetX);
+        Assert(updateTextContainer.offsetY == 64f, "not match. ps[1].offsetY:" + updateTextContainer.offsetY);
+
+        
     }
 
 
@@ -633,20 +653,22 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 //         Assert(p1.GetChildren().Count == 3, "not match, p1.GetChildren().Count:" + p1.GetChildren().Count);
 //     }
 
-// //     [MTest] public void PSupport2 () {
-// //         var sample = @"
-// // <p>
-// //     p1<a href=''>a1</a>p2
-// // </p><p>
-// //     p3
-// // </p>";
-// //         var tree = CreateTagTree(sample);
-// //         var p1 = tree.GetChildren()[0];
-// //         var p2 = tree.GetChildren()[1];
+//     [MTest] public void PSupport2 () {
+//         Debug.LogWarning("保留。");
+//         return;
+//         var sample = @"
+// <p>
+//     p1<a href=''>a1</a>p2
+// </p><p>
+//     p3
+// </p>";
+//         var tree = CreateTagTree(sample);
+//         var p1 = tree.GetChildren()[0];
+//         var p2 = tree.GetChildren()[1];
         
-// //         Assert(p1.GetChildren().Count == 3, "not match, p1.GetChildren().Count:" + p1.GetChildren().Count);
+//         Assert(p1.GetChildren().Count == 3, "not match, p1.GetChildren().Count:" + p1.GetChildren().Count);
 
-// //         Assert(p1.offsetY == 0, "not match. p1.offsetY:" + p1.offsetY);
-// //         Assert(p2.offsetY == 16f, "not match. p2.offsetY:" + p2.offsetY);
-// //     }
+//         Assert(p1.offsetY == 0, "not match. p1.offsetY:" + p1.offsetY);
+//         Assert(p2.offsetY == 16f, "not match. p2.offsetY:" + p2.offsetY);
+//     }
 }

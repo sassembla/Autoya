@@ -183,28 +183,31 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 //         Show(tree);
 //     }
 
-    [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
-        var sample = @"
-<body>
-<p listen='imageId' hidden='true'>something</p>
-<img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithImageAsButtonWithIdMakeChanges () {
+//         Debug.LogWarning("保留。");
+//         return;
+//         var sample = @"
+// <body>
+// <p listen='imageId' hidden='true'>something</p>
+// <img src='https://dummyimage.com/100.png/09f/fff' button='true' id='imageId'/>
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
-    [MTest] public void MaterializeHTMLWithDoubleBoxedLayer () {
-        var sample = @"
-<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
-<textbox>
-    <updatetext>like this.</updatetext>
-    <updatetext>omake!</updatetext>
-</textbox>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithDoubleBoxedLayer () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+// <textbox>
+//     <p>fmmm???</p>
+//     <updatetext>something.</updatetext>
+//     <updatetext>omake!</updatetext>
+// </textbox>";
+//         var tree = CreateLayoutedTree(sample);
         
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 //     [MTest] public void MaterializeHTMLWithSmallImage () {
 //         var sample = @"
@@ -388,20 +391,20 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 //         Show(tree);
 //     }
 
-    [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
-        var sample = @"
-<!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
-<body>
-<customtag>
-    <custombg><textbg><customtext>something1</customtext></textbg></custombg>
-    <custombg><textbg><customtext>something2</customtext></textbg></custombg>
-</customtag>
-else
-</body>";
-        var tree = CreateLayoutedTree(sample);
+//     [MTest] public void MaterializeHTMLWithCustomTagMultipleByInnerContent () {
+//         var sample = @"
+// <!--depth asset list url(resources://Views/LayoutHTMLWithCustomTag/DepthAssetList)-->
+// <body>
+// <customtag>
+//     <custombg><textbg><customtext>something1</customtext></textbg></custombg>
+//     <custombg><textbg><customtext>something2</customtext></textbg></custombg>
+// </customtag>
+// else
+// </body>";
+//         var tree = CreateLayoutedTree(sample);
 
-        Show(tree);
-    }
+//         Show(tree);
+//     }
 
 //     [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
 //         var sample = @"
@@ -414,6 +417,24 @@ else
 
 //         Show(tree);
 //     }
+
+    [MTest] public void MaterializeHTMLWithDoubleBoxedLayerNeverOverLayout () {
+        var sample = @"
+<!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
+<body>
+    <bg>
+    	<textbg>
+    		<textbox>
+	    		<p>koko ni nihongo ga iikanji ni hairu. <br>a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
+	    		<updatetext>omake!</updatetext>
+	    	</textbox>
+	    </textbg>
+    </bg>
+</body>";
+        var tree = CreateLayoutedTree(sample);
+
+        Show(tree);
+    }
 
 
 //     [MTest] public void MaterializeSampleView2_HiddenBreakView () {

@@ -46,7 +46,7 @@ namespace AutoyaFramework.Information {
             コンテンツ単位でのレイアウトの起点。ここからtreeTypeごとのレイアウトを実行する。
          */
         private IEnumerator<ViewCursor> DoLayout (TagTree tree, ViewCursor viewCursor, Action<InsertType, TagTree> insertion=null) {
-            // Debug.LogError("tree:" + resLoader.GetTagFromValue(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
+            // Debug.LogError("tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
             // Debug.LogWarning("まだ実装してない、brとかhrでの改行処理。 実際にはpとかも一緒で、「このコンテンツが終わったら改行する」みたいな属性が必須。区分けとしてはここではないか。＿なんちゃらシリーズと一緒に分けちゃうのもありかな〜");
 
             var cor = GetCoroutineByTreeType(tree, viewCursor, insertion);
@@ -63,7 +63,7 @@ namespace AutoyaFramework.Information {
                 var hiddenCursor = ViewCursor.ZeroSizeCursor(viewCursor);
                 
                 tree.SetPosFromViewCursor(hiddenCursor);
-                // Debug.LogError("hidden tree:" + resLoader.GetTagFromValue(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
+                // Debug.LogError("hidden tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
                 yield return hiddenCursor;
             } else {
                 while (cor.MoveNext()) {
@@ -72,8 +72,8 @@ namespace AutoyaFramework.Information {
                     }
                     yield return null;
                 }
-
-                // Debug.LogError("done layouted tree:" + resLoader.GetTagFromValue(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + cor.Current);
+                
+                // Debug.LogError("done layouted tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + cor.Current);
                 yield return cor.Current;
             }
         }
@@ -123,7 +123,7 @@ namespace AutoyaFramework.Information {
             }
             layerTree.SetPosFromViewCursor(layerViewCursor);
 
-            // Debug.LogWarning("before layerTree:" + resLoader.GetTagFromValue(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
+            // Debug.LogWarning("before layerTree:" + GetTagStr(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
 
             /*
                 レイヤーなので、prefabをロードして、原点位置は0,0、
@@ -193,7 +193,7 @@ namespace AutoyaFramework.Information {
             
             layerViewCursor.viewHeight += additionalHeight;
 
-            // Debug.LogWarning("after layerTree:" + resLoader.GetTagFromValue(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
+            // Debug.LogWarning("after layerTree:" + GetTagStr(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
 
             // セット
             layerTree.SetPosFromViewCursor(layerViewCursor);
@@ -339,7 +339,7 @@ namespace AutoyaFramework.Information {
                             }
                         }
                     );
-
+                    
                     while (cor.MoveNext()) {
                         if (cor.Current != null) {
                             break;
@@ -390,12 +390,18 @@ namespace AutoyaFramework.Information {
 
                     // hiddenコンテンツ以下が来る場合は想定されてないのが惜しいな、なんかないかな、、ないか、、デバッグ用。crlf以外でheightが0になるコンテンツがあれば、それは異常なので蹴る
                     // if (!child.hidden && child.treeType != TreeType.Content_CRLF && cor.Current.viewHeight == 0) {
-                    //     throw new Exception("content height is 0. tag:" + resLoader.GetTagFromValue(child.tagValue) + " treeType:" + child.treeType);
+                    //     throw new Exception("content height is 0. tag:" + GetTagStr(child.tagValue) + " treeType:" + child.treeType);
                     // }
 
                     var layoutedCursor = new ViewCursor(cor.Current);
+
+                    // この時点で右が超えてる場合、コンテンツ以外 = コンテナで端を突破した、という感じになる。
+                    Debug.LogError("layoutedCursor:" + layoutedCursor + " of tag:" + Debug_GetTagStrAndType(child));
+
+                    // update rightest point.
                     if (rightestPoint < layoutedCursor.offsetX + layoutedCursor.viewWidth) {
                         rightestPoint = layoutedCursor.offsetX + layoutedCursor.viewWidth;
+                        Debug.LogError("rightestPoint:" + rightestPoint);
                     }
 
                     // 次のコンテンツの開始位置をセットする。
@@ -419,7 +425,7 @@ namespace AutoyaFramework.Information {
 
                         // ライン解消
                         linedElements.Clear();
-                        // Debug.LogError("over. child:" + resLoader.GetTagFromValue(child.tagValue) + " vs containerViewCursor.viewWidth:" + containerViewCursor.viewWidth + " vs nextChildViewCursor.offsetX:" + nextChildViewCursor.offsetX);
+                        // Debug.LogError("over. child:" + GetTagStr(child.tagValue) + " vs containerViewCursor.viewWidth:" + containerViewCursor.viewWidth + " vs nextChildViewCursor.offsetX:" + nextChildViewCursor.offsetX);
 
                         // 改行処理
                         childView = ViewCursor.NextLine(childView, nextLineOffsetY, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
@@ -428,7 +434,7 @@ namespace AutoyaFramework.Information {
                         childView = nextChildViewCursor;
                     }
 
-                    // Debug.LogError("child:" + resLoader.GetTagFromValue(child.tagValue) + " is done," + " next childView:" + childView);
+                    // Debug.LogError("child:" + GetTagStr(child.tagValue) + " is done," + " next childView:" + childView);
                 }
 
                 // 現在の子供のレイアウトが終わっていて、なおかつライン処理、改行が済んでいる。
@@ -454,6 +460,33 @@ namespace AutoyaFramework.Information {
 
             // 自分自身のサイズを規定
             containerTree.SetPosFromViewCursor(containerViewCursor);
+
+            // そして次のカーソルは、一番右下のコンテンツのoffset、になるのか。その場合タグの単位ではliningは発生させられないような気がする。コンテナレベルでの移動が必要。これ後で解除するのもできる？ -> ちょっと大変だな。たぶん前方も特別扱いできない。となると親ツリーの参照をもったほうがいい感じか。idはそのままの概念でいいとして。
+            /*
+                上記を行わず、親コンテナ内の子コンテナが幅まんなかあたりで終わった場合、そのコンテナをライニングから外す、という特殊処理をするかどうか。
+                ・複数行化コンテナの最後のコンテンツをライン対応要素として参照渡しして、コンテナそれ自体と入れ替える
+                
+                ってのをやればいいのか。複雑〜〜でもできそう。
+
+                ・複数行化コンテナが出た場合、
+                    ・前方コンテンツからの頭の複数行巻き込まれ
+                    ・広報コンテンツへの尻尾の複数行巻き込み
+                    の2つの場合があるんだけど、
+
+                    あたま改行イベントが発生した際、その時点で親のLiningを走らせることが可能。
+                    1.あたま改行イベント発生
+                    2.親のライニングを部分で発動(親のなかでのliningの末尾要素 = イベント元であるコンテナ)の参照を、あたまコンテンツのサイズで一旦確定したとして実行
+                    3.あたまコンテンツの位置 = コンテナのoffsetYのみが変更される。
+                    4.帰ってきたら、カーソル位置を次の行からにセット。offsetYの変更を受けられるようにしとく。
+                    5.続く
+
+
+                    しっぽ改行
+                    1.しっぽ改行イベントが発生
+                    2.胴体はそのままでいいはず。
+                    3.しっぽ部分まで終わったら、しっぽがliningに巻き込まれるようにliningRefみたいなのにセットしとく必要がある。
+                    4.しっぽのliningが発生したら、コンテナの末尾の位置が変わる(しっぽの位置をもとにviewHeightが変わるだけ)
+             */
             yield return containerViewCursor;
         }
 
@@ -606,6 +639,10 @@ namespace AutoyaFramework.Information {
             yield return zeroSizeCursor;
         }
 
+        private string Debug_GetTagStrAndType (TagTree tree) {
+            return resLoader.GetTagFromValue(tree.tagValue) + " treeType:" + tree.treeType;
+        }
+
         private IEnumerator SetHiddenPosCoroutine (TagTree hiddenTree, IEnumerator<ViewCursor> cor) {
             while (cor.MoveNext()) {
                 if (cor.Current != null) {
@@ -656,7 +693,7 @@ namespace AutoyaFramework.Information {
             ボックス内部のコンテンツのレイアウトを行う
          */
         private IEnumerator<ViewCursor> LayoutBoxedContents (TagTree boxTree, ViewCursor boxView) {
-            // Debug.LogError("boxTree:" + resLoader.GetTagFromValue(boxTree.tagValue) + " boxView:" + boxView);
+            // Debug.LogError("boxTree:" + GetTagStr(boxTree.tagValue) + " boxView:" + boxView);
             
             var containerChildren = boxTree.GetChildren();
             var childCount = containerChildren.Count;

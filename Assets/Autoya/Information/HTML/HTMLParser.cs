@@ -225,7 +225,10 @@ namespace AutoyaFramework.Information {
 												str,
 												parentTree.tagValue
 											);
-											contentTagPoint.SetParent(parentTree);
+											if (!contentTagPoint.SetParent(parentTree)) {
+												parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
+												yield break;
+											}
 										}
 									}
 									
@@ -280,6 +283,7 @@ namespace AutoyaFramework.Information {
 											kv,
 											treeType
 										);
+
 										tagPoint.SetParent(parentTree);
 
 										var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
@@ -332,14 +336,18 @@ namespace AutoyaFramework.Information {
 												str,
 												parentTree.tagValue
 											);
-											contentTagPoint.SetParent(parentTree);
+											
+											if (!contentTagPoint.SetParent(parentTree)) {
+												parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
+												yield break;
+											}
 										}
 									}
 
 									if (tag == (int)HTMLTag.br) {
 										var brTree = new TagTree(tag);
 										brTree.SetParent(parentTree);
-
+										
 										charIndex = tempCharIndex;
 										readPoint = charIndex;
 										continue;
@@ -370,6 +378,7 @@ namespace AutoyaFramework.Information {
 										new AttributeKVs(),
 										treeType
 									);
+									
 									tree.SetParent(parentTree);
 									
 									// Debug.LogError("contents2:" + contents);
@@ -404,7 +413,11 @@ namespace AutoyaFramework.Information {
 						restStr,
 						parentTree.tagValue
 					);
-					contentTree.SetParent(parentTree);
+					
+					if (!contentTree.SetParent(parentTree)) {
+						parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + resLoader.GetTagFromValue(parentTree.tagValue) + " could not contain text value directly. please wrap text content with some tag.");
+						yield break;
+					}
 				}
 			}
 

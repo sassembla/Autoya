@@ -203,7 +203,6 @@ namespace AutoyaFramework.Information {
                                 }
                                 default: {
                                     var tag = GetTagFromValue(tagValue);
-                                    // Debug.LogError("tag:" + tag);
                                     var loadPath = GetCustomTagLoadPath(tagValue, treeType);
 
                                     var cor = LoadCustomPrefabFromLoadPathOrCache(loadPath);

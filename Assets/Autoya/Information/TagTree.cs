@@ -123,18 +123,24 @@ namespace AutoyaFramework.Information {
             this.viewHeight = source.viewHeight;
         }
         
-        public void SetParent (TagTree t) {
-            t._children.Add(this);
+        public bool SetParent (TagTree parent) {
+            // emptylayer cannot have child text content directory.
+            if (parent.treeType == TreeType.CustomEmptyLayer && this.treeType == TreeType.Content_Text) {
+                return false;
+            }
+
+            parent._children.Add(this);
 
             // inherit specific kv to child if child does not have kv.
             if (this.treeType == TreeType.Content_Text) {
-                var inheritableAttributes = ConstSettings.ShouldInheritAttributes.Intersect(t.keyValueStore.Keys).ToArray();
+                var inheritableAttributes = ConstSettings.ShouldInheritAttributes.Intersect(parent.keyValueStore.Keys).ToArray();
                 if (inheritableAttributes.Any()) {
                     foreach (var attr in inheritableAttributes) {
-                        this.keyValueStore[attr] = t.keyValueStore[attr];
+                        this.keyValueStore[attr] = parent.keyValueStore[attr];
                     }
                 }
             }
+            return true;
 		}
 
         public List<TagTree> GetChildren () {
