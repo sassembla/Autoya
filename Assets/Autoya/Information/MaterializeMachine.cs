@@ -32,6 +32,8 @@ namespace AutoyaFramework.Information {
 				rootRectTrans.anchorMin = Vector2.up;
 				rootRectTrans.anchorMax = Vector2.up;
 				rootRectTrans.pivot = Vector2.up;
+
+				rootRectTrans.sizeDelta = new Vector2(tree.viewWidth, tree.viewHeight);
 			}
 			
 
