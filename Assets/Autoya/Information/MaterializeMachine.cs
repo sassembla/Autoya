@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -9,181 +10,158 @@ using UnityEngine.UI;
 
 namespace AutoyaFramework.Information {
     public class MaterializeMachine {
-		private readonly string viewName;
-		private readonly InformationResourceLoader infoResLoader;
-        private readonly InformationRootMonoBehaviour rootInputComponent;
-        
-
-        public MaterializeMachine(
-			string viewName, 
-			InformationResourceLoader infoResLoader,
-			LayoutedTree layoutedTree, 
-			GameObject rootGameObject, 
-			ViewBox view, 
-			Action<IEnumerator> executor
-		) {
-			this.viewName = viewName;
-			this.infoResLoader = infoResLoader;
-			
-            this.rootInputComponent = rootGameObject.GetComponent<InformationRootMonoBehaviour>();
-            
-			executor(Execute(layoutedTree, rootGameObject, view));
-        }
-
-		private IEnumerator Execute (LayoutedTree layoutedTree, GameObject rootGameObject, ViewBox view) {
-            var cor = MaterializeRecursively(rootGameObject, layoutedTree);
-			while (cor.MoveNext()) {
-				yield return null;
-			}
-
-			var totalHeight = layoutedTree.totalHeight;
-
-            var rootRectTrans = rootGameObject.GetComponent<RectTransform>();
-            rootRectTrans.sizeDelta = new Vector2(view.width, totalHeight);
-
-			yield break;
+		private readonly ResourceLoader resLoader;
+        private UUebViewCore core;
+		private GameObject root;
+        public MaterializeMachine(ResourceLoader resLoader) {
+			this.resLoader = resLoader;
 		}
 
-        private IEnumerator MaterializeRecursively (GameObject parent, ParsedTree currentTree) {
-			GameObject gameObj = null;
+		public readonly Dictionary<string, KeyValuePair<GameObject, string>> eventObjectCache = new Dictionary<string, KeyValuePair<GameObject, string>>();
 
-			switch (currentTree.parsedTag) {
-				case (int)HtmlTag._ROOT: {
-                    gameObj = parent;
-					break;
-				}
-				case (int)HtmlTag._DEPTH_ASSET_LIST_INFO: {
-					// do nothing.
-					break;
-				}
-				case (int)HtmlTag.BR: {
-					// has no child. no visual. do nothing.
-					break;
-				}
-				default: {
-					var cor = MaterializeTagContent(
-						currentTree, 
-						newObj => {
-							gameObj = newObj;
-						}
-					);
-					while (cor.MoveNext()) {
-						yield return null;
-					}
-                    // Debug.LogError("gameObj:" + gameObj + " parent:" + parent);
+		public IEnumerator Materialize (GameObject root, UUebViewCore core, TagTree tree, float yOffset, Action onLoaded) {
+			// Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。TableViewとかにコンテンツ足して云々とか。まあそこまで必要かっていうと微妙。");
 
-					gameObj.transform.SetParent(parent.transform, false);
-					var rectTrans = gameObj.GetComponent<RectTransform>();
-					if (rectTrans == null) {
-						// error, tag content should have RectTransform.
-						yield break;
+			this.root = root;
+			root.name = HTMLTag._ROOT.ToString();
+			{
+				var rootRectTrans = root.GetComponent<RectTransform>();
+				this.core = core;
+				
+				// set anchor to left top.
+				rootRectTrans.anchorMin = Vector2.up;
+				rootRectTrans.anchorMax = Vector2.up;
+				rootRectTrans.pivot = Vector2.up;
+			}
+			
+
+			// materialize root's children in parallel.
+			var children = tree.GetChildren();
+
+			var cors = children.Select(child => MaterializeRecursive(child, root)).ToArray();
+			var done = 0;
+			while (true) {
+				for (var i = 0; i < cors.Length; i++) {
+					var cor = cors[i];
+					if (cor == null) {
+						continue;
 					}
 
+					var cont = cor.MoveNext();
+
+<<<<<<< HEAD
 					// set position. convert layout position to uGUI position system.
 					rectTrans.anchoredPosition = new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
 					
 					// use content size for display contents.
 					rectTrans.sizeDelta = currentTree.sizeDelta;
 					break;
+=======
+					if (!cont) {
+						cor = null;
+						done++;
+					}
+>>>>>>> dev_information
 				}
-			}
-			
-            /*
-                materialize childlen.
-             */
-            var childCount = currentTree.GetChildlen().Count;
-			foreach (var child in currentTree.GetChildlen()) {
-                var cor = MaterializeRecursively(gameObj, child);
-				while (cor.MoveNext()) {
-					yield return null;
-				}
-			}
-		}
 
-		private IEnumerator MaterializeTagContent (ParsedTree currentTree, Action<GameObject> onLoaded) {
-			Debug.Assert(!string.IsNullOrEmpty(currentTree.prefabName), "prefabName is null or empty.");
-			
-			GameObject prefab = null;
-			var cor = infoResLoader.LoadPrefab(
-				viewName,
-				currentTree,
-				newPrefab => {
-					prefab = newPrefab;
-				},
-				() => {
-					throw new Exception("failed to load prefab:" + currentTree.prefabName + " at viewName:" + viewName + " depth:" + string.Join("/", currentTree.depth));
-				}
-			);
-
-			while (cor.MoveNext()) {
+				if (done == cors.Length) break;
 				yield return null;
 			}
+
+			onLoaded();
+        }
+
+		private IEnumerator MaterializeRecursive (TagTree tree, GameObject parent) {
+			// Debug.LogError("materialize:" + tree.treeType + " tag:" + resLoader.GetTagFromValue(tree.tagValue));
+			if (tree.keyValueStore.ContainsKey(HTMLAttribute.LISTEN)) {
+				core.AddListener(tree, tree.keyValueStore[HTMLAttribute.LISTEN] as string);
+			}
 			
-			var obj = InformationResourceLoader.LoadGameObject(prefab);
-			if (currentTree.isContainer) {
-				obj.name = currentTree.prefabName;
+			if (tree.hidden || tree.treeType == TreeType.Content_CRLF) {
+				// cancel materialize of this tree.
+				yield break;
 			}
 
-			// set parameters.
-			switch (currentTree.parsedTag) {
-				case (int)HtmlTag.A: {
-					foreach (var kvs in currentTree.keyValueStore) {
-						var key = kvs.Key;
-						switch (key) {
-							case Attribute.HREF: {
-								var href = kvs.Value;
+			var objCor = resLoader.LoadGameObjectFromPrefab(tree.id, tree.tagValue, tree.treeType);
 
-								// add button component.
-								AddButton(obj, () => rootInputComponent.OnLinkTapped(currentTree.rawTagName, href));
-								break;
-							}
-							default: {
-								// do nothing.
-								break;
-							}
-						}
-					}
-					break;
+			while (objCor.MoveNext()) {
+				if (objCor.Current != null) {
+					break; 
 				}
-				case (int)HtmlTag.IMG: {
-					var src = currentTree.keyValueStore[Attribute.SRC];
+				yield return null;
+			}
+
+			// set pos and size.
+			var newGameObject = objCor.Current;
+
+			var cached = false;
+			if (newGameObject.transform.parent != null) {
+				cached = true;
+			}
+			
+			newGameObject.transform.SetParent(parent.transform);
+			var rectTrans = newGameObject.GetComponent<RectTransform>();
+			rectTrans.anchoredPosition = TagTree.AnchoredPositionOf(tree);
+			rectTrans.sizeDelta = TagTree.SizeDeltaOf(tree);
+
+			// set parameters and events by container type. button, link.
+			switch (tree.treeType) {
+				case TreeType.Content_Img: {
+					var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+					if (tree.viewHeight == 0) {
+						break;
+					}
 					
-					infoResLoader.LoadImageAsync(
-						src, 
-						sprite => {
-							obj.GetComponent<Image>().sprite = sprite;
-						},
-						() => {
-							// download failed. do nothing.
+					// 画像コンテンツはキャッシュ済みの場合再度画像取得を行わない。
+					if (!cached) {
+						var imageLoadCor = resLoader.LoadImageAsync(src);
+
+						// combine coroutine.
+						var setImageCor = SetImageCor(newGameObject, imageLoadCor);
+						resLoader.LoadParallel(setImageCor);
+					}
+					
+					if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {
+						var enable = tree.keyValueStore[HTMLAttribute.BUTTON] as string == "true";
+						if (enable) {
+							var buttonId = string.Empty;
+							if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+								buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
+							}
+
+							eventObjectCache[buttonId] = new KeyValuePair<GameObject, string>(newGameObject, src);
+
+							// add button component.
+							AddButton(newGameObject, () => core.OnImageTapped(newGameObject, src, buttonId));
 						}
-					);
 					
-					// add button component.
-					AddButton(obj, () => rootInputComponent.OnLinkTapped(currentTree.rawTagName, src));
+					}
 					break;
 				}
 				
-				case (int)HtmlTag._TEXT_CONTENT: {
-					foreach (var kvs in currentTree.keyValueStore) {
-						switch (kvs.Key) {
-							case Attribute._CONTENT:{
-								var text = kvs.Value;
-								if (!string.IsNullOrEmpty(text)) {
-									var textComponent = obj.GetComponent<Text>();
-									textComponent.text = text;
-								}
-								break;
-							}
-							case Attribute._PARENTTAG: {
-								break;
-							}
-							default: {
-								// ignore.
-								break;
-							}
+				case TreeType.Content_Text: {
+					// テキストコンテンツは毎回内容が変わる可能性があるため、キャッシュに関わらず更新する。
+					if (tree.keyValueStore.ContainsKey(HTMLAttribute._CONTENT)) {
+						var text = tree.keyValueStore[HTMLAttribute._CONTENT] as string;
+						if (!string.IsNullOrEmpty(text)) {
+							var textComponent = newGameObject.GetComponent<Text>();
+							textComponent.text = text;
 						}
 					}
-					
+
+					if (tree.keyValueStore.ContainsKey(HTMLAttribute.HREF)) {
+						var href = tree.keyValueStore[HTMLAttribute.HREF] as string;
+						
+						var linkId = string.Empty;
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute.ID)) {
+							linkId = tree.keyValueStore[HTMLAttribute.ID] as string;
+						}
+
+						eventObjectCache[linkId] = new KeyValuePair<GameObject, string>(newGameObject, href);
+
+						// add button component.
+						AddButton(newGameObject, () => core.OnLinkTapped(newGameObject, href, linkId));
+					}
 					break;
 				}
 				
@@ -191,9 +169,35 @@ namespace AutoyaFramework.Information {
 					// do nothing.
 					break;
 				}
+			
 			}
 
-			onLoaded(obj);
+			var children = tree.GetChildren();
+
+			// Debug.LogWarning("レイアウトが終わってるので、このへんはまだフルに分散できそう。内部的に分散する手法がいい感じになったらやろう。まあ2017で。");
+			foreach (var child in children) {
+				var cor = MaterializeRecursive(child, newGameObject);
+				while (cor.MoveNext()) {
+					if (cor.Current != null) {
+						break;
+					}
+					yield return null;
+				}
+			}
+		}
+
+		private IEnumerator SetImageCor (GameObject target, IEnumerator<Sprite> imageLoadCor) {
+			while (imageLoadCor.MoveNext()) {
+				if (imageLoadCor.Current != null) {
+					break;
+				}
+				yield return null;
+			}
+
+			if (imageLoadCor.Current != null) {
+				var sprite = imageLoadCor.Current;
+				target.GetComponent<Image>().sprite = sprite;
+			}
 		}
 
 		private void AddButton (GameObject obj, UnityAction param) {
@@ -203,12 +207,12 @@ namespace AutoyaFramework.Information {
 			}
 
 			if (Application.isPlaying) {
+				button.onClick.RemoveAllListeners();
+
 				/*
 					this code can set action to button. but it does not appear in editor inspector.
 				*/
-				button.onClick.AddListener(
-					param
-				);
+				button.onClick.AddListener(param);
 			} else {
 				try {
 					button.onClick.AddListener(// 現状、エディタでは、Actionをセットする方法がわからん。関数単位で何かを用意すればいけそう = ButtonをPrefabにするとかしとけば行けそう。

@@ -2,18 +2,14 @@
 
 ## What
 Unity uGUIからオリジナルのHTMLタグを作り出し、
-HTMLタグによるuGUI生成を行うツール。
+HTMLタグによるuGUI Viewを生成する。
 
-タグ化された要素は自由に組み合わせて使うことができる。
-また、コードを埋め込むことも可能。
+タグ化された要素はHTMLっぽく自由に組み合わせて使うことができる。
+また、独自タグにコードを埋め込むことも可能。
 
 ## Motivation
 Kill all WebViews.
 
 ## Specs
 
-you can use HTML and Markdown for draw UI like information.(only HTML. not including CSS, JS.)
-
-Markdown is equivalent to CommonMark strict.
-see [https://markdown-it.github.io](https://markdown-it.github.io) and check the CommonMark strict.
-
+you can use HTML for draw UI like information view of game.(only HTML. not including CSS, JS.)

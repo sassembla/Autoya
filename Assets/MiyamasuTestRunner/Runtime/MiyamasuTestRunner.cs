@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using Diag = System.Diagnostics;
 using UnityEngine;
+using System.Diagnostics;
 
 /**
 	MiyamasuTestRunner
@@ -110,6 +111,8 @@ namespace Miyamasu {
 
 			thread = new Thread(
 				() => {
+					Stopwatch s = new Stopwatch();
+					s.Start();
 					var count = 0;
 					foreach (var typeAndMethodInfo in typeAndMethodInfos) {
 						var instance = Activator.CreateInstance(typeAndMethodInfo.type);
@@ -156,6 +159,10 @@ namespace Miyamasu {
 					}
 					
 					TestLogger.Log("tests end. passed:" + passed + " failed:" + failed, true);
+
+					var elapsed = s.Elapsed;
+					TestLogger.Log("elapsed:" + elapsed);
+
 					TestLogger.LogEnd();
 					
 					/*
@@ -191,7 +198,7 @@ namespace Miyamasu {
 			}
 
 			if (string.IsNullOrEmpty(subLocation)) TestLogger.LogError("test FAILED by:" + e.InnerException.Message + " @ " + location, true);
-			else TestLogger.LogError("test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
+			else TestLogger.LogError("e:" + e + " test FAILED by:" + e.InnerException.Message + " @ " + location + " of " + subLocation, true);
 		}
 		
 		/**

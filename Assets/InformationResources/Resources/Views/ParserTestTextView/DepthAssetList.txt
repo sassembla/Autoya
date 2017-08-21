@@ -1,0 +1,1 @@
+{"viewName":"ParserTestTextView","contents":[{"contentName":"mytext","type":1,"loadPath":"resources://Views/ParserTestTextView/MYTEXT"}],"layerInfos":[]}
