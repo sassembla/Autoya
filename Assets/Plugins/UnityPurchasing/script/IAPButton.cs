@@ -101,10 +101,10 @@ namespace UnityEngine.Purchasing
 					IAPButtonStoreManager.Instance.ExtensionProvider.GetExtension<IMicrosoftExtensions>().RestoreTransactions();
 				} else if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.tvOS) {
 					IAPButtonStoreManager.Instance.ExtensionProvider.GetExtension<IAppleExtensions>().RestoreTransactions(OnTransactionsRestored);
-				} else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().androidStore == AndroidStore.SamsungApps) {
-					IAPButtonStoreManager.Instance.ExtensionProvider.GetExtension<ISamsungAppsExtensions>().RestoreTransactions(OnTransactionsRestored); 
-				} else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().androidStore == AndroidStore.CloudMoolah) {
-					IAPButtonStoreManager.Instance.ExtensionProvider.GetExtension<IMoolahExtension>().RestoreTransactionID((restoreTransactionIDState) => { 
+				} else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().appStore == AppStore.SamsungApps) {
+					IAPButtonStoreManager.Instance.ExtensionProvider.GetExtension<ISamsungAppsExtensions>().RestoreTransactions(OnTransactionsRestored);
+				} else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().appStore == AppStore.CloudMoolah) {
+					IAPButtonStoreManager.Instance.ExtensionProvider.GetExtension<IMoolahExtension>().RestoreTransactionID((restoreTransactionIDState) => {
 						OnTransactionsRestored(restoreTransactionIDState != RestoreTransactionIDState.RestoreFailed && restoreTransactionIDState != RestoreTransactionIDState.NotKnown);
 					});
 				} else {
@@ -163,7 +163,7 @@ namespace UnityEngine.Purchasing
 			private static IAPButtonStoreManager instance = new IAPButtonStoreManager();
 			private ProductCatalog catalog;
 			private List<IAPButton> activeButtons = new List<IAPButton>();
-			
+
 			protected IStoreController controller;
 			protected IExtensionProvider extensions;
 
@@ -175,17 +175,9 @@ namespace UnityEngine.Purchasing
 				module.useFakeStoreUIMode = FakeStoreUIMode.StandardUser;
 
 				ConfigurationBuilder builder = ConfigurationBuilder.Instance(module);
-				foreach (var product in catalog.allProducts) {
-					if (product.allStoreIDs.Count > 0) {
-						var ids = new IDs();
-						foreach (var storeID in product.allStoreIDs) {
-							ids.Add(storeID.id, storeID.store);
-						}
-						builder.AddProduct(product.id, product.type, ids);
-					} else {
-						builder.AddProduct(product.id, product.type);
-					}
-				}
+
+				IAPConfigurationHelper.PopulateConfigurationBuilder(ref builder, catalog);
+
 				UnityPurchasing.Initialize (this, builder);
 			}
 
@@ -267,16 +259,19 @@ namespace UnityEngine.Purchasing
 						return button.ProcessPurchase(e);
 					}
 				}
-				return PurchaseProcessingResult.Complete; // TODO: Maybe this shouldn't return complete
+				Debug.LogWarning("Purchase not correctly processed for product \"" + e.purchasedProduct.definition.id + "\". Add an active IAPButton to process this purchase.");
+				return PurchaseProcessingResult.Complete;
 			}
 
 			public void OnPurchaseFailed (Product product, PurchaseFailureReason reason)
-			{ 
+			{
 				foreach (var button in activeButtons) {
 					if (button.productId == product.definition.id) {
 						button.OnPurchaseFailed(product, reason);
+						return;
 					}
-				} 
+				}
+				Debug.LogWarning("Failed purchase not correctly handled for product \"" + product.definition.id + "\". Add an active IAPButton to handle this failure.");
 			}
 		}
 	}

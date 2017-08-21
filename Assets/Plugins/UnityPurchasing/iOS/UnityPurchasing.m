@@ -143,7 +143,7 @@ int delayInSeconds = 2;
         transactionId = [[NSUUID UUID] UUIDString];
         UnityPurchasingLog(@"Missing transaction Identifier!");
     }
-    
+
     // This transaction was marked as finished, but was not cleared from the queue. Try to clear it now, then pass the error up the stack as a DuplicateTransaction
     if ([finishedTransactions containsObject:transactionId]) {
         [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
@@ -208,11 +208,14 @@ int delayInSeconds = 2;
 
             // Modify payment request for testing ask-to-buy
             if (_simulateAskToBuyEnabled) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
                 if ([payment respondsToSelector:@selector(setSimulatesAskToBuyInSandbox:)]) {
                     UnityPurchasingLog(@"Queueing payment request with simulatesAskToBuyInSandbox enabled");
                     [payment performSelector:@selector(setSimulatesAskToBuyInSandbox:) withObject:@YES];
                     //payment.simulatesAskToBuyInSandbox = YES;
                 }
+#pragma clang diagnostic pop
             }
 
             // Modify payment request with "applicationUsername" for fraud detection
@@ -364,6 +367,12 @@ int delayInSeconds = 2;
     // Nothing to do here.
 }
 
+// Called when a transaction is initiated from the app store
+- (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
+{
+    return YES;
+}
+
 // Called when SKPaymentQueue has finished sending restored transactions.
 - (void)paymentQueueRestoreCompletedTransactionsFinished:(SKPaymentQueue *)queue {
 
@@ -378,6 +387,63 @@ int delayInSeconds = 2;
     // Restore was cancelled or an error occurred, so notify user.
 
     [self UnitySendMessage:@"onTransactionsRestoredFail" payload:error.localizedDescription];
+}
+
+- (void)updateStorePromotionOrder:(NSArray*)productIds
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
+    if (@available(iOS 11_0, *))
+    {
+        NSMutableArray* products = [[NSMutableArray alloc] init];
+
+        for (NSString* productId in productIds) {
+            SKProduct* product = [validProducts objectForKey:productId];
+            if (product)
+                [products addObject:product];
+        }
+
+        SKProductStorePromotionController* controller = [SKProductStorePromotionController defaultController];
+        [controller updateStorePromotionOrder:products completionHandler:^(NSError* error) {
+            if (error)
+                UnityPurchasingLog(@"Error in updateStorePromotionOrder: %@ - %@ - %@", [error code], [error domain], [error localizedDescription]);
+        }];
+    }
+    else
+#endif
+    {
+        UnityPurchasingLog(@"Update store promotion order is only available on iOS and tvOS 11 or later");
+    }
+}
+
+// visibility should be one of "Default", "Hide", or "Show"
+- (void)updateStorePromotionVisibility:(NSString*)visibility forProduct:(NSString*)productId
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
+    if (@available(iOS 11_0, *))
+    {
+        SKProduct *product = [validProducts objectForKey:productId];
+        if (!product) {
+            UnityPurchasingLog(@"updateStorePromotionVisibility unable to find product %@", productId);
+            return;
+        }
+
+        SKProductStorePromotionVisibility v = SKProductStorePromotionVisibilityDefault;
+        if ([visibility isEqualToString:@"Hide"])
+            v = SKProductStorePromotionVisibilityHide;
+        else if ([visibility isEqualToString:@"Show"])
+            v = SKProductStorePromotionVisibilityShow;
+
+        SKProductStorePromotionController* controller = [SKProductStorePromotionController defaultController];
+        [controller updateStorePromotionVisibility:v forProduct:product completionHandler:^(NSError* error) {
+            if (error)
+                UnityPurchasingLog(@"Error in updateStorePromotionVisibility: %@ - %@ - %@", [error code], [error domain], [error localizedDescription]);
+        }];
+    }
+    else
+#endif
+    {
+        UnityPurchasingLog(@"Update store promotion visibility is only available on iOS and tvOS 11 or later");
+    }
 }
 
 +(ProductDefinition*) decodeProductDefinition:(NSDictionary*) hash
@@ -465,6 +531,13 @@ int delayInSeconds = 2;
 
     NSData *data = [NSJSONSerialization dataWithJSONObject:hashes options:0 error:nil];
     return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
++ (NSArray*) deserializeProductIdList:(NSString*)json
+{
+    NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    return [[dict objectForKey:@"products"] copy];
 }
 
 #pragma mark - Internal Methods & Events
@@ -568,4 +641,18 @@ void unityPurchasingSetApplicationUsername(const char *username) {
     if (username == NULL)
         return;
     UnityPurchasing_getInstance().applicationUsername = [NSString stringWithUTF8String:username];
+}
+
+// Expects json in this format:
+// { "products": ["storeSpecificId1", "storeSpecificId2"] }
+void unityPurchasingUpdateStorePromotionOrder(const char *json) {
+    NSString* str = [NSString stringWithUTF8String:json];
+    NSArray* productIds = [UnityPurchasing deserializeProductIdList:str];
+    [UnityPurchasing_getInstance() updateStorePromotionOrder:productIds];
+}
+
+void unityPurchasingUpdateStorePromotionVisibility(const char *productId, const char *visibility) {
+    NSString* prodId = [NSString stringWithUTF8String:productId];
+    NSString* visibilityStr = [NSString stringWithUTF8String:visibility];
+    [UnityPurchasing_getInstance() updateStorePromotionVisibility:visibilityStr forProduct:prodId];
 }
