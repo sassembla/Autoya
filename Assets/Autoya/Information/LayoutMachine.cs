@@ -27,7 +27,7 @@ namespace AutoyaFramework.Information {
         };
 
         public IEnumerator Layout (TagTree rootTree, Vector2 view, Action<TagTree> layouted) {
-            var viewCursor = new ViewCursor(view);
+            var viewCursor = ViewCursor.ZeroOffsetViewCursor(new ViewCursor(0,0,view.x,view.y));
             
             var cor = DoLayout(rootTree, viewCursor);
             
@@ -94,7 +94,7 @@ namespace AutoyaFramework.Information {
                 resLoader.LoadParallel(loadThenSetHiddenPosCor);
 
                 var hiddenCursor = ViewCursor.ZeroSizeCursor(viewCursor);
-                // Debug.LogError("hidden tree:" + GetTagStr(tree.tagValue) + " treeType:" + tree.treeType + " viewCursor:" + viewCursor);
+                // Debug.LogError("hidden tree:" + Debug_GetTagStrAndType(tree) + " viewCursor:" + viewCursor);
 
                 yield return tree.SetPosFromViewCursor(hiddenCursor);
                 throw new Exception("never come here.");
@@ -119,7 +119,7 @@ namespace AutoyaFramework.Information {
         private IEnumerator<ChildPos> DoLayerLayout (TagTree layerTree, ViewCursor parentBoxViewCursor) {
             ViewCursor basePos;
             
-            if (!layerTree.keyValueStore.ContainsKey(HTMLAttribute.LAYER_PARENT_TYPE)) {
+            if (!layerTree.keyValueStore.ContainsKey(HTMLAttribute._LAYER_PARENT_TYPE)) {
                 // 親がboxではないレイヤーは、親のサイズを使わず、layer自体のprefabのサイズを使うという特例を当てる。
                 var size = resLoader.GetUnboxedLayerSize(layerTree.tagValue);
                 basePos = new ViewCursor(parentBoxViewCursor.offsetX, parentBoxViewCursor.offsetY, size.x, size.y);
@@ -209,9 +209,9 @@ namespace AutoyaFramework.Information {
         private IEnumerator<ChildPos> DoEmptyLayerLayout (TagTree emptyLayerTree, ViewCursor viewCursor, Func<InsertType, TagTree, ViewCursor> insertion=null) {
             var baseViewCursorHeight = viewCursor.viewHeight;
 
-            var childView = ViewCursor.ContainedViewCursor(viewCursor);
+            var childView = ViewCursor.ZeroOffsetViewCursor(viewCursor);
 
-            var cor = DoContainerLayout(emptyLayerTree, childView, (type, tree) => {throw new Exception("なんか無視した方がよさそう。");});
+            var cor = DoContainerLayout(emptyLayerTree, childView, (type, tree) => {throw new Exception("never called.");});
             
             while (cor.MoveNext()) {
                 if (cor.Current != null) {
@@ -220,17 +220,18 @@ namespace AutoyaFramework.Information {
                 yield return null;
             }
             
-            var layoutedContainerPos = cor.Current;
+            var layoutedChildPos = cor.Current;
             
             /*
                 レイアウト済みの高さがlayer本来の高さより低い場合、レイヤー本来の高さを使用する(隙間ができる)
              */
-            if (layoutedContainerPos.viewHeight < baseViewCursorHeight) {
-                layoutedContainerPos.viewHeight = baseViewCursorHeight;
+            if (layoutedChildPos.viewHeight < baseViewCursorHeight) {
+                layoutedChildPos.viewHeight = baseViewCursorHeight;
             }
-            
+            // Debug.LogError("layoutedChildPos:" + layoutedChildPos + " vs baseViewCursorHeight:" + baseViewCursorHeight);
+
             // treeに位置をセットしてposを返す
-            yield return emptyLayerTree.SetPos(layoutedContainerPos);
+            yield return emptyLayerTree.SetPos(layoutedChildPos);
         }
 
         private IEnumerator<ChildPos> DoImgLayout (TagTree imgTree, ViewCursor viewCursor) {
@@ -312,12 +313,16 @@ namespace AutoyaFramework.Information {
 
             var linedElements = new List<TagTree>();
             var mostRightPoint = 0f;
+            var mostBottomPoint = 0f;
             {
                 var nextChildViewCursor = new ViewCursor(0, 0, containerViewCursor.viewWidth, containerViewCursor.viewHeight);
                 for (var i = 0; i < childCount; i++) {
 
                     var child = containerChildren[i];
-                    
+                    if (child.treeType == TreeType.Content_Text) {
+                        child.keyValueStore[HTMLAttribute._ONLAYOUT_PRESET_X] = containerViewCursor.offsetX;
+                    }
+
                     currentLineRetry: {
                         linedElements.Add(child);
 
@@ -353,7 +358,7 @@ namespace AutoyaFramework.Information {
                                             linedElements.Remove(child);
 
                                             var childContainer = child;
-
+                                            
                                             // 現在整列してるコンテンツの整列を行う。
                                             linedElements.Add(insertingChild);
 
@@ -387,6 +392,11 @@ namespace AutoyaFramework.Information {
                         // update most right point.
                         if (mostRightPoint < child.offsetX + child.viewWidth) {
                             mostRightPoint = child.offsetX + child.viewWidth;
+                        }
+
+                        // update most bottom point.
+                        if (mostBottomPoint < child.offsetY + child.viewHeight) {
+                            mostBottomPoint = child.offsetY + child.viewHeight;
                         }
 
                         /*
@@ -562,19 +572,16 @@ namespace AutoyaFramework.Information {
                 }
             }
 
-            var lastY = 0f;
-
+            
             // 最後の列が存在する場合、整列。(最後の要素が改行要因とかだと最後の列が存在しない場合がある)
             if (linedElements.Any()) {
-                lastY = DoLining(linedElements);
-            } else {
-                // 存在しない場合、子要素の最後の一つのoffset+height
-                var lastChild = containerChildren.Last();
-                lastY = lastChild.offsetY + lastChild.viewHeight;
+                DoLining(linedElements);
             }
+            
+            // Debug.LogError("mostBottomPoint:" + mostBottomPoint + " tag:" + Debug_GetTagStrAndType(containerTree));
 
             // 自分自身のサイズを規定
-            yield return containerTree.SetPos(containerViewCursor.offsetX, containerViewCursor.offsetY, mostRightPoint, lastY);
+            yield return containerTree.SetPos(containerViewCursor.offsetX, containerViewCursor.offsetY, mostRightPoint, mostBottomPoint);
         }
 
         /**
@@ -632,13 +639,18 @@ namespace AutoyaFramework.Information {
                 // 1行以上のラインがある。
 
                 /*
-                    ここで、offsetXが0ではない場合、行の中間から行を書き出している。
-                    かつ2行以上ある場合、1行目は右端まで到達していて、
-                    2行目以降はoffsetが0から書かれる必要がある。
+                    ここで、このtreeに対するカーソルのoffsetXが0ではない場合、行の中間から行を書き出していることになる。
+
+                    また上記に加え、親コンテナ自体のoffsetXが0ではない場合も、やはり、行の中間から行を書き出していることになる。
+                    判定のために、親コンテナからtextTreeへ、親コンテナのoffsetX = 書き始め位置の書き込みをする。
+
+                    行が2行以上ある場合、1行目は右端まで到達しているのが確定する。
+                    2行目以降はoffsetX=0の状態で書かれる必要がある。
 
                     コンテンツを分離し、それを叶える。
                 */
-                var isStartAtZeroOffset = textViewCursor.offsetX == 0;
+                var onLayoutPresetX = (float)textTree.keyValueStore[HTMLAttribute._ONLAYOUT_PRESET_X];
+                var isStartAtZeroOffset = onLayoutPresetX == 0 && textViewCursor.offsetX == 0;
                 var isMultilined = 1 < lineCount;
 
                 // 複数行存在するんだけど、2行目のスタートが0文字目の場合、1行目に1文字も入っていない。コンテンツ全体を次の行で開始させる。
@@ -649,28 +661,34 @@ namespace AutoyaFramework.Information {
 
                 if (isStartAtZeroOffset) {
                     if (isMultilined) {
-                        // Debug.LogError("行頭での折り返しのある文字ヒット");
-                        var currentLineHeight = generator.lines[0].height * textComponent.lineSpacing;
+                        // Debug.LogError("行頭での折り返しのある複数行 text:" + text);
 
-                        // 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
-                        var currentLineContent = text.Substring(0, generator.lines[1].startCharIdx);
-                        textTree.keyValueStore[HTMLAttribute._CONTENT] = currentLineContent;
+                        // 複数行が頭から出ている状態で、改行を含んでいる。最終行が中途半端なところにあるのが確定しているので、切り離して別コンテンツとして処理する必要がある。
+                        var bodyContent = text.Substring(0, generator.lines[generator.lineCount-1].startCharIdx);
+                        
+                        // 内容の反映
+                        textTree.keyValueStore[HTMLAttribute._CONTENT] = bodyContent;
+                        
+                        // 最終行
+                        var lastLineContent = text.Substring(generator.lines[generator.lineCount-1].startCharIdx);
 
-                        // get preferredWidht of text from trimmed line.
-                        textComponent.text = currentLineContent;
-
-                        var currentLineWidth = textComponent.preferredWidth;
-
-                        var restContent = text.Substring(generator.lines[1].startCharIdx);
-                        var nextLineContent = new InsertedTree(textTree, restContent, textTree.tagValue);
-
-                        // 次のコンテンツを新しい行から開始する。
+                        // 最終行を分割して送り出す。追加されたコンテンツを改行後に処理する。
+                        var nextLineContent = new InsertedTree(textTree, lastLineContent, textTree.tagValue);
                         insertion(InsertType.InsertContentToNextLine, nextLineContent);
 
-                        // Debug.LogError("newViewCursor:" + newViewCursor);
-                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
+                        // 最終行以外はハコ型に収まった状態なので、ハコとして出力する。
+                        // 最終一つ前までの高さを出して、
+                        var totalHeight = 0;
+                        for (var i = 0; i < generator.lineCount-1; i++) {
+                            var line = generator.lines[i];
+                            // Debug.LogWarning("ここに+1がないと実質的な表示用高さが足りなくなるケースがあって、すごく怪しい。");
+                            totalHeight += (int)(line.height * textComponent.lineSpacing);
+                        }
+                        
+                        // このビューのポジションをセット
+                        yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, textViewCursor.viewWidth, totalHeight);
                     } else {
-                        // 行頭の単一行
+                        // Debug.LogError("行頭の単一行 text:" + text);
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
                         
@@ -684,7 +702,7 @@ namespace AutoyaFramework.Information {
                     }
                 } else {
                     if (isMultilined) {
-                        // Debug.LogError("行中での折り返しのある文字ヒット");
+                        // Debug.LogError("行中追加での折り返しのある複数行 text:" + text);
                         var currentLineHeight = generator.lines[0].height * textComponent.lineSpacing;
 
                         // 複数行が途中から出ている状態で、まず折り返しているところまでを分離して、後続の文章を新規にstringとしてinsertする。
@@ -705,7 +723,7 @@ namespace AutoyaFramework.Information {
                         // Debug.LogError("newViewCursor:" + newViewCursor);
                         yield return textTree.SetPos(textViewCursor.offsetX, textViewCursor.offsetY, currentLineWidth, currentLineHeight);
                     } else {
-                        // 行の途中に追加された単一行で、いい感じに入った。
+                        // Debug.LogError("行中追加の単一行 text:" + text);
                         var width = textComponent.preferredWidth;
                         var height = generator.lines[0].height * textComponent.lineSpacing;
                         
@@ -794,10 +812,14 @@ namespace AutoyaFramework.Information {
             }
 
             // 内包されたviewCursorを生成する。
-            var childView = ViewCursor.ContainedViewCursor(boxView);
+            var childView = ViewCursor.ZeroOffsetViewCursor(boxView);
 
             for (var i = 0; i < childCount; i++) {
                 var child = containerChildren[i];
+                if (child.treeType == TreeType.Content_Text) {
+                    child.keyValueStore[HTMLAttribute._ONLAYOUT_PRESET_X] = boxTree.offsetX;
+                }
+                
                 // 子供ごとにレイアウトし、結果を受け取る
                 var cor = DoLayout(
                     child, 

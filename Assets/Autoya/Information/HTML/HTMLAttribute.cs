@@ -8,7 +8,8 @@ namespace AutoyaFramework.Information {
         _CONTENT,
 		_BOX,
         _COLLISION,
-        LAYER_PARENT_TYPE,
+        _ONLAYOUT_PRESET_X,
+        _LAYER_PARENT_TYPE,
 
         // attributes.
         ID,

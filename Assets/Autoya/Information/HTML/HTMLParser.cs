@@ -484,7 +484,7 @@ namespace AutoyaFramework.Information {
 						switch (child.treeType) {
 							case TreeType.CustomLayer:
 							case TreeType.CustomBox: {
-								child.keyValueStore[HTMLAttribute.LAYER_PARENT_TYPE] = "box";
+								child.keyValueStore[HTMLAttribute._LAYER_PARENT_TYPE] = "box";
 								break;
 							}
 						}

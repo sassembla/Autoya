@@ -31,6 +31,10 @@ namespace AutoyaFramework.Information {
             childView.viewHeight = 0;
             return childView;
         }
+
+        override public string ToString () {
+            return "offsetX:" + offsetX + " offsetY:" + offsetY + " viewWidth:" + viewWidth + " viewHeight:" + viewHeight;
+        }
     }
 
     public struct ViewCursor {
@@ -68,15 +72,7 @@ namespace AutoyaFramework.Information {
             this.viewHeight = baseCursor.viewHeight;
         }
 
-        public ViewCursor (Vector2 size) {
-            this.offsetX = 0;
-            this.offsetY = 0;
-            this.viewWidth = size.x;
-            this.viewHeight = size.y;
-        }
-
-
-        public static ViewCursor ContainedViewCursor (ViewCursor viewCursor) {
+        public static ViewCursor ZeroOffsetViewCursor (ViewCursor viewCursor) {
             return new ViewCursor(0, 0, viewCursor.viewWidth, viewCursor.viewHeight);
         }
 
@@ -97,6 +93,6 @@ namespace AutoyaFramework.Information {
 
         override public string ToString () {
             return "offsetX:" + offsetX + " offsetY:" + offsetY + " viewWidth:" + viewWidth + " viewHeight:" + viewHeight;
-        }   
+        }
     }
 }

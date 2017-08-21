@@ -293,7 +293,7 @@ else
                 new Vector2(100,100),
                 layoutedTree => {
                     done = true;
-                    Assert(layoutedTree.viewHeight == 112, "not match.");
+                    Assert(layoutedTree.viewHeight == 112, "not match. layoutedTree.viewHeight:" + layoutedTree.viewHeight);
                 }
             );
 
@@ -317,7 +317,7 @@ else
                 new Vector2(100,100),
                 layoutedTree => {
                     done2 = true;
-                    Assert(layoutedTree.viewHeight == 112, "not match.");
+                    Assert(layoutedTree.viewHeight == 112, "not match after re-layout. layoutedTree.viewHeight:" + layoutedTree.viewHeight);
                 }
             );
 
@@ -595,15 +595,16 @@ else
     }
 
     [MTest] public void LayoutHTMLWithDoubleBoxedLayerNeverOverLayout () {
-        // emptyBoxの中にあるタグは、なんであれそのまま並べられる。で、この場合は、最後のpの破片の位置がおかしい。直前のPのコンテンツの末尾に入ってくれればいいんだけど。そのためにはアンカーの位置を調整せねば。
         var sample = @"
 <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
 <body>
     <bg>
     	<textbg>
     		<textbox>
-	    		<p>koko ni nihongo ga iikanji ni hairu. <br>a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
-	    		<updatetext>omake! a b c d e f g h omake2!</updatetext>
+	    		<p>koko ni nihongo ga iikanji ni hairu. <br> 2line content! 2line content! 2line content!2 line content! a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
+	    		<updatetext>omake! abc d</updatetext>
+                <p>ef ghijklm</p>
+                <updatetext>aaaaaaaaaaaaabcdefghijk</updatetext>
 	    	</textbox>
 	    </textbg>
     </bg>
@@ -611,23 +612,34 @@ else
         var tree = CreateTagTree(sample);
 
         var pAndUpdateText = tree.GetChildren()[0]/*body*/.GetChildren()[0]/*bg*/.GetChildren()[0]/*textbg*/.GetChildren()[0]/*textbox*/.GetChildren()[0]/*textbox_box*/.GetChildren()[0].GetChildren();
-        foreach (var s in pAndUpdateText) {
-            Debug.LogError("s:" + loader.GetTagFromValue(s.tagValue) + " treeType:" + s.treeType);
-        }
+        // foreach (var s in pAndUpdateText) {
+        //     Debug.LogError("s:" + loader.GetTagFromValue(s.tagValue) + " treeType:" + s.treeType);
+        // }
         
         var pContainer = pAndUpdateText[0];
         Assert(pContainer.viewWidth.ToString() == "208.9", "not match. pContainer.viewWidth:" + pContainer.viewWidth);
 
         var lastPContents = pContainer.GetChildren().Last();
-        Assert(lastPContents.offsetY == 68.39999f, "not match. lastPContents.offsetY:" + lastPContents.offsetY);
+        Assert(lastPContents.offsetY.ToString() == "96", "not match. lastPContents.offsetY:" + lastPContents.offsetY);
 
         var updateTextContainer = pAndUpdateText[1];
-        Assert(updateTextContainer.offsetX == 51f, "not match. ps[1].offsetX:" + updateTextContainer.offsetX);
-        Assert(updateTextContainer.offsetY == 64f, "not match. ps[1].offsetY:" + updateTextContainer.offsetY);
+        Assert(updateTextContainer.offsetX == 51f, "not match. updateTextContainer.offsetX:" + updateTextContainer.offsetX);
+        Assert(updateTextContainer.offsetY == 96f, "not match. updateTextContainer.offsetY:" + updateTextContainer.offsetY);
 
+        var updateTextContainer2 = pAndUpdateText[2];
+        Assert(updateTextContainer2.offsetY == 96f, "not match. updateTextContainer2.offsetY:" + updateTextContainer2.offsetY);
         
-    }
+        var pContainer2 = pAndUpdateText[3];
+        Assert(pContainer2.offsetY == 116.4f, "not match. pContainer2.offsetY:" + pContainer2.offsetY);
+        
+        var pContainer2FirstLine = pContainer2.GetChildren()[0];
+        Assert(pContainer2FirstLine.offsetX == 44f, "not match. pContainer2FirstLine.offsetX:" + pContainer2FirstLine.offsetX);
+        Assert(pContainer2FirstLine.offsetY == 0f, "not match. pContainer2FirstLine.offsetY:" + pContainer2FirstLine.offsetY);
 
+        var pContainer2SecondLine = pContainer2.GetChildren()[1];
+        Assert(pContainer2SecondLine.offsetX == 0f, "not match. pContainer2SecondLine.offsetX:" + pContainer2SecondLine.offsetX);
+        Assert(pContainer2SecondLine.offsetY.ToString() == "20.4", "not match. pContainer2SecondLine.offsetY:" + pContainer2SecondLine.offsetY);
+    }
 
     [MTest] public void BrSupport () {
         var sample = @"

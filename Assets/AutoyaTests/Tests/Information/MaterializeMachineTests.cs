@@ -418,8 +418,6 @@ else
         Show(tree);
     }
 
-
-
     [MTest] public void MaterializeHTMLWithDoubleBoxedLayerNeverOverLayout () {
         var sample = @"
 <!--depth asset list url(resources://Views/MyInfoView/DepthAssetList)-->
@@ -427,7 +425,7 @@ else
     <bg>
     	<textbg>
     		<textbox>
-	    		<p>koko ni nihongo ga iikanji ni hairu. <br>a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
+	    		<p>koko ni nihongo ga iikanji ni hairu. <br> 2line content! 2line content! 2line content!2 line content! a good thing.<a href='somewhere'>link</a>a long text will make large window. something like this.</p>
 	    		<updatetext>omake! abc d</updatetext>
                 <p>ef ghijklm</p>
                 <updatetext>aaaaaaaaaaaaabcdefghijk</updatetext>
@@ -439,7 +437,6 @@ else
 
         Show(tree);
     }
-
 
     [MTest] public void MaterializeSampleView2_HiddenBreakView () {
         var sampleHtml = @"
