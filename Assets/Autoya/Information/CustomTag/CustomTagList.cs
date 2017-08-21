@@ -87,8 +87,6 @@ namespace AutoyaFramework.Information {
     }
 
     [Serializable] public class BoxPos {
-        [SerializeField] public Vector2 anchoredPosition;
-        [SerializeField] public Vector2 sizeDelta;
         [SerializeField] public Vector2 offsetMin;
         [SerializeField] public Vector2 offsetMax;
         [SerializeField] public Vector2 pivot;
@@ -97,8 +95,6 @@ namespace AutoyaFramework.Information {
         [SerializeField] public Vector2 anchorMax;
 
         public BoxPos (RectTransform rect) {
-            this.anchoredPosition = rect.anchoredPosition;
-            this.sizeDelta = rect.sizeDelta;
             this.offsetMin = rect.offsetMin;
             this.offsetMax = rect.offsetMax;
             this.pivot = rect.pivot;
@@ -107,7 +103,7 @@ namespace AutoyaFramework.Information {
         }
         
         override public string ToString () {
-            return "anchoredPosition:" + this.anchoredPosition + " sizeDelta:" + this.sizeDelta + " offsetMin:" + this.offsetMin + " offsetMax:" + this.offsetMax + " pivot:" +this.pivot + " anchorMin:" + this.anchorMin + " anchorMax:" + this.anchorMax;
+            return "offsetMin:" + this.offsetMin + " offsetMax:" + this.offsetMax + " pivot:" +this.pivot + " anchorMin:" + this.anchorMin + " anchorMax:" + this.anchorMax;
         }
     }
 }
