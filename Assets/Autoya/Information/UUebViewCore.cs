@@ -88,6 +88,16 @@ namespace AutoyaFramework.Information {
             view.Internal_CoroutineExecutor(progressCor);
         }
 
+        private void UpdateParentViewSizeIfExist () {
+            // set content size to view's parent if exist.
+            if (view.transform.parent != null) {
+                var parentRectTrans = view.transform.parent.GetComponent<RectTransform>();
+                if (parentRectTrans != null) {
+                    parentRectTrans.sizeDelta = new Vector2(layoutedTree.viewWidth, layoutedTree.viewHeight);
+                }
+            }
+        }
+
         private IEnumerator CreateProgressCoroutine () {            
             while (view.IsWaitStartLoading()) {
                 yield return null;
@@ -225,6 +235,7 @@ namespace AutoyaFramework.Information {
                 source,
                 parsedTagTree => {
                     if (parsedTagTree.errors.Any()) {
+                        // このへんをイベントにしないとな〜〜という感じ
                         Debug.LogError("parse errors:" + parsedTagTree.errors.Count);
                         foreach (var error in parsedTagTree.errors) {
                             Debug.LogError("code:" + error.code + " reason:" + error.reason);
@@ -261,6 +272,8 @@ namespace AutoyaFramework.Information {
                     // update layouted tree.
                     this.layoutedTree = layoutedTree;
                     
+                    UpdateParentViewSizeIfExist();
+
                     resLoader.BackGameObjects(usingIds);
                     materialize = materializeMachine.Materialize(
                         view.gameObject, 
@@ -299,6 +312,8 @@ namespace AutoyaFramework.Information {
                     // update layouted tree.
                     this.layoutedTree = layoutedTree;
                     
+                    UpdateParentViewSizeIfExist();
+
                     resLoader.BackGameObjects(usingIds);
                     materialize = materializeMachine.Materialize(
                         view.gameObject, 

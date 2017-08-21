@@ -121,6 +121,7 @@ namespace AutoyaFramework.Information {
             
             if (!layerTree.keyValueStore.ContainsKey(HTMLAttribute._LAYER_PARENT_TYPE)) {
                 // 親がboxではないレイヤーは、親のサイズを使わず、layer自体のprefabのサイズを使うという特例を当てる。
+                // Debug.LogWarning("仮想的なboxを当てた方がいいんだろうか。constraintを模倣する、みたいなのが必要なのか。そのためのデータは作れるような気がする。");
                 var size = resLoader.GetUnboxedLayerSize(layerTree.tagValue);
                 basePos = new ViewCursor(parentBoxViewCursor.offsetX, parentBoxViewCursor.offsetY, size.x, size.y);
             } else {
