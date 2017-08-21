@@ -113,11 +113,11 @@ namespace AutoyaFramework.Information {
 		}
 
         public void EmitButtonEventById (string elementId) {
-            Core.OnImageTapped(string.Empty, string.Empty, elementId);
+            Core.OnImageTapped(elementId);
         }
 
 		public void EmitLinkEventById (string elementId) {
-            Core.OnLinkTapped(string.Empty, string.Empty, elementId);
+            Core.OnLinkTapped(elementId);
         }
 
         public LoadingCoroutineObj[] LoadingActs () {

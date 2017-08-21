@@ -333,11 +333,18 @@ namespace AutoyaFramework.Information {
             view.CoroutineExecutor(Load(layoutedTree, viewRect, eventReceiverGameObj));
         }
 
+        /**
+            コンテンツのパラメータを初期値に戻す
+         */
+        public void Reset () {
+            TagTree.ResetHideFlags(layoutedTree);
+        }
+
         public void Update () {
             view.CoroutineExecutor(Update(layoutedTree, viewRect, eventReceiverGameObj));
         }
 
-        public void OnImageTapped (string tag, string key, string buttonId="") {
+        public void OnImageTapped (GameObject tag, string src, string buttonId="") {
             // Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
 
             if (!string.IsNullOrEmpty(buttonId)) {
@@ -348,11 +355,27 @@ namespace AutoyaFramework.Information {
             }
 
             if (eventReceiverGameObj != null) {
-                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.IMAGE, key, buttonId));
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.IMAGE, tag, src, buttonId));
             }
         }
 
-        public void OnLinkTapped (string tag, string key, string linkId="") {
+        public void OnImageTapped (string buttonId) {
+            var tagAndKey = materializeMachine.eventObjectCache[buttonId];
+            // Debug.LogError("image. tag:" + tag + " key:" + key + " buttonId:" + buttonId);
+
+            if (!string.IsNullOrEmpty(buttonId)) {
+                if (listenerDict.ContainsKey(buttonId)) {
+                    listenerDict[buttonId].ForEach(t => t.ShowOrHide());
+                    Update();
+                }
+            }
+
+            if (eventReceiverGameObj != null) {
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.IMAGE, tagAndKey.Key, tagAndKey.Value, buttonId));
+            }
+        }
+
+        public void OnLinkTapped (GameObject tag, string href, string linkId="") {
             // Debug.LogError("link. tag:" + tag + " key:" + key + " linkId:" + linkId);
 
             if (!string.IsNullOrEmpty(linkId)) {
@@ -363,7 +386,23 @@ namespace AutoyaFramework.Information {
             }
 
             if (eventReceiverGameObj != null) {
-                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.LINK, key, linkId));
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.LINK, tag, href, linkId));
+            }
+        }
+
+        public void OnLinkTapped (string linkId) {
+            var tagAndKey = materializeMachine.eventObjectCache[linkId];
+            // Debug.LogError("link. tag:" + tag + " key:" + key + " linkId:" + linkId);
+
+            if (!string.IsNullOrEmpty(linkId)) {
+                if (listenerDict.ContainsKey(linkId)) {
+                    listenerDict[linkId].ForEach(t => t.ShowOrHide());
+                    Update();
+                }
+            }
+
+            if (eventReceiverGameObj != null) {
+                ExecuteEvents.Execute<IUUebViewEventHandler>(eventReceiverGameObj, null, (handler, data)=>handler.OnElementTapped(ContentType.LINK, tagAndKey.Key, tagAndKey.Value, linkId));
             }
         }
         
@@ -389,7 +428,7 @@ namespace AutoyaFramework.Information {
         void OnLoaded ();
         void OnUpdated ();
         void OnLoadFailed (ContentType type, int code, string reason);
-        void OnElementTapped (ContentType type, string param, string id);
+        void OnElementTapped (ContentType type, GameObject element, string param, string id);
         void OnElementLongTapped (ContentType type, string param, string id);
     }
 }

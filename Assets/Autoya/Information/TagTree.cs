@@ -43,6 +43,8 @@ namespace AutoyaFramework.Information {
             get; private set;
         }
 
+        private readonly bool hiddenDefault;
+
         // レイアウト処理
         public float offsetX;
         public float offsetY;
@@ -53,6 +55,9 @@ namespace AutoyaFramework.Information {
             this.id = Guid.NewGuid().ToString();
             this.tagValue = (int)HTMLTag._ROOT;
             this.keyValueStore = new AttributeKVs();
+
+            this.hiddenDefault = false;
+
             this.treeType = TreeType.Container;
         }
 
@@ -60,6 +65,9 @@ namespace AutoyaFramework.Information {
             this.id = Guid.NewGuid().ToString();
             this.tagValue = tagValue;
             this.keyValueStore = new AttributeKVs();
+
+            this.hiddenDefault = false;
+            
             this.treeType = TreeType.Content_CRLF;
         }
 
@@ -70,6 +78,8 @@ namespace AutoyaFramework.Information {
             this.keyValueStore = new AttributeKVs();
             keyValueStore[HTMLAttribute._CONTENT] = textContent;
             
+            this.hiddenDefault = false;
+            
             this.treeType = TreeType.Content_Text;
         }
 
@@ -79,6 +89,8 @@ namespace AutoyaFramework.Information {
             
             this.keyValueStore = new AttributeKVs();
             keyValueStore[HTMLAttribute._CONTENT] = textContent;
+
+            this.hiddenDefault = false;
             
             this.treeType = TreeType.Content_Text;
         }
@@ -91,6 +103,9 @@ namespace AutoyaFramework.Information {
 
             if (kv.ContainsKey(HTMLAttribute.HIDDEN) && kv[HTMLAttribute.HIDDEN] as string == "true") {
                 hidden = true;
+                this.hiddenDefault = hidden;
+            } else {
+                this.hiddenDefault = false;
             }
         }
 
@@ -252,6 +267,16 @@ namespace AutoyaFramework.Information {
             
             foreach (var removeTarget in removeTargets) {
                 tree.RemoveChild(removeTarget);
+            }
+        }
+
+        public static void ResetHideFlags(TagTree layoutedTree) {
+            ResetRecursive(layoutedTree);
+        }
+        private static void ResetRecursive (TagTree tree) {
+            tree.hidden = tree.hiddenDefault;
+            foreach (var child in tree.GetChildren()) {
+                ResetRecursive(child);
             }
         }
     }

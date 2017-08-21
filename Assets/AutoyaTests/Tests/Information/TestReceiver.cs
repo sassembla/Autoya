@@ -1,7 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using AutoyaFramework.Information;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
     public Action OnLoadStarted;
@@ -47,11 +50,23 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
         }
     }
 
-    void IUUebViewEventHandler.OnElementTapped(ContentType type, string param, string id) {
+    void IUUebViewEventHandler.OnElementTapped(ContentType type, GameObject element, string param, string id) {
         Debug.Log("OnElementTapped type:" + type + " param:" + param + " id:" + id);
         if (OnElementTapped != null) {
             OnElementTapped();
         }
+        
+        switch (type) {
+            case ContentType.IMAGE: {
+                var img = element.GetComponent<Image>();
+                StartCoroutine(Rotate(img));
+                break;
+            }
+        }
+    }
+
+    private IEnumerator Rotate (Image img) {
+        yield return null;
     }
 
     void IUUebViewEventHandler.OnElementLongTapped(ContentType type, string param, string id) {

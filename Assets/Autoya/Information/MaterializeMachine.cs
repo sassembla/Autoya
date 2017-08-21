@@ -17,6 +17,8 @@ namespace AutoyaFramework.Information {
 			this.resLoader = resLoader;
 		}
 
+		public readonly Dictionary<string, KeyValuePair<GameObject, string>> eventObjectCache = new Dictionary<string, KeyValuePair<GameObject, string>>();
+
 		public IEnumerator Materialize (GameObject root, UUebViewCore core, TagTree tree, float yOffset, Action onLoaded) {
 			// Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。TableViewとかにコンテンツ足して云々とか。まあそこまで必要かっていうと微妙。");
 
@@ -101,6 +103,7 @@ namespace AutoyaFramework.Information {
 						break;
 					}
 					
+					// 画像コンテンツはキャッシュ済みの場合再度画像取得を行わない。
 					if (!cached) {
 						var imageLoadCor = resLoader.LoadImageAsync(src);
 
@@ -117,8 +120,10 @@ namespace AutoyaFramework.Information {
 								buttonId = tree.keyValueStore[HTMLAttribute.ID] as string;
 							}
 
+							eventObjectCache[buttonId] = new KeyValuePair<GameObject, string>(newGameObject, src);
+
 							// add button component.
-							AddButton(newGameObject, () => core.OnImageTapped(resLoader.GetTagFromValue(tree.tagValue), src, buttonId));
+							AddButton(newGameObject, () => core.OnImageTapped(newGameObject, src, buttonId));
 						}
 					
 					}
@@ -143,8 +148,10 @@ namespace AutoyaFramework.Information {
 							linkId = tree.keyValueStore[HTMLAttribute.ID] as string;
 						}
 
+						eventObjectCache[linkId] = new KeyValuePair<GameObject, string>(newGameObject, href);
+
 						// add button component.
-						AddButton(newGameObject, () => core.OnLinkTapped(resLoader.GetTagFromValue(tree.tagValue), href, linkId));
+						AddButton(newGameObject, () => core.OnLinkTapped(newGameObject, href, linkId));
 					}
 					break;
 				}

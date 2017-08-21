@@ -147,7 +147,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         var sample = @"
 <body><img src='https://dummyimage.com/97x10/000/fff'/>something</body>";
         var tree = CreateTagTree(sample);
-        Assert(tree.viewHeight == 26, "not match.");
+        Assert(tree.viewHeight == 26, "not match. tree.viewHeight:" + tree.viewHeight);
     }
 
     [MTest] public void LayoutHTMLWithTextAndWideImage () {
