@@ -49,19 +49,10 @@ namespace AutoyaFramework.Information {
 
 					var cont = cor.MoveNext();
 
-<<<<<<< HEAD
-					// set position. convert layout position to uGUI position system.
-					rectTrans.anchoredPosition = new Vector2(currentTree.anchoredPosition.x, -currentTree.anchoredPosition.y);
-					
-					// use content size for display contents.
-					rectTrans.sizeDelta = currentTree.sizeDelta;
-					break;
-=======
 					if (!cont) {
 						cor = null;
 						done++;
 					}
->>>>>>> dev_information
 				}
 
 				if (done == cors.Length) break;
