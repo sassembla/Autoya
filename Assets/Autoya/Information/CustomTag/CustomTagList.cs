@@ -60,10 +60,10 @@ namespace AutoyaFramework.Information {
 
     [Serializable] public class LayerInfo {
         [SerializeField] public string layerName;
-        [SerializeField] public Vector2 unboxedLayerSize;
+        [SerializeField] public BoxPos unboxedLayerSize;
         [SerializeField] public BoxConstraint[] boxes;
         [SerializeField] public string loadPath;
-        public LayerInfo (string layerName, Vector2 unboxedLayerSize, BoxConstraint[] boxes, string loadPath) {
+        public LayerInfo (string layerName, BoxPos unboxedLayerSize, BoxConstraint[] boxes, string loadPath) {
             this.layerName = layerName;
             this.unboxedLayerSize = unboxedLayerSize;
             this.boxes = boxes;
@@ -94,12 +94,15 @@ namespace AutoyaFramework.Information {
         [SerializeField] public Vector2 anchorMin;
         [SerializeField] public Vector2 anchorMax;
 
-        public BoxPos (RectTransform rect) {
+        [SerializeField] public float originalHeight;
+
+        public BoxPos (RectTransform rect, float originalHeight) {
             this.offsetMin = rect.offsetMin;
             this.offsetMax = rect.offsetMax;
             this.pivot = rect.pivot;
             this.anchorMin = rect.anchorMin;
             this.anchorMax = rect.anchorMax;
+            this.originalHeight = originalHeight;
         }
         
         override public string ToString () {

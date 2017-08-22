@@ -120,12 +120,14 @@ namespace AutoyaFramework.Information {
             ViewCursor basePos;
             
             if (!layerTree.keyValueStore.ContainsKey(HTMLAttribute._LAYER_PARENT_TYPE)) {
-                // 親がboxではないレイヤーは、親のサイズを使わず、layer自体のprefabのサイズを使うという特例を当てる。
-                // Debug.LogWarning("仮想的なboxを当てた方がいいんだろうか。constraintを模倣する、みたいなのが必要なのか。そのためのデータは作れるような気がする。");
-                var size = resLoader.GetUnboxedLayerSize(layerTree.tagValue);
-                basePos = new ViewCursor(parentBoxViewCursor.offsetX, parentBoxViewCursor.offsetY, size.x, size.y);
+                // 親がboxではないlayerは、layer生成時の高さを使って基礎高さを出す。
+                // 内包するboxの位置基準値が生成時のものなので、あらかじめ持っておいた値を使うのが好ましい。
+                var boxPos = resLoader.GetUnboxedLayerSize(layerTree.tagValue);
+                var rect = TagTree.GetChildViewRectFromParentRectTrans(parentBoxViewCursor.viewWidth, parentBoxViewCursor.viewHeight, boxPos);
+                basePos = new ViewCursor(parentBoxViewCursor.offsetX + rect.position.x, parentBoxViewCursor.offsetY + rect.position.y, parentBoxViewCursor.viewWidth - rect.position.x, boxPos.originalHeight);
             } else {
-                // 親がboxなので、boxのoffsetYとサイズを継承。offsetXは常に0で来る。継承しない。
+                // 親がboxなので、boxのoffsetYとサイズを継承する。offsetXは常に0で来る。
+                // layerのコンテナとしての特性として、xには常に0が入る = 左詰めでレイアウトが開始される。
                 basePos = new ViewCursor(0, parentBoxViewCursor.offsetY, parentBoxViewCursor.viewWidth, parentBoxViewCursor.viewHeight);
             }
 
@@ -202,7 +204,6 @@ namespace AutoyaFramework.Information {
             var newHeight = basePos.viewHeight + additionalHeight;
 
             // Debug.LogWarning("after layerTree:" + GetTagStr(layerTree.tagValue) + " layerViewCursor:" + layerViewCursor);
-
             // treeに位置をセットしてposを返す
             yield return layerTree.SetPos(basePos.offsetX, basePos.offsetY, basePos.viewWidth, newHeight);
         }

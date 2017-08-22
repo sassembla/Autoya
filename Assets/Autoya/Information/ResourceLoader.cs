@@ -712,7 +712,7 @@ namespace AutoyaFramework.Information {
 
         private Dictionary<string, TreeType> customTagTypeDict = new Dictionary<string, TreeType>();
         private Dictionary<string, BoxConstraint[]> layerDict;
-        private Dictionary<string, Vector2>unboxedLayerSizeDict;
+        private Dictionary<string, BoxPos>unboxedLayerSizeDict;
         
 
         public IEnumerator LoadCustomTagList (string uriSource) {
@@ -732,7 +732,7 @@ namespace AutoyaFramework.Information {
 
                 // レイヤー名:constraintsの辞書を生成しておく。
                 this.layerDict = new Dictionary<string, BoxConstraint[]>();
-                this.unboxedLayerSizeDict = new Dictionary<string, Vector2>();
+                this.unboxedLayerSizeDict = new Dictionary<string, BoxPos>();
 
                 var layerInfos = customTagList.layerInfos;
 
@@ -777,7 +777,7 @@ namespace AutoyaFramework.Information {
             }
         }
 
-        public Vector2 GetUnboxedLayerSize (int tagValue) {
+        public BoxPos GetUnboxedLayerSize (int tagValue) {
             var key = GetTagFromValue(tagValue);
             return unboxedLayerSizeDict[key];
         }

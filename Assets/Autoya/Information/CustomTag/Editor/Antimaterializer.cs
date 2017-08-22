@@ -57,11 +57,24 @@ namespace AutoyaFramework.Information {
             var layersInEditor = new List<LayerInfoOnEditor>();
             var contents = new List<ContentInfo>();
 
+            var rectTrans = target.GetComponent<RectTransform>();
+            if (
+                rectTrans.anchorMin.x == 0 && rectTrans.anchorMin.y == 1 &&
+                rectTrans.anchorMax.x == 0 && rectTrans.anchorMax.y == 1 && 
+                rectTrans.pivot.x == 0 && rectTrans.pivot.y == 1
+            ) {
+                // pass.
+            } else {
+                throw new Exception("root gameObject should have rectTrans.anchorMin:(0,1) ectTrans.anchorMax:(0,1) rectTrans.pivot:(0,1) anchor. please set it.");
+            }
+            
+            var rootHeight = rectTrans.sizeDelta.y;
+
             // recursiveに、コンテンツを分解していく。
             for (var i = 0; i < target.transform.childCount; i++) {
                 var child = target.transform.GetChild(i);
                 
-                CollectConstraintsAndContents(viewName, child.gameObject, layersInEditor, contents);
+                CollectConstraintsAndContents(viewName, child.gameObject, layersInEditor, contents, rootHeight);
             }
 
             var listFileName = "DepthAssetList.txt";
@@ -80,7 +93,7 @@ namespace AutoyaFramework.Information {
         /**
             存在するパーツ単位でconstraintsを生成する
          */
-        private static void CollectConstraintsAndContents (string viewName, GameObject source, List<LayerInfoOnEditor> currentLayers, List<ContentInfo> currentContents) {
+        private static void CollectConstraintsAndContents (string viewName, GameObject source, List<LayerInfoOnEditor> currentLayers, List<ContentInfo> currentContents, float rootHeight) {
             // このレイヤーにあるものに対して、まずコピーを生成し、そのコピーに対して処理を行う。
             var currentTargetInstance = GameObject.Instantiate(source);
             currentTargetInstance.name = source.name;
@@ -93,7 +106,6 @@ namespace AutoyaFramework.Information {
             if (currentLayers.Where(c => c.layerInfo.layerName == currentTargetInstance.name).Any()) {
                 throw new Exception("duplicate layer:" + currentTargetInstance.name + ". do not duplicate.");
             }
-            
 
             using (new GameObjectDeleteUsing(currentTargetInstance)) {
                 switch (currentTargetInstance.transform.childCount) {
@@ -104,7 +116,7 @@ namespace AutoyaFramework.Information {
                     }
                     default: {
                         // target is layer.
-                        ModifyLayerInstance(viewName, currentTargetInstance, currentLayers);
+                        ModifyLayerInstance(viewName, currentTargetInstance, currentLayers, rootHeight);
                         break;
                     }
                 }
@@ -161,6 +173,13 @@ namespace AutoyaFramework.Information {
         private static void ModifyContentInstance (string viewName, GameObject currentContentInstance, List<ContentInfo> currentContents) {
             var contentName = currentContentInstance.name.ToLower();
             
+            // set default rect.
+            var rectTrans = currentContentInstance.GetComponent<RectTransform>();
+            rectTrans.anchoredPosition = new Vector2(0,0);
+            rectTrans.anchorMin = new Vector2(0,1);
+            rectTrans.anchorMax = new Vector2(0,1);
+            rectTrans.pivot = new Vector2(0,1);
+
             // 画像か文字を含んでいるコンテンツで、コードも可。でもボタンの実行に関しては画像に対してボタンが勝手にセットされる。ボタンをつけたらエラー。
             // 文字のリンク化も勝手に行われる。というかあれもボタンだっけ。
             // ボタンコンポーネントが付いていたら外す。
@@ -212,20 +231,26 @@ namespace AutoyaFramework.Information {
             }
         }
 
-        private static void ModifyLayerInstance (string viewName, GameObject currentLayerInstance, List<LayerInfoOnEditor> currentLayers) {
+        private static void ModifyLayerInstance (string viewName, GameObject currentLayerInstance, List<LayerInfoOnEditor> currentLayers, float parentHeight) {
             // このインスタンスのポジションを0,0 leftTopAnchor、左上pivotにする。
             // レイヤーのインスタンスは、インスタンス化時に必ず親のサイズにフィットするように変形される。
+            // ただし、親がboxではないlayerの場合、パーツ作成時の高さが使用される。
+            // アンカーは成立するため、相対的な配置をしつつ、レイアウトを綺麗に行うことができる。
             var rectTrans = currentLayerInstance.GetComponent<RectTransform>();
+
+            var anchorHeight = (parentHeight * rectTrans.anchorMin.y) + (parentHeight * (1 - rectTrans.anchorMax.y));
+            var calculatedHeight = parentHeight - anchorHeight - rectTrans.offsetMin.y + rectTrans.offsetMax.y;
+            
+            var unboxedLayerSize = new BoxPos(rectTrans, calculatedHeight);
+
             rectTrans.anchoredPosition = new Vector2(0,0);
             rectTrans.anchorMin = new Vector2(0,1);
             rectTrans.anchorMax = new Vector2(0,1);
             rectTrans.pivot = new Vector2(0,1);
 
             var size = rectTrans.sizeDelta;
-
-
             var layerName = currentLayerInstance.name.ToLower();
-            var unboxedLayerSize = rectTrans.sizeDelta;
+            
 
             var childrenConstraintDict = new Dictionary<string, BoxPos>();
             var copiedChildList = new List<GameObject>();
@@ -259,7 +284,7 @@ namespace AutoyaFramework.Information {
                             throw new Exception("another box:" + boxName + " is already exist in layer:" + layerName + ". please set other name for each customTag on this layer.");
                         }
 
-                        childrenConstraintDict[boxName] = new BoxPos(boxRectTrans);
+                        childrenConstraintDict[boxName] = new BoxPos(boxRectTrans, 0);
                     }
                 }
 
@@ -320,7 +345,7 @@ namespace AutoyaFramework.Information {
                     取り出しておいたchildに対して再帰
                 */
                 foreach (var disposableChild in copiedChildList) {
-                    ModifyLayerInstance(viewName, disposableChild, currentLayers);
+                    ModifyLayerInstance(viewName, disposableChild, currentLayers, calculatedHeight);
                 }
             }
         }
