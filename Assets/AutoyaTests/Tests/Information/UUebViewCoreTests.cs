@@ -21,6 +21,10 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
                 // ベースオブジェクトを見やすい位置に移動
                 var baseObjRect = baseObj.AddComponent<RectTransform>();
                 baseObjRect.anchoredPosition = new Vector2(100 * index, 0);
+                baseObjRect.anchorMin = new Vector2(0,1);
+                baseObjRect.anchorMax = new Vector2(0,1);
+                baseObjRect.pivot = new Vector2(0,1);
+                
 
                 baseObj.transform.SetParent(canvas.transform, false);
 
@@ -324,7 +328,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
                 eventReceiverGameObj.GetComponent<TestReceiver>().OnLoaded = () => {
                     done = true;
                 };
-                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(300,100));
             }
         );
         
@@ -355,7 +359,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
                 eventReceiverGameObj.GetComponent<TestReceiver>().OnLoaded = () => {
                     done = true;
                 };
-                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(100,100));
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(300,100));
             }
         );
         

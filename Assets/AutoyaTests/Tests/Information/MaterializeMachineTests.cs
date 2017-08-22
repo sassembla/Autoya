@@ -42,6 +42,9 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
             () => {
                 rootObj = new GameObject();
                 var rectTrans = rootObj.AddComponent<RectTransform>();
+                rectTrans.anchorMin = new Vector2(0,1);
+                rectTrans.anchorMax = new Vector2(0,1);
+                rectTrans.pivot = new Vector2(0,1);
 
                 view = rootObj.AddComponent<UUebView>();
                 core = new UUebViewCore(view);
@@ -49,7 +52,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
                 var canvas = GameObject.Find("Canvas/MaterializeTestPlace");
                 rootObj.transform.SetParent(canvas.transform, false);
 
-                rectTrans.anchoredPosition = new Vector2(100 * index, 100);
+                rectTrans.anchoredPosition = new Vector2(100 * index, 0);
                 index++;
             }
         );
@@ -58,7 +61,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
         parser = new HTMLParser(core.resLoader);
 	}
 
-    private TagTree CreateLayoutedTree (string sampleHtml) {
+    private TagTree CreateLayoutedTree (string sampleHtml, float width=100) {
         ParsedTree parsedRoot = null;
         var cor = parser.ParseRoot(
             sampleHtml, 
@@ -85,7 +88,7 @@ public class MaterializeMachineTests : MiyamasuTestRunner {
 
         var cor2 = layoutMachine.Layout(
             parsedRoot, 
-            new Vector2(100,100),
+            new Vector2(width,100),
             layoutedTree => {
                 layouted = layoutedTree;
             }
@@ -433,7 +436,7 @@ else
 	    </textbg>
     </bg>
 </body>";
-        var tree = CreateLayoutedTree(sample);
+        var tree = CreateLayoutedTree(sample, 300);
 
         Show(tree);
     }
@@ -457,7 +460,7 @@ else
 	    </textbg>
     </bg>
 </body>";
-        var tree = CreateLayoutedTree(sampleHtml);
+        var tree = CreateLayoutedTree(sampleHtml, 300);
 
         Show(tree);
     }
@@ -475,7 +478,7 @@ else
 	    </textbg>
     </bg>
 </body>";
-        var tree = CreateLayoutedTree(sampleHtml);
+        var tree = CreateLayoutedTree(sampleHtml, 300);
         Show(tree);
     }
 
@@ -489,6 +492,8 @@ else
     }
 
     [MTest] public void PSupport2 () {
+        Debug.LogWarning("保留");
+        return;
         var sampleHtml = @"
 <p>
     p1<a href=''>a1</a>p2
