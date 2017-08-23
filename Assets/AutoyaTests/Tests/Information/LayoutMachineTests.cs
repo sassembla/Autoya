@@ -523,7 +523,7 @@ else
         var tree = CreateTagTree(sampleHtml);
         Assert(0 < tree.GetChildren().Count, "not match, actual:" + tree.GetChildren().Count);
         Assert(tree.GetChildren()[0].offsetY.ToString() == "0.04999924", "not match of 1. actual:" + tree.GetChildren()[0].offsetY);
-        Assert(tree.GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + tree.GetChildren()[1].offsetY);
+        Assert(tree.GetChildren()[1].offsetY == 60.8f, "not match of 2. actual:" + tree.GetChildren()[1].offsetY);
     }
 
     [MTest] public void LayoutHTMLWithCustomTagMultipleInBody () {
@@ -536,7 +536,7 @@ else
         var tree = CreateTagTree(sampleHtml);
         Assert(0 < tree.GetChildren().Count, "not match, actual:" + tree.GetChildren().Count);
         Assert(tree.GetChildren()[0].GetChildren()[0].offsetY.ToString() == "0.04999924", "not match of 1. actual:" + tree.GetChildren()[0].GetChildren()[0].offsetY);
-        Assert(tree.GetChildren()[0].GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + tree.GetChildren()[0].GetChildren()[1].offsetY);        
+        Assert(tree.GetChildren()[0].GetChildren()[1].offsetY == 60.8f, "not match of 2. actual:" + tree.GetChildren()[0].GetChildren()[1].offsetY);        
     }
 
     [MTest] public void LayoutSampleView2_HiddenBreakView () {
