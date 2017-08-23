@@ -52,7 +52,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         );
     }
 
-    private TagTree CreateTagTree (string sampleHtml) {
+    private TagTree CreateTagTree (string sampleHtml, float width=100) {
         ParsedTree parsedRoot = null;
         TagTree layoutedRoot = null;
 
@@ -79,7 +79,7 @@ public class LayoutMachineTests : MiyamasuTestRunner {
         
         var loaderCor = layoutMachine.Layout(
             parsedRoot,
-            new Vector2(100,100),
+            new Vector2(width,100),
             layoutedTree => {
                 layoutedRoot = layoutedTree;
             }
@@ -254,7 +254,7 @@ else
             if (0 < tree.GetChildren().Count) {
                 tree = tree.GetChildren()[tree.GetChildren().Count-1];
                 if (tree.offsetY != 0) {
-                    Assert(tree.offsetY.Equals(754.9f), "not match, offsetY:" + tree.offsetY);
+                    Assert(tree.offsetY.ToString() == "754.95", "not match, offsetY:" + tree.offsetY);
                 }
             } else {
                 break;
@@ -522,8 +522,8 @@ else
 <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>";
         var tree = CreateTagTree(sampleHtml);
         Assert(0 < tree.GetChildren().Count, "not match, actual:" + tree.GetChildren().Count);
-        Assert(tree.GetChildren()[0].offsetY == 0, "not match of 1. actual:" + tree.GetChildren()[0].offsetY);
-        Assert(tree.GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + tree.GetChildren()[1].offsetY);
+        Assert(tree.GetChildren()[0].offsetY.ToString() == "0.04999924", "not match of 1. actual:" + tree.GetChildren()[0].offsetY);
+        Assert(tree.GetChildren()[1].offsetY == 60.8f, "not match of 2. actual:" + tree.GetChildren()[1].offsetY);
     }
 
     [MTest] public void LayoutHTMLWithCustomTagMultipleInBody () {
@@ -535,8 +535,8 @@ else
 </body>";
         var tree = CreateTagTree(sampleHtml);
         Assert(0 < tree.GetChildren().Count, "not match, actual:" + tree.GetChildren().Count);
-        Assert(tree.GetChildren()[0].GetChildren()[0].offsetY == 0, "not match of 1. actual:" + tree.GetChildren()[0].GetChildren()[0].offsetY);
-        Assert(tree.GetChildren()[0].GetChildren()[1].offsetY == 60.7f, "not match of 2. actual:" + tree.GetChildren()[0].GetChildren()[1].offsetY);        
+        Assert(tree.GetChildren()[0].GetChildren()[0].offsetY.ToString() == "0.04999924", "not match of 1. actual:" + tree.GetChildren()[0].GetChildren()[0].offsetY);
+        Assert(tree.GetChildren()[0].GetChildren()[1].offsetY == 60.8f, "not match of 2. actual:" + tree.GetChildren()[0].GetChildren()[1].offsetY);        
     }
 
     [MTest] public void LayoutSampleView2_HiddenBreakView () {
@@ -609,7 +609,7 @@ else
 	    </textbg>
     </bg>
 </body>";
-        var tree = CreateTagTree(sample);
+        var tree = CreateTagTree(sample, 300);
 
         var pAndUpdateText = tree.GetChildren()[0]/*body*/.GetChildren()[0]/*bg*/.GetChildren()[0]/*textbg*/.GetChildren()[0]/*textbox*/.GetChildren()[0]/*textbox_box*/.GetChildren()[0].GetChildren();
         // foreach (var s in pAndUpdateText) {
@@ -617,7 +617,7 @@ else
         // }
         
         var pContainer = pAndUpdateText[0];
-        Assert(pContainer.viewWidth.ToString() == "208.9", "not match. pContainer.viewWidth:" + pContainer.viewWidth);
+        Assert(pContainer.viewWidth.ToString() == "209", "not match. pContainer.viewWidth:" + pContainer.viewWidth);
 
         var lastPContents = pContainer.GetChildren().Last();
         Assert(lastPContents.offsetY.ToString() == "96", "not match. lastPContents.offsetY:" + lastPContents.offsetY);
