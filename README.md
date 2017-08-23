@@ -1,7 +1,7 @@
 # Autoya
 ver 0.8.12
 
-![loading](https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true)
+![loading](https://github.com/sassembla/Autoya/blob/master/doc/images/scr.png?raw=true)
 
 small, thin framework for Unity.  
 which contains essential game features.
@@ -51,7 +51,7 @@ already implemented.
 already implemented.
 
 ### Notification(local/remote)
-in 2017 early.
+in 2017 summer.
 
 ### Information
 already implemented.
@@ -71,3 +71,5 @@ unitypackage is ready!
 ## Usage
 all example usage is in Assets/AutoyaSamples folder.
 
+## Document
+[Overview](./doc/Overview.md)
