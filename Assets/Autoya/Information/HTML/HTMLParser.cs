@@ -64,7 +64,7 @@ namespace AutoyaFramework.Information {
 			そのうち単一のArrayとしてindexのみで処理するように書き換えると、文字のコピーが減って楽。
 		 */
         private IEnumerator Parse (TagTree parentTree, string data) {
-			// Debug.LogError("data:" + data + " parentTree:" + resLoader.GetTagFromIndex(parentTree.parsedTag));
+			// Debug.LogError("data:" + data + " parentTree:" + resLoader.GetTagFromValue(parentTree.tagValue));
 			var charIndex = 0;
 			var readPoint = 0;
 			
@@ -76,327 +76,335 @@ namespace AutoyaFramework.Information {
 
 				var chr = data[charIndex];
 				// Debug.LogError("chr:" + chr);
-				
-				if (chr == '<') {
-					var foundTag = IsTag(data, charIndex);
-					// Debug.LogError("foundTag:" + resLoader.GetTagFromIndex(foundTag));
+				switch (chr) {
+					case '"':
+					case '\'': {
+						var nextChr = data.IndexOf(chr, charIndex+1);
 
-					switch (foundTag) {
-						// get depthAssetList from commented url.
-						case (int)HTMLTag._COMMENT: {
-							// <!--SOMETHING-->
-							var endPos = -1;
-							var contentStr = GetContentOfCommentTag(data, charIndex, out endPos);
-							if (endPos == -1) {
-								yield break;
+						if (nextChr == -1) {// close chr not found.
+							throw new Exception("failed to find close chr:" + chr);
+						}
+						charIndex = nextChr;
+						break;
+					}
+					case '<': {
+						var foundTag = IsTag(data, charIndex);
+						// Debug.LogError("foundTag:" + resLoader.GetTagFromValue(foundTag));
+
+						switch (foundTag) {
+							// get depthAssetList from commented url.
+							case (int)HTMLTag._COMMENT: {
+								// <!--SOMETHING-->
+								var endPos = -1;
+								var contentStr = GetContentOfCommentTag(data, charIndex, out endPos);
+								if (endPos == -1) {
+									yield break;
+								}
+
+								var cor = ParseAsComment(parentTree, contentStr);
+								while (cor.MoveNext()) {
+									yield return null;
+								}
+								
+								charIndex = endPos;
+								readPoint = charIndex;
+								continue;
 							}
 
-							var cor = ParseAsComment(parentTree, contentStr);
-							while (cor.MoveNext()) {
-								yield return null;
+							// ignore !SOMETHING tag.
+							case (int)HTMLTag._IGNORED_EXCLAMATION_TAG: {
+								charIndex = GetClosePointOfIgnoredTag(data, charIndex);
+								if (charIndex == -1) {
+									yield break;
+								}
+
+								readPoint = charIndex;
+								continue;
+							}
+
+
+							case (int)HTMLTag._NO_TAG_FOUND: {
+								// no tag found. go to next char.
+								charIndex++;
+								continue;
 							}
 							
-							charIndex = endPos;
-							readPoint = charIndex;
-							continue;
-						}
+							
+							// html tag will be parsed without creating html tag.
+							case (int)HTMLTag.html: {
+								var endTagStartPos = GetStartPointOfCloseTag(data, charIndex, foundTag);
+								if (endTagStartPos == -1) {
+									yield break;
+								}
 
-						// ignore !SOMETHING tag.
-						case (int)HTMLTag._IGNORED_EXCLAMATION_TAG: {
-							charIndex = GetClosePointOfIgnoredTag(data, charIndex);
-							if (charIndex == -1) {
-								yield break;
+								// only content string should be parse.
+								var contentStr = GetTagContent(data, charIndex, foundTag, endTagStartPos);
+
+								var cor = Parse(parentTree, contentStr);
+								while (cor.MoveNext()) {
+									yield return null;
+								}
+
+								charIndex = endTagStartPos;
+								readPoint = charIndex;
+								continue;
 							}
 
-							readPoint = charIndex;
-							continue;
+							// ignore these tags.
+							case (int)HTMLTag.head:
+							case (int)HTMLTag.title:{
+								charIndex = GetClosePointOfTag(data, charIndex, foundTag);
+								if (charIndex == -1) {
+									yield break;
+								}
+
+								readPoint = charIndex;
+								continue;
+							}
+							default: {
+								// pass.
+								break;
+							}
 						}
 
+						// Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
 
-						case (int)HTMLTag._NO_TAG_FOUND: {
-							// no tag found. go to next char.
-							charIndex++;
-							continue;
+						var readingPointStartIndex = 0;
+						var readingPointLength = 0;
+
+						if (readPoint < charIndex) {
+							// Debug.LogError("readPoint:" + readPoint + " vs charIndex:" + charIndex);
+							var length = charIndex - readPoint;
+
+							// reserve index and length.
+							readingPointStartIndex = readPoint;
+							readingPointLength = length;
 						}
+
+						var rawTagName = resLoader.GetTagFromValue(foundTag);
 						
-						
-						// html tag will be parsed without creating html tag.
-						case (int)HTMLTag.html: {
-							var endTagStartPos = GetStartPointOfCloseTag(data, charIndex, foundTag);
-							if (endTagStartPos == -1) {
-								yield break;
-							}
+						// set tag.
+						var tag = foundTag;
+						// Debug.LogError("rawTagName:" + rawTagName);
 
-							// only content string should be parse.
-							var contentStr = GetTagContent(data, charIndex, foundTag, endTagStartPos);
-
-							var cor = Parse(parentTree, contentStr);
-							while (cor.MoveNext()) {
-								yield return null;
-							}
-
-							charIndex = endTagStartPos;
-							readPoint = charIndex;
-							continue;
-						}
-
-						// ignore these tags.
-						case (int)HTMLTag.head:
-						case (int)HTMLTag.title:{
-							charIndex = GetClosePointOfTag(data, charIndex, foundTag);
-							if (charIndex == -1) {
-								yield break;
-							}
-
-							readPoint = charIndex;
-							continue;
-						}
-						default: {
-							// pass.
-							break;
-						}
-					}
-
-					// Debug.LogError("foundTag:" + foundTag + " cont:" + data.Substring(charIndex));
-
-					var readingPointStartIndex = 0;
-					var readingPointLength = 0;
-
-					if (readPoint < charIndex) {
-						// Debug.LogError("readPoint:" + readPoint + " vs charIndex:" + charIndex);
-						var length = charIndex - readPoint;
-
-						// reserve index and length.
-						readingPointStartIndex = readPoint;
-						readingPointLength = length;
-					}
-
-					var rawTagName = resLoader.GetTagFromValue(foundTag);
-					
-					// set tag.
-					var tag = foundTag;
-					// Debug.LogError("rawTagName:" + rawTagName);
-
-					{
-						// set to next char index. after '<tag'
-						var tempCharIndex = charIndex + ("<" + rawTagName).Length;
-						var tempReadPoint = readPoint;
-
-						/*
-							collect attr and find start-tag end.
-						*/
 						{
-							switch (data[tempCharIndex]) {
-								case ' ': {// <tag [attr]/> or <tag [attr]>
-									var startTagEndIndex = data.IndexOf(">", tempCharIndex);
-									// Debug.LogError("startTagEndIndex:" + startTagEndIndex);
-									if (startTagEndIndex == -1) {
-										// start tag never close.
-										charIndex++;
-										continue;
-									}
+							// set to next char index. after '<tag'
+							var tempCharIndex = charIndex + ("<" + rawTagName).Length;
+							var tempReadPoint = readPoint;
 
-									// Debug.LogError("' ' found at tag:" + tag + " startTagEndIndex:" + startTagEndIndex);
-									var attrStr = data.Substring(tempCharIndex + 1, startTagEndIndex - tempCharIndex - 1);
-									
-									var kv = GetAttr(tag, attrStr);
-									if (kv == null) {
-										yield break;
-									}
-									
-									// tag closed point is tagEndIndex. next point is tagEndIndex + 1.
-									tempCharIndex = startTagEndIndex + 1;
-									tempReadPoint = tempCharIndex;
+							/*
+								collect attr and find start-tag end.
+							*/
+							{
+								switch (data[tempCharIndex]) {
+									case ' ': {// <tag [attr]/> or <tag [attr]>
+										var startTagEndIndex = data.IndexOf(">", tempCharIndex);
+										// Debug.LogError("startTagEndIndex:" + startTagEndIndex);
+										if (startTagEndIndex == -1) {
+											// start tag never close.
+											charIndex++;
+											continue;
+										}
 
-									// Debug.LogError("data[tempCharIndex]:" + data[tempCharIndex]);
+										// Debug.LogError("' ' found at tag:" + tag + " startTagEndIndex:" + startTagEndIndex);
+										var attrStr = data.Substring(tempCharIndex + 1, startTagEndIndex - tempCharIndex - 1);
+										
+										var kv = GetAttr(tag, attrStr);
+										if (kv == null) {
+											yield break;
+										}
+										
+										// tag closed point is tagEndIndex. next point is tagEndIndex + 1.
+										tempCharIndex = startTagEndIndex + 1;
+										tempReadPoint = tempCharIndex;
 
-									/*
-										single close tag found.
-										this tag content is just closed.
-									 */
-									// add content before tag.
-									if (0 < readingPointLength) {
-										var str = data.Substring(readingPointStartIndex, readingPointLength);
-							
-										// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
+										// Debug.LogError("data[tempCharIndex]:" + data[tempCharIndex]);
 
-										if (!string.IsNullOrEmpty(str)) {
-											var contentTagPoint = new TagTree(
-												str,
-												parentTree.tagValue
-											);
-											if (!contentTagPoint.SetParent(parentTree)) {
-												parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
-												yield break;
+										/*
+											single close tag found.
+											this tag content is just closed.
+										*/
+										// add content before tag.
+										if (0 < readingPointLength) {
+											var str = data.Substring(readingPointStartIndex, readingPointLength);
+								
+											// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
+
+											if (!string.IsNullOrEmpty(str)) {
+												var contentTagPoint = new TagTree(
+													str,
+													parentTree.tagValue
+												);
+												if (!contentTagPoint.SetParent(parentTree)) {
+													parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
+													yield break;
+												}
 											}
 										}
-									}
-									
-									if (data[startTagEndIndex - 1] == '/') {// <tag [attr]/>
-										// Debug.LogError("-1 is / @tag:" + tag);
+										
+										if (data[startTagEndIndex - 1] == '/') {// <tag [attr]/>
+											// Debug.LogError("-1 is / @tag:" + tag);
+
+											{
+												var treeType = resLoader.GetTreeType(tag);
+												if (treeType == TreeType.NotFound) {
+													parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+													yield break;
+												}
+
+												var tagPoint2 = new TagTree(
+													tag, 
+													kv,
+													treeType
+												);
+												tagPoint2.SetParent(parentTree);
+
+												charIndex = tempCharIndex;
+												readPoint = tempReadPoint;
+												continue;
+											}
+										}
+
+										// Debug.LogError("not closed tag:" + tag + " in data:" + data);
+
+										/*
+											finding end-tag of this tag.
+										*/
+										var endTag = "</" + rawTagName.ToLower() + ">";
+										var cascadedStartTagHead = "<" + rawTagName.ToLower();
+										
+										var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
+										if (endTagIndex == -1) {
+											yield break;
+										}
+
+										// Debug.LogError("endTagIndex:" + endTagIndex);
 
 										{
 											var treeType = resLoader.GetTreeType(tag);
+
 											if (treeType == TreeType.NotFound) {
 												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
 												yield break;
 											}
 
-											var tagPoint2 = new TagTree(
+											var tagPoint = new TagTree(
 												tag, 
 												kv,
 												treeType
 											);
-											tagPoint2.SetParent(parentTree);
+
+											tagPoint.SetParent(parentTree);
+
+											var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
+											
+											// Debug.LogError("contents1:" + contents);
+											var cor = Parse(tagPoint, contents);
+											while (cor.MoveNext()) {
+												yield return null;
+											}
+
+											// one tag start & end is detected.
+											
+											tempCharIndex = endTagIndex + endTag.Length;
+											// Debug.LogError("tempCharIndex:" + tempCharIndex + " data:" + data[tempCharIndex]);
+
+											tempReadPoint = tempCharIndex;
+
+											/*
+												<T [ATTR]>V</T><SOMETHING...
+											*/
+											if (tempCharIndex < data.Length && data[tempCharIndex] == '<') {
+												charIndex = tempCharIndex;
+												readPoint = tempReadPoint;
+												continue;
+											}
+											
+											tempCharIndex++;
 
 											charIndex = tempCharIndex;
 											readPoint = tempReadPoint;
 											continue;
 										}
 									}
+									case '>': {// <tag> start tag is closed.
 
-									// Debug.LogError("not closed tag:" + tag + " in data:" + data);
+										// Debug.LogError("> found at tag:" + tag + " cont:" + data.Substring(tempCharIndex) + "___ finding end tag of tag:" + tag);
 
-									/*
-										finding end-tag of this tag.
-									*/
-									var endTag = "</" + rawTagName.ToLower() + ">";
-									var cascadedStartTagHead = "<" + rawTagName.ToLower();
-									
-									var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
-									if (endTagIndex == -1) {
-										yield break;
-									}
+										// set to next char.
+										tempCharIndex = tempCharIndex + 1;
 
-									// Debug.LogError("endTagIndex:" + endTagIndex);
 
-									{
+										// add content before tag.
+										if (0 < readingPointLength) {
+											var str = data.Substring(readingPointStartIndex, readingPointLength);
+											if (!string.IsNullOrEmpty(str)) {
+												var contentTagPoint = new TagTree(
+													str,
+													parentTree.tagValue
+												);
+												
+												if (!contentTagPoint.SetParent(parentTree)) {
+													parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
+													yield break;
+												}
+											}
+										}
+
+										if (tag == (int)HTMLTag.br) {
+											var brTree = new TagTree(tag);
+											brTree.SetParent(parentTree);
+											
+											charIndex = tempCharIndex;
+											readPoint = charIndex;
+											continue;
+										}
+
+										/*
+											finding end-tag of this tag.
+										*/
+										var endTag = "</" + rawTagName.ToLower() + ">";
+										var cascadedStartTagHead = "<" + rawTagName.ToLower();
+
+										var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
+										if (endTagIndex == -1) {
+											yield break;
+										}
+
+										// treat tag contained contents.
+										var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
+										
 										var treeType = resLoader.GetTreeType(tag);
-
 										if (treeType == TreeType.NotFound) {
 											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
 											yield break;
 										}
 
-										var tagPoint = new TagTree(
-											tag, 
-											kv,
+										var tree = new TagTree(
+											tag,
+											new AttributeKVs(),
 											treeType
 										);
-
-										tagPoint.SetParent(parentTree);
-
-										var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
 										
-										// Debug.LogError("contents1:" + contents);
-										var cor = Parse(tagPoint, contents);
+										tree.SetParent(parentTree);
+										
+										// Debug.LogError("contents2:" + contents);
+										var cor = Parse(tree, contents);
 										while (cor.MoveNext()) {
 											yield return null;
 										}
 
-										// one tag start & end is detected.
-										
 										tempCharIndex = endTagIndex + endTag.Length;
-										// Debug.LogError("tempCharIndex:" + tempCharIndex + " data:" + data[tempCharIndex]);
-
 										tempReadPoint = tempCharIndex;
-
-										/*
-											<T [ATTR]>V</T><SOMETHING...
-										*/
-										if (tempCharIndex < data.Length && data[tempCharIndex] == '<') {
-											charIndex = tempCharIndex;
-											readPoint = tempReadPoint;
-											continue;
-										}
 										
-										tempCharIndex++;
-
 										charIndex = tempCharIndex;
 										readPoint = tempReadPoint;
 										continue;
 									}
-								}
-								case '>': {// <tag> start tag is closed.
-
-									// Debug.LogError("> found at tag:" + tag + " cont:" + data.Substring(tempCharIndex) + "___ finding end tag of tag:" + tag);
-
-									// set to next char.
-									tempCharIndex = tempCharIndex + 1;
-
-
-									// add content before tag.
-									if (0 < readingPointLength) {
-										var str = data.Substring(readingPointStartIndex, readingPointLength);
-							
-										// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
-
-										if (!string.IsNullOrEmpty(str)) {
-											var contentTagPoint = new TagTree(
-												str,
-												parentTree.tagValue
-											);
-											
-											if (!contentTagPoint.SetParent(parentTree)) {
-												parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
-												yield break;
-											}
-										}
-									}
-
-									if (tag == (int)HTMLTag.br) {
-										var brTree = new TagTree(tag);
-										brTree.SetParent(parentTree);
-										
-										charIndex = tempCharIndex;
-										readPoint = charIndex;
-										continue;
-									}
-
-									/*
-										finding end-tag of this tag.
-									*/
-									var endTag = "</" + rawTagName.ToLower() + ">";
-									var cascadedStartTagHead = "<" + rawTagName.ToLower();
-
-									var endTagIndex = FindEndTag(endTag, cascadedStartTagHead, data, tempCharIndex);
-									if (endTagIndex == -1) {
+									default: {
+										parseFailed(-1, "parse error. unknown keyword found:" + data[charIndex] + " at tag:" + tag);
 										yield break;
 									}
-
-									// treat tag contained contents.
-									var contents = data.Substring(tempCharIndex, endTagIndex - tempCharIndex);
-									
-									var treeType = resLoader.GetTreeType(tag);
-									if (treeType == TreeType.NotFound) {
-										parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
-										yield break;
-									}
-
-									var tree = new TagTree(
-										tag,
-										new AttributeKVs(),
-										treeType
-									);
-									
-									tree.SetParent(parentTree);
-									
-									// Debug.LogError("contents2:" + contents);
-									var cor = Parse(tree, contents);
-									while (cor.MoveNext()) {
-										yield return null;
-									}
-
-									tempCharIndex = endTagIndex + endTag.Length;
-									tempReadPoint = tempCharIndex;
-									
-									charIndex = tempCharIndex;
-									readPoint = tempReadPoint;
-									continue;
-								}
-								default: {
-									parseFailed(-1, "parse error. unknown keyword found:" + data[charIndex] + " at tag:" + tag);
-									yield break;
 								}
 							}
 						}
@@ -766,10 +774,15 @@ namespace AutoyaFramework.Information {
 
 			var closeTagIndex = tagFindingSampleStr.IndexOfAny(new char[]{' ', '>'});
 			if (closeTagIndex == -1) {
-				return (int)HTMLTag._NO_TAG_FOUND; 
+				return (int)HTMLTag._NO_TAG_FOUND;
 			}
 
 			var tagCandidateStr = tagFindingSampleStr.Substring(0, closeTagIndex);
+			
+			if (tagCandidateStr.Contains("=") || tagCandidateStr.Contains("/")) {
+				return (int)HTMLTag._NO_TAG_FOUND;
+			}
+
 			return resLoader.FindOrCreateTag(tagCandidateStr);
 		}
     }
