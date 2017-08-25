@@ -14,6 +14,7 @@ namespace AutoyaFramework.Information {
 	public enum ParseErrors {
 		NOT_RESERVED_TAG_IN_LAYER,
         FAILED_TO_PARSE_LIST_URI,
+		FAILED_TO_PARSE_DOCTYPE,
         CLOSETAG_NOT_FOUND,
         FAILED_TO_PARSE_COMMENT,
         UNSUPPORTED_ATTR_FOUND,
@@ -111,13 +112,17 @@ namespace AutoyaFramework.Information {
 								continue;
 							}
 
-							// ignore !SOMETHING tag.
-							case (int)HTMLTag._IGNORED_EXCLAMATION_TAG: {
-								charIndex = GetClosePointOfIgnoredTag(data, charIndex);
-								if (charIndex == -1) {
-									yield break;
+							// !SOMETHING tag.
+							case (int)HTMLTag._EXCLAMATION_TAG: {
+								var cor = GetDocTypeDecl(data, charIndex);
+								while (cor.MoveNext()) {
+									if (cor.Current != -1) {
+										break;
+									}
+									yield return null;
 								}
 
+								charIndex = cor.Current;
 								readPoint = charIndex;
 								continue;
 							}
@@ -515,30 +520,6 @@ namespace AutoyaFramework.Information {
 				// ignored.
 				yield break;
 			}
-
-			// parse as params only root/comment tag with specific format.
-			if (data.StartsWith(ConstSettings.DEPTH_ASSETLIST_URL_START) && data.EndsWith(ConstSettings.DEPTH_ASSETLIST_URL_END)) {
-				var keywordLen = ConstSettings.DEPTH_ASSETLIST_URL_START.Length;
-				var depthAssetListUrl = data.Substring(keywordLen, data.Length - keywordLen - ConstSettings.DEPTH_ASSETLIST_URL_END.Length);
-				
-				try {
-					var uri = new Uri(depthAssetListUrl);
-				} catch (Exception e) {
-					parseFailed((int)ParseErrors.FAILED_TO_PARSE_LIST_URI, "failed to get uri from depth asset list url. error:" + e);
-					yield break;
-				}
-				
-				/*
-					start loading of depthAssetList.
-				 */
-				var cor = resLoader.LoadCustomTagList(depthAssetListUrl);
-
-				while (cor.MoveNext()) {
-					yield return null;
-				}
-				
-				// loaded.
-			}
 		}
 
 		private string GetContentOfCommentTag (string data, int offset, out int tagEndPos) {
@@ -577,16 +558,49 @@ namespace AutoyaFramework.Information {
 		}
 
 		/**
-			<SOMETHING>(closePoint)
+			<!SOMETHING>(closePoint)
 			return closePoint.
 		 */
-		private int GetClosePointOfIgnoredTag (string data, int offset) {
+		private IEnumerator<int> GetDocTypeDecl (string data, int offset) {
 			var nearestCloseTagIndex = data.IndexOf('>', offset);
+			
 			if (nearestCloseTagIndex == -1) {
-				parseFailed((int)ParseErrors.CLOSETAG_NOT_FOUND, "failed to parse data. tag like <!~ is not closed properly.");
-				return -1;
+				parseFailed((int)ParseErrors.FAILED_TO_PARSE_DOCTYPE, "failed to parse doctype. data:" + data);
+				yield break;
+			} 
+
+			if (data.StartsWith(ConstSettings.UUEBVIEW_DECL)) {
+				var keywordLen = ConstSettings.UUEBVIEW_DECL.Length;
+
+				var delim = data[keywordLen];
+				var endDelimIndex = data.IndexOf(delim, keywordLen+1);
+				if (endDelimIndex == -1) {
+					parseFailed((int)ParseErrors.FAILED_TO_PARSE_LIST_URI, "failed to get uri from depth asset list url.");
+					yield break;
+				}
+				
+				var urlCandidate = data.Substring(keywordLen + 1/*delim len*/, endDelimIndex - keywordLen - 1/*delim len*/);
+				
+				try {
+					var uri = new Uri(urlCandidate);
+				} catch (Exception e) {
+					parseFailed((int)ParseErrors.FAILED_TO_PARSE_LIST_URI, "failed to get uri from depth asset list url. error:" + e);
+					yield break;
+				}
+				
+				/*
+					start loading of depthAssetList.
+				 */
+				var cor = resLoader.LoadCustomTagList(urlCandidate);
+
+				while (cor.MoveNext()) {
+					yield return -1;
+				}
+				
+				// loaded.
 			}
-			return nearestCloseTagIndex + 1;
+			
+			yield return nearestCloseTagIndex + 1;
 		}
 
 		/**
@@ -769,7 +783,7 @@ namespace AutoyaFramework.Information {
 				}
 
 				// not comment.
-				return (int)HTMLTag._IGNORED_EXCLAMATION_TAG;
+				return (int)HTMLTag._EXCLAMATION_TAG;
 			}
 
 			var closeTagIndex = tagFindingSampleStr.IndexOfAny(new char[]{' ', '>'});
@@ -779,8 +793,11 @@ namespace AutoyaFramework.Information {
 
 			var tagCandidateStr = tagFindingSampleStr.Substring(0, closeTagIndex);
 			
-			if (tagCandidateStr.Contains("=") || tagCandidateStr.Contains("/")) {
-				return (int)HTMLTag._NO_TAG_FOUND;
+			// tag should not contain any non-letter or non-number char.
+			foreach (var chr in tagCandidateStr) {
+				if (!Char.IsLetterOrDigit(chr)) {
+					return (int)HTMLTag._NO_TAG_FOUND;
+				}
 			}
 
 			return resLoader.FindOrCreateTag(tagCandidateStr);

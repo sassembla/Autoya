@@ -1,5 +1,6 @@
 namespace AutoyaFramework.Information {
     public class ConstSettings {
+        public const string UUEBVIEW_DECL = "<!DOCTYPE uuebview href=";
         public const int TAG_MAX_LEN = 100;
         public const double TIMEOUT_SEC = 10.0;
 
@@ -14,9 +15,6 @@ namespace AutoyaFramework.Information {
         public const string PREFIX_PATH_INFORMATION_RESOURCE = "Views/";
         
 
-
-        public const string DEPTH_ASSETLIST_URL_START = "depth asset list url(";
-        public const string DEPTH_ASSETLIST_URL_END = ")";
 
         public const string CONNECTIONID_DOWNLOAD_HTML_PREFIX = "download_html_";
         public const string CONNECTIONID_DOWNLOAD_CUSTOMTAGLIST_PREFIX = "download_customTagList_";

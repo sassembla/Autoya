@@ -250,7 +250,9 @@ namespace AutoyaFramework.Information {
                 yield return null;
             }
 
-            Debug.Assert(reload != null, "reload is null.");
+            if (reload == null) {
+                yield break;
+            }
 
             while (reload.MoveNext()) {
                 yield return null;
@@ -291,7 +293,9 @@ namespace AutoyaFramework.Information {
                 yield return null;
             }
             
-            Debug.Assert(materialize != null, "materialize is null.");
+            if (materialize == null) {
+                yield break;
+            }
 
             while (materialize.MoveNext()) {
                 yield return null;

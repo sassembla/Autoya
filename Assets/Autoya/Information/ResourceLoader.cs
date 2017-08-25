@@ -745,7 +745,7 @@ namespace AutoyaFramework.Information {
             };
             
             Action<int, string> failed = (code, reason) => {
-                throw new Exception("未対処なリストのロードエラー。failed to load customTagList. code:" + code + " reason:" + reason);
+                throw new Exception("未対処なリストのロードエラー。failed to load customTagList. code:" + code + " reason:" + reason + " from:" + uriSource);
                 this.customTagList = new CustomTagList(ConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
                 IsLoadingDepthAssetList = false;
             };
