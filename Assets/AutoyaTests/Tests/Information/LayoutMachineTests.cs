@@ -212,13 +212,13 @@ public class LayoutMachineTests : MiyamasuTestRunner {
 
     [MTest] public void LoadHTMLWithCustomTagLink () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>";
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>";
         var tree = CreateTagTree(sample);
     }
 
     [MTest] public void LayoutHTMLWithCustomTag () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <body>
 <customtag><custombg><textbg><customtext>something</customtext></textbg></custombg></customtag>
 else
@@ -230,7 +230,7 @@ else
 
     [MTest] public void LayoutHTMLWithCustomTagSmallText () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <body>
 <customtag><custombg><textbg><customtext>
 something you need is not time, money, but do things fast.
@@ -242,7 +242,7 @@ else
 
     [MTest] public void LayoutHTMLWithCustomTagLargeText () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <body>
 <customtag><custombg><textbg><customtext>
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
@@ -493,7 +493,7 @@ else
 
     [MTest] public void MultipleBoxConstraints () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/MultipleBoxConstraints/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MultipleBoxConstraints/UUebTags'>
 <itemlayout>
 <topleft>
     <img src='https://dummyimage.com/100.png/09f/fff'/>
@@ -517,7 +517,7 @@ else
 
     [MTest] public void LayoutHTMLWithCustomTagMultiple () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
 <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>";
         var tree = CreateTagTree(sampleHtml);
@@ -528,7 +528,7 @@ else
 
     [MTest] public void LayoutHTMLWithCustomTagMultipleInBody () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <body>
 <customtag><custombg><textbg><customtext>something1</customtext></textbg></custombg></customtag>
 <customtag><custombg><textbg><customtext>something2</customtext></textbg></custombg></customtag>
@@ -541,7 +541,7 @@ else
 
     [MTest] public void LayoutSampleView2_HiddenBreakView () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/MyInfoView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
 <body>
     <bg>
     	<textbg>
@@ -561,7 +561,7 @@ else
 
     [MTest] public void SampleView2 () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/MyInfoView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
 <body>
     <bg>
     	<titlebox>
@@ -583,7 +583,7 @@ else
 
     [MTest] public void LayoutHTMLWithCustomTagMultipleByInnerContentWithParentLayer () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <customtag>
     <custombg><textbg><customtext>something1</customtext></textbg></custombg>
     <custombg><textbg><customtext>something2</customtext></textbg></custombg>
@@ -596,7 +596,7 @@ else
 
     [MTest] public void LayoutHTMLWithDoubleBoxedLayerNeverOverLayout () {
         var sample = @"
-<!DOCTYPE uuebview href='resources://Views/MyInfoView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
 <body>
     <bg>
     	<textbg>

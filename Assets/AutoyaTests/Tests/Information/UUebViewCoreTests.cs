@@ -269,7 +269,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
 
     [MTest] public void ManyImages () {
         var source = @"
-<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/LayoutHTMLWithCustomTag/UUebTags'>
 <body>
     something4.
     <customimg src='https://dummyimage.com/100.png/09f/fff' id='button1' button='true'/>
@@ -305,7 +305,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
 
     [MTest] public void Sample2 () {
         var source = @"
-<!DOCTYPE uuebview href='resources://Views/MyInfoView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
 <body>
     <bg>
     	<titlebox>
@@ -343,7 +343,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
         Debug.LogWarning("保留");
         return;
         var source = @"
-<!DOCTYPE uuebview href='resources://Views/MyInfoView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
 <bg>
     <textbg>
         <textbox>

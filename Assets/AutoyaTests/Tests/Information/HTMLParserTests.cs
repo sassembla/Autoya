@@ -95,7 +95,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void LoadDepthAssetListIsDone () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTest/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTest/UUebTags'>
 <body>something</body>
         ";
 
@@ -106,7 +106,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void LoadDepthAssetListWithCustomTag () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTest/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTest/UUebTags'>
 <customtag><customtagtext>something</customtagtext></customtag>
         ";
 
@@ -133,7 +133,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParseCustomTag () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTest/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTest/UUebTags'>
 <customtag><customtagpos><customtagtext>something</customtagtext></customtagpos></customtag>
         ";
 
@@ -146,7 +146,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParseCustomTagMoreDeep () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTest/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTest/UUebTags'>
 <customtag><customtagpos><customtagtext>
     <customtag2><customtagtext2><customtagtext>something</customtagtext></customtagtext2></customtag2>
 </customtagtext></customtagpos></customtag>
@@ -162,7 +162,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParseCustomTagRecursive () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTest/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTest/UUebTags'>
 <customtag><customtagpos><customtagtext>
     something<customtag><customtagpos><customtagtext>else</customtagtext></customtagpos></customtag>
 </customtagtext></customtagpos></customtag>
@@ -189,7 +189,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParseCustomImgAsImgContent () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTestImgView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTestImgView/UUebTags'>
 <myimg src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' />";
 
         var parsedRoot = GetParsedRoot(sampleHtml);
@@ -200,7 +200,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParseCustomTextAsTextContent () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTestTextView/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTestTextView/UUebTags'>
 <mytext>text</mytext>";
 
         var parsedRoot = GetParsedRoot(sampleHtml);
@@ -211,7 +211,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParserTestCustomLayerAndCustomContentCombination () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/ParserTestCombination/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/ParserTestCombination/UUebTags'>
 <customtag><customtagtext><customtext>text</customtext></customtagtext></customtag>
 <customtext>text</customtext>";
 
@@ -281,7 +281,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void WithCustomTag () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/WithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/WithCustomTag/UUebTags'>
 <customtag><custompos><customtext>something</customtext></custompos></customtag>
 <p>else</p>
         ";
@@ -294,7 +294,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void WithWrongCustomTag () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/WithCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/WithCustomTag/UUebTags'>
 <customtag><typotagpos><customtext>something</customtext></typotagpos></customtag>
 <p>else</p>
         ";
@@ -306,7 +306,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void WithDeepCustomTag () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/WithDeepCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/WithDeepCustomTag/UUebTags'>
 <customtag><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
 <p>else</p>
         ";
@@ -323,7 +323,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void WithDeepCustomTagBoxHasBoxAttr () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/WithDeepCustomTag/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/WithDeepCustomTag/UUebTags'>
 <customtag><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /><img src='https://github.com/sassembla/Autoya/blob/master/doc/scr.png?raw=true2' /></customtag>
 <p>else</p>
         ";
@@ -355,7 +355,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
     [MTest] public void ParseErrorAtDirectContentUnderLayer () {
         var sampleHtml = @"
-<!DOCTYPE uuebview href='resources://Views/MultipleBoxConstraints/DepthAssetList'>
+<!DOCTYPE uuebview href='resources://Views/MultipleBoxConstraints/UUebTags'>
 <itemlayout>
 <topleft>
     <img src='https://dummyimage.com/100.png/09f/fff'/>

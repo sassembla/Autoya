@@ -8,6 +8,8 @@ namespace AutoyaFramework.Information {
             HTMLAttribute.HREF,
         };
 
+        public const string listFileName = "UUebTags.txt";
+
         public const string VIEWNAME_DEFAULT = "Default";
         public const string FULLPATH_INFORMATION_RESOURCE = "Assets/InformationResources/Resources/Views/";
         

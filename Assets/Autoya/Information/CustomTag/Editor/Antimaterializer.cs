@@ -28,7 +28,7 @@ namespace AutoyaFramework.Information {
             defaultTagStrs = CollectDefaultTag();
 
             /*
-                ここでの処理は、ResourcesにdepthAssetListを吐き出して、リスト自体をResourcesから取得し、そのリストにはResourcesからdepthAssetを読み込むパスがかいてある、
+                ここでの処理は、ResourcesにUUebTagsを吐き出して、リスト自体をResourcesから取得し、そのリストにはResourcesからdepthAssetを読み込むパスがかいてある、
                 という構成に対応している状態。
 
                 今後、リストをWebからDLしたり、AssetBundleからロードしたりとかにも対応する。
@@ -77,13 +77,12 @@ namespace AutoyaFramework.Information {
                 CollectConstraintsAndContents(viewName, child.gameObject, layersInEditor, contents, rootHeight);
             }
 
-            var listFileName = "DepthAssetList.txt";
-
-            var depthAssetList = new CustomTagList(viewName, contents.ToArray(), layersInEditor.Select(l => l.layerInfo).ToArray());
+            
+            var UUebTags = new CustomTagList(viewName, contents.ToArray(), layersInEditor.Select(l => l.layerInfo).ToArray());
 
             
-            var jsonStr = JsonUtility.ToJson(depthAssetList);
-            using (var sw = new StreamWriter(Path.Combine(exportBasePath, listFileName))) {
+            var jsonStr = JsonUtility.ToJson(UUebTags);
+            using (var sw = new StreamWriter(Path.Combine(exportBasePath, ConstSettings.listFileName))) {
                 sw.WriteLine(jsonStr);
             }
             AssetDatabase.Refresh();
