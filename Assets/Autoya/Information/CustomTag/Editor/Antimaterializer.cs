@@ -24,7 +24,7 @@ namespace AutoyaFramework.Information {
             return htmlTags.ToArray();
         }
 
-        [MenuItem("Window/Information/Antimaterialize")] public static void Antimaterialize () {
+        [MenuItem("Window/UUebView/Generate UUeb Tags From Selection")] public static void Antimaterialize () {
             defaultTagStrs = CollectDefaultTag();
 
             /*
