@@ -20,7 +20,8 @@ namespace AutoyaFramework.Information {
         UNSUPPORTED_ATTR_FOUND,
         UNEXPECTED_ATTR_DESCRIPTION,
         CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY,
-        UNDEFINED_TAG
+        UNDEFINED_TAG,
+		ILLIGAL_CHAR
     }
 
     /**
@@ -192,7 +193,29 @@ namespace AutoyaFramework.Information {
 						var tag = foundTag;
 						// Debug.LogError("rawTagName:" + rawTagName);
 
+						// ここで、すでにtagは見つかっているので、ここまでのコンテンツは親タグのものとして整理できる。
 						{
+							// add content before next tag start if exist.
+							if (0 < readingPointLength) {
+								var str = data.Substring(readingPointStartIndex, readingPointLength);
+					
+								// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
+
+								if (!string.IsNullOrEmpty(str)) {
+									var contentTagPoint = new TagTree(
+										str,
+										parentTree.tagValue
+									);
+									if (!contentTagPoint.SetParent(parentTree)) {
+										parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
+										yield break;
+									}
+								}
+							}
+						}
+
+						// read new tag.
+						{	
 							// set to next char index. after '<tag'
 							var tempCharIndex = charIndex + ("<" + rawTagName).Length;
 							var tempReadPoint = readPoint;
@@ -202,6 +225,31 @@ namespace AutoyaFramework.Information {
 							*/
 							{
 								switch (data[tempCharIndex]) {
+									case '/': {
+										if (data[tempCharIndex+1] != '>') {
+											parseFailed((int)ParseErrors.ILLIGAL_CHAR, "the tag:" + resLoader.GetTagFromValue(tag) + " with '/' should be closed soon. > required.");
+											yield break;
+										}
+
+										// > was found and <TAG[SOMETHING] is /. tag is closed directly.
+										var treeType = resLoader.GetTreeType(tag);
+										if (treeType == TreeType.NotFound) {
+											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+											yield break;
+										}
+
+										var tagPoint2 = new TagTree(
+											tag, 
+											new AttributeKVs(),
+											treeType
+										);
+										tagPoint2.SetParent(parentTree);
+										
+										
+										charIndex = tempCharIndex + 2/* /> */;
+										readPoint = charIndex;
+										continue;
+									}
 									case ' ': {// <tag [attr]/> or <tag [attr]>
 										var startTagEndIndex = data.IndexOf(">", tempCharIndex);
 										// Debug.LogError("startTagEndIndex:" + startTagEndIndex);
@@ -229,45 +277,25 @@ namespace AutoyaFramework.Information {
 											single close tag found.
 											this tag content is just closed.
 										*/
-										// add content before tag.
-										if (0 < readingPointLength) {
-											var str = data.Substring(readingPointStartIndex, readingPointLength);
-								
-											// Debug.LogError("1 str:" + str + " parentTagPoint:" + parentTagPoint.tag + " current tag:" + foundTag);
-
-											if (!string.IsNullOrEmpty(str)) {
-												var contentTagPoint = new TagTree(
-													str,
-													parentTree.tagValue
-												);
-												if (!contentTagPoint.SetParent(parentTree)) {
-													parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
-													yield break;
-												}
-											}
-										}
-										
 										if (data[startTagEndIndex - 1] == '/') {// <tag [attr]/>
 											// Debug.LogError("-1 is / @tag:" + tag);
-
-											{
-												var treeType = resLoader.GetTreeType(tag);
-												if (treeType == TreeType.NotFound) {
-													parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
-													yield break;
-												}
-
-												var tagPoint2 = new TagTree(
-													tag, 
-													kv,
-													treeType
-												);
-												tagPoint2.SetParent(parentTree);
-
-												charIndex = tempCharIndex;
-												readPoint = tempReadPoint;
-												continue;
+											
+											var treeType = resLoader.GetTreeType(tag);
+											if (treeType == TreeType.NotFound) {
+												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+												yield break;
 											}
+
+											var tagPoint2 = new TagTree(
+												tag, 
+												kv,
+												treeType
+											);
+											tagPoint2.SetParent(parentTree);
+
+											charIndex = tempCharIndex;
+											readPoint = tempReadPoint;
+											continue;
 										}
 
 										// Debug.LogError("not closed tag:" + tag + " in data:" + data);
@@ -339,23 +367,6 @@ namespace AutoyaFramework.Information {
 										// set to next char.
 										tempCharIndex = tempCharIndex + 1;
 
-
-										// add content before tag.
-										if (0 < readingPointLength) {
-											var str = data.Substring(readingPointStartIndex, readingPointLength);
-											if (!string.IsNullOrEmpty(str)) {
-												var contentTagPoint = new TagTree(
-													str,
-													parentTree.tagValue
-												);
-												
-												if (!contentTagPoint.SetParent(parentTree)) {
-													parseFailed((int)ParseErrors.CANNOT_CONTAIN_TEXT_IN_BOX_DIRECTLY, "tag:" + tag + " could not contain text value directly. please wrap text content with some tag.");
-													yield break;
-												}
-											}
-										}
-
 										if (tag == (int)HTMLTag.br) {
 											var brTree = new TagTree(tag);
 											brTree.SetParent(parentTree);
@@ -418,6 +429,7 @@ namespace AutoyaFramework.Information {
 				charIndex++;
             }
 
+			// all tags are found and rest contents are content of parent tag.
 			if (readPoint < data.Length) { 
 				var restStr = data.Substring(readPoint);
 				// Debug.LogError("restStr:" + restStr);
@@ -786,12 +798,17 @@ namespace AutoyaFramework.Information {
 				return (int)HTMLTag._EXCLAMATION_TAG;
 			}
 
-			var closeTagIndex = tagFindingSampleStr.IndexOfAny(new char[]{' ', '>'});
+			// finding any delimiter. [ ] or > or /.
+			var closeTagIndex = tagFindingSampleStr.IndexOfAny(new char[]{' ', '>', '/'});
 			if (closeTagIndex == -1) {
 				return (int)HTMLTag._NO_TAG_FOUND;
 			}
 
 			var tagCandidateStr = tagFindingSampleStr.Substring(0, closeTagIndex);
+			
+			if (string.IsNullOrEmpty(tagCandidateStr)) {
+				return (int)HTMLTag._NO_TAG_FOUND;
+			}
 			
 			// tag should not contain any non-letter or non-number char.
 			foreach (var chr in tagCandidateStr) {

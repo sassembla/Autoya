@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
@@ -24,6 +25,13 @@ namespace AutoyaFramework.Information {
 
     public class ParsedTree : TagTree {
         public List<ParseError> errors = new List<ParseError>();
+        public static string ShowErrors (ParsedTree tree) {
+            var stringBuilder = new StringBuilder();
+            foreach (var error in tree.errors) {
+                stringBuilder.AppendLine("error code:" + error.code + " reason:" + error.reason);
+            }
+            return stringBuilder.ToString();
+        }
     }
 
     /**

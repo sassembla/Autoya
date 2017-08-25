@@ -427,5 +427,29 @@ public class HTMLParserTests : MiyamasuTestRunner {
         }
         Assert(pChildren.Count == 1, "not match, pChildren count:" + pChildren.Count);
     }
+
+    [MTest] public void CustomEmptyLayerCanSingleCloseTag () {
+        var sampleHtml = @"
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
+<newbadge/>";
+        var parsedRoot = GetParsedRoot(sampleHtml);
+        Assert(parsedRoot.errors.Count == 0, "not match. error:" + ParsedTree.ShowErrors(parsedRoot));
+        foreach (var child in parsedRoot.GetChildren()) {
+            if (child.tagValue == 28) {
+                Debug.LogError("child text:" + child.keyValueStore[HTMLAttribute._CONTENT]);
+            } 
+        }
+        Assert(parsedRoot.GetChildren().Count == 1, "count:" + parsedRoot.GetChildren().Count);
+    }
+    
+    [MTest] public void CustomEmptyLayerCanSingleCloseTag2 () {
+        var sampleHtml = @"
+<!DOCTYPE uuebview href='resources://Views/MyInfoView/UUebTags'>
+<body><newbadge/>aaa</body>";
+        var parsedRoot = GetParsedRoot(sampleHtml);
+        Assert(parsedRoot.errors.Count == 0, "not match.");
+        Assert(parsedRoot.GetChildren().Count == 1, "count:" + parsedRoot.GetChildren().Count);
+        Assert(parsedRoot.GetChildren()[0].GetChildren().Count == 2, "count:" + parsedRoot.GetChildren()[0].GetChildren().Count);
+    }
     
 }
