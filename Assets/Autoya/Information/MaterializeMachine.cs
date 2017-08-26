@@ -23,7 +23,6 @@ namespace AutoyaFramework.Information {
 			// Debug.LogWarning("yOffsetで、viewの範囲にあるものだけを表示する、とかができそう。TableViewとかにコンテンツ足して云々とか。まあそこまで必要かっていうと微妙。");
 
 			this.root = root;
-			root.name = HTMLTag._ROOT.ToString();
 			{
 				var rootRectTrans = root.GetComponent<RectTransform>();
 				this.core = core;
@@ -57,7 +56,9 @@ namespace AutoyaFramework.Information {
 					}
 				}
 
-				if (done == cors.Length) break;
+				if (done == cors.Length) {
+					break;
+				}
 				yield return null;
 			}
 
@@ -100,18 +101,23 @@ namespace AutoyaFramework.Information {
 			// set parameters and events by container type. button, link.
 			switch (tree.treeType) {
 				case TreeType.Content_Img: {
-					var src = tree.keyValueStore[HTMLAttribute.SRC] as string;
 					if (tree.viewHeight == 0) {
 						break;
 					}
 					
+					var src = string.Empty;
+
 					// 画像コンテンツはキャッシュ済みの場合再度画像取得を行わない。
 					if (!cached) {
-						var imageLoadCor = resLoader.LoadImageAsync(src);
+						// 画像指定がある場合のみ読み込む
+						if (tree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {		
+							src = tree.keyValueStore[HTMLAttribute.SRC] as string;
+							var imageLoadCor = resLoader.LoadImageAsync(src);
 
-						// combine coroutine.
-						var setImageCor = SetImageCor(newGameObject, imageLoadCor);
-						resLoader.LoadParallel(setImageCor);
+							// combine coroutine.
+							var setImageCor = SetImageCor(newGameObject, imageLoadCor);
+							resLoader.LoadParallel(setImageCor);
+						}
 					}
 					
 					if (tree.keyValueStore.ContainsKey(HTMLAttribute.BUTTON)) {

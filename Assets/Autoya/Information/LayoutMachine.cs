@@ -238,11 +238,6 @@ namespace AutoyaFramework.Information {
 
         private IEnumerator<ChildPos> DoImgLayout (TagTree imgTree, ViewCursor viewCursor) {
             var contentViewCursor = viewCursor;
-            if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
-                throw new Exception("srcがないんだけどどうするか。カスタムコンテンツならデフォ画像をセットできるんでなくてもいいはず。あとエラーをつけるならパースエラー。image element should define src param.");
-            }
-
-            var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
 
             var imageWidth = 0f;
             var imageHeight = 0f;
@@ -253,7 +248,11 @@ namespace AutoyaFramework.Information {
              */
             if (resLoader.IsDefaultTag(imgTree.tagValue)) {
                 // default img tag. need to download image for determine size.
-
+                if (!imgTree.keyValueStore.ContainsKey(HTMLAttribute.SRC)) {
+                    throw new Exception("tag:" + resLoader.GetTagFromValue(imgTree.tagValue) + " requires 'src' param.");
+                }
+            
+                var src = imgTree.keyValueStore[HTMLAttribute.SRC] as string;
                 var cor = resLoader.LoadImageAsync(src);
 
                 while (cor.MoveNext()) {

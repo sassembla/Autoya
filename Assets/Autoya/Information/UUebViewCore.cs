@@ -32,12 +32,13 @@ namespace AutoyaFramework.Information {
             string source, 
             Vector2 viewRect, 
             Autoya.HttpRequestHeaderDelegate requestHeader=null,
-            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
+            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null,
+            string viewName=ConstSettings.ROOTVIEW_NAME
         ) {
             var viewObj = new GameObject("UUebView");
             viewObj.AddComponent<RectTransform>();
             var uuebView = viewObj.AddComponent<UUebView>();
-            var uuebViewCore = new UUebViewCore(uuebView, requestHeader, httpResponseHandlingDelegate);
+            var uuebViewCore = new UUebViewCore(uuebView, viewName, requestHeader, httpResponseHandlingDelegate);
             uuebViewCore.LoadHtml(source, viewRect, eventReceiverGameObj);
 
             return viewObj;
@@ -48,19 +49,21 @@ namespace AutoyaFramework.Information {
             string url, 
             Vector2 viewRect, 
             Autoya.HttpRequestHeaderDelegate requestHeader=null,
-            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null
+            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null,
+            string viewName=ConstSettings.ROOTVIEW_NAME
         ) {
             var viewObj = new GameObject("UUebView");
             viewObj.AddComponent<RectTransform>();
             var uuebView = viewObj.AddComponent<UUebView>();
-            var uuebViewCore = new UUebViewCore(uuebView, requestHeader, httpResponseHandlingDelegate);
+            var uuebViewCore = new UUebViewCore(uuebView, viewName, requestHeader, httpResponseHandlingDelegate);
             uuebViewCore.DownloadHtml(url, viewRect, eventReceiverGameObj);
 
             return viewObj;
         }
 
-        public UUebViewCore (UUebView uuebView, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+        public UUebViewCore (UUebView uuebView, string viewName=ConstSettings.ROOTVIEW_NAME, Autoya.HttpRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
             this.view = uuebView;
+            this.view.name = viewName;
             uuebView.Core = this;
 
             resLoader = new ResourceLoader(this.LoadParallel, requestHeader, httpResponseHandlingDelegate);

@@ -436,4 +436,27 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
         );
     }
 
+    [MTest] public void SetViewName () {
+        var viewName = "SetViewName";
+        var source = @"
+<body>
+    <color=#ff0000ff>red</color> <color=#008000ff>green</color> <color=#0000ffff>blue</color>
+</body>";
+        var done = false;
+        
+        RunOnMainThread(
+            () => {
+                eventReceiverGameObj.GetComponent<TestReceiver>().OnLoaded = () => {
+                    done = true;
+                };
+                view = UUebViewCore.GenerateSingleViewFromHTML(eventReceiverGameObj, source, new Vector2(300,100), null,null, viewName);
+            }
+        );
+        
+        Show(view);
+
+        WaitUntil(
+            () => done, 5, "too late."
+        );
+    }
 }

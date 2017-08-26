@@ -78,7 +78,7 @@ namespace AutoyaFramework.Information {
             }
 
             
-            var UUebTags = new CustomTagList(viewName, contents.ToArray(), layersInEditor.Select(l => l.layerInfo).ToArray());
+            var UUebTags = new UUebTags(viewName, contents.ToArray(), layersInEditor.Select(l => l.layerInfo).ToArray());
 
             
             var jsonStr = JsonUtility.ToJson(UUebTags);
@@ -177,7 +177,6 @@ namespace AutoyaFramework.Information {
             rectTrans.anchoredPosition = new Vector2(0,0);
             rectTrans.anchorMin = new Vector2(0,1);
             rectTrans.anchorMax = new Vector2(0,1);
-            rectTrans.pivot = new Vector2(0,1);
 
             // 画像か文字を含んでいるコンテンツで、コードも可。でもボタンの実行に関しては画像に対してボタンが勝手にセットされる。ボタンをつけたらエラー。
             // 文字のリンク化も勝手に行われる。というかあれもボタンだっけ。

@@ -4,12 +4,12 @@ using System.Linq;
 using UnityEngine;
 
 namespace AutoyaFramework.Information {
-    [Serializable] public class CustomTagList {
+    [Serializable] public class UUebTags {
         [SerializeField] public string viewName;
         [SerializeField] public ContentInfo[] contents;
         [SerializeField] public LayerInfo[] layerInfos;
         
-        public CustomTagList (string viewName, ContentInfo[] contents, LayerInfo[] constraints) {
+        public UUebTags (string viewName, ContentInfo[] contents, LayerInfo[] constraints) {
             this.viewName = viewName;
             this.contents = contents;
             this.layerInfos = constraints;

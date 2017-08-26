@@ -66,7 +66,26 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
     }
 
     private IEnumerator Rotate (Image img) {
-        yield return null;
+        var rectTrans = img.GetComponent<RectTransform>();
+        var count = 0;
+        var max = 18;
+        var diff = new Vector3(0, 0, -(180f / max));
+
+        var start = rectTrans.rotation;
+
+        while (true)
+        {
+            rectTrans.Rotate(diff);
+            count++;
+
+            if (count == max)
+            {
+                break;
+            }
+            yield return null;
+        }
+
+        rectTrans.rotation = Quaternion.Euler(0, 0, start.eulerAngles.z - 180f);
     }
 
     void IUUebViewEventHandler.OnElementLongTapped(ContentType type, string param, string id) {

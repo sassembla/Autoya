@@ -82,7 +82,7 @@ namespace AutoyaFramework.Information {
 					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
 					var jsonStr = jsonAsset.text;
 					
-					var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
+					var list = JsonUtility.FromJson<UUebTags>(jsonStr);
 					Debug.Assert(list.viewName == testTargetSampleObjName);
 
 					var boxConstraintes = list.layerInfos;
@@ -128,7 +128,7 @@ namespace AutoyaFramework.Information {
 					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
 					var jsonStr = jsonAsset.text;
 					
-					var list = JsonUtility.FromJson<CustomTagList>(jsonStr);
+					var list = JsonUtility.FromJson<UUebTags>(jsonStr);
 					Debug.Assert(list.viewName == testTargetSampleObjName);
 
 					var boxConstraints = list.layerInfos;
@@ -232,7 +232,7 @@ namespace AutoyaFramework.Information {
 					var jsonAsset = Resources.Load("Views/" + testTargetSampleObjName + "/DepthAssetList") as TextAsset;
 					var jsonText = jsonAsset.text;
 					// Debug.LogError("jsontext:" + jsonText);
-					var list = JsonUtility.FromJson<CustomTagList>(jsonText);
+					var list = JsonUtility.FromJson<UUebTags>(jsonText);
 					var boxConstraints = list.layerInfos[0].boxes;
 					Debug.Assert(boxConstraints.Length == 4, "not 4, boxConstraints.Length:" + boxConstraints.Length);
 

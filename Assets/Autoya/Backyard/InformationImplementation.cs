@@ -22,7 +22,7 @@ namespace AutoyaFramework
 			show information view from url.
             scrollView should have component which implement IUUebViewEventHandler for receiving events.
 		*/
-        public static void Info_Show(GameObject scrollView, string url)
+        public static void Info_Show(GameObject scrollView, string url, string viewName=ConstSettings.ROOTVIEW_NAME)
         {
             var eventReceiverCandidate = scrollView.GetComponents<Component>().Where(component => component is IUUebViewEventHandler).FirstOrDefault();
             if (eventReceiverCandidate == null) {
@@ -36,7 +36,7 @@ namespace AutoyaFramework
 
             var viewSize = scrollView.GetComponent<RectTransform>().sizeDelta;
 
-            var view = UUebViewCore.GenerateSingleViewFromUrl(scrollView, url, viewSize, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
+            var view = UUebViewCore.GenerateSingleViewFromUrl(scrollView, url, viewSize, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate, viewName);
             view.transform.SetParent(content.gameObject.transform, false);
         }
     }

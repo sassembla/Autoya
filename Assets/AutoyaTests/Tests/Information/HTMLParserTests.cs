@@ -101,7 +101,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
         var parsedRoot = GetParsedRoot(sampleHtml);
 
-        Assert(!loader.IsLoadingDepthAssetList, "still loading.");
+        Assert(!loader.IsLoadingUUebTags, "still loading.");
     }
 
     [MTest] public void LoadDepthAssetListWithCustomTag () {
@@ -112,7 +112,7 @@ public class HTMLParserTests : MiyamasuTestRunner {
 
         var parsedRoot = GetParsedRoot(sampleHtml);
 
-        Assert(!loader.IsLoadingDepthAssetList, "still loading.");
+        Assert(!loader.IsLoadingUUebTags, "still loading.");
     }
 
 

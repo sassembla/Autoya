@@ -176,7 +176,7 @@ namespace AutoyaFramework.Information {
                                 default: {
                                     // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
                                     
-                                    var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
+                                    var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.UUEBTAGS_DEFAULT + "/" + prefabName;
 
                                     var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
                                     while (cor.MoveNext()) {
@@ -257,7 +257,7 @@ namespace AutoyaFramework.Information {
                             default: {
                                 // コンテナ以外、いろんなデフォルトコンテンツがここにくる。
                                 var prefabName = GetTagFromValue(tagValue);
-                                var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.VIEWNAME_DEFAULT + "/" + prefabName;
+                                var loadingPrefabName = ConstSettings.PREFIX_PATH_INFORMATION_RESOURCE + ConstSettings.UUEBTAGS_DEFAULT + "/" + prefabName;
 
                                 var cor = LoadPrefabFromResourcesOrCache(loadingPrefabName);
                                 while (cor.MoveNext()) {
@@ -601,11 +601,11 @@ namespace AutoyaFramework.Information {
             switch (treeType) {
                 case TreeType.CustomLayer:
                 case TreeType.CustomEmptyLayer: {
-                    return customTagList.layerInfos.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
+                    return uuebTags.layerInfos.Where(t => t.layerName == tag).Select(t => t.loadPath).FirstOrDefault();
                 }
                 case TreeType.Content_Img:
                 case TreeType.Content_Text: {
-                    return customTagList.contents.Where(t => t.contentName == tag).Select(t => t.loadPath).FirstOrDefault();
+                    return uuebTags.contents.Where(t => t.contentName == tag).Select(t => t.loadPath).FirstOrDefault();
                 }
                 default: {
                     throw new Exception("unexpected tree type:" + treeType + " of tag:" + tag);
@@ -705,8 +705,8 @@ namespace AutoyaFramework.Information {
 
 
 
-        private CustomTagList customTagList;
-        public bool IsLoadingDepthAssetList {
+        private UUebTags uuebTags;
+        public bool IsLoadingUUebTags {
             get; private set;
         }
 
@@ -715,56 +715,56 @@ namespace AutoyaFramework.Information {
         private Dictionary<string, BoxPos>unboxedLayerSizeDict;
         
 
-        public IEnumerator LoadCustomTagList (string uriSource) {
-            if (IsLoadingDepthAssetList) {
-                throw new Exception("multiple customTagList description found. only one customTagList description is valid.");
+        public IEnumerator LoadUUebTags (string uriSource) {
+            if (IsLoadingUUebTags) {
+                throw new Exception("multiple uuebTags description found. only one uuebTags description is valid.");
             }
 
             var schemeEndIndex = uriSource.IndexOf("//");
             var scheme = uriSource.Substring(0, schemeEndIndex);
             
-            IsLoadingDepthAssetList = true;
+            IsLoadingUUebTags = true;
 
 
-            Action<CustomTagList> succeeded = customTagList => {
-                this.customTagList = customTagList;
-                this.customTagTypeDict = this.customTagList.GetTagTypeDict();
+            Action<UUebTags> succeeded = uuebTags => {
+                this.uuebTags = uuebTags;
+                this.customTagTypeDict = this.uuebTags.GetTagTypeDict();
 
                 // レイヤー名:constraintsの辞書を生成しておく。
                 this.layerDict = new Dictionary<string, BoxConstraint[]>();
                 this.unboxedLayerSizeDict = new Dictionary<string, BoxPos>();
 
-                var layerInfos = customTagList.layerInfos;
+                var layerInfos = uuebTags.layerInfos;
 
                 foreach (var layerInfo in layerInfos) {
                     layerDict[layerInfo.layerName.ToLower()] = layerInfo.boxes;
                     unboxedLayerSizeDict[layerInfo.layerName.ToLower()] = layerInfo.unboxedLayerSize;
                 }
 
-                IsLoadingDepthAssetList = false;
+                IsLoadingUUebTags = false;
             };
             
             Action<int, string> failed = (code, reason) => {
-                throw new Exception("未対処なリストのロードエラー。failed to load customTagList. code:" + code + " reason:" + reason + " from:" + uriSource);
-                this.customTagList = new CustomTagList(ConstSettings.VIEWNAME_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
-                IsLoadingDepthAssetList = false;
+                throw new Exception("未対処なリストのロードエラー。failed to load uuebTags. code:" + code + " reason:" + reason + " from:" + uriSource);
+                this.uuebTags = new UUebTags(ConstSettings.UUEBTAGS_DEFAULT, new ContentInfo[0], new LayerInfo[0]);// set empty list.
+                IsLoadingUUebTags = false;
             };
 
             IEnumerator cor = null;
             switch (scheme) {
                 case "assetbundle:": {
                     var bundleName = uriSource;
-                    cor = LoadListFromAssetBundle(uriSource, succeeded, failed);
+                    cor = LoadTagsFromAssetBundle(uriSource, succeeded, failed);
                     break;
                 }
                 case "https:":
                 case "http:": {
-                    cor =  LoadListFromWeb(uriSource, succeeded, failed);
+                    cor =  LoadTagsFromWeb(uriSource, succeeded, failed);
                     break;
                 }
                 case "resources:": {
                     var resourcePath = uriSource.Substring("resources:".Length + 2);
-                    cor = LoadListFromResources(resourcePath, succeeded, failed);
+                    cor = LoadTagsFromResources(resourcePath, succeeded, failed);
                     break;
                 }
                 default: {// other.
@@ -791,14 +791,14 @@ namespace AutoyaFramework.Information {
             return GetTagFromValue(layerTag) + "_" + GetTagFromValue(boxTag);
         }
 
-        private IEnumerator LoadListFromAssetBundle (string url, Action<CustomTagList> succeeded, Action<int, string> failed) {
+        private IEnumerator LoadTagsFromAssetBundle (string url, Action<UUebTags> succeeded, Action<int, string> failed) {
             Debug.LogError("not yet applied. LoadListFromAssetBundle url:" + url);
             failed(-1, "not yet applied.");
             yield break;
         }
         
-        private IEnumerator LoadListFromWeb (string url, Action<CustomTagList> loadSucceeded, Action<int, string> loadFailed) {
-            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_CUSTOMTAGLIST_PREFIX + Guid.NewGuid().ToString();
+        private IEnumerator LoadTagsFromWeb (string url, Action<UUebTags> loadSucceeded, Action<int, string> loadFailed) {
+            var connectionId = ConstSettings.CONNECTIONID_DOWNLOAD_UUEBTAGS_PREFIX + Guid.NewGuid().ToString();
             var reqHeaders = requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
 
             using (var request = UnityWebRequest.Get(url)) {
@@ -850,7 +850,7 @@ namespace AutoyaFramework.Information {
                     request.error,
                     (conId, unusedData) => {
                         var jsonStr = request.downloadHandler.text;
-                        var newDepthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
+                        var newDepthAssetList = JsonUtility.FromJson<UUebTags>(jsonStr);
 
                         loadSucceeded(newDepthAssetList);
                     }, 
@@ -861,7 +861,7 @@ namespace AutoyaFramework.Information {
             }
         }
         
-        private IEnumerator LoadListFromResources (string path, Action<CustomTagList> succeeded, Action<int, string> failed) {
+        private IEnumerator LoadTagsFromResources (string path, Action<UUebTags> succeeded, Action<int, string> failed) {
             var requestCor = Resources.LoadAsync(path);
 
             while (!requestCor.isDone) {
@@ -874,7 +874,7 @@ namespace AutoyaFramework.Information {
             }
 
             var jsonStr = (requestCor.asset as TextAsset).text;
-            var depthAssetList = JsonUtility.FromJson<CustomTagList>(jsonStr);
+            var depthAssetList = JsonUtility.FromJson<UUebTags>(jsonStr);
             succeeded(depthAssetList);
 		}
 

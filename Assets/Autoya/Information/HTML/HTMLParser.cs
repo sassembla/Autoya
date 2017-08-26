@@ -27,7 +27,7 @@ namespace AutoyaFramework.Information {
     /**
         パーサ。
         stringからTagTreeを生成する。
-		customTagListをロードするコメント記述が発見されたら、DLを開始する。
+		uuebTagsをロードするコメント記述が発見されたら、DLを開始する。
      */
     public class HTMLParser {
 		private readonly ResourceLoader resLoader;
@@ -234,7 +234,7 @@ namespace AutoyaFramework.Information {
 										// > was found and <TAG[SOMETHING] is /. tag is closed directly.
 										var treeType = resLoader.GetTreeType(tag);
 										if (treeType == TreeType.NotFound) {
-											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both uuebTags and default tags.");
 											yield break;
 										}
 
@@ -282,7 +282,7 @@ namespace AutoyaFramework.Information {
 											
 											var treeType = resLoader.GetTreeType(tag);
 											if (treeType == TreeType.NotFound) {
-												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both uuebTags and default tags.");
 												yield break;
 											}
 
@@ -317,7 +317,7 @@ namespace AutoyaFramework.Information {
 											var treeType = resLoader.GetTreeType(tag);
 
 											if (treeType == TreeType.NotFound) {
-												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+												parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both uuebTags and default tags.");
 												yield break;
 											}
 
@@ -392,7 +392,7 @@ namespace AutoyaFramework.Information {
 										
 										var treeType = resLoader.GetTreeType(tag);
 										if (treeType == TreeType.NotFound) {
-											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both customTagList and default tags.");
+											parseFailed((int)ParseErrors.UNDEFINED_TAG, "the tag:" + resLoader.GetTagFromValue(tag) + " is not defined in both uuebTags and default tags.");
 											yield break;
 										}
 
@@ -603,7 +603,7 @@ namespace AutoyaFramework.Information {
 				/*
 					start loading of depthAssetList.
 				 */
-				var cor = resLoader.LoadCustomTagList(urlCandidate);
+				var cor = resLoader.LoadUUebTags(urlCandidate);
 
 				while (cor.MoveNext()) {
 					yield return -1;
@@ -639,7 +639,6 @@ namespace AutoyaFramework.Information {
 			var closeTagStr = "</"+ foundTagStr.ToLower() + ">";
 			return GetStartPointOfCloseTag(data, offset, foundTagIndex) + closeTagStr.Length;
 		}
-
 		
 		private int FindEndTag (string endTagStr, string startTagStr, string data, int offset) {
 			// Debug.LogError("endTagStr:" + endTagStr + " startTagStr:" + startTagStr);
