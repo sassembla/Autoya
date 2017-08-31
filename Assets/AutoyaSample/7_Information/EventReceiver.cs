@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework;
-using AutoyaFramework.Information;
+using UUebView;
 using UnityEngine;
 
 public class EventReceiver : MonoBehaviour, IUUebViewEventHandler
@@ -11,7 +11,7 @@ public class EventReceiver : MonoBehaviour, IUUebViewEventHandler
     void Start()
     {
         var scrollView = GameObject.Find("Scroll View");
-        Autoya.Info_Show(scrollView, "resources://items.html");
+        AutoyaFramework.Autoya.Info_Show(scrollView, "resources://items.html");
     }
 
 

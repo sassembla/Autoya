@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using AutoyaFramework.Information;
+using UUebView;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections;
@@ -36,7 +36,8 @@ namespace AutoyaFramework
 
             var viewSize = scrollView.GetComponent<RectTransform>().sizeDelta;
 
-            var view = UUebViewCore.GenerateSingleViewFromUrl(scrollView, url, viewSize, autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate, viewName);
+            // autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate を使用すると、httpのエラーハンドリングなどがAutoya準拠になる。
+            var view = UUebViewComponent.GenerateSingleViewFromUrl(scrollView, url, viewSize, null, null, viewName);
             view.transform.SetParent(content.gameObject.transform, false);
         }
     }
