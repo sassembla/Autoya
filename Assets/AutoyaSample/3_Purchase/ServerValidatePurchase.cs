@@ -4,9 +4,9 @@ using AutoyaFramework;
 using UnityEngine;
 
 /**
-	Purchase example.
+	Purchase example of server side validate based purchase.
 */
-public class Purchase : MonoBehaviour {
+public class ServerValidatePurchase : MonoBehaviour {
 	
 	IEnumerator Start () {
 		while (!Autoya.Purchase_IsReady()) {
@@ -20,7 +20,7 @@ public class Purchase : MonoBehaviour {
 		}
 		
 
-		// it's convenient for taking purchase id for each purchase. because purchase feature is async.
+		// it's convenient to set purchase id for each purchase. because purchase feature is async.
 		var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
 		
 		Autoya.Purchase(

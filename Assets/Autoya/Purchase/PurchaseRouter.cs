@@ -266,7 +266,9 @@ namespace AutoyaFramework.Purchase {
 			this.extensions = extensions;
 
 			routerState = RouterState.PurchaseReady;
-			if (readyPurchase != null) readyPurchase();
+			if (readyPurchase != null) {
+				readyPurchase();
+			}
 		}
 
 		/// <summary>
