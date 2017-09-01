@@ -28,12 +28,12 @@ namespace AutoyaFramework.AssetBundles {
 		public readonly string assetDownloadBasePath;
 		public readonly AssetBundleList list;
 
-		private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;
+		private readonly AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
 
-		private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
@@ -43,7 +43,7 @@ namespace AutoyaFramework.AssetBundles {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 
-		public AssetBundleLoader (string basePath, AssetBundleList list, Autoya.AssetBundleGetRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+		public AssetBundleLoader (string basePath, AssetBundleList list, AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
 
 			this.assetDownloadBasePath = basePath;
 			this.list = list;

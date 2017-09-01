@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 
 /**
-	purchase feature of Autoya.
+	purchase feature of 
 	should be use as singleton.
 
 	depends on HTTP api.
@@ -104,7 +104,7 @@ namespace AutoyaFramework.Purchase {
 		
 		private readonly string storeKind;
 
-		private readonly Autoya.HttpRequestHeaderDelegate requestHeader;
+		private readonly HttpRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
 			return requestHeader;
 		}
@@ -115,7 +115,7 @@ namespace AutoyaFramework.Purchase {
 		private Action readyPurchase;
 		private Action<PurchaseError, string, AutoyaStatus> failedToReady;
 
-		private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
@@ -146,8 +146,8 @@ namespace AutoyaFramework.Purchase {
 			Func<string, string> onTicketResponse,
 			Action onPurchaseReady, 
 			Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed,
-			Autoya.HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
-			Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate =null
+			HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
+			HttpResponseHandlingDelegate httpResponseHandlingDelegate =null
 		) {
 			this.storeId = Guid.NewGuid().ToString();
 			// Debug.LogError("start storeId:" + storeId);

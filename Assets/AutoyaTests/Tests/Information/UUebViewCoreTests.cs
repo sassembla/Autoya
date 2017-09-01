@@ -14,7 +14,7 @@ public class UUebViewCoreTests : MiyamasuTestRunner {
     private void Show (GameObject view) {
         RunOnMainThread(
             () => {
-                var canvas = GameObject.Find("Canvas/UUebViewCoreTestPlace");
+                var canvas = GameObject.Find("Canvas");
                 var baseObj = new GameObject("base");
                 
 

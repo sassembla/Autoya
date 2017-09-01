@@ -28,12 +28,12 @@ namespace AutoyaFramework.AssetBundles {
 
 	public class AssetBundlePreloader {
 
-		private readonly Autoya.AssetBundleGetRequestHeaderDelegate requestHeader;
+		private readonly AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
 
-		private readonly Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
 				succeeded(connectionId, data);
@@ -42,7 +42,7 @@ namespace AutoyaFramework.AssetBundles {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 		
-		public AssetBundlePreloader (Autoya.AssetBundleGetRequestHeaderDelegate requestHeader=null, Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+		public AssetBundlePreloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
 			if (requestHeader != null) {
 				this.requestHeader = requestHeader;
 			} else {
