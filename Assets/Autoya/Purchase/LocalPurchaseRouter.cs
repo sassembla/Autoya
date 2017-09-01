@@ -26,17 +26,15 @@ namespace AutoyaFramework.Purchase {
 			None,
 			
 			LoadingStore,
-			FailedToLoadStore,
-			
+			FailedToLoadStore,			
 
 			PurchaseReady,
 
-			
-			GettingTransaction,
 			Purchasing,
 		}
 
 		public enum PurchaseError {
+			None,
 			Offline,
 			UnavailableProduct,
 			AlreadyPurchasing,
@@ -128,8 +126,27 @@ namespace AutoyaFramework.Purchase {
 		private IStoreController controller;
 		private IExtensionProvider extensions;
 		
-		public bool IsPurchaseReady () {
-			return routerState == RouterState.PurchaseReady;
+		public bool IsPurchaseReady (out PurchaseError error, out string notReadyReason) {
+			error = PurchaseError.None;
+			notReadyReason = string.Empty;
+			
+			switch (routerState) {
+				case RouterState.PurchaseReady: {
+					// pass.
+					break;
+				}
+				case RouterState.Purchasing: {
+					error = PurchaseError.AlreadyPurchasing;
+					notReadyReason = "purchasing another product now. wait then retry.";
+					return false;
+				}
+				default: {
+					error = PurchaseError.UnknownError;
+					notReadyReason = "state is:" + routerState;
+					return false;
+				}
+			}
+			return true;
 		}
 
 		/// <summary>
@@ -172,7 +189,7 @@ namespace AutoyaFramework.Purchase {
 		/**
 			start purchase.
 		*/
-		public void Purchase (
+		public void PurchaseAsync (
 			string purchaseId, 
 			string productId, 
 			Action<string> purchaseSucceeded, 
@@ -183,18 +200,11 @@ namespace AutoyaFramework.Purchase {
 				return;
 			}
 
-			if (routerState != RouterState.PurchaseReady) {
-				switch (routerState) {
-					case RouterState.GettingTransaction:
-					case RouterState.Purchasing: {
-						purchaseFailed(purchaseId, PurchaseError.AlreadyPurchasing, "purchasing another product now. wait then retry.", new AutoyaStatus());
-						break;
-					}
-					default: {
-						purchaseFailed(purchaseId, PurchaseError.UnknownError, "state is:" + routerState, new AutoyaStatus());
-						break;
-					}
-				}
+			var error = PurchaseError.None;
+			var reason = string.Empty;
+
+			if (!IsPurchaseReady(out error, out reason)) {
+				purchaseFailed(purchaseId, error, reason, new AutoyaStatus());
 				return;
 			}
 

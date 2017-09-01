@@ -43,7 +43,7 @@ public class LocalValidatePurchase : MonoBehaviour {
 		// it's convenient to set purchase id for each purchase. because purchase feature is async.
 		var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
 		
-		localPurchaseRouter.Purchase(
+		localPurchaseRouter.PurchaseAsync(
 			purchaseId, 
 			"100_gold_coins", 
 			purchasedId => {

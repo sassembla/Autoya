@@ -344,6 +344,10 @@ namespace AutoyaFramework.Purchase {
 			// renew callback.
 			callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason, autoyaStatud) => {});
 			
+
+			/*
+				start getting ticket for purchase.
+			 */
 			var ticketUrl = PurchaseSettings.PURCHASE_URL_TICKET;
 			var data = productId;
 
