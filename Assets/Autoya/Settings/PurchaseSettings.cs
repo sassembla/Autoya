@@ -1,5 +1,17 @@
 namespace AutoyaFramework.Purchase {
 	public class PurchaseSettings {
+		
+		/*
+			immutable purchasable item infos.
+		 */
+		public static readonly ProductInfos IMMUTABLE_PURCHASE_ITEM_INFOS = new ProductInfos {
+			productInfos = new ProductInfo[] {
+				new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+				new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins."),
+				new ProductInfo("10000_gold_coins", "10000_gold_coins_iOS", false, "ten tons of coins."),// this product setting is example of not allow to buy for this player, disable to buy but need to be displayed.
+			}
+		};
+
 		/*
 			urls and prefixies.
 		*/

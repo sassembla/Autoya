@@ -48,8 +48,8 @@ namespace UUebView {
             GameObject eventReceiverGameObj, 
             string source, 
             Vector2 viewRect, 
-            Autoya.HttpRequestHeaderDelegate requestHeader=null,
-            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null,
+            ResourceLoader.MyHttpRequestHeaderDelegate requestHeader=null,
+            ResourceLoader.MyHttpResponseHandlingDelegate httpResponseHandlingDelegate=null,
             string viewName=ConstSettings.ROOTVIEW_NAME
         ) {
             var viewObj = new GameObject("UUebView");
@@ -68,8 +68,8 @@ namespace UUebView {
             GameObject eventReceiverGameObj, 
             string url, 
             Vector2 viewRect, 
-            Autoya.HttpRequestHeaderDelegate requestHeader=null,
-            Autoya.HttpResponseHandlingDelegate httpResponseHandlingDelegate=null,
+            ResourceLoader.MyHttpRequestHeaderDelegate requestHeader=null,
+            ResourceLoader.MyHttpResponseHandlingDelegate httpResponseHandlingDelegate=null,
             string viewName=ConstSettings.ROOTVIEW_NAME
         ) {
             var viewObj = new GameObject("UUebView");

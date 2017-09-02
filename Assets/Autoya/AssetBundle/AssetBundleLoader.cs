@@ -22,18 +22,27 @@ namespace AutoyaFramework.AssetBundles {
 	}
 	
 	public class AssetBundleLoader {
+		/*
+			delegate for handle http response for modules.
+		*/
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+		
+		/*
+			delegate for supply assetBundle get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
 
-		public const int CODE_CRC_MISMATCHED = 399;
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+        private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+
+        public const int CODE_CRC_MISMATCHED = 399;
 
 		public readonly string assetDownloadBasePath;
 		public readonly AssetBundleList list;
 
-		private readonly AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
-
-		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
@@ -49,9 +58,9 @@ namespace AutoyaFramework.AssetBundles {
 			this.list = list;
 
 			if (requestHeader != null) {
-				this.requestHeader = requestHeader;
+				this.assetBundleGetRequestHeaderDelegate = requestHeader;
 			} else {
-				this.requestHeader = BasicRequestHeaderDelegate;
+				this.assetBundleGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
 			}
 
 			if (httpResponseHandlingDelegate != null) {
@@ -404,7 +413,7 @@ namespace AutoyaFramework.AssetBundles {
 				}
 			};
 
-			var reqHeader = requestHeader(url, new Dictionary<string, string>());
+			var reqHeader = assetBundleGetRequestHeaderDelegate(url, new Dictionary<string, string>());
 			
 			var connectionCoroutine = DownloadAssetBundle(
 				bundleName,

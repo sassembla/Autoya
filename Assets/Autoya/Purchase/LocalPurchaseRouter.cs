@@ -68,7 +68,7 @@ namespace AutoyaFramework.Purchase {
 
 
 		private readonly Action readyPurchase;
-		private readonly Action<PurchaseError, string, AutoyaStatus> failedToReady;
+		private readonly Action<PurchaseError, string> failedToReady;
         private readonly Action<string> purchasedInBackground;
 
 		private readonly string storeId;
@@ -78,7 +78,7 @@ namespace AutoyaFramework.Purchase {
 		/**
 			constructor.
 		 */
-		public LocalPurchaseRouter (ProductInfo[] productInfos, Action onReadyPurchase, Action<PurchaseError, string, AutoyaStatus> onReadyFailed, Action<string> onPurchaseDoneInBackground) {
+		public LocalPurchaseRouter (ProductInfo[] productInfos, Action onReadyPurchase, Action<PurchaseError, string> onReadyFailed, Action<string> onPurchaseDoneInBackground) {
 			this.storeId = Guid.NewGuid().ToString();
 			
 			this.verifiedProducts = productInfos;
@@ -115,7 +115,7 @@ namespace AutoyaFramework.Purchase {
 				check network connectivity. because Unity IAP never tells offline.
 			*/
 			if (Application.internetReachability == NetworkReachability.NotReachable) {
-				failedToReady(PurchaseError.Offline, "network is offline.", new AutoyaStatus());
+				failedToReady(PurchaseError.Offline, "network is offline.");
 				return;
 			}
 			
@@ -172,15 +172,15 @@ namespace AutoyaFramework.Purchase {
 			routerState = RouterState.FailedToLoadStore;
 			switch (error) {
 				case InitializationFailureReason.AppNotKnown: {
-					failedToReady(PurchaseError.UnityIAP_Initialize_AppNowKnown, "The store reported the app as unknown.", new AutoyaStatus());
+					failedToReady(PurchaseError.UnityIAP_Initialize_AppNowKnown, "The store reported the app as unknown.");
 					break;
 				}
 				case InitializationFailureReason.NoProductsAvailable: {
-					failedToReady(PurchaseError.UnityIAP_Initialize_NoProductsAvailable, "No products available for purchase.", new AutoyaStatus());
+					failedToReady(PurchaseError.UnityIAP_Initialize_NoProductsAvailable, "No products available for purchase.");
 					break;
 				}
 				case InitializationFailureReason.PurchasingUnavailable: {
-					failedToReady(PurchaseError.UnityIAP_Initialize_PurchasingUnavailable, "In-App Purchases disabled in device settings.", new AutoyaStatus());
+					failedToReady(PurchaseError.UnityIAP_Initialize_PurchasingUnavailable, "In-App Purchases disabled in device settings.");
 					break;
 				}
 			}
@@ -193,10 +193,10 @@ namespace AutoyaFramework.Purchase {
 			string purchaseId, 
 			string productId, 
 			Action<string> purchaseSucceeded, 
-			Action<string, PurchaseError, string, AutoyaStatus> purchaseFailed
+			Action<string, PurchaseError, string> purchaseFailed
 		) {
 			if (Application.internetReachability == NetworkReachability.NotReachable) {
-				purchaseFailed(purchaseId, PurchaseError.Offline, "network is offline.", new AutoyaStatus());
+				purchaseFailed(purchaseId, PurchaseError.Offline, "network is offline.");
 				return;
 			}
 
@@ -204,7 +204,7 @@ namespace AutoyaFramework.Purchase {
 			var reason = string.Empty;
 
 			if (!IsPurchaseReady(out error, out reason)) {
-				purchaseFailed(purchaseId, error, reason, new AutoyaStatus());
+				purchaseFailed(purchaseId, error, reason);
 				return;
 			}
 
@@ -218,7 +218,7 @@ namespace AutoyaFramework.Purchase {
 				}
 				
 				if (!verified) {
-					purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.", new AutoyaStatus());
+					purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.");
 					return;
 				}
 
@@ -231,7 +231,7 @@ namespace AutoyaFramework.Purchase {
                         callbacks = new Callbacks(product, purchaseId, string.Empty, purchaseSucceeded, purchaseFailed);
                         this.controller.InitiatePurchase(product);
                     } else {
-                        purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "selected product is not available.", new AutoyaStatus());
+                        purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "selected product is not available.");
                         routerState = RouterState.PurchaseReady;
                     }
                 }
@@ -242,20 +242,20 @@ namespace AutoyaFramework.Purchase {
 			public readonly Product p;
 			public readonly string ticketId;
 			public readonly Action purchaseSucceeded;
-			public readonly Action<PurchaseError, string, AutoyaStatus> purchaseFailed;
-			public Callbacks (Product p, string purchaseId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string, AutoyaStatus> purchaseFailed) {
+			public readonly Action<PurchaseError, string> purchaseFailed;
+			public Callbacks (Product p, string purchaseId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string> purchaseFailed) {
 				this.p = p;
 				this.ticketId = ticketId;
 				this.purchaseSucceeded = () => {
 					purchaseSucceeded(purchaseId);
 				};
-				this.purchaseFailed = (err, reason, autoyaStatus) => {
-					purchaseFailed(purchaseId, err, reason, autoyaStatus);
+				this.purchaseFailed = (err, reason) => {
+					purchaseFailed(purchaseId, err, reason);
 				};
 			}
 		}
 
-		private Callbacks callbacks = new Callbacks(null, string.Empty, string.Empty, pId => {}, (tId, error, reason, autoyaStatus) => {});
+		private Callbacks callbacks = new Callbacks(null, string.Empty, string.Empty, pId => {}, (tId, error, reason) => {});
 		
 		/// <summary>
 		/// Called when a purchase completes.
@@ -294,7 +294,7 @@ namespace AutoyaFramework.Purchase {
                         }
                     } else {
                         if (callbacks.purchaseFailed != null) {
-                            callbacks.purchaseFailed(PurchaseError.InvalidReceipt, "receipt validation failed. state:" + routerState, new AutoyaStatus());
+                            callbacks.purchaseFailed(PurchaseError.InvalidReceipt, "receipt validation failed. state:" + routerState);
                         }
                     }
 
@@ -305,7 +305,7 @@ namespace AutoyaFramework.Purchase {
 				}
 				default: {
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item 3. state:" + routerState, new AutoyaStatus());
+						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item 3. state:" + routerState);
 					}
 					break;
 				}
@@ -402,13 +402,13 @@ namespace AutoyaFramework.Purchase {
 				default: {
 					Debug.LogError("ここにくるケースを見切れていない2。");
 					if (callbacks.purchaseFailed != null) { 
-						callbacks.purchaseFailed(error, reason, new AutoyaStatus());
+						callbacks.purchaseFailed(error, reason);
 					}
 					break;
 				}
 				case RouterState.Purchasing: {
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(error, reason, new AutoyaStatus());
+						callbacks.purchaseFailed(error, reason);
 					}
 					routerState = RouterState.PurchaseReady;
 					break;

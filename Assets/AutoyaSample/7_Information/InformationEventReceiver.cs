@@ -4,7 +4,7 @@ using AutoyaFramework;
 using UUebView;
 using UnityEngine;
 
-public class EventReceiver : MonoBehaviour, IUUebViewEventHandler
+public class InformationEventReceiver : MonoBehaviour, IUUebViewEventHandler
 {
 
     // Use this for initialization

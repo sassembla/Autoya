@@ -10,24 +10,26 @@ using System.Collections;
 	authentication impl.
 */
 namespace AutoyaFramework {
-
-	/*
-		delegates for supply http request header generate func for modules.
-	*/
-	public delegate Dictionary<string, string> HttpRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data);
-	
-	/*
-		delegates for handle http response for modules.
-	 */
-	public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
-	
-	/*
-		delegates for supply assetBundle get request header geneate func for modules.
-	*/
-	public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
-	
-	
 	public partial class Autoya {
+		/*
+			delegate for supply http request header generate func for modules.
+		*/
+		public delegate Dictionary<string, string> HttpRequestHeaderDelegate (string method, string url, Dictionary<string, string> requestHeader, string data);
+		
+		/*
+			delegate for handle http response for modules.
+		*/
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+		
+		/*
+			delegate for supply assetBundle get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+
+		private HttpRequestHeaderDelegate httpRequestHeaderDelegate;
+        private HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+        private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+
 		private AuthRouter _autoyaAuthRouter;
 
 		private Action onAuthenticated = () => {};
@@ -36,7 +38,7 @@ namespace AutoyaFramework {
 
 		private void Authenticate (bool isFirstBoot) {
 			this.httpRequestHeaderDelegate = OnHttpRequest;
-			this.assetBundleRequestHeaderDelegate = OnAssetBundleGetRequest;
+			this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
 
 			Action onAuthSucceeded = () => {
@@ -642,10 +644,6 @@ namespace AutoyaFramework {
 			}
 		}
 
-		public HttpRequestHeaderDelegate httpRequestHeaderDelegate;
-
-		public AssetBundleGetRequestHeaderDelegate assetBundleRequestHeaderDelegate;
-
 		/**
 			Autoyaのhttpエラーハンドリングのコアメソッド。
 
@@ -729,13 +727,12 @@ namespace AutoyaFramework {
 			succeeded(connectionId, data);
 		}
 
-		public HttpResponseHandlingDelegate httpResponseHandlingDelegate;
-		
-		/**
+
+        /**
 			received auth-failed response from server.
 			should authenticate again.
 		*/
-		private bool CheckAuthFailed (int httpCode, Dictionary<string, string> responseHeader) {
+        private bool CheckAuthFailed (int httpCode, Dictionary<string, string> responseHeader) {
 			if (IsAuthFailed(httpCode, responseHeader)) {
 				_autoyaAuthRouter.Expired();
 				return true;

@@ -6,16 +6,6 @@ using UnityEngine;
 using AutoyaFramework.Settings.Auth;
 
 namespace AutoyaFramework {
-	/*
-		http request methods.
-	*/
-	public enum HttpMethod {
-		Get,
-		Post,
-		Put,
-		Delete
-	}
-
 	/**
 		authenticated http feature.
 	*/
@@ -51,7 +41,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Get, url, additionalHeader, string.Empty);
+			var headers = autoya.httpRequestHeaderDelegate("GET", url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Get(
@@ -63,7 +53,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var stringData = _data as string;
 								var reason = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Get, url, responseHeader, stringData, out reason);
+								var validated = autoya.OnValidateHttpResponse("GET", url, responseHeader, stringData, out reason);
 								if (!validated) {
 									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
@@ -109,7 +99,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Post, url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Post(
@@ -122,7 +112,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var stringData = _data as string;
 								var message = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Post, url, responseHeader, stringData, out message);
+								var validated = autoya.OnValidateHttpResponse("POST", url, responseHeader, stringData, out message);
 								if (!validated) {
 									failed(connectionId, code, message, new AutoyaStatus(false, false, true));
 									return;
@@ -168,7 +158,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Put, url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Put(
@@ -181,7 +171,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var stringData = _data as string;
 								var reason = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Put, url, responseHeader, stringData, out reason);
+								var validated = autoya.OnValidateHttpResponse("PUT", url, responseHeader, stringData, out reason);
 								if (!validated) {
 									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
@@ -227,7 +217,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Delete, url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.Delete(
@@ -239,7 +229,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var stringData = _data as string;
 								var reason = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Delete, url, responseHeader, stringData, out reason);
+								var validated = autoya.OnValidateHttpResponse("DELETE", url, responseHeader, stringData, out reason);
 								if (!validated) {
 									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
@@ -286,7 +276,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Get, url, additionalHeader, string.Empty);
+			var headers = autoya.httpRequestHeaderDelegate("GET", url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.GetByBytes(
@@ -298,7 +288,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var byteData = _data as byte[];
 								var reason = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Get, url, responseHeader, byteData, out reason);
+								var validated = autoya.OnValidateHttpResponse("GET", url, responseHeader, byteData, out reason);
 								if (!validated) {
 									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
@@ -344,7 +334,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Post, url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.PostByBytes(
@@ -357,7 +347,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var byteData = _data as byte[];
 								var message = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Post, url, responseHeader, byteData, out message);
+								var validated = autoya.OnValidateHttpResponse("POST", url, responseHeader, byteData, out message);
 								if (!validated) {
 									failed(connectionId, code, message, new AutoyaStatus(false, false, true));
 									return;
@@ -403,7 +393,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Put, url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.PutByBytes(
@@ -416,7 +406,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var byteData = _data as byte[];
 								var reason = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Put, url, responseHeader, byteData, out reason);
+								var validated = autoya.OnValidateHttpResponse("PUT", url, responseHeader, byteData, out reason);
 								if (!validated) {
 									failed(connectionId, code, reason, new AutoyaStatus());
 									return;
@@ -462,7 +452,7 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
-			var headers = autoya.httpRequestHeaderDelegate(HttpMethod.Delete, url, additionalHeader, data);
+			var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
 				autoya._autoyaHttp.DeleteByBytes(
@@ -474,7 +464,7 @@ namespace AutoyaFramework {
 							(_conId, _data) => {
 								var byteData = _data as byte[];
 								var reason = string.Empty;
-								var validated = autoya.OnValidateHttpResponse(HttpMethod.Delete, url, responseHeader, byteData, out reason);
+								var validated = autoya.OnValidateHttpResponse("DELETE", url, responseHeader, byteData, out reason);
 								if (!validated) {
 									failed(connectionId, code, reason, new AutoyaStatus());
 									return;

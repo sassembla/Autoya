@@ -9,13 +9,22 @@ using UnityEngine.Networking;
 namespace AutoyaFramework.AssetBundles {
 	
 	public class AssetBundleListDownloader {
+		/*
+			delegate for handle http response for modules.
+		*/
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 		
-		private readonly AssetBundleGetRequestHeaderDelegate requestHeader;
+		/*
+			delegate for supply assetBundle get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+
+        
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
-
-		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
@@ -27,9 +36,9 @@ namespace AutoyaFramework.AssetBundles {
 
 		public AssetBundleListDownloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
 			if (requestHeader != null) {
-				this.requestHeader = requestHeader;
+				this.assetBundleGetRequestHeaderDelegate = requestHeader;
 			} else {
-				this.requestHeader = BasicRequestHeaderDelegate;
+				this.assetBundleGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
 			}
 
 			if (httpResponseHandlingDelegate != null) {
@@ -41,7 +50,7 @@ namespace AutoyaFramework.AssetBundles {
 		
 		public IEnumerator DownloadAssetBundleList (string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec=0) {
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_ASSETBUNDLELIST_PREFIX + Guid.NewGuid().ToString();
-			var reqHeader = requestHeader(url, new Dictionary<string, string>());
+			var reqHeader = assetBundleGetRequestHeaderDelegate(url, new Dictionary<string, string>());
 			
 			AssetBundleList assetBundleList = null;
 			Action<string, object> listDonwloadSucceeded = (conId, listData) => {

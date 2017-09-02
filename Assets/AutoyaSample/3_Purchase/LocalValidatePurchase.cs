@@ -26,7 +26,7 @@ public class LocalValidatePurchase : MonoBehaviour {
 			() => {
 				Debug.Log("ready purchase.");
 			}, 
-			(err, reason, status) => {
+			(err, reason) => {
 				Debug.LogError("failed to ready purchase. error:" + err + " reason:" + reason);
 			}, 
 			alreadyPurchasedProductId => {
@@ -50,7 +50,7 @@ public class LocalValidatePurchase : MonoBehaviour {
 				Debug.Log("purchase succeeded, purchasedId:" + purchasedId + " purchased item id:" + "100_gold_coins");
 				// deploy purchased product to user here.
 			}, 
-			(purchasedId, error, reason, status) => {
+			(purchasedId, error, reason) => {
 				Debug.LogError("failed to purchase Id:" + purchasedId + " failed, error:" + error + " reason:" + reason);
 			}
 		);

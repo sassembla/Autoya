@@ -27,13 +27,22 @@ namespace AutoyaFramework.AssetBundles {
 	}
 
 	public class AssetBundlePreloader {
+		/*
+			delegate for handle http response for modules.
+		*/
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+		
+		/*
+			delegate for supply assetBundle get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+        private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
 
-		private readonly AssetBundleGetRequestHeaderDelegate requestHeader;
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
 
-		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
 				succeeded(connectionId, data);
@@ -44,9 +53,9 @@ namespace AutoyaFramework.AssetBundles {
 		
 		public AssetBundlePreloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
 			if (requestHeader != null) {
-				this.requestHeader = requestHeader;
+				this.assetBundleGetRequestHeaderDelegate = requestHeader;
 			} else {
-				this.requestHeader = BasicRequestHeaderDelegate;
+				this.assetBundleGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
 			}
 
 			if (httpResponseHandlingDelegate != null) {
@@ -77,7 +86,7 @@ namespace AutoyaFramework.AssetBundles {
 			}
 
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_PRELOADLIST_PREFIX + Guid.NewGuid().ToString();
-			var reqHeader = requestHeader(listUrl, new Dictionary<string, string>());
+			var reqHeader = assetBundleGetRequestHeaderDelegate(listUrl, new Dictionary<string, string>());
 			
 			PreloadList list = null;
 			Action<string, object> listDonwloadSucceeded = (conId, listData) => {
@@ -232,7 +241,7 @@ namespace AutoyaFramework.AssetBundles {
 			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames) {
 				var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
 				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
-				var bundleReqHeader = requestHeader(bundleUrl, new Dictionary<string, string>());
+				var bundleReqHeader = assetBundleGetRequestHeaderDelegate(bundleUrl, new Dictionary<string, string>());
 
 				var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
 				var crc = targetBundleInfo.crc;

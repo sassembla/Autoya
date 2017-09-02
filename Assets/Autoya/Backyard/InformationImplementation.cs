@@ -36,8 +36,19 @@ namespace AutoyaFramework
 
             var viewSize = scrollView.GetComponent<RectTransform>().sizeDelta;
 
-            // autoya.httpRequestHeaderDelegate, autoya.httpResponseHandlingDelegate を使用すると、httpのエラーハンドリングなどがAutoya準拠になる。
-            var view = UUebViewComponent.GenerateSingleViewFromUrl(scrollView, url, viewSize, null, null, viewName);
+
+            ResourceLoader.MyHttpRequestHeaderDelegate httpReqHeaderDel = (p1, p2, p3, p4) => {
+                return autoya.httpRequestHeaderDelegate(p1, p2, p3, p4);
+            };
+
+            ResourceLoader.MyHttpResponseHandlingDelegate httpResponseHandleDel = (p1, p2, p3, p4, p5, p6, p7) => {
+                Action<string, int, string, AutoyaStatus> p8 = (q1, q2, q3, q4) => {
+                    p7(q1, q2, q3);
+                };
+                autoya.httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p8);
+            };
+            
+            var view = UUebViewComponent.GenerateSingleViewFromUrl(scrollView, url, viewSize, httpReqHeaderDel, httpResponseHandleDel, viewName);
             view.transform.SetParent(content.gameObject.transform, false);
         }
     }

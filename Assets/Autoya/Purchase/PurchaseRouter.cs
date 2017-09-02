@@ -40,6 +40,19 @@ namespace AutoyaFramework.Purchase {
 	
 	
 	public class PurchaseRouter : IStoreListener {
+		/*
+			delegate for supply http request header generate func for modules.
+		*/
+		public delegate Dictionary<string, string> HttpRequestHeaderDelegate (string method, string url, Dictionary<string, string> requestHeader, string data);
+		
+		/*
+			delegate for handle http response for modules.
+		*/
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+		
+		private readonly HttpRequestHeaderDelegate httpRequestHeaderDelegate;
+		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+		
 		
 		[Serializable] public struct PurchaseFailed {
 			public string ticketId;
@@ -104,8 +117,7 @@ namespace AutoyaFramework.Purchase {
 		
 		private readonly string storeKind;
 
-		private readonly HttpRequestHeaderDelegate requestHeader;
-		private Dictionary<string, string> BasicRequestHeaderDelegate (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+		private Dictionary<string, string> BasicRequestHeaderDelegate (string method, string url, Dictionary<string, string> requestHeader, string data) {
 			return requestHeader;
 		}
 
@@ -114,8 +126,6 @@ namespace AutoyaFramework.Purchase {
 
 		private Action readyPurchase;
 		private Action<PurchaseError, string, AutoyaStatus> failedToReady;
-
-		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
 		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (200 <= httpCode && httpCode < 299) {
@@ -165,9 +175,9 @@ namespace AutoyaFramework.Purchase {
 			#endif
 
 			if (httpGetRequestHeaderDeletage != null) {
-				this.requestHeader = httpGetRequestHeaderDeletage;
+				this.httpRequestHeaderDelegate = httpGetRequestHeaderDeletage;
 			} else {
-				this.requestHeader = BasicRequestHeaderDelegate;
+				this.httpRequestHeaderDelegate = BasicRequestHeaderDelegate;
 			}
 
 			this.http = new HTTPConnection();
@@ -618,7 +628,7 @@ namespace AutoyaFramework.Purchase {
 			http functions for purchase.
 		*/
 		private IEnumerator HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
-			var header = this.requestHeader(HttpMethod.Get, url, new Dictionary<string, string>(), string.Empty);
+			var header = this.httpRequestHeaderDelegate("GET", url, new Dictionary<string, string>(), string.Empty);
 
 			Action<string, object> onSucceeded = (conId, result) => {
 				succeeded(conId, result as string);
@@ -639,7 +649,7 @@ namespace AutoyaFramework.Purchase {
 		}
 	
 		private IEnumerator HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
-			var header = this.requestHeader(HttpMethod.Post, url, new Dictionary<string, string>(), data);
+			var header = this.httpRequestHeaderDelegate("POST", url, new Dictionary<string, string>(), data);
 			
 			Action<string, object> onSucceeded = (conId, result) => {
 				succeeded(conId, result as string);

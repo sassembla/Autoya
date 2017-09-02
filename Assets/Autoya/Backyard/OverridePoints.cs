@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework.AssetBundles;
@@ -9,7 +10,7 @@ using AutoyaFramework.Settings.Auth;
 using UnityEngine;
 
 /**
-	modify this class for your app's authentication, purchase dataflow.
+	modify this class for your app's authentication, purchase and assetBundle dataflow.
 */
 namespace AutoyaFramework {
 
@@ -143,7 +144,7 @@ namespace AutoyaFramework {
 			fire when generating http request, via Autoya.Http_X.
 			you can add some kind of authorization parameter to request header.
 		*/
-		private Dictionary<string, string> OnHttpRequest (HttpMethod method, string url, Dictionary<string, string> requestHeader, string data) {
+		private Dictionary<string, string> OnHttpRequest (string method, string url, Dictionary<string, string> requestHeader, string data) {
 			var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
 			requestHeader["Authorization"] = Base64.FromString(accessToken);
 			
@@ -151,7 +152,7 @@ namespace AutoyaFramework {
 		}
 		
 		/**
-			fire when reveived http response from server, via Autoya.Http_X.
+			fire when received http response from server, via Autoya.Http_X.
 			you can verify response data & header parameter.
 
 			accepted http code is 200 ~ 299. and these code is already fixed.
@@ -165,10 +166,10 @@ namespace AutoyaFramework {
 		*/
 
 		// string version.
-		private bool OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, string data, out string reason) {
+		private bool OnValidateHttpResponse (string method, string url, Dictionary<string, string> responseHeader, string data, out string reason) {
 			// let's validate http response if need.
 			if (true) {
-				reason = null;
+				reason = string.Empty;
 				return true;
 			} else {
 				reason = "run over by a bicycle.";
@@ -177,10 +178,10 @@ namespace AutoyaFramework {
 		}
 
 		// byte[] version.
-		private bool OnValidateHttpResponse (HttpMethod method, string url, Dictionary<string, string> responseHeader, byte[] data, out string reason) {
+		private bool OnValidateHttpResponse (string method, string url, Dictionary<string, string> responseHeader, byte[] data, out string reason) {
 			// let's validate http response if need.
 			if (true) {
-				reason = null;
+				reason = string.Empty;
 				return true;
 			} else {
 				reason = "run over by a bicycle.";
@@ -205,20 +206,15 @@ namespace AutoyaFramework {
 				get ProductInfo[] data from this responseData.
 				server should return ProductInfos data type.
 
-				below is generating products data for example.
+				consider convert response data to productInfo[].
+				e.g.
+					string responseData -> JsonUtility.FromJson<ProductInfos>(responseData) -> productInfos.
+
+
+				below is reading products data from settings for example.
 				responseData is ignored.
-
-				let's change for your app.
-					responseData -> ProductInfo[]
 			*/
-			var productInfos = new ProductInfos {
-				productInfos = new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins."),
-					new ProductInfo("10000_gold_coins", "10000_gold_coins_iOS", false, "ten tons of coins."),// this product setting is example of not allow to buy for this player, disable to buy but need to be displayed.
-				}
-			};
-
+			var productInfos = PurchaseSettings.IMMUTABLE_PURCHASE_ITEM_INFOS;
 			return productInfos.productInfos;
 		}
 		

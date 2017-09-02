@@ -322,12 +322,7 @@ namespace AutoyaFramework {
 					yield break;
 				}
 				case AssetBundlesFeatureState.ListLoaded: {
-					// new or renew AssetBundleLoader.
-					_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
-					_assetBundlePreloader = new AssetBundlePreloader(assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
-
-					// set to load ready.
-					assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
+					ReadyLoaderAndPreloader();
 					break;
 				}
 				case AssetBundlesFeatureState.LoaderReady: {
@@ -336,6 +331,35 @@ namespace AutoyaFramework {
 			}
 			
 			execute();
+		}
+
+		private void ReadyLoaderAndPreloader () {
+			// new or renew AssetBundleLoader.
+			{
+				AssetBundleLoader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
+					httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+				};
+				AssetBundleLoader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) => {
+					return assetBundleGetRequestHeaderDelegate(p1, p2);
+				};
+
+				_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+			}
+
+			// new or renew AssetBundlePreloader.
+			{
+				AssetBundlePreloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
+					httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+				};
+				AssetBundlePreloader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) => {
+					return assetBundleGetRequestHeaderDelegate(p1, p2);
+				};
+
+				_assetBundlePreloader = new AssetBundlePreloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+			}
+
+			// set to load ready.
+			assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
 		}
 
 		private void BundleLoaderExecute (Action execute) {
@@ -347,12 +371,7 @@ namespace AutoyaFramework {
 					return;
 				}
 				case AssetBundlesFeatureState.ListLoaded: {
-					// new or renew AssetBundleLoader.
-					_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, autoya.assetBundleRequestHeaderDelegate, autoya.httpResponseHandlingDelegate);
-					_assetBundlePreloader = new AssetBundlePreloader(assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
-
-					// set to load ready.
-					assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
+					ReadyLoaderAndPreloader();
 					break;
 				}
 				case AssetBundlesFeatureState.LoaderReady: {
@@ -427,12 +446,7 @@ namespace AutoyaFramework {
 					yield break;
 				}
 				case AssetBundlesFeatureState.ListLoaded: {
-					// new or renew AssetBundleLoader.
-					_assetBundleLoader = new AssetBundleLoader(Autoya.AssetBundle_GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
-					_assetBundlePreloader = new AssetBundlePreloader(assetBundleRequestHeaderDelegate, httpResponseHandlingDelegate);
-
-					// set to load ready.
-					assetBundleFeatState = AssetBundlesFeatureState.LoaderReady;
+					ReadyLoaderAndPreloader();
 					break;
 				}
 				case AssetBundlesFeatureState.LoaderReady: {

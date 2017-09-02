@@ -24,6 +24,13 @@ namespace AutoyaFramework {
 		private void ReloadPurchasability () {
 			purchaseFeatureState = PurchaseFeatureState.Loading;
 
+			PurchaseRouter.HttpRequestHeaderDelegate httpRequestHeaderDel = (p1, p2, p3, p4) => {
+				return httpRequestHeaderDelegate(p1, p2, p3, p4);
+			};
+			PurchaseRouter.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
+				httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+			};
+
 			_purchaseRouter = new PurchaseRouter(
 				mainthreadDispatcher.Commit,
 				productSourceData => {
@@ -51,8 +58,8 @@ namespace AutoyaFramework {
 
 					mainthreadDispatcher.Commit(ReloadPurchaseFeature());
 				},
-				httpRequestHeaderDelegate, 
-				httpResponseHandlingDelegate
+				httpRequestHeaderDel, 
+				httpResponseHandlingDel
 			);
 		}
 
