@@ -1,8 +1,0 @@
-<linker>
-	<assembly fullname="UnityEngine.Purchasing">
-		<type fullname="UnityEngine.Purchasing.Extension.IPurchasingBinder" preserve="all"/>
-	</assembly>
-	<assembly fullname="Stores">
-		<type fullname="UnityEngine.Purchasing.CloudCatalogImpl" preserve="all"/>
-	</assembly>
-</linker>
