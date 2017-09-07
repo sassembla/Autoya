@@ -341,6 +341,21 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         );
     }
 
+    [MTest] public void IsAssetExistInAssetBundleList () {
+        var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
+        GetAssetBundleList();
+        var exist = Autoya.AssetBundle_IsAssetExist(assetName);
+        Assert(exist, "not exist:" + assetName);
+    }
+
+    [MTest] public void IsAssetBundleExistInAssetBundleList () {
+        var bundleName = "bundlename";
+        GetAssetBundleList();
+        var exist = Autoya.AssetBundle_IsAssetBundleExist(bundleName);
+        Assert(exist, "not exist:" + bundleName);
+
+    }
+
     [MTest] public void AssetBundle_NotCachedBundleNames () {
         Debug.LogWarning("not yet implemented.");
     }
