@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to Romantic Versioning.
+and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/2015/12/romver-romantic-versioning/).
 
 ## [Unreleased]
 
@@ -25,5 +25,5 @@ and this project adheres to Romantic Versioning.
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...HEAD
-[0.8.13]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.0...v0.3.0
+[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/0.8.13...HEAD
+[0.8.13]: https://github.com/olivierlacan/keep-a-changelog/compare/0.8.13...0.8.13
