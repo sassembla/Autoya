@@ -148,6 +148,27 @@ namespace AutoyaFramework {
 			return autoya.LoadAssetBundleListFromStorage();
 		}
 
+		/**
+			check if assetBundleList contains specific named asset.
+		 */
+		public static bool AssetBundle_IsAssetExist (string assetName) {
+			var list = autoya.LoadAssetBundleListFromStorage();
+			if (list.assetBundles.Select(b => b.assetNames).Where(bundledAssetNames => bundledAssetNames.Contains(assetName)).Any()) {
+				return true;
+			}
+			return false;
+		}
+
+		/**
+			check if assetBundleList contains specific named assetBundle.
+		 */
+		public static bool AssetBundle_IsAssetBundleExist (string bundleName) {
+			var list = autoya.LoadAssetBundleListFromStorage();
+			if (list.assetBundles.Where(b => b.bundleName == bundleName).Any()) {
+				return true;
+			}
+			return false;
+		}
 
 		/**
 			get total weight of specific AssetBundles.
