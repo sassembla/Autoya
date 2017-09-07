@@ -36,12 +36,13 @@ namespace AutoyaFramework {
 		private Action<int, string> onBootAuthFailed = (code, reason) => {};
 		private Action<int, string> onRefreshAuthFailed = (code, reason) => {};
 
-		private void Authenticate (bool isFirstBoot) {
+		private void Authenticate (bool isFirstBoot, Action internalOnAuthenticated) {
 			this.httpRequestHeaderDelegate = OnHttpRequest;
 			this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
 
 			Action onAuthSucceeded = () => {
+				internalOnAuthenticated();
 				onAuthenticated();
 			};
 			Action<int, string> onBootAuthenticationRetryFailed = (code, reason) => {

@@ -22,7 +22,6 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 			return;
 		};
 
-		var authorized = false;
 		Action onMainThread = () => {
 			var dataPath = Application.persistentDataPath;
 
@@ -30,18 +29,12 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 			DeleteAllData(fwPath);
 
 			Autoya.TestEntryPoint(dataPath);
-			
-			Autoya.Auth_SetOnAuthenticated(
-				() => {
-					authorized = true;
-				}
-			);
 		};
 		RunOnMainThread(onMainThread);
 		
 		WaitUntil(
 			() => {
-				return authorized && Autoya.Purchase_IsReady();
+				return Autoya.Purchase_IsReady();
 			}, 
 			5, 
 			"failed to auth or failed to ready purchase."
@@ -81,5 +74,14 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 			"failed to purchase."
 		);
 		Assert(succeeded, "not successed.");
+	}
+
+	[MTest] public void RetrievePaidPurchase () {
+		// SendPaidTicketが発生する状態を作り出す。まずPurchaseを作り出す。そしてそのPurchaseをPendingした状態で、ブロックを解除する。
+		// なんか難しいので簡単に書ける方法ないかな。
+		/*
+			機構を起動 -> 停止
+		
+		 */
 	}
 }

@@ -35,7 +35,7 @@ namespace AutoyaFramework {
 				mainthreadDispatcher.Commit,
 				productSourceData => {
 					/*
-						handle received product datas to OverridePoint.
+						handle received product datas from OverridePoint.
 					*/
 					return OnLoadProductsResponse(productSourceData);
 				},
@@ -123,7 +123,10 @@ namespace AutoyaFramework {
 			attempt ready purchase feature if ready purchase was failed.
 		*/
 		public static void Purchase_AttemptReady () {
-			if (Purchase_IsReady()) return;
+			if (Purchase_IsReady()) {
+				// already ready.
+				return;
+			}
 			autoya.AttemptRetryPurchaseReady();
 		}
 		
