@@ -25,5 +25,5 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/0.8.13...HEAD
-[0.8.13]: https://github.com/olivierlacan/keep-a-changelog/compare/0.8.13...0.8.13
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.13...HEAD
+[0.8.13]: https://github.com/sassembla/autoya/compare/0.8.13...0.8.13
