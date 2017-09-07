@@ -65,7 +65,6 @@ namespace AutoyaFramework.Purchase {
 		
 		public enum RouterState {
 			None,
-			LoadingReady,
 			
 			LoadingProducts,
 			FailedToLoadProducts,
