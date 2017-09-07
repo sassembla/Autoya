@@ -1,5 +1,5 @@
 ManifestFileVersion: 0
-CRC: 3954297525
+CRC: 288524929
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
@@ -10,14 +10,14 @@ AssetBundleManifest:
       Dependencies:
         Dependency_0: bundlename
     Info_2:
-      Name: updatable
-      Dependencies:
-        Dependency_0: bundlename
-    Info_3:
       Name: dependsbundlename2
       Dependencies:
         Dependency_0: bundlename
-    Info_4:
+    Info_3:
       Name: nestedprefab
       Dependencies:
         Dependency_0: dependsbundlename
+    Info_4:
+      Name: updatable
+      Dependencies:
+        Dependency_0: bundlename

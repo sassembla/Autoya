@@ -12,7 +12,7 @@ using UnityEngine;
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	[MTest] public void GetAssetBundleList () {
-		var listPath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+		var listPath = "localhost:8081//Mac/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
 		var listDownloader = new AssetBundleListDownloader();
 
 		var done = false;
@@ -35,7 +35,7 @@ public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public void GetAssetBundleListFailed () {
-		var listPath = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/FAKEPATH";
+		var listPath = "localhost:8081//FAKEPATH";
 		var loader = new AssetBundleListDownloader();
 
 		var done = false;

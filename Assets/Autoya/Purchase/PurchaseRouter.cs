@@ -509,10 +509,12 @@ namespace AutoyaFramework.Purchase {
 				purchasedUrl,
 				dataStr,
 				(conId, responseData) => {
+					Debug.LogError("completed.");
 					var product = e.purchasedProduct;
 					controller.ConfirmPendingPurchase(e.purchasedProduct);
 				},
 				(conId, code, reason, autoyaStatus) => {
+					Debug.LogError("send paid ticket failed. reason:" + reason);
 					// systems do this process again automatically.
 					// no need to do something.
 				}

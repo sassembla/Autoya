@@ -20,8 +20,8 @@ namespace UUebView {
 			preset parameters.
 			you can use UUebView with preset paramters for testing.
 		 */
-		public string presetUrl;
-		public GameObject presetEventReceiver;
+		public string presetUrl = string.Empty;
+		public GameObject presetEventReceiver = null;
 
 
 		public UUebViewCore Core {
@@ -92,21 +92,25 @@ namespace UUebView {
             Core.Dequeue(this);
 		}
 
-        public void EmitButtonEventById (string elementId) {
-            Core.OnImageTapped(elementId);
+        public void EmitButtonEventById (GameObject source, string url, string elementId) {
+            Core.OnImageTapped(source, url, elementId);
         }
 
-		public void EmitLinkEventById (string elementId) {
-            Core.OnLinkTapped(elementId);
+		public void EmitLinkEventById (GameObject source, string href, string elementId) {
+            Core.OnLinkTapped(source, href, elementId);
         }
 
         void IUUebView.AddChild (Transform transform) {
             transform.SetParent(this.transform);
         }
 
-        void IUUebView.UpdateSize (Vector2 size) {
-            var parentRectTrans = this.transform.parent.GetComponent<RectTransform>();
-			parentRectTrans.sizeDelta = size;
+        void IUUebView.UpdateParentSizeIfExist (Vector2 size) {
+            if (this.transform.parent != null) {
+                var parentRectTrans = this.transform.parent.GetComponent<RectTransform>();
+                parentRectTrans.sizeDelta = size;
+            } else {
+                // do nothing.
+            }
         }
 
         GameObject IUUebView.GetGameObject () {

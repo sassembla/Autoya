@@ -1,12 +1,12 @@
 ManifestFileVersion: 0
-CRC: 2713319711
+CRC: 2700258234
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: b753e52642de93151f625ee64346efd6
+    Hash: 00bf2213139c6f99845283e8f522f8cf
   TypeTreeHash:
     serializedVersion: 2
-    Hash: 80b604ddfb6ec87e740beaed3da17941
+    Hash: 9f9da7361bd242c472af68f0e3051895
 HashAppended: 0
 ClassTypes:
 - Class: 1
@@ -17,13 +17,13 @@ ClassTypes:
   Script: {instanceID: 0}
 - Class: 48
   Script: {instanceID: 0}
-- Class: 95
+- Class: 54
   Script: {instanceID: 0}
 - Class: 212
   Script: {instanceID: 0}
 - Class: 213
   Script: {instanceID: 0}
 Assets:
-- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/updatableTex.prefab
+- Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab
 Dependencies:
-- /Users/passepied/Desktop/autoya/AssetBundles/iOS/2.0.0/bundlename
+- /Users/choucho/Desktop/Autoya/AssetBundles/StandaloneOSXIntel64/bundlename

@@ -13,9 +13,9 @@ namespace AutoyaFramework.Settings.AssetBundles {
 		/*
 			urls and prefixs.
 		*/
-		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
-		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
-		public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/";
+		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "localhost:8081//Mac/";
+		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "localhost:8081//Mac/";
+		public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "localhost:8081//Mac/";
 		
 
 		public const string ASSETBUNDLES_DOWNLOAD_PREFIX = "assetbundle_";

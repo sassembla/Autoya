@@ -58,8 +58,10 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
         
         switch (type) {
             case ContentType.IMAGE: {
-                var img = element.GetComponent<Image>();
-                StartCoroutine(Rotate(img));
+                if (element != null) {
+                    var img = element.GetComponent<Image>();
+                    StartCoroutine(Rotate(img));
+                }
                 break;
             }
         }
