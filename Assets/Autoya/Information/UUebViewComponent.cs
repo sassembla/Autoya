@@ -120,5 +120,17 @@ namespace UUebView {
         void IUUebView.StartCoroutine (IEnumerator iEnum) {
             this.StartCoroutine(iEnum);
         }
+
+        public void AppendContentToTree (string htmlContent, string query) {
+            this.Core.AppendContentToLast(htmlContent, query);
+        }
+
+        public void AppendContentToLast (string htmlContent) {
+            this.Core.AppendContentToLast(htmlContent);
+        }
+
+        public void DeleteByPoint (string query) {
+            this.Core.DeleteByPoint(query);
+        }
     }
 }
