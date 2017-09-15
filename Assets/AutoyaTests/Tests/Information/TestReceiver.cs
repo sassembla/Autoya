@@ -29,14 +29,14 @@ public class TestReceiver : MonoBehaviour, IUUebViewEventHandler {
         }
     }
 
-    void IUUebViewEventHandler.OnLoaded() {
+    void IUUebViewEventHandler.OnLoaded(string[] treeIds) {
         Debug.Log("OnLoaded");
         if (OnLoaded != null) {
             OnLoaded();
         }
     }
 
-    void IUUebViewEventHandler.OnUpdated() {
+    void IUUebViewEventHandler.OnUpdated(string[] newTreeIds) {
         Debug.Log("OnUpdated");
         if (OnUpdated != null) {
             OnUpdated();

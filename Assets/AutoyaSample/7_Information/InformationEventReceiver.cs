@@ -25,7 +25,7 @@ public class InformationEventReceiver : MonoBehaviour, IUUebViewEventHandler
         Debug.Log("loading.. progress:" + progress);
     }
 
-    void IUUebViewEventHandler.OnLoaded()
+    void IUUebViewEventHandler.OnLoaded(string[] treeIds)
     {
         Debug.Log("loaded.");
     }
@@ -36,7 +36,7 @@ public class InformationEventReceiver : MonoBehaviour, IUUebViewEventHandler
     }
 
 
-    void IUUebViewEventHandler.OnUpdated()
+    void IUUebViewEventHandler.OnUpdated(string[] newTreeIds)
     {
         Debug.Log("updated.");
     }
