@@ -6,7 +6,6 @@ namespace Miyamasu {
 
 	[Serializable] public class RunnerSettings {
 		[SerializeField] public bool runOnPlay = true;
-		[SerializeField] public bool runOnCompiled = true;
 	}
 
 	/**

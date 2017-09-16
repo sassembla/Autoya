@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using AutoyaFramework;
 using AutoyaFramework.Settings.Auth;
@@ -15,68 +16,62 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		}
 	}
 	
-	[MSetup] public void Setup () {
+	[MSetup] public IEnumerator Setup () {
 		Autoya.ResetAllForceSetting();
 
 		var authorized = false;
-		Action onMainThread = () => {
-			var dataPath = Application.persistentDataPath;
+		var dataPath = Application.persistentDataPath;
 
-			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-			DeleteAllData(fwPath);
+		var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+		DeleteAllData(fwPath);
 
-			Autoya.TestEntryPoint(dataPath);
+		Autoya.TestEntryPoint(dataPath);
 
-			Autoya.Auth_SetOnAuthenticated(
-				() => {
-					authorized = true;
-				}
-			);
-		};
+		Autoya.Auth_SetOnAuthenticated(
+			() => {
+				authorized = true;
+			}
+		);
 
-		RunOnMainThread(onMainThread);
-		
-		WaitUntil(
+		yield return WaitUntil(
 			() => {
 				return authorized;
 			},
-			5,
-			"timeout in setup."
+			() => {throw new TimeoutException("timeout in setup.");}
 		);
 
-		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
+		True(Autoya.Auth_IsAuthenticated(), "not logged in.");
 	}
 
-	[MTeardown] public void Teardown () {
-		RunOnMainThread(Autoya.Shutdown);
+	[MTeardown] public IEnumerator Teardown () {
+		Autoya.Shutdown();
 		Autoya.ResetAllForceSetting();
+		while (GameObject.Find("AutoyaMainthreadDispatcher") != null) {
+			yield return null;
+		}
 	}
 
 	
-	[MTest] public void WaitDefaultAuthenticate () {
-		Assert(Autoya.Auth_IsAuthenticated(), "not yet logged in.");
+	[MTest] public IEnumerator WaitDefaultAuthenticate () {
+		True(Autoya.Auth_IsAuthenticated(), "not yet logged in.");
+		yield break;
 	}
 
-	[MTest] public void DeleteAllUserData () {
+	[MTest] public IEnumerator DeleteAllUserData () {
 		Autoya.Auth_DeleteAllUserData();
 		
 		var authenticated = Autoya.Auth_IsAuthenticated();
-		Assert(!authenticated, "not deleted.");
+		True(!authenticated, "not deleted.");
 
-		RunOnMainThread(
-			() => {
-				Autoya.Auth_AttemptAuthentication();
-			}
-		);
-
-		WaitUntil(
+		Autoya.Auth_AttemptAuthentication();
+		
+		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			5,
-			"failed to firstBoot."
+			() => {throw new TimeoutException("failed to firstBoot.");}
 		);
 	}
 
-	[MTest] public void HandleBootAuthFailed () {
+	[MTest] public IEnumerator HandleBootAuthFailed () {
 		Autoya.forceFailFirstBoot = true;
 
 		Autoya.Auth_DeleteAllUserData();
@@ -88,20 +83,18 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		RunOnMainThread(
-			() => Autoya.Auth_AttemptAuthentication()
-		);
+		Autoya.Auth_AttemptAuthentication();
 		
-		WaitUntil(
+		yield return WaitUntil(
 			() => bootAuthFailHandled,
-			10,
-			"failed to handle bootAuthFailed."
+			() => {throw new TimeoutException("failed to handle bootAuthFailed.");},
+			10
 		);
 		
 		Autoya.forceFailFirstBoot = false;
 	}
 
-	[MTest] public void HandleBootAuthFailedThenAttemptAuthentication () {
+	[MTest] public IEnumerator HandleBootAuthFailedThenAttemptAuthentication () {
 		Autoya.forceFailFirstBoot = true;
 
 		Autoya.Auth_DeleteAllUserData();
@@ -113,52 +106,45 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 		
-		RunOnMainThread(
-			() => Autoya.Auth_AttemptAuthentication()
-		);
+		Autoya.Auth_AttemptAuthentication();
 		
-		WaitUntil(
+		yield return WaitUntil(
 			() => bootAuthFailHandled,
-			10,
-			"failed to handle bootAuthFailed."
+			() => {throw new TimeoutException("failed to handle bootAuthFailed.");},
+			10
 		);
 		
 		Autoya.forceFailFirstBoot = false;
 
-		RunOnMainThread(
-			() => Autoya.Auth_AttemptAuthentication()
-		);
-
-		WaitUntil(
+		Autoya.Auth_AttemptAuthentication();
+		
+		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			5,
-			"failed to attempt auth."
+			() => {throw new TimeoutException("failed to attempt auth.");}
 		);
 	}
 	
-	[MTest] public void HandleLogoutThenAuthenticationAttemptSucceeded () {
+	[MTest] public IEnumerator HandleLogoutThenAuthenticationAttemptSucceeded () {
 		Autoya.Auth_Logout();
 
-		RunOnMainThread(
-			() => Autoya.Auth_AttemptAuthentication()
-		);
+		Autoya.Auth_AttemptAuthentication();
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			5,
-			"failed to auth"
+			() => {throw new TimeoutException("failed to auth");}
 		);
 	}
 
 	
-	[MTest] public void IntentionalLogout () {
+	[MTest] public IEnumerator IntentionalLogout () {
 		Autoya.Auth_Logout();
 		
 		var loggedIn = Autoya.Auth_IsAuthenticated();
-		Assert(!loggedIn, "state does not match.");
+		True(!loggedIn, "state does not match.");
+		yield break;
 	}
 
-	[MTest] public void HandleTokenRefreshFailed () {
+	[MTest] public IEnumerator HandleTokenRefreshFailed () {
 		Autoya.forceFailTokenRefresh = true;
 		
 		var tokenRefreshFailed = false;
@@ -179,16 +165,16 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => tokenRefreshFailed,
-			10,
-			"failed to handle tokenRefreshFailed."
+			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
+			10
 		);
 		
 		Autoya.forceFailTokenRefresh = false;
 	}
 
-	[MTest] public void HandleTokenRefreshFailedThenAttemptAuthentication () {
+	[MTest] public IEnumerator HandleTokenRefreshFailedThenAttemptAuthentication () {
 		Autoya.forceFailTokenRefresh = true;
 		
 		var tokenRefreshFailed = false;
@@ -209,28 +195,24 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => tokenRefreshFailed,
-			10,
-			"failed to handle tokenRefreshFailed."
+			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
+			10
 		);
 		
 		Autoya.forceFailTokenRefresh = false;
-
-		RunOnMainThread(
-			() => {
-				Autoya.Auth_AttemptAuthentication();
-			}
-		);
 		
-		WaitUntil(
+		Autoya.Auth_AttemptAuthentication();
+		
+		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			10,
-			"failed to handle tokenRefreshFailed."
+			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
+			15
 		);
 	}
 
-    [MTest] public void UnauthorizedThenHttpGet () {
+    [MTest] public IEnumerator UnauthorizedThenHttpGet () {
 		var reauthenticationSucceeded = false;
 
 		// forcibly get 401 response.
@@ -257,10 +239,10 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => reauthenticationSucceeded,
-			10,
-			"failed to handle SetOnAuthenticated."
+			() => {throw new TimeoutException("failed to handle SetOnAuthenticated.");},
+			10
 		);
 	}
 }

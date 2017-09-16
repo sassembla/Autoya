@@ -10,7 +10,7 @@ using UnityEngine;
 */
 public class PurchaseRouterTests : MiyamasuTestRunner {
 	/**
-		Unity 5.5対応のpurchaseのテスト。以下のようなことをまるっとやっている。
+		Unity 5.5以降対応のpurchaseのテスト。以下のようなことをまるっとやっている。
 
 		{アイテム一覧取得処理}
 			・アイテム一覧を取得する。
@@ -36,59 +36,56 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		ちょっと回避しようがない。
 	*/
 	private PurchaseRouter router;
-	
-	[MSetup] public void Setup () {
-		if (!IsTestRunningInPlayingMode()) {
-			SkipCurrentTest("Purchase feature should run on MainThread.");
-		};
 
+	private TestMBRunner runner;
+	
+	[MSetup] public IEnumerator Setup () {
 		var done = false;
 		
 		// overwrite Autoya instance for test purchase feature.
-		RunEnumeratorOnMainThread(
-			WaitPurchaseFeatureOfAutoya(
-				() => {
-					done = true;
-				}
-			),
-			false
+		yield return WaitPurchaseFeatureOfAutoya(
+			() => {
+				done = true;
+			}
 		);
-
-		WaitUntil(
+		
+		yield return WaitUntil(
 			() => done,
-			10,
-			"failed to ready."
+			() => {throw new TimeoutException("failed to ready.");}
 		);
 
 		if (!done) {
-			SkipCurrentTest("Purchase feature test setup is failed to ready.");
-			return;
+			Fail("Purchase feature test setup is failed to ready.");
+			yield break;
 		}
 
 		// shutdown purchase feature for get valid result from Unity IAP.
 		Autoya.Purchase_Shutdown();
 		
-		RunOnMainThread(
-			() => {
-				router = new PurchaseRouter(
-					iEnum => {
-						RunEnumeratorOnMainThread(iEnum, false);
-					},
-					productData => {
-						// dummy response.
-						return new ProductInfo[] {
-							new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-							new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-						};
-					},
-					ticketData => ticketData,
-					() => {},
-					(err, reason, status) => {}
-				);
-			}
+		var purchaseRunner = new GameObject("PurchaseTestRunner");
+		runner = purchaseRunner.AddComponent<TestMBRunner>();
+
+		router = new PurchaseRouter(
+			iEnum => {
+				runner.StartCoroutine(iEnum);
+			},
+			productData => {
+				// dummy response.
+				return new ProductInfo[] {
+					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+				};
+			},
+			ticketData => ticketData,
+			() => {},
+			(err, reason, status) => {}
 		);
-		
-		WaitUntil(() => router.IsPurchaseReady(), 5, "failed to ready.");
+	
+		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
+	}
+
+	[MTeardown] public void Teardown () {
+		GameObject.Destroy(runner.gameObject);
 	}
 
 	private IEnumerator WaitPurchaseFeatureOfAutoya (Action done) {
@@ -100,13 +97,14 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		done();
 	}
 
-	[MTest] public void ShowProductInfos () {
+	[MTest] public IEnumerator ShowProductInfos () {
 		var products = router.ProductInfos();
-		Assert(products.Length == 2, "not match.");
+		True(products.Length == 2, "not match.");
+		yield break;
 	}
 
 
-	[MTest] public void Purchase () {
+	[MTest] public IEnumerator Purchase () {
 		var purchaseId = "dummy purchase Id";
 		var productId = "100_gold_coins";
 
@@ -114,32 +112,32 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		var purchaseSucceeded = false;
 		var failedReason = string.Empty;
 
-		RunEnumeratorOnMainThread(
-			router.PurchaseAsync(
-				purchaseId,
-				productId,
-				pId => {
-					purchaseDone = true;
-					purchaseSucceeded = true;
-				},
-				(pId, err, reason, autoyaStatus) => {
-					purchaseDone = true;
-					failedReason = reason;
-				}
-			)
+		yield return router.PurchaseAsync(
+			purchaseId,
+			productId,
+			pId => {
+				purchaseDone = true;
+				purchaseSucceeded = true;
+			},
+			(pId, err, reason, autoyaStatus) => {
+				purchaseDone = true;
+				failedReason = reason;
+			}
 		);
 
-		WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
-		Assert(purchaseSucceeded, "purchase failed. reason:" + failedReason);
+		yield return WaitUntil(() => purchaseDone, () => {throw new TimeoutException("failed to purchase async.");});
+		True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
 	}
 
-	[MTest] public void PurchaseCancell () {
+	[MTest] public IEnumerator PurchaseCancell () {
 		Debug.LogWarning("購入キャンセルのテストがしたい");
+		yield break;
 	}
 
 
-	[MTest] public void Offline () {
+	[MTest] public IEnumerator Offline () {
 		Debug.LogWarning("多段階時のオフラインのテストがしたい");
+		yield break;
 	}
 	
 	/*
@@ -156,26 +154,26 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 	/**
 		force fail initialize of router.
 	*/
-	// [MTest] public void ReloadUnreadyStore () {
+	// [MTest] public IEnumerator ReloadUnreadyStore () {
 	//     if (router == null) {
 	//         MarkSkipped();
 	//         return;
 	//     }
 
 	//     // renew router.
-	//     RunOnMainThread(
+	//     
 	//         () => {
 	//             router = new PurchaseRouter();
 	//         }
 	//     );
 		
 	//     try {
-	//         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
+	//         yield return WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
 	//     } catch {
 	//         // catch timeout. do nothing.
 	//     }
 
-	//     Assert(!router.IsPurchaseReady(), "not intended.");
+	//     True(!router.IsPurchaseReady(), "not intended.");
 		
 	//     // すでにnewされているrouterのハンドラを更新しないとダメか、、
 	//     router.httpGet = (url, successed, failed) => {
@@ -194,11 +192,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 	//         (err, reason) => {}
 	//     );
 
-	//     WaitUntil(() => ready, 5, "not get ready.");
-	//     Assert(router.IsPurchaseReady(), "not ready.");
+	//     yield return WaitUntil(() => ready, 5, "not get ready.");
+	//     True(router.IsPurchaseReady(), "not ready.");
 	// }
 
-	// [MTest] public void ReloadUnreadyStoreThenPurchase () {
+	// [MTest] public IEnumerator ReloadUnreadyStoreThenPurchase () {
 	//     if (router == null) {
 	//         MarkSkipped();
 	//         return;
@@ -213,19 +211,19 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 	//     };
 
 	//     // renew router.
-	//     RunOnMainThread(
+	//     
 	//         () => {
 	//             router = new PurchaseRouter(httpGet, httpPost);
 	//         }
 	//     );
 		
 	//     try {
-	//         WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
+	//         yield return WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
 	//     } catch {
 	//         // catch timeout. do nothing.
 	//     }
 
-	//     Assert(!router.IsPurchaseReady(), "not intended.");
+	//     True(!router.IsPurchaseReady(), "not intended.");
 		
 	//     // すでにnewされているrouterのハンドラを更新しないとダメか、、
 	//     router.httpGet = (url, successed, failed) => {
@@ -244,8 +242,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 	//         (err, reason) => {}
 	//     );
 
-	//     WaitUntil(() => ready, 5, "not get ready.");
-	//     Assert(router.IsPurchaseReady(), "not ready.");
+	//     yield return WaitUntil(() => ready, 5, "not get ready.");
+	//     True(router.IsPurchaseReady(), "not ready.");
 
 	//     var purchaseId = "dummy purchase Id";
 	//     var productId = "100_gold_coins";
@@ -254,7 +252,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 	//     var purchaseSucceeded = false;
 	//     var failedReason = string.Empty;
 
-	//     RunOnMainThread(
+	//     
 	//         () => {
 	//             router.PurchaseAsync(
 	//                 purchaseId,
@@ -271,7 +269,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 	//         }
 	//     );
 
-	//     WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
-	//     Assert(purchaseSucceeded, "purchase failed. reason:" + failedReason);
+	//     yield return WaitUntil(() => purchaseDone, 10, "failed to purchase async.");
+	//     True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
 	// }
 }

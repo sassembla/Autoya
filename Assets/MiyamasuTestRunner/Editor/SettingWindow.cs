@@ -8,15 +8,12 @@ using UnityEngine;
 
 namespace Miyamasu {
 
-	public class EditorOption {
-		public bool runOnCompiled;
+	public class SettingWindow {
 		public bool runOnPlay;
 
-		public EditorOption () {
+		public SettingWindow () {
 			var settings = Settings.LoadSettings();
-			runOnCompiled = settings.runOnCompiled;
 			runOnPlay = settings.runOnPlay;
-			// Debug.Log("?? runOnCompiled:" + runOnCompiled + " runOnPlay:" + runOnPlay);
 		}
 
 
@@ -40,26 +37,11 @@ namespace Miyamasu {
 		// 	Menu.SetChecked(menuPath, settings.runOnPlay);
 		// }
 
-		[MenuItem("Window/Miyamasu Test Runner/Update UnityPackage", false, 21)] public static void UnityPackage () {
-			var assetPaths = new List<string>();
-			var dirPaths = Directory.GetDirectories("Assets/MiyamasuTestRunner");
-			
-			foreach (var dir in dirPaths) {
-				var files = Directory.GetFiles(dir);
-				foreach (var file in files) {
-					assetPaths.Add(file);
-				}
-			}
-			
-			AssetDatabase.ExportPackage(assetPaths.ToArray(), "MiyamasuTestRunner.unitypackage", ExportPackageOptions.IncludeDependencies);
-		}
-
 		public void Save () {
 			var settings = Settings.LoadSettings();
-			settings.runOnCompiled = runOnCompiled;
 			settings.runOnPlay = runOnPlay;
 			Settings.WriteSettings(settings);
-			Debug.Log("Miyamasu setting saved.");
+			Debug.Log("Miyamasu setting updated.");
 
 			AssetDatabase.Refresh();
 		}
@@ -70,11 +52,15 @@ namespace Miyamasu {
 			/*
 				target type instance.
 			*/
-			static Type targetType = typeof(EditorOption);
-		
-			[MenuItem("Window/Miyamasu Test Runner/Open")] public static void OpenSuekkoWindow () {
+			static Type targetType = typeof(SettingWindow);
+			private static Application.LogCallback staticLogAct;
+
+			[MenuItem("Window/Miyamasu Test Runner/Open Settings")] public static void OpenSuekkoWindow () {
 				var window = GetWindow<MiyamasuWindow>();
 				window.titleContent = new GUIContent(targetType.ToString());
+				
+				Application.logMessageReceived += staticLogAct;
+
 				window.Setup(targetType);
 			}
 
@@ -172,11 +158,10 @@ namespace Miyamasu {
 						}
 					}
 				};
-				
-				Application.logMessageReceived += logAct;
-			}
 
-			
+				// switch log action.
+				staticLogAct = logAct;			
+			}
 
 
 			private class NameAndType {

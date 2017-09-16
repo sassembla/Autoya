@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using AutoyaFramework;
@@ -19,40 +20,36 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		}
 	}
 	
-	[MSetup] public void Setup () {
-		var authenticated = false;
-		Action onMainThread = () => {
-			var dataPath = Application.persistentDataPath;
-
-			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-			DeleteAllData(fwPath);
-			
-			Autoya.TestEntryPoint(dataPath);
-			
-			Autoya.Auth_SetOnAuthenticated(
-				() => {
-					authenticated = true;
-				}
-			);
-		};
-		RunOnMainThread(onMainThread);
+	[MSetup] public IEnumerator Setup () {
+		var dataPath = Application.persistentDataPath;
+		var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+		DeleteAllData(fwPath);
 		
-		WaitUntil(
+		Autoya.TestEntryPoint(dataPath);
+		
+		var authenticated = false;
+		Autoya.Auth_SetOnAuthenticated(
 			() => {
-				return authenticated;
-			}, 
-			5, 
-			"failed to auth."
+				authenticated = true;
+			}
 		);
 		
-		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
+		yield return WaitUntil(
+			() => authenticated,
+			() => {throw new TimeoutException("failed to auth.");}
+		);
+		
+		True(Autoya.Auth_IsAuthenticated(), "not logged in.");
 	}
 	
-	[MTeardown] public void Teardown () {
-		RunOnMainThread(Autoya.Shutdown);
+	[MTeardown] public IEnumerator Teardown () {
+		Autoya.Shutdown();
+		while (GameObject.Find("AutoyaMainthreadDispatcher") != null) {
+			yield return null;
+		}
 	}
 
-	[MTest] public void AutoyaHTTPGet () {
+	[MTest] public IEnumerator AutoyaHTTPGet () {
 		var result = string.Empty;
 		Autoya.Http_Get(
 			"https://httpbin.org/get", 
@@ -60,17 +57,17 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 				result = "done!:" + resultData;
 			},
 			(conId, code, reason, autoyaStatus) => {
-				Assert(false, "failed. code:" + code + " reason:" + reason);
+				True(false, "failed. code:" + code + " reason:" + reason);
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => !string.IsNullOrEmpty(result), 
-			5
+			() => {throw new TimeoutException("timeout.");}
 		);
 	}
 
-	[MTest] public void AutoyaHTTPGetWithAdditionalHeader () {
+	[MTest] public IEnumerator AutoyaHTTPGetWithAdditionalHeader () {
 		var result = string.Empty;
 		Autoya.Http_Get(
 			"https://httpbin.org/headers", 
@@ -78,42 +75,42 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 				result = resultData;
 			},
 			(conId, code, reason, autoyaStatus) => {
-				Assert(false, "failed. code:" + code + " reason:" + reason);
+				True(false, "failed. code:" + code + " reason:" + reason);
 			},
 			new Dictionary<string, string>{
 				{"Hello", "World"}
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => (result.Contains("Hello") && result.Contains("World")), 
-			5
+			() => {throw new TimeoutException("timeout.");}
 		);
 	}
 
-	[MTest] public void AutoyaHTTPGetFailWith404 () {
+	[MTest] public IEnumerator AutoyaHTTPGetFailWith404 () {
 		var resultCode = 0;
 		
 		Autoya.Http_Get(
 			"https://httpbin.org/status/404", 
 			(conId, resultData) => {
-				Assert(false, "unexpected succeeded. resultData:" + resultData);
+				True(false, "unexpected succeeded. resultData:" + resultData);
 			},
 			(conId, code, reason, autoyaStatus) => {
 				resultCode = code;
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => (resultCode != 0), 
-			5
+			() => {throw new TimeoutException("timeout.");}
 		);
 		
 		// result should be have reason,
-		Assert(resultCode == 404, "code unmatched. resultCode:" + resultCode);
+		True(resultCode == 404, "code unmatched. resultCode:" + resultCode);
 	}
 
-	[MTest] public void AutoyaHTTPGetFailWithUnauth () {
+	[MTest] public IEnumerator AutoyaHTTPGetFailWithUnauth () {
 		var unauthorized = false;
 
 		/*
@@ -130,20 +127,19 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => unauthorized,
-			5
+			() => {throw new TimeoutException("timeout.");}
 		);
 
 		// token refresh feature is already running. wait end.
-		WaitUntil(
+		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			5,
-			"failed to refresh token."
+			() => {throw new TimeoutException("failed to refresh token.");}
 		);
 	}
 
-	[MTest] public void AutoyaHTTPGetFailWithTimeout () {
+	[MTest] public IEnumerator AutoyaHTTPGetFailWithTimeout () {
 		var failedCode = -1;
 		var timeoutError = string.Empty;
 		/*
@@ -154,7 +150,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 		Autoya.Http_Get(
 			"https://httpbin.org/delay/1", 
 			(conId, resultData) => {
-				Assert(false, "got success result.");
+				True(false, "got success result.");
 			},
 			(conId, code, reason, autoyaStatus) => {
 				failedCode = code;
@@ -164,17 +160,17 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			0.0001
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => {
 				return !string.IsNullOrEmpty(timeoutError);
-			}, 
-			3
+			},
+			() => {throw new TimeoutException("timeout.");}
 		);
 
-		Assert(failedCode == BackyardSettings.HTTP_TIMEOUT_CODE, "unmatch. failedCode:" + failedCode + " message:" + timeoutError);
+		True(failedCode == BackyardSettings.HTTP_TIMEOUT_CODE, "unmatch. failedCode:" + failedCode + " message:" + timeoutError);
 	}
 
-	[MTest] public void AutoyaHTTPPost () {
+	[MTest] public IEnumerator AutoyaHTTPPost () {
 		var result = string.Empty;
 		Autoya.Http_Post(
 			"https://httpbin.org/post", 
@@ -187,16 +183,16 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => !string.IsNullOrEmpty(result), 
-			5
+			() => {throw new TimeoutException("timeout.");}
 		);
 	}
 
 	/*
 		target test site does not support show post request. hmmm,,,
 	*/
-	// [MTest] public void AutoyaHTTPPostWithAdditionalHeader () {
+	// [MTest] public IEnumerator AutoyaHTTPPostWithAdditionalHeader () {
 	// 	var result = string.Empty;
 	// 	Autoya.Http_Post(
 	// 		"https://httpbin.org/headers", 
@@ -214,7 +210,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	// 		}
 	// 	);
 
-	// 	var wait = WaitUntil(
+	// 	var wait = yield return WaitUntil(
 	// 		() => (result.Contains("Hello") && result.Contains("World")), 
 	// 		5
 	// 	);
@@ -223,7 +219,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 	// 	return true;
 	// }
 
-	[MTest] public void AutoyaHTTPPostFailWith404 () {
+	[MTest] public IEnumerator AutoyaHTTPPostFailWith404 () {
 		var resultCode = 0;
 		
 		Autoya.Http_Post(
@@ -237,17 +233,16 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => (resultCode == 404), 
-			5,
-			"failed to detect 404."
+			() => {throw new TimeoutException("failed to detect 404.");}
 		);
 		
 		// result should be have reason,
-		Assert(resultCode == 404, "code unmatched. resultCode:" + resultCode);
+		True(resultCode == 404, "code unmatched. resultCode:" + resultCode);
 	}
 
-	[MTest] public void AutoyaHTTPPostFailWithUnauth () {
+	[MTest] public IEnumerator AutoyaHTTPPostFailWithUnauth () {
 		var unauthorized = false;
 
 		/*
@@ -264,21 +259,20 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => unauthorized,
-			5
+			() => {throw new TimeoutException("timeout.");}
 		);
 
 
 		// token refresh feature is already running. wait end.
-		WaitUntil(
+		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
-			5,
-			"failed to refresh token."
+			() => {throw new TimeoutException("failed to refresh token.");}
 		);
 	}
 
-	[MTest] public void AutoyaHTTPPostFailWithTimeout () {
+	[MTest] public IEnumerator AutoyaHTTPPostFailWithTimeout () {
 		var timeoutError = string.Empty;
 		/*
 			fake server should be response 1msec
@@ -287,21 +281,21 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner {
 			"https://httpbin.org/delay/1",
 			"data",
 			(conId, resultData) => {
-				Assert(false, "got success result.");
+				True(false, "got success result.");
 			},
 			(conId, code, reason, autoyaStatus) => {
-				Assert(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. code:" + code + " reason:" + reason);
+				True(code == BackyardSettings.HTTP_TIMEOUT_CODE, "not match. code:" + code + " reason:" + reason);
 				timeoutError = reason;
 			},
 			null,
 			0.0001// 1ms
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => {
 				return !string.IsNullOrEmpty(timeoutError);
 			}, 
-			3
+			() => {throw new TimeoutException("timeout.");}
 		);
 	}
 	

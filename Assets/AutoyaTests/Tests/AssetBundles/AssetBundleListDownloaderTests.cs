@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
@@ -11,51 +12,45 @@ using UnityEngine;
 	tests for Autoya Download list of whole AssetBundles.
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
-	[MTest] public void GetAssetBundleList () {
+	[MTest] public IEnumerator GetAssetBundleList () {
 		var listPath = "localhost:8081//Mac/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
 		var listDownloader = new AssetBundleListDownloader();
 
 		var done = false;
-		var cor = listDownloader.DownloadAssetBundleList(
+		yield return listDownloader.DownloadAssetBundleList(
 			listPath, 
 			list => {
 				done = true;
 			}, 
 			(code, reason, autoyaStatus) => {
+				Fail("failed to get list." + code + " reason:" + reason);
 				// do nothing.
 			}
 		);
-		RunEnumeratorOnMainThread(
-			cor
-		);
-
-		WaitUntil(
-			() => done, 5, "not yet get assetBundleList."
+		
+		yield return WaitUntil(
+			() => done, () => {throw new TimeoutException("not yet get assetBundleList.");}
 		);
 	}
 
-	[MTest] public void GetAssetBundleListFailed () {
+	[MTest] public IEnumerator GetAssetBundleListFailed () {
 		var listPath = "localhost:8081//FAKEPATH";
 		var loader = new AssetBundleListDownloader();
 
 		var done = false;
-		var cor = loader.DownloadAssetBundleList(
+		yield return loader.DownloadAssetBundleList(
 			listPath, 
 			list => {
-				Assert(false, "should not be succeeded.");
+				True(false, "should not be succeeded.");
 			}, 
 			(code, reason, autoyaStatus) => {
-				Assert(code == 404, "error code does not match.");
+				True(code == 404, "error code does not match.");
 				done = true;
 			}
 		);
-
-		RunEnumeratorOnMainThread(
-			cor
-		);
-
-		WaitUntil(
-			() => done, 5, "not yet get assetBundleList."
+		
+		yield return WaitUntil(
+			() => done, () => {throw new TimeoutException("not yet get assetBundleList.");}
 		);
 	}
 }

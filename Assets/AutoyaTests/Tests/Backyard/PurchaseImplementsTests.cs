@@ -16,72 +16,62 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 		}
 	}
 	
-	[MSetup] public void Setup () {
-		if (!IsTestRunningInPlayingMode()) {
-			SkipCurrentTest("Purchase feature should run on MainThread.");
-			return;
-		};
+	[MSetup] public IEnumerator Setup () {
+		var dataPath = Application.persistentDataPath;
 
-		Action onMainThread = () => {
-			var dataPath = Application.persistentDataPath;
+		var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+		DeleteAllData(fwPath);
 
-			var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-			DeleteAllData(fwPath);
-
-			Autoya.TestEntryPoint(dataPath);
-		};
-		RunOnMainThread(onMainThread);
+		Autoya.TestEntryPoint(dataPath);
 		
-		WaitUntil(
+		yield return WaitUntil(
 			() => {
 				return Autoya.Purchase_IsReady();
-			}, 
-			5, 
-			"failed to auth or failed to ready purchase."
+			},
+			() => {throw new TimeoutException("failed to auth or failed to ready purchase.");}
 		);
 	}
 
-	[MTest] public void GetProductInfos () {
+	[MTest] public IEnumerator GetProductInfos () {
 		var products = Autoya.Purchase_ProductInfos();
-		Assert(products.Length == 3, "not match.");
+		True(products.Length == 3, "not match.");
+		yield break;
 	}
 
-	[MTest] public void PurchaseViaAutoya () {
+	[MTest] public IEnumerator PurchaseViaAutoya () {
 		var succeeded = false;
 		var done = false;
-		RunOnMainThread(
-			() => {
-				var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
 		
-				Autoya.Purchase(
-					purchaseId, 
-					"1000_gold_coins",
-					pId => {
-						done = true;
-						succeeded = true;
-					}, 
-					(pId, err, reason, autoyaStatus) => {
-						done = true;
-						succeeded = false;
-					}
-				);
+		var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
+
+		Autoya.Purchase(
+			purchaseId, 
+			"1000_gold_coins",
+			pId => {
+				done = true;
+				succeeded = true;
+			}, 
+			(pId, err, reason, autoyaStatus) => {
+				done = true;
+				succeeded = false;
 			}
 		);
 
-		WaitUntil(
-			() => done, 
-			10,
-			"failed to purchase."
+		yield return WaitUntil(
+			() => done,
+			() => {throw new TimeoutException("failed to purchase.");}
 		);
-		Assert(succeeded, "not successed.");
+		True(succeeded, "not successed.");
 	}
 
-	[MTest] public void RetrievePaidPurchase () {
+	[MTest] public IEnumerator RetrievePaidPurchase () {
+		Debug.LogWarning("not yet.");
 		// SendPaidTicketが発生する状態を作り出す。まずPurchaseを作り出す。そしてそのPurchaseをPendingした状態で、ブロックを解除する。
 		// なんか難しいので簡単に書ける方法ないかな。
 		/*
 			機構を起動 -> 停止
 		
 		 */
+		 yield break;
 	}
 }

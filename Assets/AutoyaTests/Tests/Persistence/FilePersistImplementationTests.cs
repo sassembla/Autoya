@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using AutoyaFramework;
 using Miyamasu;
@@ -11,26 +12,22 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 	private const string AutoyaFilePersistTestsFileDomain = "AutoyaFilePersistTestsFileDomain";
 	private const string AutoyaFilePersistTestsFileName = "persist.txt";
 
-	[MSetup] public void Setup () {
+	[MSetup] public IEnumerator Setup () {
 		var loginDone = false;
 		
-		RunOnMainThread(
+		var dataPath = Application.persistentDataPath;
+		Autoya.TestEntryPoint(dataPath);
+		Autoya.Auth_SetOnAuthenticated(
 			() => {
-				var dataPath = Application.persistentDataPath;
-				Autoya.TestEntryPoint(dataPath);
-				Autoya.Auth_SetOnAuthenticated(
-					() => {
-						loginDone = true;
-					}
-				);
+				loginDone = true;
 			}
 		);
 		
-		WaitUntil(
+		yield return WaitUntil(
 			() => {
 				return loginDone;
 			},
-			3
+			() => {throw new TimeoutException("timeout.");}
 		);
 		Autoya.Persist_DeleteByDomain(AutoyaFilePersistTestsFileDomain);
 	}
@@ -38,111 +35,92 @@ public class FilePersistImplementationTests : MiyamasuTestRunner {
 	/*
 		sync series.
 	*/
-	[MTest] public void Update () {
-		Action onMainThread = () => {
-			var data = "new data " + Guid.NewGuid().ToString();
-			
-			var result = Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
-			Assert(result, "not successed.");
-		};
-		RunOnMainThread(onMainThread);
+	[MTest] public IEnumerator Update () {
+		var data = "new data " + Guid.NewGuid().ToString();
+		
+		var result = Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+		True(result, "not successed.");
+		yield break;
 	}
 
-	[MTest] public void Append () {
-		Action onMainThread = () => {
-			var data = "new data " + Guid.NewGuid().ToString();
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
-			
-			var appendData = "append data " + Guid.NewGuid().ToString();
-			Autoya.Persist_Append(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, appendData);
-			
-			var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
-			Assert(loadedData == data + appendData, "data does not match. loadedData:" + loadedData);
-		};
-		RunOnMainThread(onMainThread);
+	[MTest] public IEnumerator Append () {
+		var data = "new data " + Guid.NewGuid().ToString();
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+		
+		var appendData = "append data " + Guid.NewGuid().ToString();
+		Autoya.Persist_Append(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, appendData);
+		
+		var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+		True(loadedData == data + appendData, "data does not match. loadedData:" + loadedData);
+		yield break;
 	}
 	
-	[MTest] public void Load () {
-		Action onMainThread = () => {
-			var data = "new data " + Guid.NewGuid().ToString();
+	[MTest] public IEnumerator Load () {
+		var data = "new data " + Guid.NewGuid().ToString();
 
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
-			
-			var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
-			Assert(loadedData == data, "data does not match. loadedData:" + loadedData);
-		};
-		RunOnMainThread(onMainThread);
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+		
+		var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+		True(loadedData == data, "data does not match. loadedData:" + loadedData);
+		yield break;
 	}
 
-	[MTest] public void LoadFail () {
-		Action onMainThread = () => {
-			var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
-			Assert(string.IsNullOrEmpty(loadedData), "data should not be exist.");
-		};
-		RunOnMainThread(onMainThread);
+	[MTest] public IEnumerator LoadFail () {
+		var loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+		True(string.IsNullOrEmpty(loadedData), "data should not be exist.");
+		yield break;
 	}
 
-	[MTest] public void Delete () {
-		Action onMainThread = () => {
-			var data = "new data " + Guid.NewGuid().ToString();
+	[MTest] public IEnumerator Delete () {
+		var data = "new data " + Guid.NewGuid().ToString();
 
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
-			
-			var deleted = Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
-			Assert(deleted, "failed to delete.");
-		};
-		RunOnMainThread(onMainThread);
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+		
+		var deleted = Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+		True(deleted, "failed to delete.");
+		yield break;
 	}
 
-	[MTest] public void DeleteByDomain () {
-		Action onMainThread = () => {
-			var data = "new data " + Guid.NewGuid().ToString();
+	[MTest] public IEnumerator DeleteByDomain () {
+		var data = "new data " + Guid.NewGuid().ToString();
 
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "1", data);
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "2", data);
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "3", data);
-			
-			var deleted = Autoya.Persist_DeleteByDomain(AutoyaFilePersistTestsFileDomain);
-			Assert(deleted, "failed to delete.");
-		};
-		RunOnMainThread(onMainThread);
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "1", data);
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "2", data);
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "3", data);
+		
+		var deleted = Autoya.Persist_DeleteByDomain(AutoyaFilePersistTestsFileDomain);
+		True(deleted, "failed to delete.");
+		yield break;
 	}
 	
-	[MTest] public void DeleteNonExist () {
-		Action onMainThread = () => {
-			var deleteResult = Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
-			Assert(!deleteResult, "should not be true.");
-		};
-		RunOnMainThread(onMainThread);
+	[MTest] public IEnumerator DeleteNonExist () {
+		var deleteResult = Autoya.Persist_Delete(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+		True(!deleteResult, "should not be true.");
+		yield break;
 	}
 
-	[MTest] public void FileNamesInDomain () {
-		Action onMainThread = () => {
-			var data = "new data " + Guid.NewGuid().ToString();
-			Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+	[MTest] public IEnumerator FileNamesInDomain () {
+		var data = "new data " + Guid.NewGuid().ToString();
+		Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
 
-			var fileNamesInDomain = Autoya.Persist_FileNamesInDomain(AutoyaFilePersistTestsFileDomain);
-			Assert(fileNamesInDomain.Length == 1, "not match.");
-		};
-		RunOnMainThread(onMainThread);
+		var fileNamesInDomain = Autoya.Persist_FileNamesInDomain(AutoyaFilePersistTestsFileDomain);
+		True(fileNamesInDomain.Length == 1, "not match.");
+
+		yield break;
 	}
 
-	[MTest] public void EmptyFileNamesInDomain () {
-		Action onMainThread = () => {
-			var fileNamesInDomain = Autoya.Persist_FileNamesInDomain(AutoyaFilePersistTestsFileDomain);
-			Assert(fileNamesInDomain.Length == 0, "not match.");
-		};
-		RunOnMainThread(onMainThread);
+	[MTest] public IEnumerator EmptyFileNamesInDomain () {
+		var fileNamesInDomain = Autoya.Persist_FileNamesInDomain(AutoyaFilePersistTestsFileDomain);
+		True(fileNamesInDomain.Length == 0, "not match.");
+		yield break;
 	}
 
-	[MTest] public void CreateFileThenDeleteFileThenFileNamesInDomain () {
-		Action onMainThread = () => {
-			Autoya.Persist_Update("testdomain", "testfile", "test");
-			Autoya.Persist_Delete("testdomain", "testfile");
-			var fileNamesInDomain = Autoya.Persist_FileNamesInDomain("testdomain");
-			Assert(fileNamesInDomain.Length == 0, "not match.");
-		};
-		RunOnMainThread(onMainThread);
+	[MTest] public IEnumerator CreateFileThenDeleteFileThenFileNamesInDomain () {
+		Autoya.Persist_Update("testdomain", "testfile", "test");
+		Autoya.Persist_Delete("testdomain", "testfile");
+		var fileNamesInDomain = Autoya.Persist_FileNamesInDomain("testdomain");
+		True(fileNamesInDomain.Length == 0, "not match.");
+		yield break;
 	}
 
 

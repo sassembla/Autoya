@@ -19,34 +19,30 @@ public class MaintenanceTests : MiyamasuTestRunner {
 		}
 	}
 	
-	[MSetup] public void Setup () {
+	[MSetup] public IEnumerator Setup () {
 		Autoya.ResetAllForceSetting();
 		
 		DeleteAllData(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 		
 		var authorized = false;
-		Action onMainThread = () => {
-			var dataPath = Application.persistentDataPath;
-			Autoya.TestEntryPoint(dataPath);
-
-			Autoya.Auth_SetOnAuthenticated(
-				() => {
-					authorized = true;
-				}
-			);
-		};
-
-		RunOnMainThread(onMainThread);
 		
-		WaitUntil(
+		var dataPath = Application.persistentDataPath;
+		Autoya.TestEntryPoint(dataPath);
+
+		Autoya.Auth_SetOnAuthenticated(
+			() => {
+				authorized = true;
+			}
+		);
+		
+		yield return WaitUntil(
 			() => {
 				return authorized;
 			},
-			5,
-			"timeout in setup."
+			() => {throw new TimeoutException("timeout in setup.");}
 		);
 
-		Assert(Autoya.Auth_IsAuthenticated(), "not logged in.");
+		True(Autoya.Auth_IsAuthenticated(), "not logged in.");
 		
 		Autoya.forceMaintenance = true;
 	}
@@ -55,7 +51,7 @@ public class MaintenanceTests : MiyamasuTestRunner {
 	}
 
 
-	[MTest] public void Maintenance () {
+	[MTest] public IEnumerator Maintenance () {
 		var isUnderMaintenance = false;
 
 		// start connection -> Maintenance mode notification will return.
@@ -69,13 +65,13 @@ public class MaintenanceTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(() => isUnderMaintenance, 5, "not in maintenance.");
+		yield return WaitUntil(() => isUnderMaintenance, () => {throw new TimeoutException("not in maintenance.");});
 	}
 
 
 
 	private bool onMaintenanceCalled = false;
-	[MTest] public void SetOnMaintenance () {
+	[MTest] public IEnumerator SetOnMaintenance () {
 		 /*
 			ready for handle maintenance mode.
 			you can set the method which will be called on maintenance.
@@ -95,7 +91,7 @@ public class MaintenanceTests : MiyamasuTestRunner {
 			}
 		);
 
-		WaitUntil(() => onMaintenanceCalled, 5, "onMaintenanceCalled does not be called.");
+		yield return WaitUntil(() => onMaintenanceCalled, () => {throw new TimeoutException("onMaintenanceCalled does not be called.");});
 	}
 
 

@@ -46,7 +46,7 @@ public class JWTTests : MiyamasuTestRunner {
 		var data = VALID_TOKEN_STR;
 		var key = "secret";
 		var validatedData = JWT.Read<SampleTokenData>(data, key);
-		Assert(
+		True(
 			validatedData.sub == "1234567890" &&
 			validatedData.name == "John Doe" &&
 			validatedData.admin,
@@ -60,6 +60,6 @@ public class JWTTests : MiyamasuTestRunner {
 		var key = "secret";
 
 		var newToken = JWT.Create(newData, key);
-		Assert(newToken == VALID_TOKEN_STR, "signature not match.");
+		True(newToken == VALID_TOKEN_STR, "signature not match.");
 	}
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,68 +41,82 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 	private AssetBundleLoader loader;
 	private AssetBundleList dummyList;
-	[MSetup] public void Setup () {
-		if (!IsTestRunningInPlayingMode()) {
-			SkipCurrentTest("AssetBundle request should run on MainThread.");
-		};
-
-		dummyList = LoadListFromWeb();
+	[MSetup] public IEnumerator Setup () {
+		var listCor = LoadListFromWeb();
+		
+		yield return listCor;
+		dummyList = listCor.Current as AssetBundleList;
 
 		loader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET + "1.0.0/", dummyList, null);
 
-		var cleaned = false;
-		RunOnMainThread(
-			() => {
-				cleaned = loader.CleanCachedAssetBundles();
-			}
-		);
+		var cleaned = loader.CleanCachedAssetBundles();
+		
 		if (!cleaned) {
-			Assert(false, "clean cache failed.");
+			Fail("clean cache failed.");
 		}
 	}
 
-	public AssetBundleList LoadListFromWeb () {
+	public IEnumerator LoadListFromWeb () {
 		var downloaded = false;
 		var downloader = new HTTPConnection();
 		
 		AssetBundleList listObj = null;
 
-		RunEnumeratorOnMainThread(
-			downloader.Get(
-				"loadListFromWeb",
-				null,
-				AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + "1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json",
-				(conId, code, respHeaders, data) => {
-					downloaded = true;
-					listObj = JsonUtility.FromJson<AssetBundleList>(data);
-				},
-				(conId, code, reason, respHeaders) => {
-					Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
-				}
-			)
+		yield return downloader.Get(
+			"loadListFromWeb",
+			null,
+			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + "1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json",
+			(conId, code, respHeaders, data) => {
+				downloaded = true;
+				listObj = JsonUtility.FromJson<AssetBundleList>(data);
+			},
+			(conId, code, reason, respHeaders) => {
+				Debug.LogError("failed conId:" + conId + " code:" + code + " reason:" + reason);
+			}
 		);
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => downloaded,
-			5,
-			"failed to download list."
+			() => {throw new TimeoutException("failed to download list.");}
 		);
-
-		return listObj;
+		yield return listObj;
 	}
 
 	[MTeardown] public void Teardown () {
-		if (loader != null) {
-			RunOnMainThread(() => loader.CleanCachedAssetBundles());
-		}
+		loader.CleanCachedAssetBundles();
 	}
 
-	[MTest] public void LoadAssetByAssetName () {
+
+
+	[MTest] public IEnumerator LoadAssetByAssetName () {
 		Texture2D tex = null;
 		var done = false;
 
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+			(string assetName, Texture2D texAsset) => {
+				tex = texAsset;
+				done = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				done = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
+		);
+
+		yield return WaitUntil(
+			() => done, 
+			() => {throw new TimeoutException("timeout to load AssetBundle.");}
+		);
+		True(tex != null, "tex is null");
+	}
+
+	[MTest] public IEnumerator LoadSameAssetByAssetName () {
+		{// 1
+			Texture2D tex = null;
+			var done = false;
+			
+			yield return loader.LoadAsset(
 				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
 				(string assetName, Texture2D texAsset) => {
 					tex = texAsset;
@@ -108,68 +124,75 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				},
 				(assetName, failEnum, reason, status) => {
 					done = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
+					Fail("fail, failEnum:" + failEnum + " reason:" + reason);
 				}
-			),
-			false
-		);
-
-		WaitUntil(() => done, 10, "timeout to load AssetBundle.");
-		Assert(tex != null, "tex is null");
-	}
-
-	[MTest] public void LoadSameAssetByAssetName () {
-		{// 1
-			Texture2D tex = null;
-			var done = false;
-			
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
-					(string assetName, Texture2D texAsset) => {
-						tex = texAsset;
-						done = true;
-					},
-					(assetName, failEnum, reason, status) => {
-						done = true;
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-					}
-				),
-				false
 			);
-			WaitUntil(() => done, 10, "timeout to load AssetBundle.");
-			Assert(tex != null, "tex is null");
+
+			yield return WaitUntil(
+				() => done, 
+				() => {throw new TimeoutException("timeout to load AssetBundle.");}
+			);
+
+			True(tex != null, "tex is null");
 		}
 
 		{// 2 maybe cached on memory.
 			Texture2D tex = null;
 			var done = false;
 			
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
-					(string assetName, Texture2D texAsset) => {
-						tex = texAsset;
-						done = true;
-					},
-					(assetName, failEnum, reason, status) => {
-						done = true;
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-					}
-				),
-				false
+			yield return loader.LoadAsset(
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+				(string assetName, Texture2D texAsset) => {
+					tex = texAsset;
+					done = true;
+				},
+				(assetName, failEnum, reason, status) => {
+					done = true;
+					Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+				}
 			);
-			WaitUntil(() => done, 10, "timeout to load AssetBundle.");
-			Assert(tex != null, "tex is null");
+
+			yield return WaitUntil(() => done, () => {throw new TimeoutException("timeout to load AssetBundle.");});
+			True(tex != null, "tex is null");
 		}
 	}
 
-	[MTest] public void LoadAssetWithDependency () {
+	[MTest] public IEnumerator LoadAssetWithDependency () {
 		GameObject prefab = null;
 		var done = false;
+		
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
+			(string assetName, GameObject prefabAsset) => {
+				prefab = prefabAsset;
+				done = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				done = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
+		);
 
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
+		yield return WaitUntil(() => done, () => {throw new TimeoutException("timeout to load depends prefab.");});
+		True(prefab != null, "prefab is null");
+
+		if (prefab != null) {
+			// check prefab instance contains dependent texture.
+			var obj = GameObject.Instantiate(prefab);
+			obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
+			var renderer = obj.GetComponent<SpriteRenderer>();
+			var sprite = renderer.sprite;
+
+			True(sprite != null, "sprite is null.");
+		}
+	}
+
+	[MTest] public IEnumerator LoadSameAssetWithDependsOnOneAssetBundle () {
+		{// 1
+			GameObject prefab = null;
+			var done = false;
+
+			yield return loader.LoadAsset(
 				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
 				(string assetName, GameObject prefabAsset) => {
 					prefab = prefabAsset;
@@ -177,99 +200,50 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				},
 				(assetName, failEnum, reason, status) => {
 					done = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
-		);
-
-		WaitUntil(() => done, 10, "timeout to load depends prefab.");
-		Assert(prefab != null, "prefab is null");
-
-		if (prefab != null) {
-			RunOnMainThread(
-				() => {
-					// check prefab instance contains dependent texture.
-					var obj = GameObject.Instantiate(prefab);
-					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
-					var renderer = obj.GetComponent<SpriteRenderer>();
-					var sprite = renderer.sprite;
-					Assert(sprite != null, "sprite is null.");
+					Fail("fail, failEnum:" + failEnum + " reason:" + reason);
 				}
 			);
-		}
-	}
 
-	[MTest] public void LoadSameAssetWithDependsOnOneAssetBundle () {
-		{// 1
-			GameObject prefab = null;
-			var done = false;
-
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
-					(string assetName, GameObject prefabAsset) => {
-						prefab = prefabAsset;
-						done = true;
-					},
-					(assetName, failEnum, reason, status) => {
-						done = true;
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-					}
-				),
-				false
-			);
-
-			WaitUntil(() => done, 10, "timeout to load depends prefab.");
-			Assert(prefab != null, "prefab is null");
+			yield return WaitUntil(() => done, () => {throw new TimeoutException("timeout to load depends prefab.");});
+			True(prefab != null, "prefab is null");
 
 			if (prefab != null) {
-				RunOnMainThread(
-					() => {
-						// check prefab instance contains dependent texture.
-						var obj = GameObject.Instantiate(prefab);
-						obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
-						var renderer = obj.GetComponent<SpriteRenderer>();
-						var sprite = renderer.sprite;
-						Assert(sprite != null, "sprite is null.");
-					}
-				);
+				
+				// check prefab instance contains dependent texture.
+				var obj = GameObject.Instantiate(prefab);
+				obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
+				var renderer = obj.GetComponent<SpriteRenderer>();
+				var sprite = renderer.sprite;
+				True(sprite != null, "sprite is null.");
 			}
 		}
 		
 		{// 2 maybe cached on memory.
 			GameObject prefab = null;
 			var done = false;
-
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
-					(string assetName, GameObject prefabAsset) => {
-						prefab = prefabAsset;
-						done = true;
-					},
-					(assetName, failEnum, reason, status) => {
-						done = true;
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-					}
-				),
-				false
+			
+			yield return loader.LoadAsset(
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
+				(string assetName, GameObject prefabAsset) => {
+					prefab = prefabAsset;
+					done = true;
+				},
+				(assetName, failEnum, reason, status) => {
+					done = true;
+					Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+				}
 			);
 
-			WaitUntil(() => done, 10, "timeout to load depends prefab.");
-			Assert(prefab != null, "prefab is null");
+			yield return WaitUntil(() => done, () => {throw new TimeoutException("timeout to load depends prefab.");});
+			True(prefab != null, "prefab is null");
 
 			if (prefab != null) {
-				RunOnMainThread(
-					() => {
-						// check prefab instance contains dependent texture.
-						var obj = GameObject.Instantiate(prefab);
-						obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
-						var renderer = obj.GetComponent<SpriteRenderer>();
-						var sprite = renderer.sprite;
-						Assert(sprite != null, "sprite is null.");
-					}
-				);
+				// check prefab instance contains dependent texture.
+				var obj = GameObject.Instantiate(prefab);
+				obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
+				var renderer = obj.GetComponent<SpriteRenderer>();
+				var sprite = renderer.sprite;
+				True(sprite != null, "sprite is null.");
 			}
 		}
 	}
@@ -277,238 +251,200 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	/*
 		1 <- 2
 	*/
-	[MTest] public void Load2Assets_1isDependsOnAnother_DependedFirst () {
+	[MTest] public IEnumerator Load2Assets_1isDependsOnAnother_DependedFirst () {
 		// texture = depended asset.
 		Texture2D tex = null;
 		var textureLoadDone = false;
 		
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
-				(string assetName, Texture2D texAsset) => {
-					tex = texAsset;
-					textureLoadDone = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					textureLoadDone = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
+		
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+			(string assetName, Texture2D texAsset) => {
+				tex = texAsset;
+				textureLoadDone = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				textureLoadDone = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
 		);
 
 		// prefab = depending asset.
 		GameObject prefab = null;
 		var prefabLoadDone = false;
 
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
-				(string assetName, GameObject prefabAsset) => {
-					prefab = prefabAsset;
-					prefabLoadDone = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					prefabLoadDone = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
+			(string assetName, GameObject prefabAsset) => {
+				prefab = prefabAsset;
+				prefabLoadDone = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				prefabLoadDone = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
 		);
 
-		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
-		Assert(tex, "tex is null.");
-		Assert(prefab, "prefab is null.");
+		yield return WaitUntil(() => textureLoadDone && prefabLoadDone, () => {throw new TimeoutException("texture and prefab load failed in time.");});
+		True(tex, "tex is null.");
+		True(prefab, "prefab is null.");
 
-		if (prefab != null) {
-			RunOnMainThread(
-				() => {
-					// check prefab instance contains dependent texture.
-					var obj = GameObject.Instantiate(prefab);
-					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
-					var renderer = obj.GetComponent<SpriteRenderer>();
-					var sprite = renderer.sprite;
-					Assert(sprite != null, "sprite is null.");
-				}
-			);
+		if (prefab != null) {		
+			// check prefab instance contains dependent texture.
+			var obj = GameObject.Instantiate(prefab);
+			obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
+			var renderer = obj.GetComponent<SpriteRenderer>();
+			var sprite = renderer.sprite;
+			True(sprite != null, "sprite is null.");
 		}
 	}
 
 	/*
 		1 -> 2
 	*/
-	[MTest] public void Load2Assets_1isDependsOnAnother_DependingFirst () {
+	[MTest] public IEnumerator Load2Assets_1isDependsOnAnother_DependingFirst () {
 		// prefab = depending asset.
 		GameObject prefab = null;
 		var prefabLoadDone = false;
 
 		// load async
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
-				(string assetName, GameObject prefabAsset) => {
-					prefab = prefabAsset;
-					prefabLoadDone = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					prefabLoadDone = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
+			(string assetName, GameObject prefabAsset) => {
+				prefab = prefabAsset;
+				prefabLoadDone = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				prefabLoadDone = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
 		);
 
-		
 		// texture = depended asset.
 		Texture2D tex = null;
 		var textureLoadDone = false;
 		
 		// load async
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
-				(string assetName, Texture2D texAsset) => {
-					tex = texAsset;
-					textureLoadDone = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					textureLoadDone = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+			(string assetName, Texture2D texAsset) => {
+				tex = texAsset;
+				textureLoadDone = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				textureLoadDone = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
 		);
-		
 
-		WaitUntil(() => textureLoadDone && prefabLoadDone, 10, "texture and prefab load failed in time.");
-		Assert(tex, "tex is null.");
-		Assert(prefab, "prefab is null.");
+		yield return WaitUntil(() => textureLoadDone && prefabLoadDone, () => {throw new TimeoutException("texture and prefab load failed in time.");});
+		True(tex, "tex is null.");
+		True(prefab, "prefab is null.");
 
 		if (prefab != null) {
-			RunOnMainThread(
-				() => {
-					// check prefab instance contains dependent texture.
-					var obj = GameObject.Instantiate(prefab);
-					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
-					var renderer = obj.GetComponent<SpriteRenderer>();
-					var sprite = renderer.sprite;
-					Assert(sprite != null, "sprite is null.");
-				}
-			);
+			// check prefab instance contains dependent texture.
+			var obj = GameObject.Instantiate(prefab);
+			obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
+			var renderer = obj.GetComponent<SpriteRenderer>();
+			var sprite = renderer.sprite;
+			True(sprite != null, "sprite is null.");
 		}
 	}
 
 	/*
 		A -> B <- C
 	*/
-	[MTest] public void Load2AssetsWhichDependsOnSameAssetBundle () {
+	[MTest] public IEnumerator Load2AssetsWhichDependsOnSameAssetBundle () {
 		GameObject prefab1 = null;
 		var prefabLoadDone1 = false;
 		
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
-				(string assetName, GameObject prefabAsset) => {
-					prefab1 = prefabAsset;
-					prefabLoadDone1 = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					prefabLoadDone1 = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab", 
+			(string assetName, GameObject prefabAsset) => {
+				prefab1 = prefabAsset;
+				prefabLoadDone1 = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				prefabLoadDone1 = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
 		);
 
 		GameObject prefab2 = null;
 		var prefabLoadDone2 = false;
-
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab", 
-				(string assetName, GameObject prefabAsset) => {
-					prefab2 = prefabAsset;
-					prefabLoadDone2 = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					prefabLoadDone2 = true;
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-				}
-			),
-			false
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName2.prefab", 
+			(string assetName, GameObject prefabAsset) => {
+				prefab2 = prefabAsset;
+				prefabLoadDone2 = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				prefabLoadDone2 = true;
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+			}
 		);
 
-		WaitUntil(() => prefabLoadDone1 && prefabLoadDone2, 10, "prefabs load failed.");
-		Assert(prefab1, "prefab1 is null.");
-		Assert(prefab2, "prefab2 is null.");
+		yield return WaitUntil(() => prefabLoadDone1 && prefabLoadDone2, () => {throw new TimeoutException("prefabs load failed.");});
+		True(prefab1, "prefab1 is null.");
+		True(prefab2, "prefab2 is null.");
 
 		if (prefab1 != null && prefab2 != null) {
-			RunOnMainThread(
-				() => {
-					// check prefab instance contains dependent texture.
-					var obj = GameObject.Instantiate(prefab1);
-					obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
-					var renderer = obj.GetComponent<SpriteRenderer>();
-					var sprite = renderer.sprite;
-					Assert(sprite != null, "sprite is null.");
+			// check prefab instance contains dependent texture.
+			var obj = GameObject.Instantiate(prefab1);
+			obj.hideFlags = obj.hideFlags | HideFlags.HideAndDontSave;
+			var renderer = obj.GetComponent<SpriteRenderer>();
+			var sprite = renderer.sprite;
+			True(sprite != null, "sprite is null.");
 
-					var obj2 = GameObject.Instantiate(prefab2);
-					obj2.hideFlags = obj2.hideFlags | HideFlags.HideAndDontSave;
-					var renderer2 = obj2.GetComponent<SpriteRenderer>();
-					var sprite2 = renderer2.sprite;
-					Assert(sprite2 != null, "sprite is null.");
-				}
-			);
+			var obj2 = GameObject.Instantiate(prefab2);
+			obj2.hideFlags = obj2.hideFlags | HideFlags.HideAndDontSave;
+			var renderer2 = obj2.GetComponent<SpriteRenderer>();
+			var sprite2 = renderer2.sprite;
+			True(sprite2 != null, "sprite is null.");
 		}
 	}
 
 	/*
 		A -> B -> C
 	*/
-	[MTest] public void NestedDependency () {
+	[MTest] public IEnumerator NestedDependency () {
 		GameObject prefab = null;
 		var prefabLoadDone = false;
 
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab", 
-				(string assetName, GameObject prefabAsset) => {
-					prefab = prefabAsset;
-					prefabLoadDone = true;
-				},
-				(assetName, failEnum, reason, status) => {
-					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-					Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-					prefabLoadDone = true;
-				}
-			),
-			false
+		
+		yield return loader.LoadAsset(
+			"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/nestedPrefab.prefab", 
+			(string assetName, GameObject prefabAsset) => {
+				prefab = prefabAsset;
+				prefabLoadDone = true;
+			},
+			(assetName, failEnum, reason, status) => {
+				Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
+				Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+				prefabLoadDone = true;
+			}
 		);
 
-		WaitUntil(() => prefabLoadDone, 10, "prefabs load failed.");
-		Assert(prefab, "prefab is null.");
+		yield return WaitUntil(() => prefabLoadDone, () => {throw new TimeoutException("prefabs load failed.");});
+		True(prefab, "prefab is null.");
 
 		if (prefab != null) {
-			RunOnMainThread(
-				() => {
-					// check prefab instance contains dependent texture.
-					var nestedObj = GameObject.Instantiate(prefab);
-					nestedObj.hideFlags = nestedObj.hideFlags | HideFlags.HideAndDontSave;
-					var scriptObj = nestedObj.GetComponent<PrefabHolder>();
-					Assert(scriptObj != null, "failed to get script.");
+			// check prefab instance contains dependent texture.
+			var nestedObj = GameObject.Instantiate(prefab);
+			nestedObj.hideFlags = nestedObj.hideFlags | HideFlags.HideAndDontSave;
+			var scriptObj = nestedObj.GetComponent<PrefabHolder>();
+			True(scriptObj != null, "failed to get script.");
 
-					var obj = scriptObj.prefab;
-					Assert(obj != null, "failed to get contained prefab.");
+			var obj = scriptObj.prefab;
+			True(obj != null, "failed to get contained prefab.");
 
-					var renderer = obj.GetComponent<SpriteRenderer>();
-					var sprite = renderer.sprite;
-					Assert(sprite != null, "sprite is null.");
-				}
-			);
+			var renderer = obj.GetComponent<SpriteRenderer>();
+			var sprite = renderer.sprite;
+			True(sprite != null, "sprite is null.");
 		}
 	}
 
-	[MTest] public void LoadCrcMismatchedBundle () {
+	[MTest] public IEnumerator LoadCrcMismatchedBundle () {
 		var modifiedDummyList = new AssetBundleList(dummyList);
 		modifiedDummyList.assetBundles[0].crc = 1;// set wrong crc.
 
@@ -518,24 +454,20 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		{
 			var done = false;
 			
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
-					(string assetName, Texture2D texAsset) => {
-						// do nothing.
-					},
-					(assetName, failEnum, reason, status) => {
-						Assert(failEnum == AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
-						done = true;
-					}
-				),
-				false
+			yield return loader.LoadAsset(
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+				(string assetName, Texture2D texAsset) => {
+					// do nothing.
+				},
+				(assetName, failEnum, reason, status) => {
+					True(failEnum == AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
+					done = true;
+				}
 			);
 
-			WaitUntil(
+			yield return WaitUntil(
 				() => done,
-				5,
-				"failed to wait crc mismatch."
+				() => {throw new TimeoutException("failed to wait crc mismatch.");}
 			);
 		}
 		
@@ -547,40 +479,35 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 			Texture2D tex = null;
 			var done = false;
 			
-			RunEnumeratorOnMainThread(
-				loader.LoadAsset(
-					"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
-					(string assetName, Texture2D texAsset) => {
-						tex = texAsset;
-						done = true;
-					},
-					(assetName, failEnum, reason, status) => {
-						Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-						Assert(false, "fail, failEnum:" + failEnum + " reason:" + reason);
-						done = true;
-					}
-				),
-				false
+			yield return loader.LoadAsset(
+				"Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png", 
+				(string assetName, Texture2D texAsset) => {
+					tex = texAsset;
+					done = true;
+				},
+				(assetName, failEnum, reason, status) => {
+					Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
+					Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+					done = true;
+				}
 			);
 
-			WaitUntil(
+			yield return WaitUntil(
 				() => done,
-				5,
-				"failed to wait crc mismatch."
+				() => {throw new TimeoutException("failed to wait crc mismatch.");}
 			);
 
-			Assert(tex != null, "tex is null.");
+			True(tex != null, "tex is null.");
 		}
 
 		// delete 
-		RunOnMainThread(() => {
-			var path = "/Users/passepied/Library/Caches/Unity/Temp";
-			Directory.Delete(path, true);
-		});
+		var path = "/Users/passepied/Library/Caches/Unity/Temp";
+		Directory.Delete(path, true);
 	}
 
-	[MTest] public void UpdateListWithoutOnMemoryAssets () {
+	[MTest] public IEnumerator UpdateListWithoutOnMemoryAssets () {
 		Debug.LogWarning("UpdateListWithoutOnMemoryAssets、リストが更新されたらどうしよう的な。検知する機構からどう繋ぐか。");
+		yield return null;
 	// 	// assume that: list is updated.
 	// 	// 1.0.0 -> 1.0.1
 
@@ -590,8 +517,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 	// 	// renew list.
 	// 	var newVersionStr = "1.0.1";
-	// 	RunEnumeratorOnMainThread(
-	// 		lostDownloader.Get(
+	// 	
+	// 		lostyield return downloader.Get(
 	// 			"loadListFromWeb",
 	// 			null,
 	// 			ListPath(newVersionStr),
@@ -614,21 +541,21 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 		)
 	// 	);
 
-	// 	WaitUntil(
+	// 	yield return WaitUntil(
 	// 		() => listUpdated,
 	// 		5,
 	// 		"failed to update list."
 	// 	);
 
-	// 	Assert(!notified, "should not be notified. nothing on memory yet.");
+	// 	True(!notified, "should not be notified. nothing on memory yet.");
 	}
 
-	// [MTest] public void UpdateListAndReceiveOnMemoryAssetsUpdated () {
+	// [MTest] public IEnumerator UpdateListAndReceiveOnMemoryAssetsUpdated () {
 	// 	{
 	// 		var done = false;
 	// 		// load assets.
-	// 		RunEnumeratorOnMainThread(
-	// 			loader.LoadAsset(
+	// 		
+	// 			yield return loader.LoadAsset(
 	// 				dummyList.assetBundles[0].assetNames[0],
 	// 				(string assetName, Texture2D t) => {
 	// 					done = true;
@@ -639,7 +566,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 			)
 	// 		);
 
-	// 		WaitUntil(
+	// 		yield return WaitUntil(
 	// 			() => done,
 	// 			5,
 	// 			"failed to get asset."
@@ -655,8 +582,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 
 	// 	// renew list.
 	// 	var newVersionStr = "1.0.1";
-	// 	RunEnumeratorOnMainThread(
-	// 		lostDownloader.Get(
+	// 	
+	// 		lostyield return downloader.Get(
 	// 			"loadListFromWeb",
 	// 			null,
 	// 			ListPath(newVersionStr),
@@ -679,22 +606,22 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 		)
 	// 	);
 
-	// 	WaitUntil(
+	// 	yield return WaitUntil(
 	// 		() => notified,
 	// 		5,
 	// 		"failed to get on memory asset is notified."
 	// 	);
 
-	// 	Assert(updatedBundleName == dummyList.assetBundles[0].bundleName, "not match, actual:" + updatedBundleName + " expected:" + dummyList.assetBundles[0].bundleName);
+	// 	True(updatedBundleName == dummyList.assetBundles[0].bundleName, "not match, actual:" + updatedBundleName + " expected:" + dummyList.assetBundles[0].bundleName);
 	// }
 
-	// [MTest] public void UpdateListAndGetAlreadyOnMemoryOldAsset () {
+	// [MTest] public IEnumerator UpdateListAndGetAlreadyOnMemoryOldAsset () {
 	// 	UnityEngine.Object oldAsset = null;
 	// 	{
 	// 		var done = false;
 	// 		// load assets.
-	// 		RunEnumeratorOnMainThread(
-	// 			loader.LoadAsset(
+	// 		
+	// 			yield return loader.LoadAsset(
 	// 				dummyList.assetBundles[0].assetNames[0],
 	// 				(string assetName, Texture2D t) => {
 	// 					done = true;
@@ -706,7 +633,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 			)
 	// 		);
 
-	// 		WaitUntil(
+	// 		yield return WaitUntil(
 	// 			() => done,
 	// 			5,
 	// 			"failed to get asset."
@@ -721,8 +648,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		
 	// 	// renew list.
 	// 	var newVersionStr = "1.0.1";
-	// 	RunEnumeratorOnMainThread(
-	// 		lostDownloader.Get(
+	// 	
+	// 		lostyield return downloader.Get(
 	// 			"loadListFromWeb",
 	// 			null,
 	// 			ListPath(newVersionStr),
@@ -745,7 +672,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 		)
 	// 	);
 
-	// 	WaitUntil(
+	// 	yield return WaitUntil(
 	// 		() => downloaded,
 	// 		5,
 	// 		"failed to download list."
@@ -758,8 +685,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 		var done = false;
 	// 		var isSameOldAsset = false;
 	// 		// load assets.
-	// 		RunEnumeratorOnMainThread(
-	// 			loader.LoadAsset(
+	// 		
+	// 			yield return loader.LoadAsset(
 	// 				dummyList.assetBundles[0].assetNames[0],
 	// 				(string assetName, Texture2D t) => {
 	// 					done = true;
@@ -773,23 +700,23 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 			)
 	// 		);
 
-	// 		WaitUntil(
+	// 		yield return WaitUntil(
 	// 			() => done,
 	// 			5,
 	// 			"failed to get asset."
 	// 		);
 
-	// 		Assert(isSameOldAsset, "not same asset.");
+	// 		True(isSameOldAsset, "not same asset.");
 	// 	}
 	// }
 
-	// [MTest] public void UpdateListAndUnloadNotifiedAssetThenGetNewAsset () {
+	// [MTest] public IEnumerator UpdateListAndUnloadNotifiedAssetThenGetNewAsset () {
 	// 	UnityEngine.Object oldAsset = null;
 	// 	{
 	// 		var done = false;
 	// 		// load assets.
-	// 		RunEnumeratorOnMainThread(
-	// 			loader.LoadAsset(
+	// 		
+	// 			yield return loader.LoadAsset(
 	// 				dummyList.assetBundles[0].assetNames[0],
 	// 				(string assetName, Texture2D t) => {
 	// 					done = true;
@@ -801,7 +728,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 			)
 	// 		);
 
-	// 		WaitUntil(
+	// 		yield return WaitUntil(
 	// 			() => done,
 	// 			5,
 	// 			"failed to get asset."
@@ -816,8 +743,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		
 	// 	// renew list.
 	// 	var newVersionStr = "1.0.1";
-	// 	RunEnumeratorOnMainThread(
-	// 		listDownloader.Get(
+	// 	
+	// 		listyield return downloader.Get(
 	// 			"loadListFromWeb",
 	// 			null,
 	// 			ListPath(newVersionStr),
@@ -842,7 +769,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 		)
 	// 	);
 
-	// 	WaitUntil(
+	// 	yield return WaitUntil(
 	// 		() => downloaded,
 	// 		5,
 	// 		"failed to download list."
@@ -855,8 +782,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 		var done = false;
 	// 		var isAssetUpdated = false;
 	// 		// load assets.
-	// 		RunEnumeratorOnMainThread(
-	// 			loader.LoadAsset(
+	// 		
+	// 			yield return loader.LoadAsset(
 	// 				dummyList.assetBundles[0].assetNames[0],
 	// 				(string assetName, Texture2D t) => {
 	// 					done = true;
@@ -870,100 +797,109 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 	// 			)
 	// 		);
 
-	// 		WaitUntil(
+	// 		yield return WaitUntil(
 	// 			() => done,
 	// 			5,
 	// 			"failed to get asset."
 	// 		);
 
-	// 		Assert(isAssetUpdated, "not updated.");
+	// 		True(isAssetUpdated, "not updated.");
 	// 	}
 	// }
 
-	[MTest] public void LoadMissingBundle () {
+	[MTest] public IEnumerator LoadMissingBundle () {
+		yield return null;
 		Debug.LogWarning("指定したassetを含むbundleがDLできない場合のテスト");
 	}
 
-	[MTest] public void LoadMissingDependentBundle () {
+	[MTest] public IEnumerator LoadMissingDependentBundle () {
+		yield return null;
 		Debug.LogWarning("依存したassetが依存しているbundleが存在しなかったり、エラーを出すので、そのエラーがちゃんと出るか試す場合のテスト");
 	}
 
-	[MTest] public void LoadBundleWithTimeout () {
+	[MTest] public IEnumerator LoadBundleWithTimeout () {
+		yield return null;
 		Debug.LogWarning("指定したassetを時間内にDL、展開する(httpにのみ関連する)テスト");
 	}
 
-	[MTest] public void LoadAllAssetsOnce () {
+	[MTest] public IEnumerator LoadAllAssetsOnce () {
 		var loadedAssetAssets = new Dictionary<string, object>();
 		var assetNames = dummyList.assetBundles.SelectMany(a => a.assetNames).ToArray();
+		
+		var loaderGameObject = new GameObject();
+		var runner = loaderGameObject.AddComponent<TestMBRunner>();
 
 		foreach (var loadingAssetName in assetNames) {
+			IEnumerator cor = null;
+
 			switch (loadingAssetName) {
 				case "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png": {
-					RunEnumeratorOnMainThread(
-						loader.LoadAsset<Texture2D>(
-							loadingAssetName, 
-							(assetName, asset) => {
-								loadedAssetAssets[assetName] = asset;
-							},
-							(assetName, failEnum, reason, status) => {
-								Assert(false, "fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
-							}
-						),
-						false
+					
+					cor = loader.LoadAsset<Texture2D>(
+						loadingAssetName, 
+						(assetName, asset) => {
+							loadedAssetAssets[assetName] = asset;
+						},
+						(assetName, failEnum, reason, status) => {
+							Fail("fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
+						}
 					);
 					break;
 				}
 				default: {
-					RunEnumeratorOnMainThread(
-						loader.LoadAsset<GameObject>(
-							loadingAssetName, 
-							(assetName, asset) => {
-								loadedAssetAssets[assetName] = asset;
-							},
-							(assetName, failEnum, reason, status) => {
-								Assert(false, "fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
-							}
-						),
-						false
+					cor = loader.LoadAsset<GameObject>(
+						loadingAssetName, 
+						(assetName, asset) => {
+							loadedAssetAssets[assetName] = asset;
+						},
+						(assetName, failEnum, reason, status) => {
+							Fail("fail to load assetName:" + assetName + " failEnum:" + failEnum + " reason:" + reason);
+						}
 					);
 					break;
 				}
 			}
-		}
 
-		WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, 10, "failed to load all assets.");
+			runner.StartCoroutine(cor);
+		}
+		
+		
+		yield return WaitUntil(() => loadedAssetAssets.Count == assetNames.Length, () => {throw new TimeoutException("failed to load all assets.");});
+		
+		GameObject.Destroy(runner.gameObject);
+
 		foreach (var loadedAssetAssetKey in loadedAssetAssets.Keys) {
 			var key = loadedAssetAssetKey;
 			var asset = loadedAssetAssets[key];
-			Assert(asset != null, "loaded asset:" + key + " is null.");
+			True(asset != null, "loaded asset:" + key + " is null.");
 		}
 	}
 
-	[MTest] public void OnMemoryBundleNames () {
+	[MTest] public IEnumerator OnMemoryBundleNames () {
 		/*
 			load all assets.
 		*/
-		LoadAllAssetsOnce();
+		yield return LoadAllAssetsOnce();
 
 		var totalBundleCount = dummyList.assetBundles.Length;
 
 		var onMemoryBundleNames = loader.OnMemoryBundleNames();
-		Assert(onMemoryBundleNames.Length == totalBundleCount, "unmatched.");
+		True(onMemoryBundleNames.Length == totalBundleCount, "unmatched.");
 	}
 
-	[MTest] public void OnMemoryAssetNames () {
+	[MTest] public IEnumerator OnMemoryAssetNames () {
 		/*
 			load all assets.
 		*/
-		LoadAllAssetsOnce();
+		yield return LoadAllAssetsOnce();
 
 		var totalAssetCount = dummyList.assetBundles.SelectMany(ab => ab.assetNames).ToArray().Length;
 
 		var onMemoryAssetNames = loader.OnMemoryAssetNames();
-		Assert(onMemoryAssetNames.Length == totalAssetCount, "unmatched.");
+		True(onMemoryAssetNames.Length == totalAssetCount, "unmatched.");
 	}
 
-	[MTest] public void UnloadAllAssetBundles () {
+	[MTest] public IEnumerator UnloadAllAssetBundles () {
 		/*
 			load all.
 		*/
@@ -972,9 +908,9 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 		/*
 			unload all.
 		*/
-		RunOnMainThread(() => loader.UnloadOnMemoryAssetBundles());
+		loader.UnloadOnMemoryAssetBundles();
 
-		WaitUntil(
+		yield return WaitUntil(
 			() => {
 				var loadedAssetNames = loader.OnMemoryAssetNames();
 				if (loadedAssetNames.Length == 0) {
@@ -982,131 +918,116 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner {
 				}
 				return false;
 			}, 
-			10, 
-			"failed to unload all assets."
+			() => {throw new TimeoutException("failed to unload all assets.");}
 		);
 	}
 
-	[MTest] public void GetContainedAssetBundleName () {
+	[MTest] public IEnumerator GetContainedAssetBundleName () {
 		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				assetName, 
-				(string loadedAssetName, Texture2D tex) => {
-					done = true;
-				},
-				(loadedAssetName, failEnum, reason, status) => {
-					
-				}
-			),
-			false
-		);
-
-		WaitUntil(() => done, 10, "failed to load asset in time.");
-
-		var containedAssetBundleName = loader.GetContainedAssetBundleName(assetName);
-		Assert(containedAssetBundleName == "bundlename", "not match.");
-	}
-
-	[MTest] public void UnloadAssetBundle () {
-		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
-		var done = false;
-
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				assetName, 
-				(string loadedAssetName, Texture2D prefabAsset) => {
-					done = true;
-				},
-				(loadedAssetName, failEnum, reason, status) => {}
-			),
-			false
-		);
-
-		WaitUntil(() => done, 10, "failed to load asset in time.");
-
-		var bundleName = loader.GetContainedAssetBundleName(assetName);
-		RunOnMainThread(() => loader.UnloadOnMemoryAssetBundle(bundleName));
-
-		Assert(!loader.OnMemoryAssetNames().Any(), "not unloaded.");
-	}
-
-	[MTest] public void IsBundleCachedOnStorage () {
-		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
-		var done = false;
-
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				assetName, 
-				(string loadedAssetName, Texture2D prefabAsset) => {
-					done = true;
-				},
-				(loadedAssetName, failEnum, reason, status) => {}
-			),
-			false
-		);
-
-		WaitUntil(() => done, 10, "failed to load asset in time.");
-
-		var bundleName = loader.GetContainedAssetBundleName(assetName);
-
-		RunOnMainThread(
-			() => {
-				Assert(loader.IsAssetBundleCachedOnStorage(bundleName), "not cached on storage.");
+		yield return loader.LoadAsset(
+			assetName, 
+			(string loadedAssetName, Texture2D tex) => {
+				done = true;
+			},
+			(loadedAssetName, failEnum, reason, status) => {
+				
 			}
 		);
+
+		yield return WaitUntil(() => done, () => {throw new TimeoutException("failed to load asset in time.");});
+
+		var containedAssetBundleName = loader.GetContainedAssetBundleName(assetName);
+		True(containedAssetBundleName == "bundlename", "not match.");
 	}
 
-	[MTest] public void IsBundleCachedOnMemory () {
+	[MTest] public IEnumerator UnloadAssetBundle () {
 		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var done = false;
 
-		RunEnumeratorOnMainThread(
-			loader.LoadAsset(
-				assetName, 
-				(string loadedAssetName, Texture2D prefabAsset) => {
-					done = true;
-				},
-				(loadedAssetName, failEnum, reason, status) => {}
-			),
-			false
+		yield return loader.LoadAsset(
+			assetName, 
+			(string loadedAssetName, Texture2D prefabAsset) => {
+				done = true;
+			},
+			(loadedAssetName, failEnum, reason, status) => {}
 		);
 
-		WaitUntil(() => done, 10, "failed to load asset in time.");
+		yield return WaitUntil(() => done, () => {throw new Exception("failed to load asset in time.");});
 
 		var bundleName = loader.GetContainedAssetBundleName(assetName);
-		Assert(loader.IsAssetBundleCachedOnMemory(bundleName), "not cached on memory.");
+		loader.UnloadOnMemoryAssetBundle(bundleName);
+
+		True(!loader.OnMemoryAssetNames().Any(), "not unloaded.");
+	}
+
+	[MTest] public IEnumerator IsBundleCachedOnStorage () {
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
+		var done = false;
+
+		yield return loader.LoadAsset(
+			assetName, 
+			(string loadedAssetName, Texture2D prefabAsset) => {
+				done = true;
+			},
+			(loadedAssetName, failEnum, reason, status) => {}
+		);
+
+		yield return WaitUntil(() => done, () => {throw new TimeoutException("failed to load asset in time.");});
+
+		var bundleName = loader.GetContainedAssetBundleName(assetName);
+		True(loader.IsAssetBundleCachedOnStorage(bundleName), "not cached on storage.");
+	}
+
+	[MTest] public IEnumerator IsBundleCachedOnMemory () {
+		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
+		var done = false;
+
+		yield return loader.LoadAsset(
+			assetName, 
+			(string loadedAssetName, Texture2D prefabAsset) => {
+				done = true;
+			},
+			(loadedAssetName, failEnum, reason, status) => {}
+		);
+
+		yield return WaitUntil(() => done, () => {throw new TimeoutException("failed to load asset in time.");});
+
+		var bundleName = loader.GetContainedAssetBundleName(assetName);
+		True(loader.IsAssetBundleCachedOnMemory(bundleName), "not cached on memory.");
 	}
 	
-	[MTest] public void AssetBundleInfoFromAssetName () {
+	[MTest] public IEnumerator AssetBundleInfoFromAssetName () {
 		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var assetInfo = loader.AssetBundleInfoOfAsset(assetName);
 		
-		Assert(assetInfo.assetNames.Any(), "no assetBundle containes this asset.");
+		True(assetInfo.assetNames.Any(), "no assetBundle containes this asset.");
+		yield break;
 	}
 
-	[MTest] public void GetAssetBundleSize () {
+	[MTest] public IEnumerator GetAssetBundleSize () {
 		var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
 		var assetInfo = loader.AssetBundleInfoOfAsset(assetName);
 
-		Assert(assetInfo.size == 100, "not match.");
+		True(assetInfo.size == 100, "not match.");
+		yield break;
 	}
 
-    [MTest] public void GetSameAssetBundleOnceThenFailToDownload () {
+    [MTest] public IEnumerator GetSameAssetBundleOnceThenFailToDownload () {
         // 同じbundleをDL中に、最初にDL開始したassetがDL失敗になった際の処理。
+		yield break;
     }
 
-	// [MTest] public void UnloadOnMemoryAssetBundle () {
+	// [MTest] public IEnumerator UnloadOnMemoryAssetBundle () {
 	// 	Debug.LogError("UnloadOnMemoryAssetBundle not yet.");
 	// }
 
-	// [MTest] public void UnloadOnMemoryAsset () {
+	// [MTest] public IEnumerator UnloadOnMemoryAsset () {
 	// 	Debug.LogError("UnloadOnMemoryAsset not yet.");
 	// }
 
-	// [MTest] public void Offline () {
+	// [MTest] public IEnumerator Offline () {
 	// 	Debug.LogError("オフライン時のテストを追加したい。");
 	// }
 }

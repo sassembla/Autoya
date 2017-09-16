@@ -132,5 +132,9 @@ namespace UUebView {
         public void DeleteByPoint (string query) {
             this.Core.DeleteByPoint(query);
         }
+
+        public TagTree[] GetTreeById (string contentId) {
+            return this.Core.GetTreeById(contentId);
+        }
     }
 }
