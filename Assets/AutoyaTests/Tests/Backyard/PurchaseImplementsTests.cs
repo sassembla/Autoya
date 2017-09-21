@@ -65,7 +65,7 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public IEnumerator RetrievePaidPurchase () {
-		Debug.LogWarning("not yet.");
+		Fail("not yet.");
 		// SendPaidTicketが発生する状態を作り出す。まずPurchaseを作り出す。そしてそのPurchaseをPendingした状態で、ブロックを解除する。
 		// なんか難しいので簡単に書ける方法ないかな。
 		/*

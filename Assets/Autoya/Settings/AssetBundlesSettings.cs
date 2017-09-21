@@ -13,9 +13,23 @@ namespace AutoyaFramework.Settings.AssetBundles {
 		/*
 			urls and prefixs.
 		*/
-		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "localhost:8081//Mac/";
-		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "localhost:8081//Mac/";
-		public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "localhost:8081//Mac/";
+		public const string PLATFORM_STR = 
+
+		#if UNITY_IOS
+			"Mac/";
+		#elif UNITY_ANDROID
+			"Mac/";
+		#elif UNITY_WEBGL
+			"Mac/";
+		#elif UNITY_UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
+			"Mac/";
+		#elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+			"Mac/";
+		#endif
+
+		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://sassembla.github.io/Autoya/AssetBundles//" + PLATFORM_STR;
+		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://sassembla.github.io/Autoya/AssetBundles//" + PLATFORM_STR;
+		public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://sassembla.github.io/Autoya/AssetBundles//" + PLATFORM_STR;
 		
 
 		public const string ASSETBUNDLES_DOWNLOAD_PREFIX = "assetbundle_";

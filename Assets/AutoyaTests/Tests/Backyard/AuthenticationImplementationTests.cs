@@ -37,7 +37,8 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			() => {
 				return authorized;
 			},
-			() => {throw new TimeoutException("timeout in setup.");}
+			() => {throw new TimeoutException("timeout in setup.");},
+			10
 		);
 
 		True(Autoya.Auth_IsAuthenticated(), "not logged in.");

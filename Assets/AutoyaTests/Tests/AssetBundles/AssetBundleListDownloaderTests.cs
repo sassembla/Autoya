@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
+using AutoyaFramework.Settings.AssetBundles;
 using Miyamasu;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ using UnityEngine;
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	[MTest] public IEnumerator GetAssetBundleList () {
-		var listPath = "localhost:8081//Mac/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+		var listPath = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + "1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
 		var listDownloader = new AssetBundleListDownloader();
 
 		var done = false;
@@ -34,7 +35,7 @@ public class AssetBundleListDownloaderTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public IEnumerator GetAssetBundleListFailed () {
-		var listPath = "localhost:8081//FAKEPATH";
+		var listPath = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + "FAKEPATH";
 		var loader = new AssetBundleListDownloader();
 
 		var done = false;
