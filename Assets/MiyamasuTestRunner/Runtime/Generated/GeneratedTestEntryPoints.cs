@@ -1418,6 +1418,25 @@ public class PurchaseRouterTests_Miyamasu {
             throw;
         }
     }
+    [UnityTest] public IEnumerator ReloadPurchaseRouter() {
+        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "ReloadPurchaseRouter");
+        var instance = new PurchaseRouterTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReloadPurchaseRouter();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
     [UnityTest] public IEnumerator PurchaseCancell() {
         var rec = new Miyamasu.Recorder("PurchaseRouterTests", "PurchaseCancell");
         var instance = new PurchaseRouterTests();

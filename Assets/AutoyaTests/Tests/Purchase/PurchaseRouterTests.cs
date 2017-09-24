@@ -129,6 +129,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
 	}
 
+	[MTest] public IEnumerator ReloadPurchaseRouter () {
+		Debug.LogWarning("自発的にストアのリロードを行いたい。");
+		yield break;
+	}
+
 	[MTest] public IEnumerator PurchaseCancell () {
 		Debug.LogWarning("購入キャンセルのテストがしたい");
 		yield break;

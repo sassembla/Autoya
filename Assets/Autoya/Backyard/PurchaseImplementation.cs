@@ -70,10 +70,6 @@ namespace AutoyaFramework {
 			yield return new WaitForSeconds((float)Math.Pow(2, purchaseReadyRetryCount));
 
 			ReloadPurchasability();
-
-			while (_purchaseRouter.IsPurchaseReady()) {
-				yield return null;
-			}
 		}
 
 		private void AttemptRetryPurchaseReady () {

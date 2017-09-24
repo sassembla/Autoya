@@ -3,7 +3,7 @@ namespace AutoyaFramework.Purchase {
 		
 		/*
 			immutable purchasable item infos.
-		 */
+			*/
 		public static readonly ProductInfos IMMUTABLE_PURCHASE_ITEM_INFOS = new ProductInfos {
 			productInfos = new ProductInfo[] {
 				new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
