@@ -329,6 +329,9 @@ namespace AutoyaFramework.Purchase {
                     validator.Validate(e.purchasedProduct.receipt);
 
                     // if no exception, it's ok.
+
+					// {do more check here.}
+
                     return true;
                 } catch (IAPSecurityException) {}
 			#else
