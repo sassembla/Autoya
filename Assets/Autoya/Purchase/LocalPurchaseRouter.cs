@@ -75,6 +75,10 @@ namespace AutoyaFramework.Purchase {
 
 		private readonly ProductInfo[] verifiedProducts;
 
+		public ProductInfo[] ProductInfos() {
+            return verifiedProducts;
+        }
+
 		/**
 			constructor.
 		 */

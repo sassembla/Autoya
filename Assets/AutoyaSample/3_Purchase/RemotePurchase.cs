@@ -6,7 +6,7 @@ using UnityEngine;
 /**
 	Purchase example of server side validate based purchase.
 */
-public class ServerValidatePurchase : MonoBehaviour {
+public class RemotePurchase : MonoBehaviour {
 	
 	IEnumerator Start () {
 		while (!Autoya.Purchase_IsReady()) {
