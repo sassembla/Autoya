@@ -10,8 +10,6 @@ public class RemotePurchase : MonoBehaviour {
 	
 	IEnumerator Start () {
 		while (!Autoya.Purchase_IsReady()) {
-			Debug.Log("log:" + Autoya.Auth_IsAuthenticated());
-			Debug.Log("puc:" + Autoya.Purchase_IsReady());
 			yield return null;
 		}
 
