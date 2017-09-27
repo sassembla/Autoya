@@ -33,5 +33,6 @@ namespace AutoyaFramework.Purchase {
 		public const double TIMEOUT_SEC = 10.0;
 
 		public const int PEADY_MAX_RETRY_COUNT = 3;
+		public const int PURCHASED_MAX_RETRY_COUNT = 3;
 	}
 }

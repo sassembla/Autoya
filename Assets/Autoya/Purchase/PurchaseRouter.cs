@@ -40,6 +40,7 @@ namespace AutoyaFramework.Purchase {
 	
 	
 	public class PurchaseRouter : IStoreListener {
+		
 		/*
 			delegate for supply http request header generate func for modules.
 		*/
@@ -74,6 +75,8 @@ namespace AutoyaFramework.Purchase {
 			
 
 			PurchaseReady,
+			RetrySending,
+			RetryFailed,
 
 			
 			GettingTransaction,
@@ -86,6 +89,7 @@ namespace AutoyaFramework.Purchase {
 			UnavailableProduct,
 			AlreadyPurchasing,
 			TicketGetError,
+			RetryFailed,
 
 			/*
 				Unty IAP initialize errors.
@@ -474,8 +478,10 @@ namespace AutoyaFramework.Purchase {
 							routerState = RouterState.PurchaseReady;
 						},
 						(conId, code, reason, autoyaStatus) => {
-							// 通信が失敗したら、アイテムがdeployできてないので、再度送り出す必要がある。自動リトライが必須。
-							Debug.LogError("failed to deploy purchased item. code:" + code + " reason:" + reason);
+							// OK以外のコードについてはcompleteを行わず、リトライ。
+							routerState = RouterState.RetrySending;
+							
+							StartRetry(callbacks, e);
 						}
 					);
 					enumExecutor(cor);
@@ -494,6 +500,67 @@ namespace AutoyaFramework.Purchase {
 				always pending.
 			*/
 			return PurchaseProcessingResult.Pending;
+		}
+
+		private void StartRetry (Callbacks callbacks, PurchaseEventArgs e) {
+			var cor = RetryCoroutine(callbacks, e);
+			enumExecutor(cor);
+		}
+
+		private IEnumerator RetryCoroutine (Callbacks callbacks, PurchaseEventArgs e) {
+			var count = 0;
+
+			retry: {
+				var waitSec = Mathf.Pow(count, 2);
+				count++;
+				
+				yield return new WaitForSeconds(waitSec);
+
+				var purchasedUrl = PurchaseSettings.PURCHASE_URL_PURCHASE;
+				var dataStr = JsonUtility.ToJson(new Ticket(callbacks.ticketId, e.purchasedProduct.receipt));
+
+				var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PURCHASE_PREFIX + Guid.NewGuid().ToString();
+				
+				var cor = HttpPost(
+					connectionId,
+					purchasedUrl,
+					dataStr,
+					(conId, responseData) => {
+						var product = e.purchasedProduct;
+						controller.ConfirmPendingPurchase(e.purchasedProduct);
+
+						if (callbacks.purchaseSucceeded != null) {
+							callbacks.purchaseSucceeded();
+						}
+						routerState = RouterState.PurchaseReady;
+					},
+					(conId, code, reason, autoyaStatus) => {
+						// still in RetrySending state.
+					}
+				);
+
+				while (cor.MoveNext()) {
+					yield return null;
+				}
+
+				if (routerState != RouterState.RetrySending) {
+					// retry finished.
+					yield break;
+				}
+
+				// still in retry.
+				if (count == PurchaseSettings.PURCHASED_MAX_RETRY_COUNT) {
+					routerState = RouterState.RetryFailed;
+
+					if (callbacks.purchaseFailed != null) {
+						callbacks.purchaseFailed(PurchaseError.RetryFailed, "failed to retry purchase process.", new AutoyaStatus());
+					}
+					yield break;
+				}
+
+				// continue retry.
+				goto retry;
+			}
 		}
 
 		private void SendPaidTicket (PurchaseEventArgs e) {

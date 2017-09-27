@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using AutoyaFramework;
 using AutoyaFramework.Purchase;
 using Miyamasu;
@@ -145,6 +146,150 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		yield break;
 	}
 	
+
+	private bool forceFailResponse = false;
+	private int forceFailCount = 0;
+	private void DummyResponsehandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+		if (forceFailResponse) {
+			forceFailCount++;
+			failed(connectionId, httpCode, "expected failure in test.", new AutoyaStatus());
+			return;
+		}
+
+		if (200 <= httpCode && httpCode < 299) {
+			succeeded(connectionId, data);
+			return;
+		}
+
+		failed(connectionId, httpCode, errorReason, new AutoyaStatus());
+	}
+	
+	[MTest] public IEnumerator RetryPurchaseThenFail () {
+		forceFailResponse = false;
+
+		// routerをhandling付きで生成すればいい。
+		
+		router = new PurchaseRouter(
+			iEnum => {
+				runner.StartCoroutine(iEnum);
+			},
+			productData => {
+				// dummy response.
+				return new ProductInfo[] {
+					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+				};
+			},
+			ticketData => ticketData,
+			() => {},
+			(err, reason, status) => {},
+			null,
+			DummyResponsehandlingDelegate
+		);
+	
+		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
+
+		var purchaseId = "dummy purchase Id";
+		var productId = "100_gold_coins";
+
+		var purchaseDone = false;
+		var failedReason = string.Empty;
+
+		var cor = router.PurchaseAsync(
+			purchaseId,
+			productId,
+			pId => {
+				// never success.
+			},
+			(pId, err, reason, autoyaStatus) => {
+				purchaseDone = true;
+			}
+		);
+
+		while (cor.MoveNext()) {
+			yield return null;
+		}
+
+		yield return WaitUntil(
+			() => {
+				var state = router.State();
+				if (state == PurchaseRouter.RouterState.Purchasing) {
+					// httpが強制的に失敗するようにする。
+					forceFailResponse = true;
+				}
+				return purchaseDone;
+			},
+			() => {throw new TimeoutException("timeout.");},
+			15
+		);
+	}
+
+	[MTest] public IEnumerator RetryPurchaseThenFinallySuccess () {
+		forceFailResponse = false;
+
+		// routerをhandling付きで生成すればいい。
+		
+		router = new PurchaseRouter(
+			iEnum => {
+				runner.StartCoroutine(iEnum);
+			},
+			productData => {
+				// dummy response.
+				return new ProductInfo[] {
+					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+				};
+			},
+			ticketData => ticketData,
+			() => {},
+			(err, reason, status) => {},
+			null,
+			DummyResponsehandlingDelegate
+		);
+	
+		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
+
+
+		var purchaseId = "dummy purchase Id";
+		var productId = "100_gold_coins";
+
+		var purchaseDone = false;
+		var failedReason = string.Empty;
+
+		var cor = router.PurchaseAsync(
+			purchaseId,
+			productId,
+			pId => {
+				purchaseDone = true;
+			},
+			(pId, err, reason, autoyaStatus) => {
+				// never fail.
+			}
+		);
+
+		while (cor.MoveNext()) {
+			yield return null;
+		}
+
+		yield return WaitUntil(
+			() => {
+				var state = router.State();
+				if (state == PurchaseRouter.RouterState.Purchasing) {
+					// httpが強制的に失敗するようにする。
+					forceFailResponse = true;
+				}
+
+				if (forceFailCount == PurchaseSettings.PURCHASED_MAX_RETRY_COUNT - 1) {
+					forceFailResponse = false;
+				}
+
+				return purchaseDone;
+			},
+			() => {throw new TimeoutException("timeout.");},
+			10
+		);
+	}
+
 	/*
 		意図的にbeforeを出す方法が無いかな〜。
 		Listenerを複数作って、ランダムにどのインスタンスかがレスポンスを得る、っていうのは見つけたんだけど、イレギュラーすぎて安定させられる気がしない。
