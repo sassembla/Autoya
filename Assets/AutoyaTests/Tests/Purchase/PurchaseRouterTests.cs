@@ -335,7 +335,6 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			15
 		);
 		Debug.Log("リトライが3回失敗して良い感じになった。" + router.State());
-		router.Show();
 
 
 		forceFailResponse = false;
@@ -344,35 +343,33 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		// router = null;
 
 
-		// // renew router for unresolved paid transaction.
-		// // renewすると取得できない。
-		// router = new PurchaseRouter(
-		// 	iEnum => {
-		// 		runner.StartCoroutine(iEnum);
-		// 	},
-		// 	productData => {
-		// 		// dummy response.
-		// 		return new ProductInfo[] {
-		// 			new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-		// 			new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-		// 		};
-		// 	},
-		// 	ticketData => Guid.NewGuid().ToString(),
-		// 	() => {
-		// 		Debug.Log("起動成功");
-		// 	},
-		// 	(err, reason, status) => {
-		// 		Debug.Log("起動失敗 err:" + err + " reason:" + reason);
-		// 	},
-		// 	null,
-		// 	DummyResponsehandlingDelegate
-		// );
+		// renew router for unresolved paid transaction.
+		// renewすると取得できない。
+		router = new PurchaseRouter(
+			iEnum => {
+				runner.StartCoroutine(iEnum);
+			},
+			productData => {
+				// dummy response.
+				return new ProductInfo[] {
+					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+				};
+			},
+			ticketData => Guid.NewGuid().ToString(),
+			() => {
+				Debug.Log("起動成功");
+			},
+			(err, reason, status) => {
+				Debug.Log("起動失敗 err:" + err + " reason:" + reason);
+			},
+			null,
+			DummyResponsehandlingDelegate
+		);
 
-		// Debug.Log("適当な待ち開始");
+		Debug.Log("適当な待ち開始");
 
-		yield return new WaitForSeconds(100);
-		router.Show();// 観測できないのはまあ良いとして、じゃあどのくらい待てば良いんだろう。
-		
+		yield return new WaitForSeconds(10);
 		
 	}
 
