@@ -1418,63 +1418,6 @@ public class PurchaseRouterTests_Miyamasu {
             throw;
         }
     }
-    [UnityTest] public IEnumerator ReloadPurchaseRouter() {
-        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "ReloadPurchaseRouter");
-        var instance = new PurchaseRouterTests();
-        instance.rec = rec;
-
-        
-        yield return instance.Setup();
-        
-        yield return instance.ReloadPurchaseRouter();
-        rec.MarkAsPassed();
-
-        
-        try {
-            instance.Teardown();
-        } catch (Exception e) {
-            rec.TeardownFailed(e);
-            throw;
-        }
-    }
-    [UnityTest] public IEnumerator PurchaseCancell() {
-        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "PurchaseCancell");
-        var instance = new PurchaseRouterTests();
-        instance.rec = rec;
-
-        
-        yield return instance.Setup();
-        
-        yield return instance.PurchaseCancell();
-        rec.MarkAsPassed();
-
-        
-        try {
-            instance.Teardown();
-        } catch (Exception e) {
-            rec.TeardownFailed(e);
-            throw;
-        }
-    }
-    [UnityTest] public IEnumerator Offline() {
-        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "Offline");
-        var instance = new PurchaseRouterTests();
-        instance.rec = rec;
-
-        
-        yield return instance.Setup();
-        
-        yield return instance.Offline();
-        rec.MarkAsPassed();
-
-        
-        try {
-            instance.Teardown();
-        } catch (Exception e) {
-            rec.TeardownFailed(e);
-            throw;
-        }
-    }
     [UnityTest] public IEnumerator RetryPurchaseThenFail() {
         var rec = new Miyamasu.Recorder("PurchaseRouterTests", "RetryPurchaseThenFail");
         var instance = new PurchaseRouterTests();
@@ -1503,6 +1446,25 @@ public class PurchaseRouterTests_Miyamasu {
         yield return instance.Setup();
         
         yield return instance.RetryPurchaseThenFinallySuccess();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
+    [UnityTest] public IEnumerator RetryPurchaseThenFailThenWait() {
+        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "RetryPurchaseThenFailThenWait");
+        var instance = new PurchaseRouterTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.RetryPurchaseThenFailThenWait();
         rec.MarkAsPassed();
 
         

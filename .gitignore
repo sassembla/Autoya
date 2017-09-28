@@ -61,3 +61,5 @@ Assets/InformationResources/Resources/Views/MyView.meta
 PC.app/*
 LocalHttpFileServer/
 miyamasu.log
+Assets/MiyamasuTestRunner/Runtime/Generated/GeneratedTestEntryPoints.cs
+Assets/MiyamasuTestRunner/Runtime/Generated/GeneratedTestEntryPoints.cs.meta
