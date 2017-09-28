@@ -98,6 +98,27 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		done();
 	}
 
+
+	private bool forceFailResponse = false;
+	private int forceFailCount = 0;
+	private void DummyResponsehandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+		if (forceFailResponse) {
+			forceFailCount++;
+			failed(connectionId, httpCode, "expected failure in test.", new AutoyaStatus());
+			return;
+		}
+
+		if (200 <= httpCode && httpCode < 299) {
+			succeeded(connectionId, data);
+			return;
+		}
+
+		failed(connectionId, httpCode, errorReason, new AutoyaStatus());
+	}
+
+
+
+
 	[MTest] public IEnumerator ShowProductInfos () {
 		var products = router.ProductInfos();
 		True(products.Length == 2, "not match.");
@@ -130,23 +151,6 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
 	}
 
-	private bool forceFailResponse = false;
-	private int forceFailCount = 0;
-	private void DummyResponsehandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
-		if (forceFailResponse) {
-			forceFailCount++;
-			failed(connectionId, httpCode, "expected failure in test.", new AutoyaStatus());
-			return;
-		}
-
-		if (200 <= httpCode && httpCode < 299) {
-			succeeded(connectionId, data);
-			return;
-		}
-
-		failed(connectionId, httpCode, errorReason, new AutoyaStatus());
-	}
-	
 	[MTest] public IEnumerator RetryPurchaseThenFail () {
 		forceFailResponse = false;
 
@@ -208,6 +212,46 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 
 		True(router.State() == PurchaseRouter.RouterState.RetryFailed);
 		
+		/*
+			・storeのリブートに際して失敗したtransactionが復活するかどうか
+			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
+		 */
+		#if UNITY_EDITOR
+		yield break;
+		#elif UNITY_IOS || UNITY_ANDROID
+		// pass.
+		#else
+		yield break;
+		#endif
+
+		// done, but transaction is remaining.
+
+		// reload router will finish remaining transaction.
+		router = new PurchaseRouter(
+			iEnum => {
+				runner.StartCoroutine(iEnum);
+			},
+			productData => {
+				// dummy response.
+				return new ProductInfo[] {
+					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+				};
+			},
+			ticketData => ticketData,
+			() => {},
+			(err, reason, status) => {}
+		);
+
+		var completed = false;
+		router._completed = () => {
+			completed = true;
+		};
+
+		yield return WaitUntil(
+			() => completed,
+			() => {throw new TimeoutException("failed to complete remaining transaction.");}
+		);
 	}
 
 	[MTest] public IEnumerator RetryPurchaseThenFinallySuccess () {
@@ -265,6 +309,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 					forceFailResponse = true;
 				}
 
+				// リトライにN-1回失敗したあとに成功するようにフラグを変更する。
 				if (forceFailCount == PurchaseSettings.PURCHASED_MAX_RETRY_COUNT - 1) {
 					forceFailResponse = false;
 				}
@@ -276,10 +321,22 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		);
 	}
 
-	[MTest] public IEnumerator RetryPurchaseThenFailThenWait () {
-		forceFailResponse = false;
+	[MTest] public IEnumerator RetryPurchaseThenFailThenComplete () {
 
-		// routerをhandling付きで生成すればいい。
+		/*
+			・storeのリブートに際して失敗したtransactionが復活するかどうか
+			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
+		 */
+		#if UNITY_EDITOR
+		yield break;
+		#elif UNITY_IOS || UNITY_ANDROID
+		// pass.
+		#else
+		yield break;
+		#endif
+
+
+		forceFailResponse = false;
 		
 		router = new PurchaseRouter(
 			iEnum => {
@@ -312,6 +369,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			productId,
 			pId => {
 				// never success.
+				Fail();
 			},
 			(pId, err, reason, autoyaStatus) => {
 				purchaseDone = true;
@@ -334,17 +392,13 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			() => {throw new TimeoutException("timeout.");},
 			15
 		);
-		Debug.Log("リトライが3回失敗して良い感じになった。" + router.State());
-
-
+		
 		forceFailResponse = false;
 
 
-		// router = null;
+		var rebooted = false;
+		var completed = false;
 
-
-		// renew router for unresolved paid transaction.
-		// renewすると取得できない。
 		router = new PurchaseRouter(
 			iEnum => {
 				runner.StartCoroutine(iEnum);
@@ -358,68 +412,23 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => Guid.NewGuid().ToString(),
 			() => {
-				Debug.Log("起動成功");
+				rebooted = true;
 			},
 			(err, reason, status) => {
-				Debug.Log("起動失敗 err:" + err + " reason:" + reason);
+				Fail("failed to boot store func. err:" + err + " reason:" + reason);
 			},
 			null,
 			DummyResponsehandlingDelegate
 		);
 
-		Debug.Log("適当な待ち開始");
+		router._completed = () => {
+			completed = true;
+		};
 
-		yield return new WaitForSeconds(10);
-		
+		yield return WaitUntil(
+			() => rebooted && completed,
+			() => {throw new TimeoutException("timeout.");},
+			10
+		);
 	}
-
-	/*
-		failしたpurchaseを受け取る機会ってどうなってるんだろう、待ったら来るのかな。
-	*/
-	
-
-	/**
-		force fail initialize of router.
-	*/
-	// [MTest] public IEnumerator ReloadUnreadyStore () {
-	//     if (router == null) {
-	//         MarkSkipped();
-	//         return;
-	//     }
-
-	//     // renew router.
-	//     
-	//         () => {
-	//             router = new PurchaseRouter();
-	//         }
-	//     );
-		
-	//     try {
-	//         yield return WaitUntil(() => router.IsPurchaseReady(), 2, "failed to ready.");
-	//     } catch {
-	//         // catch timeout. do nothing.
-	//     }
-
-	//     True(!router.IsPurchaseReady(), "not intended.");
-		
-	//     // すでにnewされているrouterのハンドラを更新しないとダメか、、
-	//     router.httpGet = (url, successed, failed) => {
-	//         Autoya.Http_Get(url, successed, failed);
-	//     };
-
-	//     router.httpPost = (url, data, successed, failed) => {
-	//         Autoya.Http_Post(url, data, successed, failed);
-	//     };
-
-	//     var ready = false;
-	//     router.Reload(
-	//         () => {
-	//             ready = true;
-	//         },
-	//         (err, reason) => {}
-	//     );
-
-	//     yield return WaitUntil(() => ready, 5, "not get ready.");
-	//     True(router.IsPurchaseReady(), "not ready.");
-	// }
 }

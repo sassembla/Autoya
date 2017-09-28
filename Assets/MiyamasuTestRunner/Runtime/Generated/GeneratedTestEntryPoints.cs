@@ -79,15 +79,15 @@ public class PurchaseRouterTests_Miyamasu {
             throw;
         }
     }
-    [UnityTest] public IEnumerator RetryPurchaseThenFailThenWait() {
-        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "RetryPurchaseThenFailThenWait");
+    [UnityTest] public IEnumerator RetryPurchaseThenFailThenComplete() {
+        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "RetryPurchaseThenFailThenComplete");
         var instance = new PurchaseRouterTests();
         instance.rec = rec;
 
         
         yield return instance.Setup();
         
-        yield return instance.RetryPurchaseThenFailThenWait();
+        yield return instance.RetryPurchaseThenFailThenComplete();
         rec.MarkAsPassed();
 
         
