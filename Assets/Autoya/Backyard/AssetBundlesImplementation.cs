@@ -53,7 +53,7 @@ namespace AutoyaFramework {
 		
 		public static void AssetBundle_DeleteAllStorageCache (Action<bool, string> result, bool runAnyway=false) {
 			if (runAnyway) {
-				var isCacheDeleted = Caching.CleanCache();
+				var isCacheDeleted = Caching.ClearCache();
 				if (isCacheDeleted) {
 					result(true, "succeeded to delete all assetBundles in storage.");
 					return;
@@ -71,7 +71,7 @@ namespace AutoyaFramework {
 				yield return null;
 			}
 
-			var isDeleted = Caching.CleanCache();
+			var isDeleted = Caching.ClearCache();
 
 			if (isDeleted) {
 				result(true, "succeeded to delete all assetBundles in storage.");

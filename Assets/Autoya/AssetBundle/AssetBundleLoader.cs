@@ -91,7 +91,7 @@ namespace AutoyaFramework.AssetBundles {
 			*/
 			UnloadOnMemoryAssetBundles();
 			
-			return Caching.CleanCache();
+			return Caching.ClearCache();
 		}
 
 		/**
@@ -479,7 +479,7 @@ namespace AutoyaFramework.AssetBundles {
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
 
-				if (request.isError) {
+				if (request.isNetworkError) {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
 				}
