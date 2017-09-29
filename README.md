@@ -1,5 +1,5 @@
 # Autoya
-ver 0.8.13
+ver 0.8.16
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/images/scr.png?raw=true)
 
@@ -53,7 +53,7 @@ already implemented.
 ### Notification(local/remote)
 
 iOS: already implemented.  
-Android: in 2017 summer.
+Android: in 2017.
 
 ### Information
 already implemented.
