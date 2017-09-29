@@ -664,6 +664,11 @@ namespace AutoyaFramework {
 			・200系であればsucceededを着火する。
 		*/
 		private void HttpResponseHandling (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+			if (forceFailHttp) {
+				failed(connectionId, httpCode, "intentional http failure.", new AutoyaStatus());
+				return;
+			}
+
 			/*
 				handle Autoya internal error.
 			*/
@@ -720,6 +725,7 @@ namespace AutoyaFramework {
 			*/
 			if (inMaintenance || isAuthFailed) {
 				failed(connectionId, httpCode, "good status code but under maintenance or failed to auth or both.", new AutoyaStatus(inMaintenance, isAuthFailed));
+				return;// これ書いちゃいけなかったような気がするんだよな〜〜どうだったかな、
 			}
 
 			/*

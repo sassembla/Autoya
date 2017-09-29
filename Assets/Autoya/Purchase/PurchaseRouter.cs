@@ -49,7 +49,7 @@ namespace AutoyaFramework.Purchase {
 		/*
 			delegate for handle http response for modules.
 		*/
-		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed);
 		
 		private readonly HttpRequestHeaderDelegate httpRequestHeaderDelegate;
 		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
@@ -68,7 +68,7 @@ namespace AutoyaFramework.Purchase {
 			None,
 			
 			LoadingProducts,
-			FailedToLoadProducts,
+			FailedToGetProducts,
 			
 			LoadingStore,
 			FailedToLoadStore,
@@ -83,21 +83,26 @@ namespace AutoyaFramework.Purchase {
 			Purchasing,
 		}
 
-		public enum PurchaseError {
+		public enum PurchaseReadyError {
 			Offline,
-			FailedToBoot,
-			UnavailableProduct,
-			AlreadyPurchasing,
-			TicketGetError,
-			RetryFailed,
-
+			FailedToGetProducts,
+			
 			/*
 				Unty IAP initialize errors.
 			*/
 			UnityIAP_Initialize_AppNowKnown,
 			UnityIAP_Initialize_NoProductsAvailable,
 			UnityIAP_Initialize_PurchasingUnavailable,
+		}
 
+		public enum PurchaseError {
+			Offline,
+			
+			AlreadyPurchasing,
+			TicketGetError,
+
+			UnavailableProduct,
+			RetryFailed,
 
 			/*
 				Unity IAP Purchase errors.
@@ -129,14 +134,14 @@ namespace AutoyaFramework.Purchase {
 
 
 		private Action readyPurchase;
-		private Action<PurchaseError, string, AutoyaStatus> failedToReady;
+		private Action<PurchaseReadyError, int, string> failedToReady;
 
-		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
 			if (200 <= httpCode && httpCode < 299) {
 				succeeded(connectionId, data);
 				return;
 			}
-			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
+			failed(connectionId, httpCode, errorReason);
 		}
 
 		private readonly string storeId;
@@ -159,7 +164,7 @@ namespace AutoyaFramework.Purchase {
 			Func<string, ProductInfo[]> onLoadProducts,
 			Func<string, string> onTicketResponse,
 			Action onPurchaseReady, 
-			Action<PurchaseError, string, AutoyaStatus> onPurchaseReadyFailed,
+			Action<PurchaseReadyError, int, string> onPurchaseReadyFailed,
 			HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
 			HttpResponseHandlingDelegate httpResponseHandlingDelegate =null
 		) {
@@ -205,7 +210,7 @@ namespace AutoyaFramework.Purchase {
 		private IEnumerator _Ready (
 			Func<string, ProductInfo[]> onLoadProducts,
 			Action reloaded, 
-			Action<PurchaseError, string, AutoyaStatus> reloadFailed
+			Action<PurchaseReadyError, int, string> failedToReady
 		) {
 			if (routerState == RouterState.PurchaseReady) {
 				// IAP features are already running.
@@ -215,7 +220,7 @@ namespace AutoyaFramework.Purchase {
 			}
 
 			this.readyPurchase = reloaded;
-			this.failedToReady = reloadFailed;
+			this.failedToReady = failedToReady;
 			routerState = RouterState.LoadingProducts;
 			
 			var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_READY_PREFIX + Guid.NewGuid().ToString();
@@ -230,9 +235,9 @@ namespace AutoyaFramework.Purchase {
 					this.verifiedProducts = products;
 					ReadyIAPFeature(products);
 				},
-				(conId, code, reason, autoyaStatus) => {
-					routerState = RouterState.FailedToLoadProducts;
-					failedToReady(PurchaseError.UnknownError, reason, autoyaStatus);
+				(conId, code, reason) => {
+					routerState = RouterState.FailedToGetProducts;
+					this.failedToReady(PurchaseReadyError.FailedToGetProducts, code, reason);
 				}
 			);
 
@@ -259,7 +264,7 @@ namespace AutoyaFramework.Purchase {
 				check network connectivity again. because Unity IAP never tells offline.
 			*/
 			if (Application.internetReachability == NetworkReachability.NotReachable) {
-				failedToReady(PurchaseError.Offline, "network is offline.", new AutoyaStatus());
+				failedToReady(PurchaseReadyError.Offline, 0, "network is offline.");
 				return;
 			}
 			
@@ -295,15 +300,15 @@ namespace AutoyaFramework.Purchase {
 			routerState = RouterState.FailedToLoadStore;
 			switch (error) {
 				case InitializationFailureReason.AppNotKnown: {
-					failedToReady(PurchaseError.UnityIAP_Initialize_AppNowKnown, "The store reported the app as unknown.", new AutoyaStatus());
+					failedToReady(PurchaseReadyError.UnityIAP_Initialize_AppNowKnown, 0, "The store reported the app as unknown.");
 					break;
 				}
 				case InitializationFailureReason.NoProductsAvailable: {
-					failedToReady(PurchaseError.UnityIAP_Initialize_NoProductsAvailable, "No products available for purchase.", new AutoyaStatus());
+					failedToReady(PurchaseReadyError.UnityIAP_Initialize_NoProductsAvailable, 0, "No products available for purchase.");
 					break;
 				}
 				case InitializationFailureReason.PurchasingUnavailable: {
-					failedToReady(PurchaseError.UnityIAP_Initialize_PurchasingUnavailable, "In-App Purchases disabled in device settings.", new AutoyaStatus());
+					failedToReady(PurchaseReadyError.UnityIAP_Initialize_PurchasingUnavailable, 0, "In-App Purchases disabled in device settings.");
 					break;
 				}
 			}
@@ -318,11 +323,11 @@ namespace AutoyaFramework.Purchase {
 			string purchaseId, 
 			string productId, 
 			Action<string> purchaseSucceeded, 
-			Action<string, PurchaseError, string, AutoyaStatus> purchaseFailed
+			Action<string, PurchaseError, string> purchaseFailed
 		) {
 			if (Application.internetReachability == NetworkReachability.NotReachable) {
 				if (purchaseFailed != null) {
-					purchaseFailed(purchaseId, PurchaseError.Offline, "network is offline.", new AutoyaStatus());
+					purchaseFailed(purchaseId, PurchaseError.Offline, "network is offline.");
 				}
 				yield break;
 			}
@@ -332,13 +337,13 @@ namespace AutoyaFramework.Purchase {
 					case RouterState.GettingTransaction:
 					case RouterState.Purchasing: {
 						if (purchaseFailed != null) {
-							purchaseFailed(purchaseId, PurchaseError.AlreadyPurchasing, "purchasing another product now. wait then retry.", new AutoyaStatus());
+							purchaseFailed(purchaseId, PurchaseError.AlreadyPurchasing, "purchasing another product now. wait then retry.");
 						}
 						break;
 					}
 					default: {
 						if (purchaseFailed != null) {
-							purchaseFailed(purchaseId, PurchaseError.UnknownError, "state is:" + routerState, new AutoyaStatus());
+							purchaseFailed(purchaseId, PurchaseError.UnknownError, "state is:" + routerState);
 						}
 						break;
 					}
@@ -357,14 +362,14 @@ namespace AutoyaFramework.Purchase {
 
 				if (!verified) {
 					if (purchaseFailed != null) {
-						purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available.", new AutoyaStatus());
+						purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "this product is not available. productId:" + productId);
 					}
 					yield break;
 				}
 			}
 			
 			// renew callback.
-			callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason, autoyaStatud) => {});
+			callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason) => {});
 			
 
 			/*
@@ -386,10 +391,10 @@ namespace AutoyaFramework.Purchase {
 					
 					TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
 				},
-				(conId, code, reason, autoyaStatus) => {
+				(conId, code, reason) => {
 					routerState = RouterState.PurchaseReady;
 					if (purchaseFailed != null) {
-						purchaseFailed(purchaseId, PurchaseError.TicketGetError, "code:" + code + " reason:" + reason, autoyaStatus);
+						purchaseFailed(purchaseId, PurchaseError.TicketGetError, "code:" + code + " reason:" + reason);
 					}
 				}
 			);
@@ -402,25 +407,26 @@ namespace AutoyaFramework.Purchase {
 			public readonly Product p;
 			public readonly string ticketId;
 			public readonly Action purchaseSucceeded;
-			public readonly Action<PurchaseError, string, AutoyaStatus> purchaseFailed;
-			public Callbacks (Product p, string purchaseId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string, AutoyaStatus> purchaseFailed) {
+			public readonly Action<PurchaseError, string> purchaseFailed;
+			public Callbacks (Product p, string purchaseId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string> purchaseFailed) {
 				this.p = p;
 				this.ticketId = ticketId;
 				this.purchaseSucceeded = () => {
 					purchaseSucceeded(purchaseId);
 				};
-				this.purchaseFailed = (err, reason, autoyaStatus) => {
-					purchaseFailed(purchaseId, err, reason, autoyaStatus);
+				this.purchaseFailed = (err, reason) => {
+					purchaseFailed(purchaseId, err, reason);
 				};
 			}
 		}
 
-		private Callbacks callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason, autoyaStatus) => {});
-		private void TicketReceived (string purchaseId, string productId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string, AutoyaStatus> purchaseFailed) {
+		private Callbacks callbacks = new Callbacks(null, string.Empty, string.Empty, tId => {}, (tId, error, reason) => {});
+		private void TicketReceived (string purchaseId, string productId, string ticketId, Action<string> purchaseSucceeded, Action<string, PurchaseError, string> purchaseFailed) {
 			var product = this.controller.products.WithID(productId);
 			if (product != null) {
 				if (product.availableToPurchase) {
 					routerState = RouterState.Purchasing;
+
 					/*
 						renew callback.
 					*/
@@ -432,7 +438,7 @@ namespace AutoyaFramework.Purchase {
 			
 			routerState = RouterState.PurchaseReady;
 			if (purchaseFailed != null) {
-				purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "selected product is not available.", new AutoyaStatus());
+				purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "selected product is not available.");
 			}
 		}
 		
@@ -489,7 +495,7 @@ namespace AutoyaFramework.Purchase {
 								callbacks.purchaseSucceeded();
 							}
 						},
-						(conId, code, reason, autoyaStatus) => {
+						(conId, code, reason) => {
 							// OK以外のコードについてはcompleteを行わず、リトライ。
 							routerState = RouterState.RetrySending;
 							
@@ -502,7 +508,7 @@ namespace AutoyaFramework.Purchase {
 				default: {
 					// maybe never comes here.
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item case 2. state:" + routerState, new AutoyaStatus());
+						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item case 2. state:" + routerState);
 					}
 					break;
 				}
@@ -547,7 +553,7 @@ namespace AutoyaFramework.Purchase {
 							callbacks.purchaseSucceeded();
 						}
 					},
-					(conId, code, reason, autoyaStatus) => {
+					(conId, code, reason) => {
 						// still in RetrySending state.
 					}
 				);
@@ -566,7 +572,7 @@ namespace AutoyaFramework.Purchase {
 					routerState = RouterState.RetryFailed;
 
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(PurchaseError.RetryFailed, "failed to retry purchase process.", new AutoyaStatus());
+						callbacks.purchaseFailed(PurchaseError.RetryFailed, "failed to retry purchase process.");
 					}
 					yield break;
 				}
@@ -594,7 +600,7 @@ namespace AutoyaFramework.Purchase {
 						_completed();
 					}
 				},
-				(conId, code, reason, autoyaStatus) => {
+				(conId, code, reason) => {
 					// systems do this process again automatically.
 					// no need to do something.
 				}
@@ -678,7 +684,7 @@ namespace AutoyaFramework.Purchase {
 					routerState = RouterState.PurchaseReady;
 
 					if (callbacks.purchaseFailed != null) { 
-						callbacks.purchaseFailed(error, reason, new AutoyaStatus());
+						callbacks.purchaseFailed(error, reason);
 					}
 					break;
 				}
@@ -687,7 +693,7 @@ namespace AutoyaFramework.Purchase {
 					routerState = RouterState.PurchaseReady;
 
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(error, reason, new AutoyaStatus());
+						callbacks.purchaseFailed(error, reason);
 					}
 					break;
 				}
@@ -707,7 +713,7 @@ namespace AutoyaFramework.Purchase {
 				(conId, responseData) => {
 					// do nothing.
 				},
-				(conId, code, errorReason, autoyaStatus) => {
+				(conId, code, errorReason) => {
 					// do nothing.
 				}
 			);
@@ -718,7 +724,7 @@ namespace AutoyaFramework.Purchase {
 		/*
 			http functions for purchase.
 		*/
-		private IEnumerator HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+		private IEnumerator HttpGet (string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed) {
 			var header = this.httpRequestHeaderDelegate("GET", url, new Dictionary<string, string>(), string.Empty);
 
 			Action<string, object> onSucceeded = (conId, result) => {
@@ -739,7 +745,7 @@ namespace AutoyaFramework.Purchase {
 			);
 		}
 	
-		private IEnumerator HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+		private IEnumerator HttpPost (string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed) {
 			var header = this.httpRequestHeaderDelegate("POST", url, new Dictionary<string, string>(), data);
 			
 			Action<string, object> onSucceeded = (conId, result) => {

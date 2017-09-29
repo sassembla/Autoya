@@ -22,12 +22,14 @@ namespace AutoyaFramework {
 		public static bool forceFailFirstBoot = false;
 		public static bool forceFailTokenRefresh = false;
 		public static bool forceFailAuthentication = false;
+		public static bool forceFailHttp = false;
 		public static bool forceMaintenance = false;
 
 		public static void ResetAllForceSetting () {
 			forceFailFirstBoot = false;
 			forceFailTokenRefresh = false;
 			forceFailAuthentication = false;
+			forceFailHttp = false;
 			forceMaintenance = false;
 		}
 	}

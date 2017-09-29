@@ -5,10 +5,14 @@ using UnityEngine;
 
 namespace AutoyaFramework {
 	public enum PurchaseFeatureState {
-		None,
 		Loading,
+
 		Ready,
-		Reloading,
+		ReadyRetry,
+
+		ReadyFailed,
+
+		Closing,
 		Closed
 	}
 	
@@ -18,73 +22,56 @@ namespace AutoyaFramework {
 		*/
 		private PurchaseRouter _purchaseRouter;
 		
-		private PurchaseFeatureState purchaseFeatureState = PurchaseFeatureState.None;
-		
-		private int purchaseReadyRetryCount;
-		private void ReloadPurchasability () {
-			purchaseFeatureState = PurchaseFeatureState.Loading;
+		private PurchaseFeatureState purchaseState;
 
+		private static AutoyaStatus purchaseErrorStatus = new AutoyaStatus();
+
+		private void ReloadPurchasability () {
+			purchaseState = PurchaseFeatureState.Loading;
+
+			purchaseErrorStatus = new AutoyaStatus();
+			
 			PurchaseRouter.HttpRequestHeaderDelegate httpRequestHeaderDel = (p1, p2, p3, p4) => {
 				return httpRequestHeaderDelegate(p1, p2, p3, p4);
 			};
+			
 			PurchaseRouter.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
-				httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+				Action<string, int, string, AutoyaStatus> p7dash = (q1, q2, q3, status) => {
+					// set autoyaStatus error if exist.
+					if (status.HasError()) {
+						purchaseErrorStatus = status;
+					}
+					
+					p7(q1, q2, q3);
+				};
+				autoya.httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7dash);
 			};
 
 			_purchaseRouter = new PurchaseRouter(
 				mainthreadDispatcher.Commit,
-				productSourceData => {
-					/*
-						handle received product datas from OverridePoint.
-					*/
-					return OnLoadProductsResponse(productSourceData);
-				},
-				ticketData => {
-					return OnTicketResponse(ticketData);
-				},
+				productSourceData => OnLoadProductsResponse(productSourceData),
+				ticketData => OnTicketResponse(ticketData),
 				() => {
-					purchaseReadyRetryCount = 0;
-					purchaseFeatureState = PurchaseFeatureState.Ready;
+					purchaseState = PurchaseFeatureState.Ready;
 					OnPurchaseReady();
 				}, 
-				(err, reason, autoyaStatus) => {
-					purchaseFeatureState = PurchaseFeatureState.Reloading;
-					
-					if (purchaseReadyRetryCount == PurchaseSettings.PEADY_MAX_RETRY_COUNT) {
-						purchaseReadyRetryCount = 0;
-						OnPurchaseReadyFailed(err, reason, autoyaStatus);
-						return;
-					}
+				(err, code, reason) => {
+					purchaseState = PurchaseFeatureState.ReadyFailed;
 
-					mainthreadDispatcher.Commit(ReloadPurchaseFeature());
+					var cor = OnPurchaseReadyFailed(err, code, reason, purchaseErrorStatus);
+					mainthreadDispatcher.Commit(cor);
 				},
 				httpRequestHeaderDel, 
 				httpResponseHandlingDel
 			);
 		}
 
-		private IEnumerator ReloadPurchaseFeature () {
-			purchaseReadyRetryCount++;
-
-			// wait 2 ^ retryCount sec.
-			yield return new WaitForSeconds((float)Math.Pow(2, purchaseReadyRetryCount));
-
-			ReloadPurchasability();
-		}
-
-		private void AttemptRetryPurchaseReady () {
-			mainthreadDispatcher.Commit(ReloadPurchaseFeature());
-		}
 
 
 		/*
 			public apis.
 		*/
 
-		public static PurchaseFeatureState Purchase_State () {
-			return autoya.purchaseFeatureState;
-		}
-		
 		public static bool Purchase_IsReady () {
 			if (autoya == null) {
 				return false;
@@ -93,15 +80,22 @@ namespace AutoyaFramework {
 				return false;
 			}
 
-			if (autoya.purchaseFeatureState != PurchaseFeatureState.Ready) {
+			if (autoya.purchaseState != PurchaseFeatureState.Ready) {
 				return false;
 			}
-			
+
 			if (!autoya._purchaseRouter.IsPurchaseReady()) {
 				return false;
 			}
 
 			return true;
+		}
+
+		public static bool Purchase_NeedAttemptReadyPurchase () {
+			if (autoya.purchaseState == PurchaseFeatureState.ReadyFailed) {
+				return true;
+			}
+			return false;
 		}
 
 		public static ProductInfo[] Purchase_ProductInfos () {
@@ -111,29 +105,29 @@ namespace AutoyaFramework {
 			if (!Autoya.Auth_IsAuthenticated()) {
 				return new ProductInfo[]{};
 			}
+			if (autoya.purchaseState != PurchaseFeatureState.Ready) {
+				return new ProductInfo[]{};
+			}
+			if (!autoya._purchaseRouter.IsPurchaseReady()) {
+				return new ProductInfo[]{};
+			}
 
 			return autoya._purchaseRouter.ProductInfos();
 		}
-
-		/**
-			attempt ready purchase feature if ready purchase was failed.
-		*/
-		public static void Purchase_AttemptReady () {
-			if (Purchase_IsReady()) {
-				// already ready.
-				return;
+		
+		public static void Purchase_AttemptReadyPurcase () {
+			if (autoya.purchaseState == PurchaseFeatureState.ReadyFailed) {
+				autoya.ReloadPurchasability();
 			}
-			autoya.AttemptRetryPurchaseReady();
 		}
 		
-		
 		/**
-			purchase item in asynchronously.
+			purchase item asynchronously.
 			
-			string purchaseId: you can set id for this purchase. this param will back in done or failed handler.
+			string purchaseId: the id for this purchase. this param will back in done or failed handler.
 			string productId: platform-shard product id string.
 			Action<string> done: fire when purchase is done in succeessful. string is purchaseId.
-			Action<string, PurchaseRouter.PurchaseError, string, AutoyaStatus> failed: fire when purchase is failed. 1st string is purchaseId.
+			Action<string, PurchaseRouter.PurchaseError, string> failed: fire when purchase is failed. 1st string is purchaseId.
 		*/
 		public static void Purchase (string purchaseId, string productId, Action<string> done, Action<string, PurchaseRouter.PurchaseError, string, AutoyaStatus> failed) {
 			if (autoya == null) {
@@ -141,7 +135,8 @@ namespace AutoyaFramework {
 				// var cor = new AssetBundleLoadErrorInstance(assetName, "Autoya is null.", loadFailed).Coroutine();
 				// autoya.mainthreadDispatcher.Commit(cor);
 				return;
-			} 
+			}
+
 			if (!Autoya.Auth_IsAuthenticated()) {
 				Debug.LogWarning("not yet. 2");
 				// var cor = new AssetBundleLoadErrorInstance(assetName, "not authenticated.", loadFailed).Coroutine();
@@ -149,31 +144,45 @@ namespace AutoyaFramework {
 				return;
 			}
 
-			if (autoya.purchaseFeatureState != PurchaseFeatureState.Ready) {
+			if (autoya.purchaseState != PurchaseFeatureState.Ready) {
 				Debug.LogWarning("not yet. 3");
 				return;
 			}
 
-			var purchasability = autoya._purchaseRouter.IsPurchaseReady();
-			if (!purchasability) {
+			if (!autoya._purchaseRouter.IsPurchaseReady()) {
 				Debug.LogWarning("not yet. 4");
 				return;
 			}
 
-			autoya.mainthreadDispatcher.Commit(autoya._purchaseRouter.PurchaseAsync(purchaseId, productId, done, failed));
+			purchaseErrorStatus = new AutoyaStatus();
+
+			Action<string, PurchaseRouter.PurchaseError, string> _failed = (p1, p2, p3) => {
+				failed(p1, p2, p3, purchaseErrorStatus);
+			};
+
+			autoya.mainthreadDispatcher.Commit(
+				autoya._purchaseRouter.PurchaseAsync(purchaseId, productId, done, _failed)
+			);
 		}
 
 		/**
 			do not use this method in actual use.
 			this method is only for testing.
 		*/
-		public static void Purchase_Shutdown () {
+		public static void Purchase_DEBUG_Shutdown () {
 			if (autoya == null) {
 				return;
 			}
 
-			autoya.purchaseFeatureState = PurchaseFeatureState.Closed;
 			autoya._purchaseRouter = null;
+		}
+
+		public static void Purchase_DEBUG_Reload () {
+			if (autoya == null) {
+				return;
+			}
+
+			autoya.ReloadPurchasability();
 		}
 	}
 }

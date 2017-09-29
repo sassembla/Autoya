@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 /*
 	detect & notify if the server side services are no longer available by maintenance.

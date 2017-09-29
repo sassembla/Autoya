@@ -227,17 +227,20 @@ namespace AutoyaFramework {
 
 		/**
 			fire when failed to ready the purchase feature.
-			Autoya already retried 3 times.
+			
+			offline, server returned error, or failed to ready IAPFeature.
 
 			e,g, show dialog to player. for example "reloading purchase feature... please wait a moment" or other message of error.
-			this err parameter includes "player can not available purchase feature" and other many situations are exists.
-			see Purchase.PurchaseRouter.PurchaseError enum.
+				this err parameter includes "player can not available purchase feature".
+
+				see Purchase.PurchaseRouter.PurchaseReadyError enum.
 
 			then, you can retry with Purchase_AttemptReady() method.
 			when success, OnPurchaseReady will be called.
 		*/
-		private void OnPurchaseReadyFailed (Purchase.PurchaseRouter.PurchaseError err, string reason, AutoyaStatus autoyaStatus) {
+		private IEnumerator OnPurchaseReadyFailed (Purchase.PurchaseRouter.PurchaseReadyError err, int code, string reason, AutoyaStatus status) {
 			// do something if need. 
+			yield break;
 		}
 
 		/**

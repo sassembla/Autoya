@@ -61,7 +61,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		}
 
 		// shutdown purchase feature for get valid result from Unity IAP.
-		Autoya.Purchase_Shutdown();
+		Autoya.Purchase_DEBUG_Shutdown();
 		
 		var purchaseRunner = new GameObject("PurchaseTestRunner");
 		runner = purchaseRunner.AddComponent<TestMBRunner>();
@@ -79,7 +79,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => ticketData,
 			() => {},
-			(err, reason, status) => {}
+			(err, code, reason) => {}
 		);
 	
 		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
@@ -101,10 +101,10 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 
 	private bool forceFailResponse = false;
 	private int forceFailCount = 0;
-	private void DummyResponsehandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
+	private void DummyResponsehandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
 		if (forceFailResponse) {
 			forceFailCount++;
-			failed(connectionId, httpCode, "expected failure in test.", new AutoyaStatus());
+			failed(connectionId, httpCode, "expected failure in test.");
 			return;
 		}
 
@@ -113,7 +113,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			return;
 		}
 
-		failed(connectionId, httpCode, errorReason, new AutoyaStatus());
+		failed(connectionId, httpCode, errorReason);
 	}
 
 
@@ -141,7 +141,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 				purchaseDone = true;
 				purchaseSucceeded = true;
 			},
-			(pId, err, reason, autoyaStatus) => {
+			(pId, err, reason) => {
 				purchaseDone = true;
 				failedReason = reason;
 			}
@@ -169,7 +169,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => ticketData,
 			() => {},
-			(err, reason, status) => {},
+			(err, code, reason) => {},
 			null,
 			DummyResponsehandlingDelegate
 		);
@@ -188,7 +188,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			pId => {
 				// never success.
 			},
-			(pId, err, reason, autoyaStatus) => {
+			(pId, err, reason) => {
 				purchaseDone = true;
 			}
 		);
@@ -240,7 +240,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => ticketData,
 			() => {},
-			(err, reason, status) => {}
+			(err, code, reason) => {}
 		);
 
 		var completed = false;
@@ -272,7 +272,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => ticketData,
 			() => {},
-			(err, reason, status) => {},
+			(err, code, reason) => {},
 			null,
 			DummyResponsehandlingDelegate
 		);
@@ -292,7 +292,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			pId => {
 				purchaseDone = true;
 			},
-			(pId, err, reason, autoyaStatus) => {
+			(pId, err, reason) => {
 				// never fail.
 			}
 		);
@@ -351,7 +351,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => Guid.NewGuid().ToString(),
 			() => {},
-			(err, reason, status) => {},
+			(err, code, reason) => {},
 			null,
 			DummyResponsehandlingDelegate
 		);
@@ -371,7 +371,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 				// never success.
 				Fail();
 			},
-			(pId, err, reason, autoyaStatus) => {
+			(pId, err, reason) => {
 				purchaseDone = true;
 			}
 		);
@@ -414,7 +414,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			() => {
 				rebooted = true;
 			},
-			(err, reason, status) => {
+			(err, code, reason) => {
 				Fail("failed to boot store func. err:" + err + " reason:" + reason);
 			},
 			null,

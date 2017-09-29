@@ -57,6 +57,7 @@ namespace AutoyaFramework.Purchase {
 			UnityIAP_Purchase_SignatureInvalid,
 			UnityIAP_Purchase_UserCancelled,
 			UnityIAP_Purchase_PaymentDeclined,
+			UnityIAP_Purchase_DuplicateTransaction,
 			UnityIAP_Purchase_Unknown,
 
 			UnknownError
@@ -235,8 +236,8 @@ namespace AutoyaFramework.Purchase {
                         callbacks = new Callbacks(product, purchaseId, string.Empty, purchaseSucceeded, purchaseFailed);
                         this.controller.InitiatePurchase(product);
                     } else {
+						routerState = RouterState.PurchaseReady;
                         purchaseFailed(purchaseId, PurchaseError.UnavailableProduct, "selected product is not available.");
-                        routerState = RouterState.PurchaseReady;
                     }
                 }
 			}
@@ -309,7 +310,7 @@ namespace AutoyaFramework.Purchase {
 				}
 				default: {
 					if (callbacks.purchaseFailed != null) {
-						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item 3. state:" + routerState);
+						callbacks.purchaseFailed(PurchaseError.UnknownError, "failed to deploy purchased item case 3. state:" + routerState);
 					}
 					break;
 				}
@@ -396,6 +397,11 @@ namespace AutoyaFramework.Purchase {
 				case PurchaseFailureReason.PaymentDeclined: {
 					error = PurchaseError.UnityIAP_Purchase_PaymentDeclined;
 					reason = "There was a problem with the payment.";
+					break;
+				}
+				case PurchaseFailureReason.DuplicateTransaction: {
+					error = PurchaseError.UnityIAP_Purchase_DuplicateTransaction;
+					reason = "A duplicate transaction error when the transaction has already been completed successfully.";
 					break;
 				}
 				case PurchaseFailureReason.Unknown: {

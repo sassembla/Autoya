@@ -36,5 +36,13 @@ namespace AutoyaFramework {
 			this.inMaintenance = inMaintenance;
 			this.isAuthFailed = isAuthFailed;
 		}
+
+		public bool HasError () {
+			return inMaintenance || isAuthFailed;
+		}
+
+		public override string ToString() {
+			return "inMaintenance:" + inMaintenance + " isAuthFailed:" + isAuthFailed;
+		}
 	}
 }
