@@ -66,11 +66,37 @@ namespace AutoyaFramework {
                     if (isPlayer) {
                         ReloadPurchasability();
                     }
+
+                    // show version.
+                    #if UNITY_CLOUD_BUILD
+                    var manifest = Resources.Load<BuildManifestObject>("UnityCloudBuildManifest.scriptable");
+                    Autoya.Mainthread_Commit()
+                    using (var sw = new System.IO.StreamWriter("applog", true)) {
+                        sw.WriteLine(manifest.ToJson());
+                    }
+                    #endif
                 }
             );
         }
         
+        /*
+            get build parameter.
+            cloudbuildの場合と同じにしちゃえばいいかな、どうだろ。
+            ・クラウドビルドでビルドした場合はそれを使う
+            ・それ以外のビルドをした場合には、特定のファイルを使う
+            という感じにするか。
+
+            クラウドビルドの全パラメータ出すのしんどいので、
+            ・info
+            と
+            ・version
+            に分けちゃおう。
+
+
+         */
         public static int BuildNumber () {
+            // 起動時にロードしとく
+            // 起動後に表示できるようにしとく
             return -1;
         }
 
