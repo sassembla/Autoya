@@ -22,9 +22,14 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -80,9 +85,15 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -139,9 +150,15 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -198,9 +215,15 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -257,9 +280,15 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -315,9 +344,15 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -374,9 +409,15 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+			
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
@@ -433,9 +474,15 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
 				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
