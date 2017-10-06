@@ -69,7 +69,7 @@ namespace AutoyaFramework {
 
                     // show version.
                     #if UNITY_CLOUD_BUILD
-                    var manifest = Resources.Load<BuildManifestObject>("UnityCloudBuildManifest.scriptable");
+                    var manifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
                     // Autoya.Mainthread_Commit()
                     using (var sw = new System.IO.StreamWriter("applog", true)) {
                         sw.WriteLine(manifest.ToJson());
