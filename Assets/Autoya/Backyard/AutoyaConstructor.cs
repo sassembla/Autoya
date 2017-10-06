@@ -99,6 +99,9 @@ namespace AutoyaFramework {
             ・version
             に分けちゃおう。
 
+            別枠の話、
+            ・バージョン情報を入力できるシェル
+            ・ABリストを出力できるシェル
 
          */
         public static int BuildNumber () {

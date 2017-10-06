@@ -25,6 +25,8 @@ namespace AutoyaFramework.Settings.AssetBundles {
 			"Mac/";
 		#elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 			"Mac/";
+		#else
+			"Mac/";
 		#endif
 
 		public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://sassembla.github.io/Autoya/AssetBundles//" + PLATFORM_STR;
