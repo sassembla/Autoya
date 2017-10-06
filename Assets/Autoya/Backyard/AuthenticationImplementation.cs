@@ -725,7 +725,7 @@ namespace AutoyaFramework {
 			*/
 			if (inMaintenance || isAuthFailed) {
 				failed(connectionId, httpCode, "good status code but under maintenance or failed to auth or both.", new AutoyaStatus(inMaintenance, isAuthFailed));
-				return;// これ書いちゃいけなかったような気がするんだよな〜〜どうだったかな、
+				return;
 			}
 
 			/*
