@@ -725,7 +725,7 @@ namespace AutoyaFramework {
 			*/
 			if (inMaintenance || isAuthFailed) {
 				failed(connectionId, httpCode, "good status code but under maintenance or failed to auth or both.", new AutoyaStatus(inMaintenance, isAuthFailed));
-				return;// これ書いちゃいけなかったような気がするんだよな〜〜どうだったかな、
+				return;
 			}
 
 			/*
@@ -785,6 +785,9 @@ namespace AutoyaFramework {
 			}
 		}
 
+		/**
+			set new handler for auth token refreshed.
+		 */
 		public static void Auth_SetOnRefreshAuthFailed (Action<int, string> refreshAuthenticationFailed=null) {
 			if (autoya._autoyaAuthRouter.IsTokenRefreshFailed()) {
 				if (refreshAuthenticationFailed != null) {

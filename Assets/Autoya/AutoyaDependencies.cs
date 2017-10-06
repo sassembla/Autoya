@@ -32,6 +32,9 @@ namespace AutoyaFramework {
 	public struct AutoyaStatus {
 		public readonly bool inMaintenance;
 		public readonly bool isAuthFailed;
+
+		// isResponseValidateFailed reserved.
+		
 		public AutoyaStatus (bool inMaintenance, bool isAuthFailed, bool isResponseValidateFailed=false) {
 			this.inMaintenance = inMaintenance;
 			this.isAuthFailed = isAuthFailed;

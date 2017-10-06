@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using AutoyaFramework;
 using AutoyaFramework.Settings.Auth;
@@ -246,4 +247,137 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			10
 		);
 	}
+
+	[MTest] public IEnumerator AvoidHttpAuthFailCascade () {
+		Autoya.forceFailAuthentication = true;
+
+		var retryActs = new List<Action>();
+
+		Action authDoneAct = () => {
+			retryActs.ForEach(r => r());
+			retryActs.Clear();
+		};
+
+		Autoya.Auth_SetOnAuthenticated(authDoneAct);
+
+		
+		var conCount = 10;
+		
+		var doneConIds = new List<string>();
+		var onceFailed = new List<string>();
+		
+		var connections = new List<Action>();
+
+		for (var i = 0; i < conCount; i++) {
+			var index = i;
+			var currentConId = i.ToString();
+			connections.Add(
+				() => {
+					Autoya.Http_Get(
+						"https://httpbin.org/status/200",
+						(conId, resultData) => {
+							doneConIds.Add(conId);
+						},
+						(conId, code, reason, autoyaStatus) => {
+							if (autoyaStatus.isAuthFailed) {
+								onceFailed.Add(conId);
+
+								retryActs.Add(connections[index]);
+							}
+						},
+						null,
+						5,
+						currentConId
+					);
+				}
+			);
+		}
+
+		// 通信の全てが行われればOK
+		foreach (var act in connections) {
+			act();
+		}
+
+		// once failed.
+		yield return WaitUntil(
+			() => onceFailed.Count == conCount,
+			() => {throw new TimeoutException("too late.");},
+			10
+		);
+
+		// refreshの完全なfailまでには8秒以上あるので、ここでフラグを変更しても十分にリトライに間に合うはず
+		Autoya.forceFailAuthentication = false;
+
+		// once failed.
+		yield return WaitUntil(
+			() => doneConIds.Count == conCount,
+			() => {throw new TimeoutException("too late.");},
+			10
+		);
+	}
+
+	// [MTest] public IEnumerator AvoidHttpAuthFailCascadeWithAppendOnAuthRefreshed () {
+	// 	Autoya.forceFailAuthentication = true;
+
+	// 	var conCount = 10;
+		
+	// 	var doneConIds = new List<string>();
+	// 	var onceFailed = new List<string>();
+		
+	// 	var connections = new List<Action>();
+
+	// 	for (var i = 0; i < conCount; i++) {
+	// 		var index = i;
+	// 		var currentConId = i.ToString();
+	// 		connections.Add(
+	// 			() => {
+	// 				Autoya.Http_Get(
+	// 					"https://httpbin.org/status/200",
+	// 					(conId, resultData) => {
+	// 						doneConIds.Add(conId);
+	// 						Debug.Log("done! currentConId:" + currentConId);
+	// 					},
+	// 					(conId, code, reason, autoyaStatus) => {
+	// 						if (autoyaStatus.isAuthFailed) {
+	// 							onceFailed.Add(conId);
+
+	// 							Autoya.Auth_OnAuthenticated += () => {
+	// 								connections[index]();
+	// 							};
+
+	// 							Debug.Log("リトライを行う。自分自身をリトライ動作にaddする。currentConId:" + currentConId);
+	// 						}
+	// 					},
+	// 					null,
+	// 					5,
+	// 					currentConId
+	// 				);
+	// 			}
+	// 		);
+	// 	}
+
+	// 	// 通信の全てが行われればOK
+	// 	foreach (var act in connections) {
+	// 		act();
+	// 	}
+
+	// 	// once failed.
+	// 	yield return WaitUntil(
+	// 		() => onceFailed.Count == conCount,
+	// 		() => {throw new TimeoutException("too late.");},
+	// 		10
+	// 	);
+
+	// 	// refreshの完全なfailまでには8秒以上あるので、ここでフラグを変更しても十分にリトライに間に合うはず
+	// 	Autoya.forceFailAuthentication = false;
+
+	// 	// once failed.
+	// 	yield return WaitUntil(
+	// 		() => doneConIds.Count == conCount,
+	// 		() => {throw new TimeoutException("too late.");},
+	// 		10
+	// 	);
+	// }
+
+	
 }
