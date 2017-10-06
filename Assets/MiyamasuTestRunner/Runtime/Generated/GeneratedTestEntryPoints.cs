@@ -1103,6 +1103,20 @@ public class AuthImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator AvoidHttpAuthFailCascade() {
+        var rec = new Miyamasu.Recorder("AuthImplementationTests", "AvoidHttpAuthFailCascade");
+        var instance = new AuthImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.AvoidHttpAuthFailCascade();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class MaintenanceTests_Miyamasu {
     [UnityTest] public IEnumerator Maintenance() {

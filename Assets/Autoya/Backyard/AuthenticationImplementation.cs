@@ -785,6 +785,9 @@ namespace AutoyaFramework {
 			}
 		}
 
+		/**
+			set new handler for auth token refreshed.
+		 */
 		public static void Auth_SetOnRefreshAuthFailed (Action<int, string> refreshAuthenticationFailed=null) {
 			if (autoya._autoyaAuthRouter.IsTokenRefreshFailed()) {
 				if (refreshAuthenticationFailed != null) {
