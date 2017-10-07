@@ -24,6 +24,7 @@ namespace AutoyaFramework.Settings.Auth {
 
 		/*
 			sample authentication key.
+			TODO 起動時暗号化バイナリをOverridePointsとかに移した方がいいかも。
 		*/
 		public static readonly byte[] AUTH_BOOT = new byte[]{100, 101, 102};
 

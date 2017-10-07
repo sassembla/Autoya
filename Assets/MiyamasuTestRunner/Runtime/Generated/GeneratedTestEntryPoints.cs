@@ -1355,6 +1355,44 @@ public class EncryptTests_Miyamasu {
         
     }
 }
+public class ManifestTests_Miyamasu {
+    [UnityTest] public IEnumerator GetManifest() {
+        var rec = new Miyamasu.Recorder("ManifestTests", "GetManifest");
+        var instance = new ManifestTests();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        yield return instance.GetManifest();
+        rec.MarkAsPassed();
+
+        
+    }
+    [UnityTest] public IEnumerator UpdateRuntimeManifest() {
+        var rec = new Miyamasu.Recorder("ManifestTests", "UpdateRuntimeManifest");
+        var instance = new ManifestTests();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        yield return instance.UpdateRuntimeManifest();
+        rec.MarkAsPassed();
+
+        
+    }
+}
 public class FilePersistImplementationTests_Miyamasu {
     [UnityTest] public IEnumerator Update() {
         var rec = new Miyamasu.Recorder("FilePersistImplementationTests", "Update");

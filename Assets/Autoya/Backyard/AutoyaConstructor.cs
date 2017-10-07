@@ -4,6 +4,7 @@ using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Settings.Auth;
 using AutoyaFramework.Purchase;
 using System;
+using AutoyaFramework.Settings.App;
 
 /**
     constructor implementation of Autoya.
@@ -66,52 +67,8 @@ namespace AutoyaFramework {
                     if (isPlayer) {
                         ReloadPurchasability();
                     }
-
-                    using (var sw = new System.IO.StreamWriter("applog", true)) {
-                        sw.WriteLine("before");
-                    }
-
-                    // show version.
-                    #if UNITY_CLOUD_BUILD
-                    var manifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
-                    // Autoya.Mainthread_Commit()
-                    using (var sw = new System.IO.StreamWriter("applog", true)) {
-                        sw.WriteLine(manifest.ToJson());
-                    }
-                    #endif
                 }
             );
-        }
-        
-        #if !UNITY_CLOUD_BUILD
-        public class BuildManifestObject : ScriptableObject {
-            public string ToJson () {
-                return string.Empty;
-            }
-        }
-        #endif
-        /*
-            get build parameter.
-            cloudbuildの場合と同じにしちゃえばいいかな、どうだろ。
-            ・クラウドビルドでビルドした場合はそれを使う
-            ・それ以外のビルドをした場合には、特定のファイルを使う
-            という感じにするか。
-
-            クラウドビルドの全パラメータ出すのしんどいので、
-            ・info
-            と
-            ・version
-            に分けちゃおう。
-
-            別枠の話、
-            ・バージョン情報を入力できるシェル
-            ・ABリストを出力できるシェル
-
-         */
-        public static int BuildNumber () {
-            // 起動時にロードしとく
-            // 起動後に表示できるようにしとく
-            return -1;
         }
 
         public static void Shutdown () {
@@ -119,3 +76,4 @@ namespace AutoyaFramework {
         }
     }
 }
+    
