@@ -53,6 +53,8 @@ namespace AutoyaFramework {
 
             InitializeAssetBundleFeature();
 
+            InitializeAppManifest();
+
             var isFirstBoot = IsFirstBoot();
             
             /*

@@ -8,6 +8,7 @@ using AutoyaFramework.Representation.Base64;
 using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using UnityEngine;
+using AutoyaFramework.Settings.App;
 
 /**
 	modify this class for your app's authentication, purchase and assetBundle dataflow.
@@ -289,5 +290,26 @@ namespace AutoyaFramework {
 		private Dictionary<string, string> OnAssetBundleGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
+
+
+		/*
+			Application manifest
+		*/
+
+		/**
+			called when runtimeManifest should overwrite.
+			please set the mechanism for store runtime manifest in this device.
+		 */
+        private bool OnOverwriteRuntimeManifest (string data) {
+            return _autoyaFilePersistence.Update(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME, data);
+        }
+
+		/**
+			called when runtimeManifest should load.
+			please set the mechanism for load runtime manifest in this device.
+		 */
+        private string OnLoadRuntimeManifest () {
+            return _autoyaFilePersistence.Load(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME);
+        }
 	}
 }

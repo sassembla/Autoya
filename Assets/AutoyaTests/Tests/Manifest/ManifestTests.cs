@@ -1,5 +1,5 @@
 using System.Collections;
-using AutoyaFramework.Versioning.App;
+using AutoyaFramework.AppManifest;
 using Miyamasu;
 using UnityEngine;
 
