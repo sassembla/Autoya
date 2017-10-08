@@ -4,7 +4,7 @@ using Miyamasu;
 using UnityEngine;
 
 public class ManifestTests : MiyamasuTestRunner {
-    AppManifestStore<RuntimeManifestObject> store;
+    AppManifestStore<RuntimeManifestObject, BuildManifestObject> store;
 
     private bool Overwriter (string dataStr) {
         return true;
@@ -15,7 +15,7 @@ public class ManifestTests : MiyamasuTestRunner {
     }
 
     [MSetup] public void Setup () {
-        store = new AppManifestStore<RuntimeManifestObject>(Overwriter, Loader);
+        store = new AppManifestStore<RuntimeManifestObject, BuildManifestObject>(Overwriter, Loader);
     }
     
     // マニフェストを取得する

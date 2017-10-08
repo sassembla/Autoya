@@ -64,3 +64,5 @@ miyamasu.log
 Assets/MiyamasuTestRunner/Runtime/Generated/GeneratedTestEntryPoints.cs
 Assets/MiyamasuTestRunner/Runtime/Generated/GeneratedTestEntryPoints.cs.meta
 applog
+Assets/Autoya/Manifest/Resources/BuildManifest.json
+Assets/Autoya/Manifest/Resources/BuildManifest.json.meta

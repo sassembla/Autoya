@@ -7,7 +7,9 @@ public class AppManifest : MonoBehaviour {
 
 	private Dictionary<string, string> appManifestParams = new Dictionary<string, string>();
 
-	// Use this for initialization
+	/*
+		get app manifest.
+	 */
 	void Start () {
 		appManifestParams = Autoya.Manifest_GetAppManifest();
 		foreach (var man in appManifestParams) {
@@ -15,6 +17,9 @@ public class AppManifest : MonoBehaviour {
 		}
 	}
 
+	/*
+		show manifest parameters.
+	 */
 	void OnGUI () {
 		foreach (var appManifestParam in appManifestParams) {
 			GUILayout.Label(appManifestParam.Key + " : " + appManifestParam.Value);

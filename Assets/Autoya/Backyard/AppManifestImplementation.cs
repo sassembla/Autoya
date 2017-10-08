@@ -1,13 +1,14 @@
 
+using System;
 using System.Collections.Generic;
 using AutoyaFramework.AppManifest;
 
 namespace AutoyaFramework {
 	public partial class Autoya {
-        private AppManifestStore<RuntimeManifestObject> manifestStore;
+        private AppManifestStore<RuntimeManifestObject, BuildManifestObject> manifestStore;
 
         private void InitializeAppManifest () {
-            manifestStore = new AppManifestStore<RuntimeManifestObject>(OnOverwriteRuntimeManifest, OnLoadRuntimeManifest);
+            manifestStore = new AppManifestStore<RuntimeManifestObject, BuildManifestObject>(OnOverwriteRuntimeManifest, OnLoadRuntimeManifest);
         }
 
         /*
@@ -25,4 +26,29 @@ namespace AutoyaFramework {
             return autoya.manifestStore.GetRuntimeManifest();
         }
     }
+    
+
+    [UnityEditor.InitializeOnLoad] public class OnBuildEntryPoint {
+		static OnBuildEntryPoint () {
+			if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) {
+                OnBuild();
+            }
+		}
+        
+        public static void OnBuild () {
+
+            // コマンドラインから実行された場合、buildCommentを読み出す。例えばSlackからビルドコメント付きでビルドさせたりするのに役立つ。
+
+            AppManifestStore<RuntimeManifestObject, BuildManifestObject>.UpdateBuildManifest(
+                current => {
+                    // countup build count.
+                    var buildCountStr = current.buildCount;
+                    var buildCountNum = Convert.ToInt64(buildCountStr) + 1;
+                    current.buildCount = buildCountNum.ToString();
+
+                    return current;
+                }
+            );
+        }
+	}
 }
