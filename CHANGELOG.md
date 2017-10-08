@@ -6,6 +6,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.17] - 2017/10/08
+### Added
+- AppManifest feature. see AutoyaSample/10_AppManifest/AppManifest.unity.
+
 ## [0.8.16] - 2017-09-29
 ### Added
 - UUebView library bug fixed. using v1.0.2.
@@ -40,7 +44,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.16...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.17...HEAD
+[0.8.17]: https://github.com/sassembla/autoya/compare/0.8.16...0.8.17
 [0.8.16]: https://github.com/sassembla/autoya/compare/0.8.15...0.8.16
 [0.8.15]: https://github.com/sassembla/autoya/compare/0.8.14...0.8.15
 [0.8.14]: https://github.com/sassembla/autoya/compare/0.8.13...0.8.14
