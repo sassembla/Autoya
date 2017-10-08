@@ -9,6 +9,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [0.8.17] - 2017/10/08
 ### Added
 - AppManifest feature. see AutoyaSample/10_AppManifest/AppManifest.unity.
+- Http feature now enable to add user defined connection id for each connection.
+
+### Fixed
+- autoyaStatus always returns valid status when Http feature returns authentication failed.
 
 ## [0.8.16] - 2017-09-29
 ### Added
@@ -25,6 +29,7 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [0.8.14] - 2017-09-14
 ### Fixed
 - UUebView library bug fixed. using v1.0.1.
+
 
 ## [0.8.13] - 2017-09-07
 
