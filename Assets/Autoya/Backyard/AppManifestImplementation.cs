@@ -1,7 +1,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using AutoyaFramework.AppManifest;
+using UnityEngine;
 
 namespace AutoyaFramework {
 	public partial class Autoya {
@@ -25,30 +27,65 @@ namespace AutoyaFramework {
         public static RuntimeManifestObject Manifest_LoadRuntimeManifest () {
             return autoya.manifestStore.GetRuntimeManifest();
         }
-    }
-    
 
-    [UnityEditor.InitializeOnLoad] public class OnBuildEntryPoint {
-		static OnBuildEntryPoint () {
-			if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) {
-                OnBuild();
-            }
-		}
-        
-        public static void OnBuild () {
+        /*
+            editor functions
+         */
+        #if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoad] public class BuildEntryPoint {
+            // ${UNITY_APP} -batchmode -projectPath $(pwd) -quit -executeMethod AutoyaFramework.BuildEntryPoint.Entry -m "herecomes!"
 
-            // コマンドラインから実行された場合、buildCommentを読み出す。例えばSlackからビルドコメント付きでビルドさせたりするのに役立つ。
+            static BuildEntryPoint () {
+                var buildMessage = string.Empty;
+                
+                var commandLineOptions = System.Environment.GetCommandLineArgs().ToList();
+                if (commandLineOptions.Contains("-batchmode")) {
+                    for (var i = 0; i < commandLineOptions.Count; i++) {
+                        var param = commandLineOptions[i];
+                        
+                        switch (param) {
+                            case "-m":
+                            case "--message": {
+                                if (i < commandLineOptions.Count - 1) {
+                                    buildMessage = commandLineOptions[i+1];
+                                }
+                                break;
+                            }
 
-            AppManifestStore<RuntimeManifestObject, BuildManifestObject>.UpdateBuildManifest(
-                current => {
-                    // countup build count.
-                    var buildCountStr = current.buildCount;
-                    var buildCountNum = Convert.ToInt64(buildCountStr) + 1;
-                    current.buildCount = buildCountNum.ToString();
-
-                    return current;
+                        }
+                    }
                 }
-            );
+                
+                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) {
+                    OnCompile(buildMessage);
+                }
+            }
+
+            public static void Entry () {
+                // 何にもすることがないが、コマンドライン処理をすることはできる。でもまあ、だいたい独自になんかすると思うので、出しゃばる必要はない気がする。
+                // 理想的な挙動について考えよう。
+            }
+
+            private static void OnCompile (string buildMessage=null) {
+                AppManifestStore<RuntimeManifestObject, BuildManifestObject>.UpdateBuildManifest(
+                    current => {
+                        // countup build count.
+                        var buildNoStr = current.buildNo;
+                        var buildNoNum = Convert.ToInt64(buildNoStr) + 1;
+                        current.buildNo = buildNoNum.ToString();
+
+                        // set message if exist.
+                        if (!string.IsNullOrEmpty(buildMessage)) {
+                            current.buildMessage = buildMessage;  
+                        }
+
+                        current.buildDate = DateTime.Now.ToString();
+
+                        return current;
+                    }
+                );
+            }
         }
-	}
+        #endif
+    }
 }

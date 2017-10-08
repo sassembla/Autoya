@@ -28,7 +28,7 @@ namespace AutoyaFramework {
             // Debug.LogWarning("autoya initialize start. basePath:" + basePath);
             
             var isPlayer = false;
-
+            
             if (Application.isPlaying) {
 
                 isPlayer = true;

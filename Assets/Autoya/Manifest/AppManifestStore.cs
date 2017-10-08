@@ -124,11 +124,18 @@ namespace AutoyaFramework.AppManifest {
             // overwrite resource file.
             var targetPath = AppManifestStoreSettings.BUILDMANIFEST_PATH;
             var jsonStr = JsonUtility.ToJson(updated);
+            
+            jsonStr = Prittyfy(jsonStr);
+
             using (var sw = new System.IO.StreamWriter(targetPath)) {
                 sw.WriteLine(jsonStr);
             }
 
             UnityEditor.AssetDatabase.Refresh();
+        }
+
+        private static string Prittyfy (string jsonVal) {
+            return jsonVal.Replace("\",", "\",\n\t").Replace("{\"", "{\t\n\t\"").Replace("\"}", "\"\n}");
         }
         #endif
     }

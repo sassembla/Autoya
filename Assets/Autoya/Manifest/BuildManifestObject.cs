@@ -3,8 +3,9 @@ using UnityEngine;
 
 namespace AutoyaFramework.AppManifest {
     [Serializable] public class BuildManifestObject {
-        [SerializeField] public string buildCount;
-        [SerializeField] public string buildComment;
+        [SerializeField] public string buildNo;
+        [SerializeField] public string buildMessage;
+        [SerializeField] public string buildDate;
         
         // Unity cloudbuild compatible build parameters.
         [SerializeField] public string scmCommitId;
