@@ -848,6 +848,78 @@ public class AssetBundlesImplementationTests_Miyamasu {
         yield return instance.Teardown();
     }
 }
+public class AssetUpdateTests_Miyamasu {
+    [UnityTest] public IEnumerator ReceiveFirstList() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveFirstList");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveFirstList();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator ReceiveListUpdated() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveListUpdated");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveListUpdated();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator ReceiveUpdatedListThenListWillBeUpdated() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveUpdatedListThenListWillBeUpdated");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveUpdatedListThenListWillBeUpdated();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator ReceiveUpdatedListThenIgnore() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveUpdatedListThenIgnore");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveUpdatedListThenIgnore();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+}
 public class AuthenticatedHTTPImplementationTests_Miyamasu {
     [UnityTest] public IEnumerator AutoyaHTTPGet() {
         var rec = new Miyamasu.Recorder("AuthenticatedHTTPImplementationTests", "AutoyaHTTPGet");

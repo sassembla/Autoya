@@ -12,6 +12,14 @@ namespace AutoyaFramework {
 	public partial class Autoya {
 		private HTTPConnection _autoyaHttp;
 		
+		private void AddFrameworkHeaderParam (Dictionary<string, string> additionalRequestHeaders) {
+			additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_APPVERSION] = Application.version;
+
+			if (autoya.assetBundleFeatState == AssetBundlesFeatureState.ListLoaded) {
+				additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = Autoya.AssetBundle_AssetBundleList().version;
+			}
+		}
+
 		/*
 			public HTTP APIs.
 		*/
@@ -46,6 +54,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("GET", url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -110,6 +121,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -175,6 +189,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+			
 			var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -240,6 +257,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -305,6 +325,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("GET", url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -369,6 +392,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+			
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -434,6 +460,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -499,6 +528,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(

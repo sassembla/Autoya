@@ -662,6 +662,8 @@ namespace AutoyaFramework {
 			・httpコードのチェックを行い、200系でなければfailedを着火する
 
 			・200系であればsucceededを着火する。
+
+			・AssetBundleListのダウンロードを行なった後、resversionが含まれたレスポンスが来た場合、追加でリストの取得処理を行うかどうか判断する。
 		*/
 		private void HttpResponseHandling (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (forceFailHttp) {
@@ -732,6 +734,57 @@ namespace AutoyaFramework {
 				finally, connection is done as succeeded.
 			*/
 			succeeded(connectionId, data);
+
+			/*
+				fire assetBundleList request check after succeeded.
+			*/
+			if (assetBundleFeatState == AssetBundlesFeatureState.ListLoaded) {
+				if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION)) {
+					var newListVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
+
+					if (newListVersionOnResponseHeader != _currentAssetBundleList.version) {
+
+						var answer = OnRequestNewAssetBundleList(newListVersionOnResponseHeader);
+						if (answer.doOrNot) {
+							if (_postponedNewAssetBundleList != null && _postponedNewAssetBundleList.version == newListVersionOnResponseHeader) {
+								Debug.Log("_postponedNewAssetBundleList:" + _postponedNewAssetBundleList.version);
+
+								// new list is already cached on memory. use this for update assetBundleList.
+								OnListReceived(_postponedNewAssetBundleList, () => {}, (p1, p2, p3) => {});
+							} else {
+								// start download new list.
+								var fileName = answer.fileName;
+								var listUrl = Settings.AssetBundles.AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + newListVersionOnResponseHeader + "/" + fileName;
+
+								Debug.LogWarning("このAPIではなく別のAPIを用意する。リストupdateのstateを持ち出そう。");
+								Autoya.AssetBundle_DownloadAssetBundleList(listUrl, () => {}, (p1, p2, p3) => {});
+							}
+						}
+					}
+				}
+			}
+		}
+
+		public struct ShouldRequestOrNot {
+			public readonly bool doOrNot;
+			public readonly string fileName;
+			
+			private ShouldRequestOrNot (string url) {
+				this.doOrNot = true;
+				this.fileName = url;
+			}
+
+			private ShouldRequestOrNot (bool _unused) {
+				this.doOrNot = false;
+				this.fileName = string.Empty;
+			}
+
+			public static ShouldRequestOrNot Yes(string newAssetBundleListFileName) {
+				return new ShouldRequestOrNot(newAssetBundleListFileName);
+			}
+			public static ShouldRequestOrNot No() {
+				return new ShouldRequestOrNot(true);
+			}
 		}
 
 

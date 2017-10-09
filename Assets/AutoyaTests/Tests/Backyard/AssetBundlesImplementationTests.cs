@@ -96,7 +96,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 notExistFileName,
                 version,
                 () => {
-                    True(false, "should not be succeeded.");
+                    Fail("should not be succeeded.");
                 },
                 (code, reason, AutoyaStatus) => {
                     True(code == 404, "code does not match.");
@@ -124,7 +124,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 },
                 (code, reason, AutoyaStatus) => {
                     // do nothing.
-                    True(false, "reason:" + reason);
+                    Fail("reason:" + reason);
                 }
             );
 
@@ -147,7 +147,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         Autoya.AssetBundle_LoadAsset<GameObject>(
             assetName,
             (name, obj) => {
-                True(false, "should not comes here.");
+                Fail("should not comes here.");
             },
             (name, err, reason, autoyaStatus) => {
                 True(err == AssetBundleLoadError.AssetBundleListIsNotReady, "not match.");
@@ -175,7 +175,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 done = true;
             },
             (name, err, reason, autoyaStatus) => {
-                True(false, "err:" + err);
+                Fail("err:" + err);
             }
         );
 
@@ -198,7 +198,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
             },
             () => {
-                True(false, "should not be succeeded.");
+                Fail("should not be succeeded.");
             },
             (code, reason, autoyaStatus) => {
                 True(code == -1, "not match. code:" + code + " reason:" + reason);
@@ -231,7 +231,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 done = true;
             },
             (code, reason, autoyaStatus) => {
-                True(false, "should not be failed. code:" + code + " reason:" + reason);
+                Fail("should not be failed. code:" + code + " reason:" + reason);
             },
             (failedAssetBundleName, code, reason, autoyaStatus) => {
 
@@ -259,7 +259,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 done = true;
             },
             (code, reason, autoyaStatus) => {
-                True(false, "should not be failed. code:" + code + " reason:" + reason);
+                Fail("should not be failed. code:" + code + " reason:" + reason);
             },
             (failedAssetBundleName, code, reason, autoyaStatus) => {
 
@@ -294,7 +294,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 done = true;
             },
             (code, reason, autoyaStatus) => {
-                True(false, "should not be failed. code:" + code + " reason:" + reason);
+                Fail("should not be failed. code:" + code + " reason:" + reason);
             },
             (failedAssetBundleName, code, reason, autoyaStatus) => {
 
@@ -325,7 +325,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
                 done = true;
             },
             (code, reason, autoyaStatus) => {
-                True(false, "should not be failed. code:" + code + " reason:" + reason);
+                Fail("should not be failed. code:" + code + " reason:" + reason);
             },
             (failedAssetBundleName, code, reason, autoyaStatus) => {
 

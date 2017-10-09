@@ -1,7 +1,18 @@
 namespace AutoyaFramework.Settings.Auth {
 	public class AuthSettings {
 		/*
-			sample urls and prefixies.
+			authenticated http request header keys.
+		 */
+		public const string AUTH_REQUESTHEADER_APPVERSION = "appversion";
+		public const string AUTH_REQUESTHEADER_RESVERSION = "resversion";
+
+		/*
+			authenticated http response header keys.
+		 */
+		public const string AUTH_RESPONSEHEADER_RESVERSION = "resversion";
+
+		/*
+			auth urls and prefixies.
 		*/
 		public const string AUTH_URL_BOOT = "https://httpbin.org/post";
 		public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";
@@ -10,7 +21,7 @@ namespace AutoyaFramework.Settings.Auth {
 		public const string AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX = "ref_token_";
 
 		/*
-			sample authentication persist settings.
+			auth authentication persist settings.
 		*/
 		public const string AUTH_STORED_FRAMEWORK_DOMAIN = "framework";
 		public const string AUTH_STORED_TOKEN_FILENAME = "token.autoya";

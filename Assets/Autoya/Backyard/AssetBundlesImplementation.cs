@@ -7,7 +7,34 @@ using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
 
 namespace AutoyaFramework {
+	/**
+		assetBundles implementation.
+
+		リスト取得 -> とかそんな感じに動く必要がある。
+		リスト取得が終わらないとloadAssetとかを行なってはいけない。
+
+		・リストを取得しないとNone状態
+			none状態だとリスト取得を求められる(勝手にリストを取得するのをやめる)
+	 */
 	public partial class Autoya {
+		public enum AssetBundlesFeatureState {
+			None,
+			ListLoading,
+			ListLoaded,
+			LoaderReady,
+		}
+		private AssetBundlesFeatureState assetBundleFeatState;
+
+
+
+		public enum CurrentUsingBundleCondition {
+			ReceivedFirstAssetBundleList,// このenumがあるのまずい。初回 = リストがない時にしか使えないAPIとしてAPIを分割して処理すべきだ。
+
+			UsingAssetsAreChanged,
+
+			NoUsingAssetsChanged,
+			AlreadyUpdated
+		}
 		
 		/*
 			Initializer
@@ -82,15 +109,7 @@ namespace AutoyaFramework {
 			result(false, "failed to delete all assetBundles in storage. some assetBundles are in use or Caching feature is not ready.");
 		}
 		
-		private enum AssetBundlesFeatureState {
-			None,
-			ListLoading,
-			ListLoaded,
-			LoaderReady,
-		}
-		private AssetBundlesFeatureState assetBundleFeatState;
-
-
+		
 		private AssetBundleList _currentAssetBundleList;
 
 		/*
@@ -98,14 +117,143 @@ namespace AutoyaFramework {
 		*/
 
 		private AssetBundleListDownloader _assetBundleListDownloader = new AssetBundleListDownloader();
+		private AssetBundleList _postponedNewAssetBundleList;
+
+		private CurrentUsingBundleCondition GetCurrentAssetBundleUsingCondition (AssetBundleList newList) {
+			
+			// check version of new list and current stored list.
+
+			var currentListVersion = _currentAssetBundleList.version;
+			var newListVersion = newList.version;
+			
+			if (currentListVersion != newListVersion) {
+				// check using assets are changed or not.
+
+				var newBundleCrcs = newList.assetBundles.ToDictionary(bundle => bundle.bundleName, bundle => bundle.crc);
+				var oldBundleCrcs = _currentAssetBundleList.assetBundles.ToDictionary(bundle => bundle.bundleName, bundle => bundle.crc);
+
+				var changedUsingBundleNames = new List<string>();
+				foreach (var oldBundleCrcItem in oldBundleCrcs) {
+					var bundleName = oldBundleCrcItem.Key;
+					var bundleCrc = oldBundleCrcItem.Value;
+
+					if (newBundleCrcs.ContainsKey(bundleName)) {
+						if (newBundleCrcs[bundleName] != bundleCrc) {
+							// crc changed = assetBundle is updated.
+
+							Debug.Log("_assetBundleLoader:" + _assetBundleLoader);
+							// is using now?
+							if (_assetBundleLoader.IsAssetBundleCachedOnMemory(bundleName)) {
+								/*
+									changed assetBundle is using now.
+								 */
+								changedUsingBundleNames.Add(bundleName);
+							}
+						}
+					} else {
+						// in new list, current using assetBundle is not exists.
+						// nothing to do. but detected.
+					}
+				}
+
+				if (changedUsingBundleNames.Any()) {
+					// using assetBundle is updated in new list.
+					return CurrentUsingBundleCondition.UsingAssetsAreChanged;
+				} else {
+					// no using && change of assetBundles are detected.
+					return CurrentUsingBundleCondition.NoUsingAssetsChanged;
+				}
+			}
+
+			// list version is not changed. 
+
+			return CurrentUsingBundleCondition.AlreadyUpdated;
+		}
+
+		private void OnListReceived (AssetBundleList newList, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed) {
+			/*
+				このブロックは、開発者が明示的にlistのロードを行なった場合に通過する。
+				こことは別に、responseHeaderの値を元に自動的にリストの再取得に突入するルートがあるといいかもしれない。
+				ユーザーが使うブロックとAPIが使うブロックを分けた方がよい。
+
+				このへんのブロックはすべて新規のほうに移動しちゃって、このAPI自体は初回DL限定とかの用途に区切った方がいいのかな、、
+				そのほうがメンテしやすそう。
+				*/
+			CurrentUsingBundleCondition assetUsingCondition;
+
+			switch (autoya.assetBundleFeatState) {
+				case AssetBundlesFeatureState.ListLoading: {
+					/*
+						この判断マズイのでやめよう。
+						このAPIではリストが無いときしか処理を進めない方がいい。
+						つまり初回onlyしか動作しないというか、その経路でしか動作しないようにしたほうがあとあと良い。
+						*/
+					assetUsingCondition = CurrentUsingBundleCondition.ReceivedFirstAssetBundleList;
+					break;
+				}
+				default: {
+					// not downloading. means developer's manual update of list.
+
+					assetUsingCondition = autoya.GetCurrentAssetBundleUsingCondition(newList);
+					break;
+				}
+			}
+
+			Debug.Log("ここまで来てる");
+			if (autoya.ShouldUpdateToNewAssetBundleList(assetUsingCondition)) {
+				var result = autoya.StoreAssetBundleListToStorage(newList);
+				if (result) {
+					// update runtime manifest. set "resVersion" to downloaded version.
+					{
+						var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+						runtimeManifest.resVersion = newList.version;
+						Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
+					}
+
+					// set state to loaded.
+					autoya.assetBundleFeatState = AssetBundlesFeatureState.ListLoaded;
+					autoya._currentAssetBundleList = newList;
+
+					// discard postponed cache.
+					autoya._postponedNewAssetBundleList = null;
+
+					downloadSucceeded();
+					return;
+				}
+
+				// failed to store assetBundleList.
+				autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
+				downloadFailed(-1, "failed to store to storage. see StoreAssetBundleListToStorage method.", new AutoyaStatus());
+				return;
+			}
+
+			// store on memory as postponed.
+			autoya._postponedNewAssetBundleList = newList;
+
+			Debug.LogWarning("初回postponeとかできないはずなのでやはり分解が必要。");
+			autoya.assetBundleFeatState = AssetBundlesFeatureState.ListLoaded;
+
+			// list is not updated actually. nothing to do.
+		}
+		
+
+		/*
+			public apis
+		 */
+		
+		public static AssetBundlesFeatureState AssetBundle_FeatureState () {
+			return autoya.assetBundleFeatState;
+		}
+
+
 		/**
-			Download assetBundleList from AssetBundleSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST/version/fileName path.
+			Download specific versioned assetBundleList from AssetBundleSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST/version/fileName path.
 		 */
 		public static void AssetBundle_DownloadAssetBundleList (string fileName, string version, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=0) {
 			var listUrl = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName;
 			AssetBundle_DownloadAssetBundleList(listUrl, downloadSucceeded, downloadFailed, timeoutSec);
 		}
-
+		
 		/**
 			Download assetBundle from url.
 		 */
@@ -114,18 +262,9 @@ namespace AutoyaFramework {
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundleListDownloader.DownloadAssetBundleList(
 						listUrl, 
-						list => {
-							var result = autoya.StoreAssetBundleListToStorage(list);
-							if (result) {
-								autoya.assetBundleFeatState = AssetBundlesFeatureState.ListLoaded;
-								autoya._currentAssetBundleList = list;
-								downloadSucceeded();
-								return;
-							}
-
-							// failed to store assetBundleList.
-							autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
-							downloadFailed(-1, "failed to store to storage. see StoreAssetBundleListToStorage method.", new AutoyaStatus());
+						newList => {
+							Debug.LogWarning("ここ、first専用に用意すべき。このAPIはリストが一切無い場合以外に動くべきでは無い。");
+							autoya.OnListReceived(newList, downloadSucceeded, downloadFailed);
 						}, 
 						(code, reason, autoyaStatus) => {
 							autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
@@ -146,6 +285,17 @@ namespace AutoyaFramework {
 		 */
 		public static AssetBundleList AssetBundle_AssetBundleList () {
 			return autoya.LoadAssetBundleListFromStorage();
+		}
+		
+		/**
+			returns postponed assetBundleList instance if exist.
+			otherwise return empty assetBundleList.
+		 */
+		public static AssetBundleList AssetBundle_PostponedNewAssetBundleList () {
+			if (autoya._postponedNewAssetBundleList != null) {
+				return autoya._postponedNewAssetBundleList;
+			}
+			return new AssetBundleList();
 		}
 
 		/**
@@ -217,6 +367,8 @@ namespace AutoyaFramework {
 
 
 		private IEnumerator ListLoaderCoroutine (Action execute, Action<int, string, AutoyaStatus> downloadFailed) {
+			throw new Exception("うーむ、全体的に書き換えないとダメだ。");
+
 			// check current state.
 			switch (assetBundleFeatState) {
 				case AssetBundlesFeatureState.ListLoading: {
@@ -495,6 +647,17 @@ namespace AutoyaFramework {
 			}
 			
 			execute(_assetBundleLoader);
+		}
+
+		public static void Debug_SetOverridePoint_ShouldRequestNewAssetBundleList (Func<string, ShouldRequestOrNot> debugAct) {
+			autoya.OnRequestNewAssetBundleList = (currentVersion) => {
+				return debugAct(currentVersion);
+			};
+		}
+		public static void Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList (Func<CurrentUsingBundleCondition, bool>debugAct) {
+			autoya.ShouldUpdateToNewAssetBundleList = condition => {
+				return debugAct(condition);
+			};
 		}
 	}
 }

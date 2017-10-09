@@ -272,15 +272,64 @@ namespace AutoyaFramework {
 			var result = _autoyaFilePersistence.Update(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME, listStr);
 			return result;
 		}
-
 		private bool DeleteAssetBundleListFromStorage () {
 			var result = _autoyaFilePersistence.Delete(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
 			return result;
 		}
+
+		/**
+			fire when you received new assetBundleList version from authenticated http response's response header.
+		 */
+		private Func<string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string rceivedNewAssetBundleListVersion) => {
+			var url = "";
+			return ShouldRequestOrNot.Yes(url);
+		};
+		
+		/**
+			fire when you received new assetBundleList. 
+
+			condition 
+				the condition parameter tells you "current using assets are changed in the new AssetBundleList or not."
+				
+			return true:
+				AssetBundleList will be updated. runtime manifest's resVersion will be changed to new one.
+				changed assets will be loaded when you load these assets again.
+
+				current loaded && changed assets is not effected anything.
+
+			return false:
+				AssetBundleList will be ignored.
+				this means "Postpone updating assetBundleList to latest one." 
+
+				current loaded && changed(in ignored new list) assets is nothing changed.
+				internal list state will become "pending update assetBundleList" state.
+		 */
+		private Func<CurrentUsingBundleCondition, bool> ShouldUpdateToNewAssetBundleList = (CurrentUsingBundleCondition condition) => {
+			/*
+				according to your app's state & value of condition,
+				please select true(update assetBundleList) or false(cancel update assetBundleList now).
+
+				e,g, 
+					when your app's state is under battle, and you determine that no need to change asset now,
+					should 
+						retrun false. 
+					list update will be postponed.
+
+
+					otherwise when your app's state is good state to update assets,
+					should 
+						retrun true
+					for update assetBundleList.
+					app's assetBundleList will be updated to the latest and ready for load/download latest assetBundles.
+					using "Preload" feature on the beginning of app's state will help updating latest assets.
+			 */
+			return true;
+		};
 		
 		/**
 			request headers of AssetBundles features.
 		 */
+		// このへんセットできてないような気がするぞ
 		private Dictionary<string, string> OnAssetBundleListGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
