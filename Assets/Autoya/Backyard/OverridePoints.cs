@@ -281,7 +281,9 @@ namespace AutoyaFramework {
 			fire when you received new assetBundleList version from authenticated http response's response header.
 		 */
 		private Func<string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string rceivedNewAssetBundleListVersion) => {
-			var url = "";
+			throw new Exception("まだ通過するケースが無いはず");
+			Debug.LogWarning("frameworkの仕様として挟み込む値を確認しよう。list urlをフルパスで返すようにしたい。 いまはyesを返す");
+			var url = "";//AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + rceivedNewAssetBundleListVersion + "/" + ;
 			return ShouldRequestOrNot.Yes(url);
 		};
 		

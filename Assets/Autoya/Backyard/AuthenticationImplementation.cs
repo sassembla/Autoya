@@ -738,7 +738,7 @@ namespace AutoyaFramework {
 			/*
 				fire assetBundleList request check after succeeded.
 			*/
-			if (assetBundleFeatState == AssetBundlesFeatureState.ListLoaded) {
+			if (assetBundleFeatState == AssetBundlesFeatureState.Ready) {
 				if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION)) {
 					var newListVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
 
@@ -747,17 +747,12 @@ namespace AutoyaFramework {
 						var answer = OnRequestNewAssetBundleList(newListVersionOnResponseHeader);
 						if (answer.doOrNot) {
 							if (_postponedNewAssetBundleList != null && _postponedNewAssetBundleList.version == newListVersionOnResponseHeader) {
-								Debug.Log("_postponedNewAssetBundleList:" + _postponedNewAssetBundleList.version);
-
 								// new list is already cached on memory. use this for update assetBundleList.
-								OnListReceived(_postponedNewAssetBundleList, () => {}, (p1, p2, p3) => {});
+								OnUpdatingListReceived(_postponedNewAssetBundleList);
 							} else {
 								// start download new list.
-								var fileName = answer.fileName;
-								var listUrl = Settings.AssetBundles.AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + newListVersionOnResponseHeader + "/" + fileName;
-
-								Debug.LogWarning("このAPIではなく別のAPIを用意する。リストupdateのstateを持ち出そう。");
-								Autoya.AssetBundle_DownloadAssetBundleList(listUrl, () => {}, (p1, p2, p3) => {});
+								var listUrl = answer.url;
+								DownloadNewAssetBundleList(listUrl);
 							}
 						}
 					}
@@ -767,20 +762,20 @@ namespace AutoyaFramework {
 
 		public struct ShouldRequestOrNot {
 			public readonly bool doOrNot;
-			public readonly string fileName;
+			public readonly string url;
 			
 			private ShouldRequestOrNot (string url) {
 				this.doOrNot = true;
-				this.fileName = url;
+				this.url = url;
 			}
 
 			private ShouldRequestOrNot (bool _unused) {
 				this.doOrNot = false;
-				this.fileName = string.Empty;
+				this.url = string.Empty;
 			}
 
-			public static ShouldRequestOrNot Yes(string newAssetBundleListFileName) {
-				return new ShouldRequestOrNot(newAssetBundleListFileName);
+			public static ShouldRequestOrNot Yes(string url) {
+				return new ShouldRequestOrNot(url);
 			}
 			public static ShouldRequestOrNot No() {
 				return new ShouldRequestOrNot(true);

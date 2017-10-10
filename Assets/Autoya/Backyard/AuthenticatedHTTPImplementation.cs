@@ -15,7 +15,7 @@ namespace AutoyaFramework {
 		private void AddFrameworkHeaderParam (Dictionary<string, string> additionalRequestHeaders) {
 			additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_APPVERSION] = Application.version;
 
-			if (autoya.assetBundleFeatState == AssetBundlesFeatureState.ListLoaded) {
+			if (autoya.assetBundleFeatState == AssetBundlesFeatureState.Ready) {
 				additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = Autoya.AssetBundle_AssetBundleList().version;
 			}
 		}

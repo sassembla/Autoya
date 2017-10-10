@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework;
+using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
 using UnityEngine;
@@ -77,6 +78,19 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         );
     }
 
+
+
+    private Autoya.ShouldRequestOrNot RequestYes (string newVersion) {
+        var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + newVersion + "/" + "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
+        return Autoya.ShouldRequestOrNot.Yes(url);
+    }
+
+    private Autoya.ShouldRequestOrNot RequestNo (string newVersion) {
+        return Autoya.ShouldRequestOrNot.No();
+    }
+
+
+
     [MTest] public IEnumerator ReceiveFirstList () {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
@@ -92,9 +106,6 @@ public class AssetUpdateTests : MiyamasuTestRunner {
                 // do nothing.
             }
         );
-        
-        // これだな〜〜
-        True(Autoya.AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.LoaderReady);
 
         yield return WaitUntil(
             () => done,
@@ -102,6 +113,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         );
 
         // リスト1.0.0が保持されている。
+        True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
+        True(Autoya.AssetBundle_AssetBundleList().version == "1.0.0");
     }
 
 
@@ -118,6 +131,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
             },
             (code, reason, AutoyaStatus) => {
                 // do nothing.
+                Fail("code:" + code + " reason:" + reason);
             }
         );
 
@@ -135,17 +149,9 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             newVersion => {
-                if (Autoya.AssetBundle_AssetBundleList().version != newVersion) {
-                    listWillBeDownloaded = true;
-                    
-                    True(newVersion == "1.0.1");
-
-                    var newFileName = "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
-                    return Autoya.ShouldRequestOrNot.Yes(newFileName);
-                }
-
-                Fail();
-                return Autoya.ShouldRequestOrNot.No();
+                listWillBeDownloaded = true;
+                True(newVersion == "1.0.1");
+                return RequestYes(newVersion);
             }
         );
 
@@ -211,13 +217,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             newVersion => {
-                if (Autoya.AssetBundle_AssetBundleList().version != newVersion) {
-                    var newFileName = "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
-                    return Autoya.ShouldRequestOrNot.Yes(newFileName);
-                }
-
-                Fail();
-                return Autoya.ShouldRequestOrNot.No();
+                True(newVersion == "1.0.1");
+                return RequestYes(newVersion);
             }
         );
 
@@ -249,7 +250,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // list is updated.
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
 
-        True(Autoya.AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.LoaderReady);
+        True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
     }
 
     [MTest] public IEnumerator ReceiveUpdatedListThenIgnore () {
@@ -281,17 +282,9 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             newVersion => {
-                if (Autoya.AssetBundle_AssetBundleList().version != newVersion) {
-                    listWillBeDownloaded = true;
-                    
-                    True(newVersion == "1.0.1");
-
-                    var newFileName = "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
-                    return Autoya.ShouldRequestOrNot.Yes(newFileName);
-                }
-
-                Fail();
-                return Autoya.ShouldRequestOrNot.No();
+                listWillBeDownloaded = true;
+                True(newVersion == "1.0.1");
+                return RequestYes(newVersion);
             }
         );
 
@@ -328,7 +321,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // list is not updated yet.
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.0");
 
-        True(Autoya.AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.LoaderReady);
+        True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
     }
 
     [MTest] public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached () {
@@ -359,13 +352,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             newVersion => {
-                if (Autoya.AssetBundle_AssetBundleList().version != newVersion) {
-                    var newFileName = "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
-                    return Autoya.ShouldRequestOrNot.Yes(newFileName);
-                }
-
-                Fail();
-                return Autoya.ShouldRequestOrNot.No();
+                True(newVersion == "1.0.1");
+                return RequestYes(newVersion);
             }
         );
 
@@ -398,7 +386,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // list is not updated yet.
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.0");
 
-        True(Autoya.AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.LoaderReady);
+        True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
 
         // postponed version is cached.
         True(Autoya.AssetBundle_PostponedNewAssetBundleList().version == "1.0.1");
@@ -413,16 +401,11 @@ public class AssetUpdateTests : MiyamasuTestRunner {
             }
         );
 
-
-        Debug.Log("start connection.");
-
-
         // get list again.
         Autoya.Http_Get(
             "https://httpbin.org/response-headers?" + resversion + "=1.0.1", 
             (conId, data) => {
                 // pass.
-                Debug.Log("通信終わった");
             }, 
             (conId, code, reason, status) => {
                 Fail();
