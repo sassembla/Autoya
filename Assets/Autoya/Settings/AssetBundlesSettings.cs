@@ -12,6 +12,7 @@ namespace AutoyaFramework.Settings.AssetBundles {
 
 		/*
 			urls and prefixs.
+			めっちゃ未調整だここ。Mac -> OSXなんちゃらに揃えた方がいいかも。
 		*/
 		public const string PLATFORM_STR = 
 

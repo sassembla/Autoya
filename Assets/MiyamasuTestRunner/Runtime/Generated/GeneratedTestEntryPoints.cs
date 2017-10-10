@@ -660,6 +660,20 @@ public class AssetBundlePreloaderTests_Miyamasu {
     }
 }
 public class AssetBundlesImplementationTests_Miyamasu {
+    [UnityTest] public IEnumerator GetAssetBundleListFromDebugMethod() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "GetAssetBundleListFromDebugMethod");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.GetAssetBundleListFromDebugMethod();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
     [UnityTest] public IEnumerator GetAssetBundleList() {
         var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "GetAssetBundleList");
         var instance = new AssetBundlesImplementationTests();
@@ -669,6 +683,20 @@ public class AssetBundlesImplementationTests_Miyamasu {
         yield return instance.Setup();
         
         yield return instance.GetAssetBundleList();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator GetAssetBundleListUrl() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "GetAssetBundleListUrl");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.GetAssetBundleListUrl();
         rec.MarkAsPassed();
 
         

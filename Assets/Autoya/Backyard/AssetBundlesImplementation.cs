@@ -237,6 +237,14 @@ namespace AutoyaFramework {
 			public apis
 		 */
 		
+		public static string AssetBundle_GetCurrentAssetBundleListUrl () {
+			if (autoya == null) {
+				return string.Empty;
+			}
+
+			return autoya.AssetBundleListDownloadUrl();
+		}
+		
 		/**
 			Download assetBundleList from OverridePoints url.
 		 */

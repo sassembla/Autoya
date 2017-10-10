@@ -77,7 +77,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         yield return true;
     }
 
-    [MTest] public IEnumerator GetAssetBundleList () {
+    [MTest] public IEnumerator GetAssetBundleListFromDebugMethod () {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
         
@@ -96,6 +96,32 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             () => done,
             () => {throw new TimeoutException("faild to get assetBundleList.");}
         );
+    }
+
+    [MTest] public IEnumerator GetAssetBundleList () {
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleList(
+            () => {
+                done = true;
+            },
+            (code, reason, AutoyaStatus) => {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => {throw new TimeoutException("faild to get assetBundleList.");}
+        );
+    }
+
+    [MTest] public IEnumerator GetAssetBundleListUrl () {
+        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var version = "1.0.0";
+        
+        var listUrl = Autoya.AssetBundle_GetCurrentAssetBundleListUrl();
+        True(listUrl == AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName);
+        yield break;
     }
 
     [MTest] public IEnumerator GetAssetBundleListFailThenTryAgain () {
