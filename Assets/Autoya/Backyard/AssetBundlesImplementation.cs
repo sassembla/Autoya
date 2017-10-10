@@ -38,7 +38,7 @@ namespace AutoyaFramework {
 			// check if assetBundleList are stored.
 			var listCandidate = LoadAssetBundleListFromStorage();
 
-			if (listCandidate == null) {
+			if (!listCandidate.Exists()) {
 				// no list stored.
 				assetBundleFeatState = AssetBundlesFeatureState.None;
 				return;
@@ -65,7 +65,7 @@ namespace AutoyaFramework {
 			if (autoya == null) {
 				return false;
 			}
-
+			
 			switch (autoya.assetBundleFeatState) {
 				case AssetBundlesFeatureState.Ready: {
 					return true;
@@ -93,6 +93,8 @@ namespace AutoyaFramework {
 				onDiscardFailed(-2, "failed to discard list data.");
 				return;
 			}
+
+			// ここで、manifestのデータは消さない。その代わり、リストは削除されているので、リストの取得をしようとする試みが成功しないといけない。
 
 			autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
 
@@ -232,10 +234,17 @@ namespace AutoyaFramework {
 			return;
 		}
 		
+		public enum ListDownloadResult {
+			AlreadyDownloaded,
+			ListDownloaded
+		}
 
-		/*
-			public apis
-		 */
+		public enum ListDownloadError {
+			AutoyaNotReady,
+			AlreadyDownloading,
+			FailedToDownload,
+			FailedToStoreDownloadedAssetBundleList
+		}
 		
 		public static string AssetBundle_GetCurrentAssetBundleListUrl () {
 			if (autoya == null) {
@@ -246,28 +255,51 @@ namespace AutoyaFramework {
 		}
 		
 		/**
-			Download assetBundleList from OverridePoints url.
+			Download assetBundleList from OverridePoints url if need.
 		 */
-		public static void AssetBundle_DownloadAssetBundleList (Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
+		public static void AssetBundle_DownloadAssetBundleListIfNeed (Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
 			if (autoya == null) {
-				downloadFailed(-1, "Autoya not ready.", new AutoyaStatus());
+				downloadFailed(ListDownloadError.AutoyaNotReady, "Autoya not ready.", new AutoyaStatus());
 				return;
 			}
+
+			// 起動時、リストを保持してたら自動的にReadyになる。
+			// 起動時、リストを保持していなかった場合、このメソッドからDLしてReadyモードになる。
+			// 取得中にこのメソッドを連打してもfailになる(最初のやつがDLを継続する)
+
+			// 起動時、リストを保持していなかった場合、リクエストヘッダにはデフォルトのresVersionが入る
+			// サーバがresVersionレスポンスヘッダを返す + そのバージョンがデフォルトと異なった場合、リストDLが自動的に開始される。
 
 			switch (autoya.assetBundleFeatState) {
 				case AssetBundlesFeatureState.ListLoading: {
 					// already loading.
-					downloadFailed(-2, "already loading.", new AutoyaStatus());
+					downloadFailed(ListDownloadError.AlreadyDownloading, "already loading.", new AutoyaStatus());
+					return;
+				}
+				case AssetBundlesFeatureState.Ready: {
+					downloadSucceeded(ListDownloadResult.AlreadyDownloaded);
+					return;
+				}
+				case AssetBundlesFeatureState.None: {
+					// pass.
+					break;
+				}
+				default: {
+					downloadFailed(ListDownloadError.FailedToDownload, "unexpected state:" + autoya.assetBundleFeatState, new AutoyaStatus());
 					return;
 				}
 			}
-
+			
+			/*
+				assetBundleFeatState is None.
+			 */
+			
 			var listUrl = autoya.AssetBundleListDownloadUrl();
 			Internal_AssetBundle_DownloadAssetBundleListFromUrl(listUrl, downloadSucceeded, downloadFailed, timeoutSec);
 		}
 
 		
-		private static void Internal_AssetBundle_DownloadAssetBundleListFromUrl (string listUrl, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
+		private static void Internal_AssetBundle_DownloadAssetBundleListFromUrl (string listUrl, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
 			Action act = () => {	
 				autoya.mainthreadDispatcher.Commit(
 					autoya._assetBundleListDownloader.DownloadAssetBundleList(
@@ -288,17 +320,17 @@ namespace AutoyaFramework {
 								autoya.assetBundleFeatState = AssetBundlesFeatureState.Ready;
 								autoya.ReadyLoaderAndPreloader();
 
-								downloadSucceeded();
+								downloadSucceeded(ListDownloadResult.ListDownloaded);
 								return;
 							}
 
 							// failed to store assetBundleList.
 							autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
-							downloadFailed(-1, "failed to store AssetBundleList to storage. let's check StoreAssetBundleListToStorage method.", new AutoyaStatus());
+							downloadFailed(ListDownloadError.FailedToStoreDownloadedAssetBundleList, "failed to store AssetBundleList to storage. let's check StoreAssetBundleListToStorage method.", new AutoyaStatus());
 						}, 
 						(code, reason, autoyaStatus) => {
 							autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
-							downloadFailed(code, reason, autoyaStatus);
+							downloadFailed(ListDownloadError.FailedToDownload, "code:" + code + " reason]" + reason, autoyaStatus);
 						},
 						timeoutSec
 					)
@@ -306,7 +338,7 @@ namespace AutoyaFramework {
 			};
 
 			autoya.mainthreadDispatcher.Commit(
-				autoya.ListLoaderCoroutine(act, downloadFailed)
+				autoya.ListLoaderCoroutine(act)
 			);
 		}
 
@@ -437,30 +469,11 @@ namespace AutoyaFramework {
 		}
 
 
-		private IEnumerator ListLoaderCoroutine (Action execute, Action<int, string, AutoyaStatus> downloadFailed) {
-			// check current state.
-			switch (assetBundleFeatState) {
-				case AssetBundlesFeatureState.ListLoading: {
-					downloadFailed(-2, "already downloading AssetBundleList.", new AutoyaStatus());
-					yield break;
-				}
-				case AssetBundlesFeatureState.None: {
-					// pass. start loading/reloading list.
-					break;
-				}
-				case AssetBundlesFeatureState.Ready: {
-					downloadFailed(-3, "already downloaded AssetBundleList.", new AutoyaStatus());
-					yield break;
-				}
-				default: {
-					downloadFailed(-4, "unexpected state. state:" + assetBundleFeatState, new AutoyaStatus());
-					yield break;
-				}
-			}
-
+		private IEnumerator ListLoaderCoroutine (Action execute) {
 			// start loading.
 			assetBundleFeatState = AssetBundlesFeatureState.ListLoading;
 			execute();
+			yield break;
 		}
 
 
@@ -789,7 +802,7 @@ namespace AutoyaFramework {
 			debug
 		 */
 
-		public static void Debug_AssetBundle_DownloadAssetBundleListFromUrl (string listUrl, Action downloadSucceeded, Action<int, string, AutoyaStatus> downloadFailed, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
+		public static void Debug_AssetBundle_DownloadAssetBundleListFromUrl (string listUrl, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
 			Internal_AssetBundle_DownloadAssetBundleListFromUrl(listUrl, downloadSucceeded, downloadFailed, timeoutSec);
 		}
 

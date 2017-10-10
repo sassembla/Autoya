@@ -271,7 +271,11 @@ namespace AutoyaFramework {
 		*/
 
 		private string AssetBundleListDownloadUrl () {
-			var targetListVersion = _appManifestStore.GetRuntimeManifest().resVersion;
+			var targetListVersion = Autoya.Manifest_LoadRuntimeManifest().resVersion;
+			if (string.IsNullOrEmpty(targetListVersion)) {
+				return string.Empty;
+			}
+			
 			return AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + targetListVersion + "/AssetBundles.StandaloneOSXIntel64_" + targetListVersion.Replace(".", "_") + ".json";
 		}
 
@@ -279,7 +283,7 @@ namespace AutoyaFramework {
 			// load stored assetBundleList then return it.
 			var listStr = _autoyaFilePersistence.Load(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
 			if (string.IsNullOrEmpty(listStr)) {
-				return null;
+				return new AssetBundleList();
 			}
 			
 			return JsonUtility.FromJson<AssetBundleList>(listStr);
@@ -299,6 +303,7 @@ namespace AutoyaFramework {
 		 */
 		private Func<string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string rceivedNewAssetBundleListVersion) => {
 			var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + rceivedNewAssetBundleListVersion + "/AssetBundles.StandaloneOSXIntel64_" + rceivedNewAssetBundleListVersion.Replace(".", "_") + ".json";
+
 			return ShouldRequestOrNot.Yes(url);
 			// return ShouldRequestOrNot.No();
 		};

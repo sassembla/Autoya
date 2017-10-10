@@ -742,7 +742,8 @@ namespace AutoyaFramework {
 				if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION)) {
 					var newListVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
 
-					if (newListVersionOnResponseHeader != _currentAssetBundleList.version) {
+					// compare with runtimeManifest data.
+					if (newListVersionOnResponseHeader != _appManifestStore.GetRuntimeManifest().resVersion) {
 
 						var answer = OnRequestNewAssetBundleList(newListVersionOnResponseHeader);
 						if (answer.doOrNot) {

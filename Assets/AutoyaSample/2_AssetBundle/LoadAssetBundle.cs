@@ -14,9 +14,9 @@ public class LoadAssetBundle : MonoBehaviour {
 				AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST
 				
 		 */
-		Autoya.AssetBundle_DownloadAssetBundleList(
-			() => {
-				Debug.Log("assetBundleList download succeeded.");
+		Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+			(status) => {
+				Debug.Log("assetBundleList download succeeded. status:" + status);
 				
 				/*
 					then, you can load asset from web.
@@ -39,8 +39,8 @@ public class LoadAssetBundle : MonoBehaviour {
 						// instantiate asset.
 						Instantiate(prefab);
 					},
-					(assetName, err, reason, status) => {
-						Debug.LogError("failed to load assetName:" + assetName + " err:" + err + " reason:" + reason);
+					(assetName, err, reason, autoyaStatus) => {
+						Debug.LogError("failed to load assetName:" + assetName + " err:" + err + " reason:" + reason + " autoyaStatus:" + autoyaStatus);
 					}
 				);
 			},

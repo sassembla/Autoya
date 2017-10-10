@@ -84,10 +84,10 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            () => {
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, autoyaStatus) => {
                 // do nothing.
             }
         );
@@ -100,11 +100,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
     [MTest] public IEnumerator GetAssetBundleList () {
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleList(
-            () => {
+        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, asutoyaStatus) => {
                 // do nothing.
             }
         );
@@ -120,6 +120,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var version = "1.0.0";
         
         var listUrl = Autoya.AssetBundle_GetCurrentAssetBundleListUrl();
+        Debug.Log("listUrl:" + listUrl);
+        
         True(listUrl == AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName);
         yield break;
     }
@@ -132,11 +134,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
                 AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + notExistFileName,
-                () => {
+                status => {
                     Fail("should not be succeeded.");
                 },
-                (code, reason, AutoyaStatus) => {
-                    True(code == 404, "code does not match.");
+                (err, reason, autoyaStatus) => {
+                    True(err == Autoya.ListDownloadError.FailedToDownload, "err does not match.");
                     done = true;
                 }
             );
@@ -155,10 +157,10 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
                 AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-                () => {
+                status => {
                     done = true;
                 },
-                (code, reason, AutoyaStatus) => {
+                (code, reason, autoyaStatus) => {
                     // do nothing.
                     Fail("reason:" + reason);
                 }

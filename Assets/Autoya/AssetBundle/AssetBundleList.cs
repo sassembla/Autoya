@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 /**
@@ -22,7 +23,7 @@ namespace AutoyaFramework.AssetBundles {
 		[SerializeField] public AssetBundleInfo[] assetBundles;
 
 		public AssetBundleList () {}
-		
+
 		public AssetBundleList (string target, string version, AssetBundleInfo[] assetBundles) {
 			this.target = target;
 			this.version = version;
@@ -36,6 +37,10 @@ namespace AutoyaFramework.AssetBundles {
 			for (var i = 0; i < assetBundles.Length; i++) {
 				assetBundles[i] = new AssetBundleInfo(baseList.assetBundles[i]);
 			}
+		}
+
+		public bool Exists () {
+			return (!string.IsNullOrEmpty(this.target) && !string.IsNullOrEmpty(this.version) && this.assetBundles.Any());
 		}
 	}
 

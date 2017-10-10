@@ -85,7 +85,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
             () => discarded,
             () => {throw new TimeoutException("too late.");}
         );
-        
+
         var listExists = Autoya.AssetBundle_IsAssetBundleReady();
         True(!listExists, "exists, not intended.");
     }
@@ -110,10 +110,10 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            () => {
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, autoyaStatus) => {
                 // do nothing.
             }
         );
@@ -136,10 +136,10 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            () => {
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, autoyaStatus) => {
                 // do nothing.
                 Fail("code:" + code + " reason:" + reason);
             }
@@ -206,10 +206,10 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            () => {
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, autoyaStatus) => {
                 // do nothing.
             }
         );
@@ -269,10 +269,10 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            () => {
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, autoyaStatus) => {
                 // do nothing.
             }
         );
@@ -339,10 +339,10 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            () => {
+            status => {
                 done = true;
             },
-            (code, reason, AutoyaStatus) => {
+            (code, reason, autoyaStatus) => {
                 // do nothing.
             }
         );
