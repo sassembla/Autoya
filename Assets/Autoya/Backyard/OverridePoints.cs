@@ -11,17 +11,27 @@ using UnityEngine;
 using AutoyaFramework.Settings.App;
 
 /**
-	modify this class for your app's authentication, purchase and assetBundle dataflow.
+	modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
 */
 namespace AutoyaFramework {
 
 	public partial class Autoya {
+		
+		/*
+			maintenance handlers.
+		 */
+
 		/**
 			return if server is under maintenance or not.
 		*/
 		private bool IsUnderMaintenance (int httpCode, Dictionary<string, string> responseHeader) {
 			return httpCode == BackyardSettings.MAINTENANCE_CODE;
 		}
+
+
+		/*
+			authentication handlers.
+		 */
 
 		/**
 			return true if already authenticated, return false if not.
@@ -70,7 +80,6 @@ namespace AutoyaFramework {
 			}
 			yield break;
 		}
-
 
 		/**
 			on logout handler.
@@ -136,9 +145,10 @@ namespace AutoyaFramework {
 			yield break;
 		}
 
+
 		
 		/*
-			standard http request & response handler.
+			authorized http request & response handlers.
 		*/
 
 		/**
@@ -191,10 +201,10 @@ namespace AutoyaFramework {
 		}
 
 
+
 		/*
 			purchase feature handlers.
 		*/
-
 
 		/**
 			fire when the server returns product datas for this app.
@@ -254,9 +264,16 @@ namespace AutoyaFramework {
 			return ticketData;
 		}
 
+
+
 		/*
-			AssetBundles
+			AssetBundles handlers.
 		*/
+
+		private string AssetBundleListDownloadUrl () {
+			var targetListVersion = _appManifestStore.GetRuntimeManifest().resVersion;
+			return AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + targetListVersion + "/AssetBundles.StandaloneOSXIntel64_" + targetListVersion.Replace(".", "_") + ".json";
+		}
 
 		private AssetBundleList LoadAssetBundleListFromStorage () {
 			// load stored assetBundleList then return it.
@@ -278,13 +295,12 @@ namespace AutoyaFramework {
 		}
 
 		/**
-			fire when you received new assetBundleList version from authenticated http response's response header.
+			fire when you received new assetBundleList version parameter from authenticated http response's response header.
 		 */
 		private Func<string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string rceivedNewAssetBundleListVersion) => {
-			throw new Exception("まだ通過するケースが無いはず");
-			Debug.LogWarning("frameworkの仕様として挟み込む値を確認しよう。list urlをフルパスで返すようにしたい。 いまはyesを返す");
-			var url = "";//AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + rceivedNewAssetBundleListVersion + "/" + ;
+			var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + rceivedNewAssetBundleListVersion + "/AssetBundles.StandaloneOSXIntel64_" + rceivedNewAssetBundleListVersion.Replace(".", "_") + ".json";
 			return ShouldRequestOrNot.Yes(url);
+			// return ShouldRequestOrNot.No();
 		};
 		
 		/**
@@ -330,21 +346,21 @@ namespace AutoyaFramework {
 		
 		/**
 			request headers of AssetBundles features.
+
+			used for 
+				assetBundleList downloading request, 
+				assetBundle preloading request, 
+				assetBundle downloading request.
 		 */
-		// このへんセットできてないような気がするぞ
-		private Dictionary<string, string> OnAssetBundleListGetRequest (string url, Dictionary<string, string> requestHeader) {
-			return requestHeader;
-		}
-		private Dictionary<string, string> OnAssetBundlePreloadListGetRequest (string url, Dictionary<string, string> requestHeader) {
-			return requestHeader;
-		}
 		private Dictionary<string, string> OnAssetBundleGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
 
 
+
+
 		/*
-			Application manifest
+			ApplicationManifest handlers.
 		*/
 
 		/**

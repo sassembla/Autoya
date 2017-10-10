@@ -478,7 +478,7 @@ namespace AutoyaFramework.AssetBundles {
 
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
-
+				
 				if (request.isError) {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
@@ -488,6 +488,7 @@ namespace AutoyaFramework.AssetBundles {
 					// set response code to 200 manually if already cached and succeeded to load from cache.
 					// sadly, in this case, the code is not 200 by default.
 					responseCode = 200;
+					responseHeaders = new Dictionary<string, string>();
 				} else {
 					if (200 <= responseCode && responseCode <= 299) {
 						// do nothing.
@@ -511,7 +512,7 @@ namespace AutoyaFramework.AssetBundles {
 				while (!Caching.IsVersionCached(url, hash)) {
 					yield return null;
 				}
-
+				
 				succeeded(connectionId, responseCode, responseHeaders, assetBundle);
 			}
 		}

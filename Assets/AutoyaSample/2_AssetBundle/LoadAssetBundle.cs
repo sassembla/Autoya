@@ -8,6 +8,7 @@ public class LoadAssetBundle : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		Debug.LogWarning("このサンプルは改修後動かしてない。サンプルとして正しいかチェックが必要。");
 		/*
 			first, Autoya manages whole assetBundle information as the "AssetBundleList".
 			the structure of assetBundleList is like below.
@@ -60,7 +61,7 @@ public class LoadAssetBundle : MonoBehaviour {
 
 		// you can get that assetBundleList sample from web.
 		var assetBundleListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
-		Autoya.AssetBundle_DownloadAssetBundleList(
+		Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
 			assetBundleListPath, 
 			() => {
 				Debug.Log("assetBundleList download succeeded.");
@@ -100,12 +101,7 @@ public class LoadAssetBundle : MonoBehaviour {
 	}
 
 	void OnApplicationQuit () {
-		Autoya.AssetBundle_DeleteAllStorageCache(
-			(result, message) => {
-				Debug.Log("the end of demo. in OnApplicationQuit, deleting all storage cached assetBundles. result:" + result + " (message:" + message + ")");
-			},
-			true
-		);
+		Autoya.AssetBundle_DeleteAllStorageCache();
 	}
 	
 }

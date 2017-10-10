@@ -7,25 +7,25 @@ using UnityEngine;
 
 namespace AutoyaFramework {
 	public partial class Autoya {
-        private AppManifestStore<RuntimeManifestObject, BuildManifestObject> manifestStore;
+        private AppManifestStore<RuntimeManifestObject, BuildManifestObject> _appManifestStore;
 
         private void InitializeAppManifest () {
-            manifestStore = new AppManifestStore<RuntimeManifestObject, BuildManifestObject>(OnOverwriteRuntimeManifest, OnLoadRuntimeManifest);
+            _appManifestStore = new AppManifestStore<RuntimeManifestObject, BuildManifestObject>(OnOverwriteRuntimeManifest, OnLoadRuntimeManifest);
         }
 
         /*
             public functions
          */
         public static Dictionary<string, string> Manifest_GetAppManifest () {
-            return autoya.manifestStore.GetParamDict();
+            return autoya._appManifestStore.GetParamDict();
         }
 
         public static bool Manifest_UpdateRuntimeManifest (RuntimeManifestObject updated) {
-            return autoya.manifestStore.UpdateRuntimeManifest(updated);
+            return autoya._appManifestStore.UpdateRuntimeManifest(updated);
         }
 
         public static RuntimeManifestObject Manifest_LoadRuntimeManifest () {
-            return autoya.manifestStore.GetRuntimeManifest();
+            return autoya._appManifestStore.GetRuntimeManifest();
         }
 
         /*

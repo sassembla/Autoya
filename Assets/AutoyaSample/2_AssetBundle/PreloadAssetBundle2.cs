@@ -10,6 +10,8 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 
 	// Use this for initialization
 	IEnumerator Start () {
+		Debug.LogWarning("このサンプルは改修後動かしてない。サンプルとして正しいかチェックが必要。");
+		
 		/*
 			this is sample of "preload assetBundles feature".
 
@@ -22,13 +24,13 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		// Autoya.AssetBundle_DiscardAssetBundleList();
 
 		// download assetBundleList if assetBundleList is not stored.
-		var isListStored = Autoya.AssetBundle_IsAssetBundleListReady();
+		var isListStored = Autoya.AssetBundle_IsAssetBundleReady();
 
 		if (!isListStored) {
 			// store assetBundleList in file storage.
 			
 			var done = false;
-			Autoya.AssetBundle_DownloadAssetBundleList(
+			Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
 				"https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json",
 				() => {
 					done = true;
@@ -104,11 +106,6 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 	}
 
 	void OnApplicationQuit () {
-		Autoya.AssetBundle_DeleteAllStorageCache(
-			(result, message) => {
-				Debug.Log("the end of demo. in OnApplicationQuit, deleting all storage cached assetBundles. result:" + result + " (message:" + message + ")");
-			},
-			true
-		);
+		Autoya.AssetBundle_DeleteAllStorageCache();
 	}
 }

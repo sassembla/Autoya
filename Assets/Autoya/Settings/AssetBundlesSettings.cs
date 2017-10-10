@@ -38,5 +38,7 @@ namespace AutoyaFramework.Settings.AssetBundles {
 		public const string ASSETBUNDLES_PRELOADLIST_PREFIX = "preloadlist_";
 		public const string ASSETBUNDLES_PRELOADBUNDLE_PREFIX = "preloadassetbundle_";
 		public const string ASSETBUNDLES_ASSETBUNDLELIST_PREFIX = "assetbundlelist_";
+
+		public const double TIMEOUT_SEC = 10.0;
 	}
 }

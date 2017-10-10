@@ -170,7 +170,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		yield return WaitUntil(
 			() => tokenRefreshFailed,
 			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
-			10
+			20
 		);
 		
 		Autoya.forceFailTokenRefresh = false;
@@ -200,7 +200,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		yield return WaitUntil(
 			() => tokenRefreshFailed,
 			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
-			10
+			20
 		);
 		
 		Autoya.forceFailTokenRefresh = false;

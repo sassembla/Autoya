@@ -39,43 +39,55 @@ public class AssetUpdateTests : MiyamasuTestRunner {
     private const string resversion = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
     
     [MSetup] public IEnumerator Setup () {
-        // delete assetBundleList anyway.
-        Autoya.AssetBundle_DiscardAssetBundleList();
+        var discarded = false;
 
-        var deleted = false;
-        Autoya.AssetBundle_DeleteAllStorageCache(
-            (result, message) => {
-                deleted = result;
-                True(deleted, "on setup, not deleted.");
+        // delete assetBundleList anyway.
+        Autoya.AssetBundle_DiscardAssetBundleList(
+            () => {
+                discarded = true;
+            },
+            (code, reason) => {
+                switch (code) {
+                    case -1: {
+                        discarded = true;
+                        break;
+                    }
+                    default: {
+                        Fail("code:" + code + " reason:" + reason);
+                        break;
+                    }
+                }
             }
         );
-        
+
         yield return WaitUntil(
-            () => deleted,
-            () => {throw new TimeoutException("not deleted. some assetBundles are in use.");}
+            () => discarded,
+            () => {throw new TimeoutException("too late.");}
         );
 
-        var exists = Autoya.AssetBundle_IsAssetBundleListReady();
-        True(!exists, "exists, not intended.");
-
-        // no lists exists.
+        var listExists = Autoya.AssetBundle_IsAssetBundleReady();
+        True(!listExists, "exists, not intended.");
     }
     [MTeardown] public IEnumerator Teardown () {
-        // delete assetBundleList anyway.
-        Autoya.AssetBundle_DiscardAssetBundleList();
+        var discarded = false;
 
-        var deleted = false;
-        Autoya.AssetBundle_DeleteAllStorageCache(
-            (result, message) => {
-                deleted = result;
-                True(deleted, "on teardown, not deleted.");
+        // delete assetBundleList anyway.
+        Autoya.AssetBundle_DiscardAssetBundleList(
+            () => {
+                discarded = true;
+            },
+            (code, reason) => {
+                Fail("code:" + code + " reason:" + reason);
             }
         );
-        
+
         yield return WaitUntil(
-            () => deleted,
-            () => {throw new TimeoutException("not deleted. some assetBundles are in use.");}
+            () => discarded,
+            () => {throw new TimeoutException("too late.");}
         );
+        
+        var listExists = Autoya.AssetBundle_IsAssetBundleReady();
+        True(!listExists, "exists, not intended.");
     }
 
 
@@ -96,9 +108,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var version = "1.0.0";
         
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleList(
-            fileName,
-            version,
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
             () => {
                 done = true;
             },
@@ -123,9 +134,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var version = "1.0.0";
         
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleList(
-            fileName,
-            version,
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
             () => {
                 done = true;
             },
@@ -194,9 +204,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var version = "1.0.0";
         
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleList(
-            fileName,
-            version,
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
             () => {
                 done = true;
             },
@@ -258,9 +267,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var version = "1.0.0";
         
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleList(
-            fileName,
-            version,
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
             () => {
                 done = true;
             },
@@ -329,9 +337,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         var version = "1.0.0";
         
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleList(
-            fileName,
-            version,
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
             () => {
                 done = true;
             },
