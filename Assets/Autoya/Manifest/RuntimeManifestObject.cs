@@ -10,6 +10,6 @@ namespace AutoyaFramework.AppManifest {
         動的に書き換えることができる。
     */
     [Serializable] public class RuntimeManifestObject {
-        [SerializeField] public string resVersion = "1.0.0";
+        [SerializeField] public string resVersion = "0.0.0";
     }
 }

@@ -16,6 +16,9 @@ namespace AutoyaFramework {
         /*
             public functions
          */
+        public static BuildManifestObject Manifest_GetBuildManifest () {
+            return autoya._appManifestStore.GetRawBuildManifest();
+        }
         public static Dictionary<string, string> Manifest_GetAppManifest () {
             return autoya._appManifestStore.GetParamDict();
         }
@@ -65,12 +68,15 @@ namespace AutoyaFramework {
                 // 何にもすることがないが、コマンドライン処理をすることはできる。でもまあ、だいたい独自になんかすると思うので、出しゃばる必要はない気がする。
                 // 理想的な挙動について考えよう。
             }
-
+            
             private static void OnCompile (string buildMessage=null) {
                 AppManifestStore<RuntimeManifestObject, BuildManifestObject>.UpdateBuildManifest(
                     current => {
                         // countup build count.
                         var buildNoStr = current.buildNo;
+                        if (string.IsNullOrEmpty(buildNoStr)) {
+                            buildNoStr = "0";
+                        }
                         var buildNoNum = Convert.ToInt64(buildNoStr) + 1;
                         current.buildNo = buildNoNum.ToString();
 

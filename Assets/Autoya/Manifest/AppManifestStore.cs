@@ -36,6 +36,10 @@ namespace AutoyaFramework.AppManifest {
      */
     public class AppManifestStoreSettings {
         public const string BUILDMANIFEST_PATH = "Assets/Autoya/Manifest/ShouldGitIgnore/Resources/BuildManifest.json";
+        
+        public static string Prettify (string jsonVal) {
+            return jsonVal.Replace("\",", "\",\n\t").Replace("{\"", "{\t\n\t\"").Replace("\"}", "\"\n}");
+        }
     }
 
     public class AppManifestStore<RuntimeManifestType, BuildManifestType> where RuntimeManifestType : new() where BuildManifestType : new() {
@@ -69,19 +73,25 @@ namespace AutoyaFramework.AppManifest {
             this.loadFunc = loadFunc;
         }
 
-        
+        private Dictionary<string, string> buildManifestDict;
         public Dictionary<string, string> GetParamDict () {
-            var buildManifestDict = buildManifest.buildParamDict;
-            var runtimeManifestDict = runtimeManifest.GetDict();
-            
-            // add/overwrite buildManifest by runtimeManifest.
-            foreach (var runtimeManifestDictItem in runtimeManifestDict) {
-                buildManifestDict[runtimeManifestDictItem.Key] = runtimeManifestDictItem.Value;
+            if (buildManifestDict == null) {
+                buildManifestDict = buildManifest.buildParamDict;
+                var runtimeManifestDict = runtimeManifest.GetDict();
+                
+                // add/overwrite buildManifest by runtimeManifest.
+                foreach (var runtimeManifestDictItem in runtimeManifestDict) {
+                    buildManifestDict[runtimeManifestDictItem.Key] = runtimeManifestDictItem.Value;
+                }
             }
             
             return buildManifestDict;
         }
-
+    
+        public BuildManifestType GetRawBuildManifest () {
+            return buildManifest.Obj;
+        }
+        
         public RuntimeManifestType GetRuntimeManifest () {
             return runtimeManifest.Obj();
         }
@@ -95,6 +105,7 @@ namespace AutoyaFramework.AppManifest {
                 runtimeManifest.UpdateObject(newOne);
             }
 
+            buildManifestDict = null;
             return result;
         }
 
@@ -125,7 +136,7 @@ namespace AutoyaFramework.AppManifest {
             var targetPath = AppManifestStoreSettings.BUILDMANIFEST_PATH;
             var jsonStr = JsonUtility.ToJson(updated);
             
-            jsonStr = Prittyfy(jsonStr);
+            jsonStr = AppManifestStoreSettings.Prettify(jsonStr);
 
             using (var sw = new System.IO.StreamWriter(targetPath)) {
                 sw.WriteLine(jsonStr);
@@ -133,10 +144,7 @@ namespace AutoyaFramework.AppManifest {
 
             UnityEditor.AssetDatabase.Refresh();
         }
-
-        private static string Prittyfy (string jsonVal) {
-            return jsonVal.Replace("\",", "\",\n\t").Replace("{\"", "{\t\n\t\"").Replace("\"}", "\"\n}");
-        }
+        
         #endif
     }
 
@@ -165,9 +173,12 @@ namespace AutoyaFramework.AppManifest {
 
     public class BuildManifest<BuildManifestType> where BuildManifestType : new() {
         public readonly Dictionary<string, string> buildParamDict;
+        public readonly BuildManifestType Obj;
 
         public BuildManifest () {
-            buildParamDict = LoadBuildParamDict();
+            BuildManifestType obj;
+            this.buildParamDict = LoadBuildParamDict(out obj);
+            this.Obj = obj;
 
             #if UNITY_EDITOR
             {
@@ -175,6 +186,7 @@ namespace AutoyaFramework.AppManifest {
                 var targetPath = AppManifestStoreSettings.BUILDMANIFEST_PATH;
                 if (!System.IO.File.Exists(targetPath)) {
                     var jsonStr = JsonUtility.ToJson(new BuildManifestType());
+                    jsonStr = AppManifestStoreSettings.Prettify(jsonStr);
                     using (var sw = new System.IO.StreamWriter(targetPath)) {
                         sw.WriteLine(jsonStr);
                     }
@@ -184,13 +196,11 @@ namespace AutoyaFramework.AppManifest {
             #endif
 
             // set parameter from application.
-            buildParamDict["version"] = Application.version;
-            buildParamDict["unityVersion"] = Application.unityVersion;
-
+            buildParamDict["unityVersion"] = Application.unityVersion;            
 
             #if UNITY_CLOUD_BUILD
             {
-                // overwrite by cloud build if exist.
+                // overwrite by cloud build parameter if exist.
                 var cloudBuildManifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
                 var cloudBuildManifestDict = cloudBuildManifest.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.Public)
@@ -205,21 +215,25 @@ namespace AutoyaFramework.AppManifest {
             #endif
         }
 
-        private Dictionary<string, string> LoadBuildParamDict () {
+        private Dictionary<string, string> LoadBuildParamDict (out BuildManifestType obj) {
             // load BuildManifest from Resources.
             var baseBuildManifestAsset = Resources.Load<TextAsset>("BuildManifest");
             
             if (baseBuildManifestAsset == null) {
+                obj = new BuildManifestType();
                 return new Dictionary<string, string>();
             }
             
 
             var jsonStr = baseBuildManifestAsset.text;
             if (string.IsNullOrEmpty(jsonStr)) {
+                obj = new BuildManifestType();
                 return new Dictionary<string, string>();
             }
 
             var manifestObj = JsonUtility.FromJson<BuildManifestType>(jsonStr);
+            obj = manifestObj;
+
             return manifestObj.GetType()
                 .GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(manifestObj));
