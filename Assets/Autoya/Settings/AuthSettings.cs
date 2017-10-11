@@ -9,6 +9,7 @@ namespace AutoyaFramework.Settings.Auth {
 		/*
 			authenticated http response header keys.
 		 */
+		public const string AUTH_RESPONSEHEADER_APPVERSION = "appversion";
 		public const string AUTH_RESPONSEHEADER_RESVERSION = "resversion";
 
 		/*

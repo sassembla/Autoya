@@ -361,7 +361,12 @@ namespace AutoyaFramework {
 			return requestHeader;
 		}
 
-
+		/**
+			do something for server requested client to download latest app from store.
+		 */
+		private Action<string> OnNewAppRequested = newAppVersion => {
+			Debug.Log("new app version:" + newAppVersion + " is ready on store!");
+		};
 
 
 		/*

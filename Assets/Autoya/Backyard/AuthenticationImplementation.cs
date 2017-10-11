@@ -736,7 +736,7 @@ namespace AutoyaFramework {
 			succeeded(connectionId, data);
 
 			/*
-				fire assetBundleList request check after succeeded.
+				fire assetBundleList-request check after succeeded.
 			*/
 			if (assetBundleFeatState == AssetBundlesFeatureState.Ready) {
 				if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION)) {
@@ -758,6 +758,14 @@ namespace AutoyaFramework {
 						}
 					}
 				}
+			}
+
+			/*
+				fire application update request after succeeded.
+			 */
+			if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION)) {
+				var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
+				OnNewAppRequested(newappVersionOnResponseHeader);
 			}
 		}
 

@@ -659,6 +659,21 @@ public class AssetBundlePreloaderTests_Miyamasu {
         }
     }
 }
+public class AppUpdateTests_Miyamasu {
+    [UnityTest] public IEnumerator ReceiveAppUpdate() {
+        var rec = new Miyamasu.Recorder("AppUpdateTests", "ReceiveAppUpdate");
+        var instance = new AppUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveAppUpdate();
+        rec.MarkAsPassed();
+
+        
+    }
+}
 public class AssetBundlesImplementationTests_Miyamasu {
     [UnityTest] public IEnumerator GetAssetBundleListFromDebugMethod() {
         var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "GetAssetBundleListFromDebugMethod");
