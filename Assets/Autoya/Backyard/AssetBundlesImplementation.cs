@@ -821,5 +821,9 @@ namespace AutoyaFramework {
 				return debugAct(condition);
 			};
 		}
+
+		public static void Debug_SetOverridePoint_OnNewAppRequested (Action<string> onNewAppDetected) {
+			autoya.OnNewAppRequested = onNewAppDetected;
+		}
 	}
 }
