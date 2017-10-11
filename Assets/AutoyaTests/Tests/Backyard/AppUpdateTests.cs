@@ -10,9 +10,6 @@ using UnityEngine;
 /**
     appVersionが変わったという情報をサーバが流してきた場合、
     特定のハンドラでそれを受けて、メソッドを実行する。
-
-    そんだけだね。buildManifestと比較して確認するだけでよさげ。
-    OverridePointsに一個追加。
  */
 public class AppUpdateTests : MiyamasuTestRunner {
     
