@@ -203,14 +203,17 @@ namespace AutoyaFramework.AppManifest {
                 // overwrite by cloud build parameter if exist.
                 var cloudBuildManifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
                 var cloudBuildManifestDict = cloudBuildManifest.GetType()
-                    .GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
-
-                foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
-                    var key = cloudBuildManifestDictItem.Key;
-                    var val = cloudBuildManifestDictItem.Value;
-                    buildParamDict[key] = val;
+                    .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray();
+                foreach (var s in cloudBuildManifestDict) {
+                    Debug.Log("cloudBuildManifestDict s:" + s);
                 }
+                //     .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
+
+                // foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
+                //     var key = cloudBuildManifestDictItem.Key;
+                //     var val = cloudBuildManifestDictItem.Value;
+                //     buildParamDict[key] = val;
+                // }
             }
             #endif
         }
