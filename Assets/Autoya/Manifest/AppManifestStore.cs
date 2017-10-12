@@ -202,7 +202,6 @@ namespace AutoyaFramework.AppManifest {
             {
                 // overwrite by cloud build parameter if exist.
                 var cloudBuildManifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
-                Debug.Log("もしかしてここが動いてないかも")
                 var cloudBuildManifestDict = cloudBuildManifest.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.Public)
                     .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(buildParamDict));
@@ -211,7 +210,6 @@ namespace AutoyaFramework.AppManifest {
                     var key = cloudBuildManifestDictItem.Key;
                     var val = cloudBuildManifestDictItem.Value;
                     buildParamDict[key] = val;
-                    Debug.Log("key:" + key + " val:" + val);
                 }
             }
             #endif
