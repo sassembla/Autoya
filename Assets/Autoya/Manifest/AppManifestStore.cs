@@ -200,12 +200,11 @@ namespace AutoyaFramework.AppManifest {
 
             #if UNITY_CLOUD_BUILD
             {
-                Debug.Log("UNITY_CLOUD_BUILD enabled.");
                 // overwrite by cloud build parameter if exist.
                 var cloudBuildManifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
                 var cloudBuildManifestDict = cloudBuildManifest.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(buildParamDict));
+                    .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
 
                 foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
                     var key = cloudBuildManifestDictItem.Key;
