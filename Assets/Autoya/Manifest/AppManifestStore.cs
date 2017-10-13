@@ -202,7 +202,7 @@ namespace AutoyaFramework.AppManifest {
             {
                 try {
                     // overwrite by cloud build parameter if exist.
-                    var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.scriptable").text;
+                    var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.json").text;
                     try {
                         var cloudBuildManifest = JsonUtility.FromJson<UnityEngine.CloudBuild.BuildManifestObject>(cloudBuildManifestStr);
                         try {
