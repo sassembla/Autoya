@@ -198,7 +198,7 @@ namespace AutoyaFramework.AppManifest {
             // set parameter from application.
             buildParamDict["unityVersion"] = Application.unityVersion;            
 
-            #if UNITY_CLOUD_BUILD
+            // #if UNITY_CLOUD_BUILD
             {
                 try {
                     // overwrite by cloud build parameter if exist.
@@ -209,19 +209,18 @@ namespace AutoyaFramework.AppManifest {
                         
                         try {
                             var cloudBuildManifestDict = cloudBuildManifest.GetType()
-                                .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray();
+                                .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray()
+                                .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
 
-                            Debug.Log("cloudBuildManifestDict len:" + cloudBuildManifestDict.Length);
                             foreach (var s in cloudBuildManifestDict) {
                                 Debug.Log("cloudBuildManifestDict s:" + s);
                             }
-                            //     .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
 
-                            // foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
-                            //     var key = cloudBuildManifestDictItem.Key;
-                            //     var val = cloudBuildManifestDictItem.Value;
-                            //     buildParamDict[key] = val;
-                            // }
+                            foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
+                                var key = cloudBuildManifestDictItem.Key;
+                                var val = cloudBuildManifestDictItem.Value;
+                                buildParamDict[key] = val;
+                            }
                         } catch (Exception e3) {
                             Debug.Log("e3:" + e3);
                         }
@@ -232,7 +231,7 @@ namespace AutoyaFramework.AppManifest {
                     Debug.Log("e:" + e);
                 }
             }
-            #endif
+            // #endif
         }
 
         private Dictionary<string, string> LoadBuildParamDict (out BuildManifestType obj) {
@@ -263,39 +262,13 @@ namespace AutoyaFramework.AppManifest {
 
 [Serializable]
 public class CloudBuildManifest {
-    [SerializeField]
-    string scmCommitId;
-    public string ScmCommitId { get { return scmCommitId; } }
-
-    [SerializeField]
-    string scmBranch;
-    public string ScmBranch { get { return scmBranch; } }
-
-    [SerializeField]
-    string buildNumber;
-    public string BuildNumber { get { return buildNumber; } }
-
-    [SerializeField]
-    string buildStartTime;
-    public string BuildStartTime { get { return buildStartTime; } }
-
-    [SerializeField]
-    string projectId;
-    public string ProjectId { get { return projectId; } }
-
-    [SerializeField]
-    string bundleId;
-    public string BundleId { get { return bundleId; } }
-
-    [SerializeField]
-    string unityVersion;
-    public string UnityVersion { get { return unityVersion; } }
-
-    [SerializeField]
-    string xcodeVersion;
-    public string XCodeVersion { get { return xcodeVersion; } }
-
-    [SerializeField]
-    string cloudBuildTargetName;
-    public string CloudBuildTargetName { get { return cloudBuildTargetName; } }
+    [SerializeField] public string scmCommitId;
+    [SerializeField] public string scmBranch;
+    [SerializeField] public string buildNumber;
+    [SerializeField] public string buildStartTime;
+    [SerializeField] public string projectId;
+    [SerializeField] public string bundleId;
+    [SerializeField] public string unityVersion;
+    [SerializeField] public string xcodeVersion;
+    [SerializeField] public string cloudBuildTargetName;
 }
