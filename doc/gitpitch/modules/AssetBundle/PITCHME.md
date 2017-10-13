@@ -11,11 +11,13 @@ AssetBundleに関してのAPIを提供する。
 
 ## 提供している機能一覧
 
-* assetBundle list management
+* AssetBundle List management
 * on demand download
-* preload
+* multiple AssetBundle download
+* preload AssetBundle
 * background list update
 * hash management
 
+---
 
-
+## 
