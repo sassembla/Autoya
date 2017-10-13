@@ -201,9 +201,11 @@ namespace AutoyaFramework.AppManifest {
             #if UNITY_CLOUD_BUILD
             {
                 // overwrite by cloud build parameter if exist.
-                var cloudBuildManifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
+                var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.scriptable").text;
+                var cloudBuildManifest = JsonUtility.FromJson<UnityEngine.CloudBuild.BuildManifestObject>(cloudBuildManifestStr);
                 var cloudBuildManifestDict = cloudBuildManifest.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray();
+
                 Debug.Log("cloudBuildManifestDict len:" + cloudBuildManifestDict.Length);
                 foreach (var s in cloudBuildManifestDict) {
                     Debug.Log("cloudBuildManifestDict s:" + s);
