@@ -200,23 +200,35 @@ namespace AutoyaFramework.AppManifest {
 
             #if UNITY_CLOUD_BUILD
             {
-                // overwrite by cloud build parameter if exist.
-                var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.scriptable").text;
-                var cloudBuildManifest = JsonUtility.FromJson<UnityEngine.CloudBuild.BuildManifestObject>(cloudBuildManifestStr);
-                var cloudBuildManifestDict = cloudBuildManifest.GetType()
-                    .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray();
+                try {
+                    // overwrite by cloud build parameter if exist.
+                    var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.scriptable").text;
+                    try {
+                        var cloudBuildManifest = JsonUtility.FromJson<UnityEngine.CloudBuild.BuildManifestObject>(cloudBuildManifestStr);
+                        try {
+                            var cloudBuildManifestDict = cloudBuildManifest.GetType()
+                                .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray();
 
-                Debug.Log("cloudBuildManifestDict len:" + cloudBuildManifestDict.Length);
-                foreach (var s in cloudBuildManifestDict) {
-                    Debug.Log("cloudBuildManifestDict s:" + s);
+                            Debug.Log("cloudBuildManifestDict len:" + cloudBuildManifestDict.Length);
+                            foreach (var s in cloudBuildManifestDict) {
+                                Debug.Log("cloudBuildManifestDict s:" + s);
+                            }
+                            //     .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
+
+                            // foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
+                            //     var key = cloudBuildManifestDictItem.Key;
+                            //     var val = cloudBuildManifestDictItem.Value;
+                            //     buildParamDict[key] = val;
+                            // }
+                        } catch (Exception e3) {
+                            Debug.Log("e3:" + e3);
+                        }
+                    } catch (Exception e2) {
+                        Debug.Log("e2:" + e2);
+                    }
+                } catch (Exception e) {
+                    Debug.Log("e:" + e);
                 }
-                //     .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
-
-                // foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
-                //     var key = cloudBuildManifestDictItem.Key;
-                //     var val = cloudBuildManifestDictItem.Value;
-                //     buildParamDict[key] = val;
-                // }
             }
             #endif
         }
