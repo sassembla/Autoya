@@ -204,6 +204,7 @@ namespace AutoyaFramework.AppManifest {
                 var cloudBuildManifest = Resources.Load<UnityEngine.CloudBuild.BuildManifestObject>("UnityCloudBuildManifest.scriptable");
                 var cloudBuildManifestDict = cloudBuildManifest.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray();
+                Debug.Log("cloudBuildManifestDict len:" + cloudBuildManifestDict.Length);
                 foreach (var s in cloudBuildManifestDict) {
                     Debug.Log("cloudBuildManifestDict s:" + s);
                 }
