@@ -198,40 +198,24 @@ namespace AutoyaFramework.AppManifest {
             // set parameter from application.
             buildParamDict["unityVersion"] = Application.unityVersion;            
 
-            // #if UNITY_CLOUD_BUILD
+            #if UNITY_CLOUD_BUILD
             {
-                try {
-                    // overwrite by cloud build parameter if exist.
-                    var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.json").text;
-                    try {
-                        Debug.Log("cloudBuildManifestStr:" + cloudBuildManifestStr);
-                        var cloudBuildManifest = JsonUtility.FromJson<CloudBuildManifest>(cloudBuildManifestStr);
-                        
-                        try {
-                            var cloudBuildManifestDict = cloudBuildManifest.GetType()
-                                .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray()
-                                .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
-
-                            foreach (var s in cloudBuildManifestDict) {
-                                Debug.Log("cloudBuildManifestDict s:" + s);
-                            }
-
-                            foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
-                                var key = cloudBuildManifestDictItem.Key;
-                                var val = cloudBuildManifestDictItem.Value;
-                                buildParamDict[key] = val;
-                            }
-                        } catch (Exception e3) {
-                            Debug.Log("e3:" + e3);
-                        }
-                    } catch (Exception e2) {
-                        Debug.Log("e2:" + e2);
-                    }
-                } catch (Exception e) {
-                    Debug.Log("e:" + e);
+                // overwrite by cloud build parameter if exist.
+                var cloudBuildManifestStr = Resources.Load<TextAsset>("UnityCloudBuildManifest.json").text;
+                var cloudBuildManifest = JsonUtility.FromJson<CloudBuildManifest>(cloudBuildManifestStr);
+                
+                var cloudBuildManifestDict = cloudBuildManifest.GetType()
+                    .GetFields(BindingFlags.Instance | BindingFlags.Public).ToArray()
+                    .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(cloudBuildManifest));
+                
+                // overwrite.
+                foreach (var cloudBuildManifestDictItem in cloudBuildManifestDict) {
+                    var key = cloudBuildManifestDictItem.Key;
+                    var val = cloudBuildManifestDictItem.Value;
+                    buildParamDict[key] = val;
                 }
             }
-            // #endif
+            #endif
         }
 
         private Dictionary<string, string> LoadBuildParamDict (out BuildManifestType obj) {
