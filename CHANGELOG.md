@@ -6,6 +6,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.19] - 2017/10/13
+### Added
+- AppManifest feature now supports cloudbuild param.
+
 ## [0.8.18] - 2017/10/11
 ### Changed
 - AssetBundles feature signatures and related OverridePoints are dynamically changed.
@@ -53,7 +57,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.18...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.19...HEAD
+[0.8.19]: https://github.com/sassembla/autoya/compare/0.8.18...0.8.19
 [0.8.18]: https://github.com/sassembla/autoya/compare/0.8.17...0.8.18
 [0.8.17]: https://github.com/sassembla/autoya/compare/0.8.16...0.8.17
 [0.8.16]: https://github.com/sassembla/autoya/compare/0.8.15...0.8.16
