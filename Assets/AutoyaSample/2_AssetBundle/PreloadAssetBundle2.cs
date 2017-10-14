@@ -23,7 +23,7 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		Autoya.AssetBundle_DownloadAssetBundleListIfNeed(status => {}, (code, reason, autoyaStatus) => {});
 
 		// wait downloading assetBundleList.
-		while (!Autoya.AssetBundle_IsAssetBundleReady()) {
+		while (!Autoya.AssetBundle_IsAssetBundleFeatureReady()) {
 			yield return null;
 		}
 
@@ -45,7 +45,9 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		// download preloadList from web then preload described assetBundles.
 		Autoya.AssetBundle_Preload(
 			preloadListPath,
-			ShouldContinuePreloading,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				Debug.Log("progress:" + progress);
 			},

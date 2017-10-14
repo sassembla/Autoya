@@ -19,10 +19,6 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 
 	private AssetBundleLoader loader;
 	
-	private IEnumerator<bool> ShouldContinueCor (string[] willLoadBundleNames) {
-		yield return true;
-	}
-
 	[MSetup] public IEnumerator Setup () {
 		assetBundlePreloader = new AssetBundlePreloader();
 
@@ -55,7 +51,9 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList.json", 
-			ShouldContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				True(progress == 1.0, "not match. progress:" + progress);
 			},
@@ -83,7 +81,9 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList.json", 
-			ShouldContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				Fail("should not be progress.");
 			},
@@ -109,7 +109,9 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList2.json", 
-			ShouldContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				// 1.0
 				True(progress == 1.0, "not match. progress:" + progress);
@@ -134,7 +136,9 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList2.json", 
-			ShouldContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				// 0.5, 1 の2つが来るはず
 				True(
@@ -167,7 +171,9 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return assetBundlePreloader.Preload(
 			loader,
 			preloadList,
-			ShouldContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				doneCount++;
 			},
@@ -190,7 +196,9 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList2.json", 
-			ShouldContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				// 0.5, 1 の2つが来るはず
 				True(
@@ -214,16 +222,14 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		WaitUntil(() => doneCount == 2, () => {throw new TimeoutException("not yet done. doneCount:" + doneCount);});
 	}
 
-	private IEnumerator<bool> ShouldNotContinueCor (string[] bundleNames) {
-		yield return false;
-	}
-
 	[MTest] public IEnumerator DiscontinueGetPreloading () {
 		var done = false;
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList2.json", 
-			ShouldNotContinueCor,
+			(willLoadBundleNames, proceed, cancel) => {
+				cancel();
+			},
 			progress => {
 				Fail("should not come here.");
 			},
@@ -241,18 +247,17 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner {
 		yield return WaitUntil(() => done, () => {throw new TimeoutException("not yet done.");});
 	}
 
-	private IEnumerator<bool> ShouldContinueCorWithWeight (string[] bundleNames) {
-		var totalWeight = Autoya.AssetBundle_GetAssetBundlesWeight(bundleNames);
-		Debug.Log("totalWeight:" + totalWeight);
-		yield return true;
-	}
-
 	[MTest] public IEnumerator GetPreloadingAssetBundleWeight () {
 		var doneCount = 0;
 		yield return assetBundlePreloader.Preload(
 			loader,
 			AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + "1.0.0/sample.preloadList2.json", 
-			ShouldContinueCorWithWeight,
+			(willLoadBundleNames, proceed, cancel) => {
+				True(0 < willLoadBundleNames.Length);
+				var totalWeight = loader.GetAssetBundlesWeight(willLoadBundleNames);
+				True(0 < totalWeight);
+				proceed();
+			},
 			progress => {
 				doneCount++;
 			},

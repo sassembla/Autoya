@@ -65,7 +65,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
             () => {throw new TimeoutException("too late.");}
         );
 
-        var listExists = Autoya.AssetBundle_IsAssetBundleReady();
+        var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
     }
     [MTeardown] public IEnumerator Teardown () {
@@ -86,7 +86,7 @@ public class AssetUpdateTests : MiyamasuTestRunner {
             () => {throw new TimeoutException("too late.");}
         );
 
-        var listExists = Autoya.AssetBundle_IsAssetBundleReady();
+        var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
     }
 
