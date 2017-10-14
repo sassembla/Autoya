@@ -22,7 +22,7 @@ public class PreloadAssetBundle : MonoBehaviour {
 		Autoya.AssetBundle_DownloadAssetBundleListIfNeed(status => {}, (code, reason, autoyaStatus) => {});
 
 		// wait downloading assetBundleList.
-		while (!Autoya.AssetBundle_IsAssetBundleReady()) {
+		while (!Autoya.AssetBundle_IsAssetBundleFeatureReady()) {
 			yield return null;
 		}
 
@@ -37,9 +37,11 @@ public class PreloadAssetBundle : MonoBehaviour {
 		var assetBundleNames = assetBundleList.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
 		var newPreloadList = new PreloadList("samplePreloadList", assetBundleNames);
 
-		Autoya.AssetBundle_Preload(
+		Autoya.AssetBundle_PreloadByList(
 			newPreloadList,
-			ShouldContinuePreloading,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				Debug.Log("progress:" + progress);
 			},

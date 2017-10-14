@@ -61,7 +61,7 @@ namespace AutoyaFramework {
 		}
 
 
-		public static bool AssetBundle_IsAssetBundleReady () {
+		public static bool AssetBundle_IsAssetBundleFeatureReady () {
 			if (autoya == null) {
 				return false;
 			}
@@ -419,11 +419,7 @@ namespace AutoyaFramework {
 				return 0L;
 			}
 
-			var list = AssetBundle_AssetBundleList();
-			if (list != null) {
-				return list.assetBundles.Where(bundleInfo => bundleNames.Contains(bundleInfo.bundleName)).Sum(b => b.size);
-			}
-			return 0L;
+			return autoya._assetBundleLoader.GetAssetBundlesWeight(bundleNames);
 		}
 
 
@@ -653,12 +649,12 @@ namespace AutoyaFramework {
 			download the list of prelaodable assetBundle names from preloadListUrl, then download assetBundles.
 			this feature will download "not downloaded" assetBundles only.
 
-			shouldContinuePreloading:
-				you can set the func to this param for getting "will be download assetBundles names".
-				then if "yield return true", download will progress. 
-				else, download will be stopped.
+			onBeforePreloading:
+				you can set the Action to this param for getting "will be download assetBundles names".
+				then if execute proceed(), download will be started. 
+				else, execute cancel(), download will be cancelled.
 		 */
-        public static void AssetBundle_Preload (string preloadListUrl, Func<string[], IEnumerator<bool>> shouldContinuePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
+        public static void AssetBundle_Preload (string preloadListUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=AssetBundlesSettings.TIMEOUT_SEC) {
 			var cont = CheckAssetBundlesFeatureCondition(
 				(code, reason) => {
 					preloadListDownloadFailed(-(int)code, reason, new AutoyaStatus());
@@ -675,7 +671,7 @@ namespace AutoyaFramework {
 					autoya._assetBundlePreloader.Preload(
 						loader,
 						url, 
-						shouldContinuePreloading,
+						onBeforePreloading,
 						progress,
 						done,
 						preloadListDownloadFailed,
@@ -695,12 +691,12 @@ namespace AutoyaFramework {
 			download assetBundles by the preloadList, then download assetBundles.
 			this feature will download "not downloaded" assetBundles only.
 
-			shouldContinuePreloading:
-				you can set the func to this param for getting "will be download assetBundles names".
-				then if "yield return true", download will progress. 
-				else, download will be stopped.
+			onBeforePreloading:
+				you can set the Action to this param for getting "will be download assetBundles names".
+				then if execute proceed(), download will be started. 
+				else, execute cancel(), download will be cancelled
 		 */
-		public static void AssetBundle_Preload (PreloadList preloadList, Func<string[], IEnumerator<bool>> shouldContinePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
+		public static void AssetBundle_PreloadByList (PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec=0) {
 			var cont = CheckAssetBundlesFeatureCondition(
 				(code, reason) => {
 					preloadListDownloadFailed((int)code, reason, new AutoyaStatus());
@@ -716,7 +712,7 @@ namespace AutoyaFramework {
 					autoya._assetBundlePreloader.Preload(
 						loader,
 						preloadList,
-						shouldContinePreloading,
+						onBeforePreloading,
 						progress,
 						done,
 						preloadListDownloadFailed,

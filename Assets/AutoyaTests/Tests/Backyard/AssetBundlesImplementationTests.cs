@@ -35,7 +35,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             () => {throw new TimeoutException("too late.");}
         );
 
-        var listExists = Autoya.AssetBundle_IsAssetBundleReady();
+        var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
 
         True(Caching.CleanCache());
@@ -67,15 +67,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             () => {throw new TimeoutException("too late.");}
         );
 
-        var listExists = Autoya.AssetBundle_IsAssetBundleReady();
+        var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
 
         True(Caching.CleanCache());
     }
 
-    private IEnumerator<bool> ShouldContinuePreloading (string[] bundleNames) {
-        yield return true;
-    }
 
     [MTest] public IEnumerator GetAssetBundleListFromDebugMethod () {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
@@ -226,13 +223,15 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
     }
 
     [MTest] public IEnumerator PreloadAssetBundleBeforeGetAssetBundleListWillFail () {
-        True(!Autoya.AssetBundle_IsAssetBundleReady(), "not match.");
+        True(!Autoya.AssetBundle_IsAssetBundleFeatureReady(), "not match.");
         
         var done = false;
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList.json",
-            ShouldContinuePreloading,
+            (willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
             progress => {
 
             },
@@ -262,7 +261,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList.json",
-            ShouldContinuePreloading,
+            (willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
             progress => {
 
             },
@@ -290,7 +291,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList2.json",
-            ShouldContinuePreloading,
+            (willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
             progress => {
 
             },
@@ -323,9 +326,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         // rewrite. set 1st content of bundleName.
         preloadList.bundleNames = new string[]{preloadList.bundleNames[0]};
         
-        Autoya.AssetBundle_Preload(
+        Autoya.AssetBundle_PreloadByList(
             preloadList,
-            ShouldContinuePreloading,
+            (willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
             progress => {
 
             },
@@ -354,9 +359,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var list = Autoya.AssetBundle_AssetBundleList();
         var preloadList = new PreloadList("test", list);
         
-        Autoya.AssetBundle_Preload(
+        Autoya.AssetBundle_PreloadByList(
             preloadList,
-            ShouldContinuePreloading,
+            (willLoadBundleNames, proceed, cancel) => {
+                proceed();
+            },
             progress => {
 
             },
