@@ -73,4 +73,6 @@ unitypackage is ready!
 all example usage is in Assets/AutoyaSamples folder.
 
 ## Document
-[Modules](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules)
+[Autoya API and Modules](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch)
+
+
