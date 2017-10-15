@@ -361,6 +361,11 @@ namespace AutoyaFramework {
 			return requestHeader;
 		}
 
+
+		/*
+			Application version control.
+		 */
+
 		/**
 			do something for server requested client to download latest app from store.
 		 */
