@@ -5,7 +5,7 @@
 ## 概要
 
 AssetBundleを扱うモジュール。  
-AssetBundleに関してのAPIを提供する。  
+AssetBundleに関しての機能を提供する。  
 
 ---
 
@@ -217,7 +217,7 @@ Asset使用前に部分的にDLを済ませたい、
 
 +++
 
-[PreloadList]()型のデータから  
+[PreloadList](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundlePreloader.cs#L21)型のデータから  
 複数のABを纏めてDLする機能を提供する。
 
 ```
@@ -298,29 +298,3 @@ Preloadを継続するかキャンセルするか、
 AB名一覧にアクセスすることができる。
 
 DL前に取得ABの総重量を計算する等に便利。
----
-
-## APIS
-
-この形式でAPI Doc作らん方がいいかも。
-1. C#のコメント形式を書く
-2. mdに変換して貼る とか。やってみよう。
-
-* AssetBundleList
-* DeleteAllStorageCache
-* DiscardAssetBundleList
-* DownloadAssetBundleListIfNeed
-* GetAssetBundlesWeight
-* GetCurrentAssetBundleListUrl
-* IsAssetBundleExist
-* IsAssetBundleFeatureReady
-* IsAssetExist
-* LoadAsset
-* NotCachedBundleNames
-* PostponedNewAssetBundleList
-* Preload
-* PreloadByList
-* UnloadOnMemoryAsset
-* UnloadOnMemoryAssetBundle
-* UnloadOnMemoryAssetBundles
-
