@@ -35,6 +35,16 @@ namespace AutoyaFramework {
 			Initializer
 		 */
 		private void InitializeAssetBundleFeature () {
+			// initialize AssetBundleListDownloader.
+			AssetBundleListDownloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
+				httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+			};
+			AssetBundleListDownloader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) => {
+				return assetBundleGetRequestHeaderDelegate(p1, p2);
+			};
+
+			_assetBundleListDownloader = new AssetBundleListDownloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+			 
 			// check if assetBundleList are stored.
 			var listCandidate = LoadAssetBundleListFromStorage();
 
@@ -121,8 +131,7 @@ namespace AutoyaFramework {
 		/*
 			Downloader
 		*/
-
-		private AssetBundleListDownloader _assetBundleListDownloader = new AssetBundleListDownloader();
+		private AssetBundleListDownloader _assetBundleListDownloader;
 		private AssetBundleList _postponedNewAssetBundleList;
 
 		private CurrentUsingBundleCondition GetCurrentAssetBundleUsingCondition (AssetBundleList newList) {
@@ -540,7 +549,7 @@ namespace AutoyaFramework {
 
 			autoya.BundleLoaderExecute(act);
 		}
-
+		
 		public static void AssetBundle_UnloadOnMemoryAssetBundle (string bundleName) {
 			var cont = CheckAssetBundlesFeatureCondition(
 				(code, reason) => {
@@ -595,7 +604,7 @@ namespace AutoyaFramework {
 		}
 
 		private void ReadyLoaderAndPreloader () {
-			// new or renew AssetBundleLoader.
+			// initialize AssetBundleLoader.
 			{
 				AssetBundleLoader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
 					httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
@@ -607,7 +616,7 @@ namespace AutoyaFramework {
 				_assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
 			}
 
-			// new or renew AssetBundlePreloader.
+			// initialize AssetBundlePreloader.
 			{
 				AssetBundlePreloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
 					httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
