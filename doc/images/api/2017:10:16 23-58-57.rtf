@@ -1,0 +1,299 @@
+{\rtf1\ansi\ansicpg932\cocoartf1504\cocoasubrtf830
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red230\green230\blue230;}
+{\*\expandedcolortbl;;\csgray\c92143;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww22800\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b\fs24 \cf0 umls\
+\
+
+\b0 	{\field{\*\fldinst{HYPERLINK "http://sujoyu.github.io/plantuml-previewer/"}}{\fldrslt http://sujoyu.github.io/plantuml-previewer/}}
+\b \
+\
+\
+List
+\b0 \
+\
+\cb2 @startuml\
+:AssetBundle_DownloadAssetBundleListIfNeed;\
+:AssetBundleListDownloadUrl|\
+:LoadAssetBundleListFromStorage|\
+if (is list stored?) then (yes)\
+  :AB feature is ready\}\
+  stop\
+else (no)\
+  :OnAssetBundleListGetRequest|\
+  :responseHandling\}\
+  if (succeeded) then (yes)\
+    :StoreAssetBundleListToStorage|\
+  else (no)\
+    :(code, reason, autoyaStatus);\
+    stop\
+  endif\
+endif\
+\
+:AB feature is ready\}\
+stop\
+@enduml\
+\cb1 \
+\
+\
+
+\b Preload
+\b0 \
+\
+\cb2 @startuml\
+:AssetBundle_Preload;\
+:OnAssetBundlePreloadListGetRequest|\
+\
+:responseHandling\}\
+if (succeeded) then (yes)\
+    -> succeeded to preload AB.;\
+    stop\
+else (no)\
+    :(code, reason, autoyaStatus);\
+    stop\
+endif\
+\
+@enduml\
+\cb1 \
+\
+
+\b LoadAsset
+\b0 \
+\
+\cb2 @startuml\
+:AssetBundle_LoadAsset<T>;\
+:OnAssetBundleGetRequest|\
+\
+:responseHandling\}\
+if (succeeded) then (yes)\
+    -> succeeded to load asset from AB.;\
+    stop\
+else (no)\
+    :(code, reason, autoyaStatus);\
+    stop\
+endif\
+\
+@enduml\
+\cb1 \
+\
+
+\b UpdateABList
+\b0 \
+\
+\cb2 @startuml\
+\
+:Autoya responseHandling\}\
+if (detect "resversion" in any response header) then (yes)\
+    :OnRequestNewAssetBundleList|\
+\
+    if (should request new ABList) then (yes)\
+        -> start downloading new ABList.;\
+        \
+        if (succeeded to get new ABList from server) then (yes) \
+            :ShouldUpdateToNewAssetBundleList|\
+            if (should update ABList to new one) then (yes)\
+                :StoreAssetBundleListToStorage|\
+                ->succeeded to update ABList.;\
+                stop\
+            else (no, list update is postponed.)\
+                \
+            endif\
+        else (list update is postponed.)\
+            stop\
+        endif\
+        \
+    else (list update is postponed.)\
+        stop\
+    endif\
+else (no, nothing updated about ABList.)\
+    stop\
+endif\
+\
+stop\
+@enduml\
+\cb1 \
+\
+
+\b Purchase ready
+\b0 \
+\
+\cb2 @startuml\
+\
+:from \
+Autoya constructor.\}\
+\
+-[dashed]->;\
+\
+while (succeeded to ready Purchase Feature) is (no)\
+    :OnPurchaseReadyFailed|\
+    -[dashed]->retry \
+    ready purcahse feature \
+    manually.;\
+    :Purchase_NeedAttemptReadyPurchase;\
+    if (return) then (true)\
+        :Purchase_AttemptReadyPurchase;\
+        \
+    else (false)\
+        stop\
+    endif\
+endwhile (yes)\
+\
+\
+:OnLoadProductResponse|\
+:OnPurchaseReady|\
+\
+\
+@enduml\
+\cb1 \
+\
+
+\b Purchase
+\b0 \
+\
+\cb2 :Purchase;\
+\
+:OnTicketResponse|\
+\
+:purchase product Y/N \
+by the player\}\
+\
+if (purchase product) then (yes)\
+\
+    while (purchase succeeded) is (no)\
+        :retry sending purchased item info\
+        to server N times.\}\
+        if (retry exceeded) then (yes)\
+            :emit purchase failed handler\}\
+            stop\
+        else (no)\
+        endif\
+    endwhile (succeeded to purchase.)\
+    :emit purchased handler\}\
+else (no, cancel purchase.)\
+\
+endif\
+\
+stop\
+\cb1 \
+\
+\
+
+\b HTTP
+\b0 \
+\
+\cb2 :HTTP_X;\
+\
+:OnHttpRequest|\
+\
+:responseHandling\}\
+\
+:OnValidateHttpResponse|\
+\
+if (succeeded) then (yes)\
+    :emit succeeded handler.\
+    connectionId, data(string or byte[])\}\
+    stop\
+else (no) \
+    :emit failed handler.\
+    connectionId, code, reason, autoyaStatus\}\
+    stop\
+endif\
+\cb1 \
+\
+
+\b Boot Auth
+\b0 \
+\
+\cb2 :Autoya boot\}\
+\
+:IsFirstBoot|\
+\
+    \
+if (return) then (true)\
+\
+\
+    :OnBootAuthRequest|\
+    :OnBootAuthResponse|\
+    \
+    while (start boot auth) is (no)\
+        \
+        if (retry exceed N times) then (exceed)\
+            :Auth_OnBootAuthFailed;\
+            stop\
+        else (request again.)\
+        endif\
+    endwhile (succeeded)\
+    \
+else (false)\
+\
+endif\
+\
+stop\
+\cb1 \
+\
+
+\b Auth refresh
+\b0 \
+\
+\cb2 :Autoya responseHandling\}\
+\
+:IsUnauthorized|\
+\
+if (return) then (true)\
+\
+    :OnTokenRefreshRequest|\
+    :OnTokenRefreshResponse|\
+    \
+    while (succeeded to refresh token) is (no)\
+        \
+        if (retry exceed N times) then (exceed)\
+            :Auth_SetOnRefreshAuthFailed;\
+            stop\
+        else (request again.)\
+        endif\
+    endwhile (succeeded)\
+    :Auth_SetOnAuthenticated;\
+else (false, nothing to do.)\
+\
+endif\
+\
+stop\
+\cb1 \
+\
+
+\b AppUpdate
+\b0 \
+\
+\cb2 :Autoya responseHandling\}\
+if (detect "appversion" in any response header) then (yes)\
+    :OnNewAppRequested|\
+\
+else (no, nothing updated about App.)\
+    \
+endif\
+    \
+stop\
+@enduml\
+\cb1 \
+\
+\
+
+\b Maintenance
+\b0 \
+\
+\cb2 :Autoya responseHandling\}\
+\
+:IsUnderMaintenance|\
+\
+if (return) then (true)\
+    :Maintenance_SetOnMaintenance;\
+else (false, nothing to do.)\
+\
+endif\
+\
+stop\
+\cb1 \
+}
