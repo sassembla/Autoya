@@ -82,22 +82,6 @@ namespace AutoyaFramework {
 		}
 
 		/**
-			on logout handler.
-			after here, you can call "Autoya.Auth_AttemptAuthentication()". then "OnBootAuthRequest()" will be called.
-		*/
-		private void OnLogout () {
-			// do logout things here.
-		}
-
-		/**
-			handler of delete all user data.
-			after here, you can call "Autoya.Auth_AttemptAuthentication()". then "IsFirstBoot()" will be called.
-		*/
-		private void OnDeleteAllUserData () {
-			Autoya.Persist_DeleteByDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-		}
-
-		/**
 			check if server response is unauthorized or not.
 		*/
 		private bool IsUnauthorized (int httpCode, Dictionary<string, string> responseHeader) {
@@ -348,14 +332,23 @@ namespace AutoyaFramework {
 			 */
 			return true;
 		};
+
+		/**
+			return request headers for getting AssetBundleList.
+		 */
+		private Dictionary<string, string> OnAssetBundleListGetRequest (string url, Dictionary<string, string> requestHeader) {
+			return requestHeader;
+		}
+
+		/**
+			return request headers for getting AssetBundlePreloadList.
+		 */
+		private Dictionary<string, string> OnAssetBundlePreloadListGetRequest (string url, Dictionary<string, string> requestHeader) {
+			return requestHeader;
+		}
 		
 		/**
-			request headers of AssetBundles features.
-
-			used for 
-				assetBundleList downloading request, 
-				assetBundle preloading request, 
-				assetBundle downloading request.
+			return request headers for getting AssetBundles.
 		 */
 		private Dictionary<string, string> OnAssetBundleGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;

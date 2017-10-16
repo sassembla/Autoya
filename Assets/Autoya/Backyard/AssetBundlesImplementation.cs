@@ -39,8 +39,8 @@ namespace AutoyaFramework {
 			AssetBundleListDownloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) => {
 				httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
 			};
-			AssetBundleListDownloader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) => {
-				return assetBundleGetRequestHeaderDelegate(p1, p2);
+			AssetBundleListDownloader.AssetBundleListGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) => {
+				return assetBundleListGetRequestHeaderDelegate(p1, p2);
 			};
 
 			_assetBundleListDownloader = new AssetBundleListDownloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);

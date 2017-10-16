@@ -21,8 +21,8 @@ namespace AutoyaFramework.AssetBundles {
 		/*
 			delegate for supply assetBundle get request header geneate func for modules.
 		*/
-		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
-		private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+		public delegate Dictionary<string, string> AssetBundleListGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		private readonly AssetBundleListGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
 
         
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
@@ -42,7 +42,7 @@ namespace AutoyaFramework.AssetBundles {
         /// </summary>
         /// <param name="requestHeader">Request header.</param>
         /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
-		public AssetBundleListDownloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
+		public AssetBundleListDownloader (AssetBundleListGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
 			if (requestHeader != null) {
 				this.assetBundleGetRequestHeaderDelegate = requestHeader;
 			} else {

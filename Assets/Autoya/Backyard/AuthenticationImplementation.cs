@@ -22,13 +22,23 @@ namespace AutoyaFramework {
 		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
 		
 		/*
+			delegate for supply assetBundleList get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundleListGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		/*
+			delegate for supply assetBundlePreloadList get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundlePreloadListGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		/*
 			delegate for supply assetBundle get request header geneate func for modules.
 		*/
 		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
 
 		private HttpRequestHeaderDelegate httpRequestHeaderDelegate;
         private HttpResponseHandlingDelegate httpResponseHandlingDelegate;
-        private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+        private AssetBundleListGetRequestHeaderDelegate assetBundleListGetRequestHeaderDelegate;
+		private AssetBundlePreloadListGetRequestHeaderDelegate assetBundlePreloadListGetRequestHeaderDelegate;
+		private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
 
 		private AuthRouter _autoyaAuthRouter;
 
@@ -38,8 +48,11 @@ namespace AutoyaFramework {
 
 		private void Authenticate (bool isFirstBoot, Action internalOnAuthenticated) {
 			this.httpRequestHeaderDelegate = OnHttpRequest;
-			this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
+
+			this.assetBundleListGetRequestHeaderDelegate = OnAssetBundleListGetRequest;
+			this.assetBundlePreloadListGetRequestHeaderDelegate = OnAssetBundlePreloadListGetRequest;
+			this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
 
 			Action onAuthSucceeded = () => {
 				internalOnAuthenticated();
@@ -612,17 +625,17 @@ namespace AutoyaFramework {
 			}
 
 			/**
-				attpemt to retry authentication flow.
+				attpemt to restart authentication flow.
 
 				this method is useful in these cases.
 					When first boot was failed and player saw that information, then player pushed to retry.
 						or
 					When token refreshing was failed and player saw that information, then player pushed to retry.
 			*/
-			public void RetryAuthentication () {
+			public bool RetryAuthentication () {
 				if (IsLogon()) {
 					// no fail detected. do nothing.
-					return;
+					return false;
 				}
 
 				switch (authState) {
@@ -630,16 +643,17 @@ namespace AutoyaFramework {
 					case AuthState.BootFailed: {
 						authState = AuthState.Booting;
 						mainthreadDispatcher.Commit(FirstBoot());
-						break;
+						return true;
+						
 					}
 					case AuthState.RefreshFailed: {
 						authState = AuthState.Refreshing;
 						mainthreadDispatcher.Commit(RefreshToken());
-						break;
+						return true;
 					}
 					default: {
 						// do nothing.
-						break;
+						return false;
 					}
 				}
 			}
@@ -857,50 +871,19 @@ namespace AutoyaFramework {
 			}
 		}
 
-		/**
-			delete all user data. and set to logout.
-		*/
-		public static void Auth_DeleteAllUserData () {
-			if (autoya._autoyaAuthRouter.IsLogon()) { 
-				autoya.OnDeleteAllUserData();
-				autoya._autoyaAuthRouter.Logout();
-			}
-		}
 
 		public static bool Auth_IsAuthenticated () {
 			return autoya._autoyaAuthRouter.IsLogon();
 		}
 
-		public static void Auth_AttemptAuthentication () {
-			autoya._autoyaAuthRouter.RetryAuthentication();
+		public static bool Auth_AttemptAuthenticationIfNeed () {
+			return autoya._autoyaAuthRouter.RetryAuthentication();
 		}
 
 		public static void Auth_Logout () {
-			if (autoya._autoyaAuthRouter.IsLogon()) { 
-				autoya.OnLogout();
+			if (autoya._autoyaAuthRouter.IsLogon()) {
 				autoya._autoyaAuthRouter.Logout();
 			}
 		}
-		
-		/*
-			test methods.
-		*/
-
-		#if UNITY_EDITOR
-		public static void Auth_Test_CreateAuthError () {
-			/*
-				generate fake response for reproduce token expired situation.
-			*/
-			autoya.HttpResponseHandling(
-				"Auth_Test_AccidentialLogout_ConnectionId", 
-				new Dictionary<string, string>(),
-				401, 
-				string.Empty,
-				"Auth_Test_AccidentialLogout test error", 
-				(conId, data) => {}, 
-				(conId, code, reason, autoyaStatus) => {}
-			);
-		}
-		#endif
 	}
 }

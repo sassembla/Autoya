@@ -60,12 +60,12 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	}
 
 	[MTest] public IEnumerator DeleteAllUserData () {
-		Autoya.Auth_DeleteAllUserData();
+		Autoya.Auth_Logout();
 		
 		var authenticated = Autoya.Auth_IsAuthenticated();
 		True(!authenticated, "not deleted.");
 
-		Autoya.Auth_AttemptAuthentication();
+		Autoya.Auth_AttemptAuthenticationIfNeed();
 		
 		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
@@ -76,7 +76,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	[MTest] public IEnumerator HandleBootAuthFailed () {
 		Autoya.forceFailFirstBoot = true;
 
-		Autoya.Auth_DeleteAllUserData();
+		Autoya.Auth_Logout();
 		
 		var bootAuthFailHandled = false;
 		Autoya.Auth_SetOnBootAuthFailed(
@@ -85,7 +85,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 
-		Autoya.Auth_AttemptAuthentication();
+		Autoya.Auth_AttemptAuthenticationIfNeed();
 		
 		yield return WaitUntil(
 			() => bootAuthFailHandled,
@@ -99,7 +99,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	[MTest] public IEnumerator HandleBootAuthFailedThenAttemptAuthentication () {
 		Autoya.forceFailFirstBoot = true;
 
-		Autoya.Auth_DeleteAllUserData();
+		Autoya.Auth_Logout();
 		
 		var bootAuthFailHandled = false;
 		Autoya.Auth_SetOnBootAuthFailed(
@@ -108,7 +108,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 			}
 		);
 		
-		Autoya.Auth_AttemptAuthentication();
+		Autoya.Auth_AttemptAuthenticationIfNeed();
 		
 		yield return WaitUntil(
 			() => bootAuthFailHandled,
@@ -118,7 +118,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		
 		Autoya.forceFailFirstBoot = false;
 
-		Autoya.Auth_AttemptAuthentication();
+		Autoya.Auth_AttemptAuthenticationIfNeed();
 		
 		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
@@ -129,7 +129,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 	[MTest] public IEnumerator HandleLogoutThenAuthenticationAttemptSucceeded () {
 		Autoya.Auth_Logout();
 
-		Autoya.Auth_AttemptAuthentication();
+		Autoya.Auth_AttemptAuthenticationIfNeed();
 
 		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
@@ -205,7 +205,7 @@ public class AuthImplementationTests : MiyamasuTestRunner {
 		
 		Autoya.forceFailTokenRefresh = false;
 		
-		Autoya.Auth_AttemptAuthentication();
+		Autoya.Auth_AttemptAuthenticationIfNeed();
 		
 		yield return WaitUntil(
 			() => Autoya.Auth_IsAuthenticated(),
