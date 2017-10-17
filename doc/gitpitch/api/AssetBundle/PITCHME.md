@@ -7,15 +7,19 @@
 AssetBundle関連のAPI  
 AssetBundleに関しての機能を提供する。  
 
-+++
-
-5つの機構がある。
-
 * [List機構](#/2)
 * [Preload機構](#/3)
 * [LoadAsset機構](#/4)
-* [独立したState](#/22)  
-* [responseHeaderによるList/ABの自動更新](#/23)
+* [独立したState](#/25)  
+* [responseHeaderによるList/ABの自動更新](#/26)
+
++++
+
+**MethodsとOverridePoints**
+
+MethodsはAutoya.経由で使えるメソッド、  
+OverridePointsはデフォルト挙動を変更する  
+ための変更点を記述する箇所になっている。
 
 ---
 
@@ -26,19 +30,24 @@ AssetBundleに関しての機能を提供する。
 * [AssetBundle_DownloadAssetBundleListIfNeed](#/5)
 * [AssetBundle_IsAssetBundleFeatureReady](#/6)
 * [AssetBundle_AssetBundleList](#/7)
-* [AssetBundle_DeleteAssetBundleListFromStorage](#/8)
+* [AssetBundle_DiscardAssetBundleList](#/8)
+
++++
 
 **OverridePoints**
 
-* [AssetBundleListDownloadUrl](#/9)
-* [OnAssetBundleListGetRequest](#/11)
-* [LoadAssetBundleListFromStorage](#/11)
-* [StoreAssetBundleListToStorage](#/12)
+* [OverridePoints/AssetBundleListDownloadUrl](#/9)
+* [OverridePoints/OnAssetBundleListGetRequest](#/11)
+* [OverridePoints/LoadAssetBundleListFromStorage](#/11)
+* [OverridePoints/StoreAssetBundleListToStorage](#/12)
+* [OverridePoints/DeleteAssetBundleListFromStorage](#/13)
+* [OverridePoints/OnRequestNewAssetBundleList](#/14)
+* [OverridePoints/ShouldUpdateToNewAssetBundleList](#/15)
  
 +++
 
 Appで現在DL可能な全てのAssetBundle(AB)の  
-情報が入ったListを制御するAPI。
+情報が入ったList(ABList)を制御するAPI。
 
 Listを取得することで、AB関連の全APIが  
 使用可能になる。
@@ -48,12 +57,12 @@ Listを取得することで、AB関連の全APIが
 ## Preload feature
 **Methods**
 
-* [AssetBundle_Preload](#/13)
-* [AssetBundle_PreloadByList](#/14)
+* [AssetBundle_Preload](#/16)
+* [AssetBundle_PreloadByList](#/17)
 
 **OverridePoints**
 
-* [OnAssetBundlePreloadListGetRequest](#/15)
+* [OnAssetBundlePreloadListGetRequest](#/18)
 
 +++
 
@@ -74,15 +83,15 @@ urlからPLを取得->Preloadさせることができる。
 
 **Methods**
 
-* [AssetBundle_LoadAsset[T]](#/16)
-* [AssetBundle_UnloadOnMemoryAssetBundles](#/17)
-* [AssetBundle_UnloadOnMemoryAssetBundle](#/18)
-* [AssetBundle_UnloadOnMemoryAsset](#/19)
-* [AssetBundle_DeleteAllStorageCache](#/20)
+* [AssetBundle_LoadAsset[T]](#/17)
+* [AssetBundle_UnloadOnMemoryAssetBundles](#/20)
+* [AssetBundle_UnloadOnMemoryAssetBundle](#/21)
+* [AssetBundle_UnloadOnMemoryAsset](#/22)
+* [AssetBundle_DeleteAllStorageCache](#/23)
 
 **OverridePoints**
 
-* [OnAssetBundleGetRequest](#/21)
+* [OnAssetBundleGetRequest](#/24)
 
 +++
 
@@ -95,77 +104,223 @@ DL -> 展開までを自動で行う。
 
 +++
 
+## ABのlifetime
+この機構で扱われるABのライフタイムは以下。
+
+
+
++++
+
 そのほか、端末にDL済みのABの削除、  
 メモリに展開されたABのunloadなどを行う。
 
 ---
 
-AssetBundle_DownloadAssetBundleListIfNeed
+**AssetBundle_DownloadAssetBundleListIfNeed**
+
+必要であればABListを特定のURLから取得、  
+端末内に保持する。
+
++++
+
+(このへんにmdDoc)
+
++++
+
+![img](https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_list.png)
 
 ---
 
-AssetBundle_IsAssetBundleFeatureReady
+**AssetBundle_IsAssetBundleFeatureReady**
+
+ABを使用できる状態であればtrueを返す。  
+そうでなければfalseを返す。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_AssetBundleList
+**AssetBundle_AssetBundleList**
+
+現在保持しているABListを返す。  
+もし保持していなければ空のABListを返す。  
+
+(空のaBListは、.Exists()がfalseを返す。)
+
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_DeleteAssetBundleListFromStorage
+**AssetBundle_DiscardAssetBundleList**
+
+現在保持されているABListを削除する。  
+保持されているABデータは一切変更されない。
+
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundleListDownloadUrl
+**OverridePoints/AssetBundleListDownloadUrl**
+
+[AssetBundle_DownloadAssetBundleListIfNeed](#/5)  
+に対してリスト取得用のURLを提供する。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-OnAssetBundleListGetRequest
+**OverridePoints/OnAssetBundleListGetRequest**
+
+[AssetBundle_DownloadAssetBundleListIfNeed](#/5)  
+で外部からリストを取得する際のパラメータを指定する。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-LoadAssetBundleListFromStorage
+**OverridePoints/LoadAssetBundleListFromStorage**
+
+[AssetBundle_DownloadAssetBundleListIfNeed](#/5)  
+等に対して、保存してあるABListを提供する。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-StoreAssetBundleListToStorage
+**OverridePoints/StoreAssetBundleListToStorage**
+
+ABListの更新時に呼ばれる。  
+ABListを上書き保存する。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_Preload
+**OverridePoints/DeleteAssetBundleListFromStorage**
+
+ABListの削除時に呼ばれる。  
+保存されているABListを削除する。
+
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_PreloadByList
+**OverridePoints/OnRequestNewAssetBundleList**
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-OnAssetBundlePreloadListGetRequest
+**OverridePoints/ShouldUpdateToNewAssetBundleList**
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_LoadAsset[T]
+**AssetBundle_Preload**
+
+urlからPreloadListを取得し、  
+記載されているABを端末へとキャッシュする。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_UnloadOnMemoryAssetBundles
+**AssetBundle_PreloadByList**
+
+listパラメータに記載されているABを  
+端末へとキャッシュする。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_UnloadOnMemoryAssetBundle
+**OverridePoints/OnAssetBundlePreloadListGetRequest**
+
+listパラメータに記載されているABを  
+CDNなどへリクエストする際のパラメータを指定する。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-AssetBundle_UnloadOnMemoryAsset
+**AssetBundle_LoadAsset[T]**
+
++++
+
+(このへんにmdDoc)
+
 
 ---
 
-AssetBundle_DeleteAllStorageCache
+**AssetBundle_UnloadOnMemoryAssetBundles**
+
++++
+
+(このへんにmdDoc)
 
 ---
 
-OnAssetBundleGetRequest
+**AssetBundle_UnloadOnMemoryAssetBundle**
 
++++
+
+(このへんにmdDoc)
+
+---
+
+**AssetBundle_UnloadOnMemoryAsset**
+
++++
+
+(このへんにmdDoc)
+
+---
+
+**AssetBundle_DeleteAllStorageCache**
+
++++
+
+(このへんにmdDoc)
+
+---
+
+**OverridePoints/OnAssetBundleGetRequest**
+
+CDNなどからABを取得する際のパラメータを指定する。
+
++++
+
+(このへんにmdDoc)
 
 ---
 
@@ -203,4 +358,10 @@ backgroundで特定ハンドラが着火し、
 
 +++
 
-(遷移を書く)
+![img](https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_update.png)
+
++++
+
+[OverridePoints/OnRequestNewAssetBundleList](#/)
+
+[OverridePoints/ShouldUpdateToNewAssetBundleList](#/)
