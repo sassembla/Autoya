@@ -543,11 +543,7 @@ namespace AutoyaFramework {
 				return;
 			}
 
-			Action act = () => {
-				autoya._assetBundleLoader.UnloadOnMemoryAssetBundles();
-			};
-
-			autoya.BundleLoaderExecute(act);
+			autoya._assetBundleLoader.UnloadOnMemoryAssetBundles();
 		}
 		
 		public static void AssetBundle_UnloadOnMemoryAssetBundle (string bundleName) {
@@ -561,11 +557,7 @@ namespace AutoyaFramework {
 				return;
 			}
 
-			Action act = () => {
-				autoya._assetBundleLoader.UnloadOnMemoryAssetBundle(bundleName);
-			};
-
-			autoya.BundleLoaderExecute(act);
+			autoya._assetBundleLoader.UnloadOnMemoryAssetBundle(bundleName);
 		}
 		
 		public static void AssetBundle_UnloadOnMemoryAsset (string assetName) {
@@ -579,11 +571,7 @@ namespace AutoyaFramework {
 				return;
 			}
 
-			Action act = () => {
-				autoya._assetBundleLoader.UnloadOnMemoryAsset(assetName);
-			};
-
-			autoya.BundleLoaderExecute(act);
+			autoya._assetBundleLoader.UnloadOnMemoryAsset(assetName);
 		}
 
 		private IEnumerator BundleLoaderCoroutine (Action execute, Action<AssetBundleLoadError, string, AutoyaStatus> failed) {
@@ -628,26 +616,6 @@ namespace AutoyaFramework {
 				_assetBundlePreloader = new AssetBundlePreloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
 			}
 		}
-
-		private void BundleLoaderExecute (Action execute) {
-			switch (assetBundleFeatState) {
-				case AssetBundlesFeatureState.Ready: {
-					// pass.
-					break;
-				}
-				case AssetBundlesFeatureState.ListLoading: {
-					throw new Exception("リストの準備中なんですよエラーみたいなの出す");
-					break;
-				}
-				case AssetBundlesFeatureState.None: {
-					throw new Exception("リストの準備ができてないんですよエラーみたいなの出す");
-					return;
-				}
-			}
-
-			execute();
-		}
-
 
 		/*
 			Preloader

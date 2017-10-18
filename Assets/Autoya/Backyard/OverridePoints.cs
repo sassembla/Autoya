@@ -163,7 +163,8 @@ namespace AutoyaFramework {
 		// string version.
 		private bool OnValidateHttpResponse (string method, string url, Dictionary<string, string> responseHeader, string data, out string reason) {
 			// let's validate http response if need.
-			if (true) {
+			var isValid = true;
+			if (isValid) {
 				reason = string.Empty;
 				return true;
 			} else {
@@ -175,7 +176,8 @@ namespace AutoyaFramework {
 		// byte[] version.
 		private bool OnValidateHttpResponse (string method, string url, Dictionary<string, string> responseHeader, byte[] data, out string reason) {
 			// let's validate http response if need.
-			if (true) {
+			var isValid = true;
+			if (isValid) {
 				reason = string.Empty;
 				return true;
 			} else {

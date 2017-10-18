@@ -13,7 +13,8 @@ namespace AutoyaFramework {
 		private FilePersistence _autoyaFilePersistence;
 
 		public static bool Persist_Update (string domain, string filePath, string data) {
-			if (false) {// estimate size over
+			var isEnough = false;
+			if (isEnough) {// estimate size over
 				Debug.LogError("Persist_Update save size overed.");
 				return false;
 			} 
@@ -21,7 +22,8 @@ namespace AutoyaFramework {
 		}
 
 		public static bool Persist_Append (string domain, string filePath, string data) {
-			if (false) {// estimate size over
+			var isEnough = false;
+			if (isEnough) {// estimate size over
 				Debug.LogError("Persist_Update save size overed.");
 				return false;
 			} 

@@ -217,7 +217,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
 		 */
 		#if UNITY_EDITOR
-		yield break;
+		var a = true;
+		if (a) yield break;
 		#elif UNITY_IOS || UNITY_ANDROID
 		// pass.
 		#else
@@ -328,7 +329,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
 		 */
 		#if UNITY_EDITOR
-		yield break;
+		var a = true;
+		if (a) yield break;
 		#elif UNITY_IOS || UNITY_ANDROID
 		// pass.
 		#else
