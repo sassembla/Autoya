@@ -9,13 +9,16 @@ typedef void (*UnityPurchasingCallback)(const char* subject, const char* payload
 @property (nonatomic, strong) NSString *id;
 @property (nonatomic, strong) NSString *storeSpecificId;
 @property (nonatomic, strong) NSString *type;
+
 @end
+
 
 @interface ReceiptRefresher : NSObject <SKRequestDelegate>
 
 @property (nonatomic, strong) void (^callback)(BOOL);
 
 @end
+
 
 @interface UnityPurchasing : NSObject <SKProductsRequestDelegate, SKPaymentTransactionObserver> {
     UnityPurchasingCallback messageCallback;
@@ -39,3 +42,4 @@ typedef void (*UnityPurchasingCallback)(const char* subject, const char* payload
 @property (nonatomic, copy, readwrite) NSString* applicationUsername;
 
 @end
+

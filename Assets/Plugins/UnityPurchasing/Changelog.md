@@ -1,3 +1,38 @@
+## [1.14.0] - 2017-09-18
+### Added
+- Codeless IAP - Added an `IAPListener` Component to extend Codeless IAP functionality. Normally with Codeless IAP, purchase events are dispatched to an `IAPButton` UI Component that is associated with a particular product. The `IAPListener` does not show any UI. It will receive purchase events that do not correspond to any active `IAPButton`.
+    - The active `IAPListener` is a fallback—it will receive any successful or failed purchase events (calls to `ProcessPurchase` or `OnPurchaseFailed`) that are _not_ handled by an active Codeless `IAPButton` Component. 
+    - When using the `IAPListener`, you should create it early in the lifecycle of your app, and not destroy it. By default, it will set its `GameObject` to not be destroyed when a new scene is loaded, by calling `DontDestroyOnLoad`. This behavior can be changed by setting the `dontDestroyOnLoad` field in the Inspector.
+    - If you use an `IAPListener`, it should be ready to handle purchase events at any time, for any product. Promo codes, interrupted purchases, and slow store behavior are only a few of the reasons why you might receive a purchase event when you are not showing a corresponding `IAPButton` to handle the event.
+    - Example use: If a purchase is completed successfully with the platform's app store but the user quits the app before the purchase is processed by Unity, Unity IAP will call `ProcessPurchase` the next time it is initialized—typically the next time the app is run. If your app creates an `IAPListener`, the `IAPListener` will be available to receive this `ProcessPurchase` callback, even if you are not yet ready to create and show an `IAPButton` in your UI.
+- Xiaomi - IAP Catalog emitted at build-time to APK when Xiaomi Mi Game Pay is the targeted Android store.
+- Xiaomi - Support multiple simultaneous calls to IUnityChannelExtensions.ConfirmPurchase and IUnityChannelExtensions.ValidateReceipt.
+
+### Changed
+- CloudMoolah - Upgraded to 2017-07-31 SDK. Compatible with the [2017 Cloud Moolah developer portal](https://dev.cloudmoolah.com/). Add `IMoolahConfiguration.notificationURL`. Removed deprecated `IMoolahExtensions.Login`, `IMoolahExtensions.FastRegister`, `IMoolahExtensions.RequestPayOut`. [Preliminary updated documentation](https://docs.google.com/document/d/1g-wI2gOc208tQCEPOxOrC0rYgZA0_S6qDUGOYyhmmYw) is available.
+- Receipt Validation Obfuscator - Improved UI for collecting Google Play License Keys for receipt validation.
+- Xiaomi - Removed deprecated MiProductCatalog.prop file generation in favor of MiGameProductCatalog.prop for Xiaomi Mi Game Pay Android targets.
+- IAPDemo - Guard PurchaseFailureReason.DuplicateTransaction enum usage to be on Unity 5.6 and higher.
+- Internal - Namespace more root-level incidental classes under UnityEngine.Purchasing or UnityEditor.Purchasing as appropriate.
+
+### Fixed
+- Invoke the onPurchaseFailed event on a Codeless IAP button if the button is clicked but the store was not initialized correctly
+
+## [1.13.3] - 2017-09-14
+### Fixed
+- Fixed a bug that caused some iOS 11 promoted in-app purchase attempts to fail when the app was not already running in the background
+
+## [1.13.2] - 2017-09-07
+### Added
+- Android Gradle - Optional Proguard configuration file to support Gradle release builds on Unity 2017.1+: "Assets/Plugins/Android/proguard-user.txt.OPTIONAL.txt". See contents of file for more detail.
+- Installer - Compatibility with Unity 2017.2's Build Settings > Android > Xiaomi Mi Game Center SDK package add button, avoiding duplicate class definitions if previously added to `Packages/manifest.json` (new Package Manager).
+
+### Fixed
+- Windows (UWP) Store - Updates error handling for failed purchases to correctly call `OnPurchaseFailed()` with an informative `PurchaseFailureReason`
+- Fixed prices that were incorrectly parsed when the device's culture specified a number format using a comma for the decimal separator
+- XiaomiMiPay - Limit product identifier length to 40 characters in IAP Catalog, matching store requirements.
+- Receipt Validation - Address aggressive class stripping NullReferenceException when validating receipt with preservation in Assets/Plugins/UnityPurchasing/scripts/link.xml.
+
 ## [1.13.1] - 2017-08-18
 ### Fixed
 - Android platforms - Fix Unity crash by stack-overflow when using the `UnityPurchasingEditor.TargetAndroidStore(AndroidStore store)` method or the Window > Unity IAP > Android > Xiaomi Mi Game Pay targeting menu.

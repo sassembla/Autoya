@@ -3,6 +3,10 @@
 #import "Base64.h"
 #endif
 
+#if !MAC_APPSTORE
+#import "UnityEarlyTransactionObserver.h"
+#endif
+
 @implementation ProductDefinition
 
 @synthesize id;
@@ -10,6 +14,16 @@
 @synthesize type;
 
 @end
+
+void UnityPurchasingLog(NSString *format, ...) {
+    va_list args;
+    va_start(args, format);
+    NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
+    va_end(args);
+    
+    NSLog(@"UnityIAP:%@", message);
+}
+
 
 @implementation ReceiptRefresher
 
@@ -27,15 +41,6 @@
 }
 
 @end
-
-void UnityPurchasingLog(NSString *format, ...) {
-    va_list args;
-    va_start(args, format);
-    NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
-    va_end(args);
-
-    NSLog(@"UnityIAP:%@", message);
-}
 
 @implementation UnityPurchasing
 
@@ -267,6 +272,14 @@ int delayInSeconds = 2;
     if (processExistingTransactions) {
         [self paymentQueue:defaultQueue updatedTransactions:defaultQueue.transactions];
     }
+
+#if !MAC_APPSTORE
+    UnityEarlyTransactionObserver *observer = [UnityEarlyTransactionObserver defaultObserver];
+    if (observer) {
+        observer.readyToReceiveTransactionUpdates = YES;
+        [observer initiateQueuedPayments];
+    }
+#endif
 }
 
 #pragma mark -
@@ -365,12 +378,6 @@ int delayInSeconds = 2;
 - (void)paymentQueue:(SKPaymentQueue *)queue removedTransactions:(NSArray *)transactions
 {
     // Nothing to do here.
-}
-
-// Called when a transaction is initiated from the app store
-- (BOOL)paymentQueue:(SKPaymentQueue *)queue shouldAddStorePayment:(SKPayment *)payment forProduct:(SKProduct *)product
-{
-    return YES;
 }
 
 // Called when SKPaymentQueue has finished sending restored transactions.
