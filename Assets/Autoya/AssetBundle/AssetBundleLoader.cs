@@ -8,6 +8,10 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
+
+    /// <summary>
+    /// Asset bundle load error.
+    /// </summary>
 	public enum AssetBundleLoadError {
 		Undefined,
 		AssetBundleListIsNotReady,
@@ -21,6 +25,9 @@ namespace AutoyaFramework.AssetBundles {
 		NotContainedAssetBundle,
 	}
 	
+    /// <summary>
+    /// Asset bundle loader.
+    /// </summary>
 	public class AssetBundleLoader {
 		/*
 			delegate for handle http response for modules.
@@ -52,6 +59,13 @@ namespace AutoyaFramework.AssetBundles {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleLoader"/> class.
+        /// </summary>
+        /// <param name="basePath">Base path.</param>
+        /// <param name="list">List.</param>
+        /// <param name="requestHeader">Request header.</param>
+        /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
 		public AssetBundleLoader (string basePath, AssetBundleList list, AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
 
 			this.assetDownloadBasePath = basePath;
@@ -85,6 +99,10 @@ namespace AutoyaFramework.AssetBundles {
 		/*
 			unload all assetBundles and delete all assetBundle caches.
 		*/
+        /// <summary>
+        /// Cleans the cached asset bundles.
+        /// </summary>
+        /// <returns><c>true</c>, if cached asset bundles was cleaned, <c>false</c> otherwise.</returns>
 		public bool CleanCachedAssetBundles () {
 			/*
 				clean all loaded assets.
@@ -93,12 +111,30 @@ namespace AutoyaFramework.AssetBundles {
 			
 			return Caching.CleanCache();
 		}
+		
+        /// <summary>
+        /// Gets the asset bundles weight.
+        /// </summary>
+        /// <returns>The asset bundles weight.</returns>
+        /// <param name="bundleNames">Bundle names.</param>
+		public long GetAssetBundlesWeight (string[] bundleNames) {
+			var list = this.list;
+			if (list.Exists()) {
+				return list.assetBundles.Where(bundleInfo => bundleNames.Contains(bundleInfo.bundleName)).Sum(b => b.size);
+			}
+			return 0L;
+		}
 
 		/**
 			get AssetBundleInfo which contains requested asset name.
 			this method is useful when you want to know which assets are contained with specific asset.
 			return empty AssetBundleInfo if assetName is not contained by any AssetBundle in current AssetBundleList.
 		 */
+        /// <summary>
+        /// Assets the bundle info of asset.
+        /// </summary>
+        /// <returns>The bundle info of asset.</returns>
+        /// <param name="assetName">Asset name.</param>
 		public AssetBundleInfo AssetBundleInfoOfAsset (string assetName) {
 			if (assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
 				var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
@@ -109,6 +145,11 @@ namespace AutoyaFramework.AssetBundles {
 			return new AssetBundleInfo();
 		}
 
+        /// <summary>
+        /// Assets the bundle info.
+        /// </summary>
+        /// <returns>The bundle info.</returns>
+        /// <param name="bundleName">Bundle name.</param>
 		public AssetBundleInfo AssetBundleInfo (string bundleName) {
 			return list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault();
 		}
@@ -126,6 +167,15 @@ namespace AutoyaFramework.AssetBundles {
 
 				複数のAssetBundleに依存していて、それのうちのひとつとかがtimeoutしたら
 		*/
+        /// <summary>
+        /// Loads the asset from AssetBundle.
+        /// </summary>
+        /// <returns>The asset.</returns>
+        /// <param name="assetName">Asset name.</param>
+        /// <param name="loadSucceeded">Load succeeded.</param>
+        /// <param name="loadFailed">Load failed.</param>
+        /// <param name="timeoutSec">Timeout sec.</param>
+        /// <typeparam name="T">The type for loading asset.</typeparam>
 		public IEnumerator LoadAsset<T> (
 			string assetName, 
 			Action<string, T> loadSucceeded, 
@@ -436,6 +486,19 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 		
+        /// <summary>
+        /// Downloads the asset bundle.
+        /// </summary>
+        /// <returns>The asset bundle.</returns>
+        /// <param name="bundleName">Bundle name.</param>
+        /// <param name="connectionId">Connection identifier.</param>
+        /// <param name="requestHeader">Request header.</param>
+        /// <param name="url">URL.</param>
+        /// <param name="crc">Crc.</param>
+        /// <param name="hash">Hash.</param>
+        /// <param name="succeeded">Succeeded.</param>
+        /// <param name="failed">Failed.</param>
+        /// <param name="limitTick">Limit tick.</param>
 		public IEnumerator DownloadAssetBundle (
 			string bundleName, 
 			string connectionId, 
@@ -478,7 +541,7 @@ namespace AutoyaFramework.AssetBundles {
 
 				var responseCode = (int)request.responseCode;
 				var responseHeaders = request.GetResponseHeaders();
-
+				
 				if (request.isError) {
 					failed(connectionId, responseCode, request.error, responseHeaders);
 					yield break;
@@ -488,6 +551,7 @@ namespace AutoyaFramework.AssetBundles {
 					// set response code to 200 manually if already cached and succeeded to load from cache.
 					// sadly, in this case, the code is not 200 by default.
 					responseCode = 200;
+					responseHeaders = new Dictionary<string, string>();
 				} else {
 					if (200 <= responseCode && responseCode <= 299) {
 						// do nothing.
@@ -511,7 +575,7 @@ namespace AutoyaFramework.AssetBundles {
 				while (!Caching.IsVersionCached(url, hash)) {
 					yield return null;
 				}
-
+				
 				succeeded(connectionId, responseCode, responseHeaders, assetBundle);
 			}
 		}
@@ -544,20 +608,38 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
+        /// <summary>
+        /// Gets the asset bundle download URL.
+        /// </summary>
+        /// <returns>The asset bundle download URL.</returns>
+        /// <param name="bundleName">Bundle name.</param>
 		public string GetAssetBundleDownloadUrl (string bundleName) {
 			return assetDownloadBasePath + bundleName;
 		}
 
+        /// <summary>
+        /// Ons the memory bundle names.
+        /// </summary>
+        /// <returns>The memory bundle names.</returns>
 		public string[] OnMemoryBundleNames () {
 			var loadedAssetBundleNames = assetBundleDict.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
 			return loadedAssetBundleNames;
 		}
 
+        /// <summary>
+        /// Ons the memory asset names.
+        /// </summary>
+        /// <returns>The memory asset names.</returns>
 		public string[] OnMemoryAssetNames () {
 			var loadedAssetBundleNames = assetBundleDict.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
 			return list.assetBundles.Where(ab => loadedAssetBundleNames.Contains(ab.bundleName)).SelectMany(ab => ab.assetNames).ToArray();
 		}
 
+        /// <summary>
+        /// Gets the name of the contained asset bundle.
+        /// </summary>
+        /// <returns>The contained asset bundle name.</returns>
+        /// <param name="assetName">Asset name.</param>
 		public string GetContainedAssetBundleName (string assetName) {
 			if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName)) {
 				return string.Empty;
@@ -565,6 +647,11 @@ namespace AutoyaFramework.AssetBundles {
 			return assetNamesAndAssetBundleNamesDict[assetName];
 		}
 
+        /// <summary>
+        /// Ises the asset bundle cached on memory.
+        /// </summary>
+        /// <returns><c>true</c>, if asset bundle cached on memory was ised, <c>false</c> otherwise.</returns>
+        /// <param name="bundleName">Bundle name.</param>
 		public bool IsAssetBundleCachedOnMemory (string bundleName) {
 			if (assetBundleDict.ContainsKey(bundleName)) {
 				if (assetBundleDict[bundleName] != null) {
@@ -575,6 +662,11 @@ namespace AutoyaFramework.AssetBundles {
 			return false;
 		}
 
+        /// <summary>
+        /// Ises the asset bundle cached on storage.
+        /// </summary>
+        /// <returns><c>true</c>, if asset bundle cached on storage was ised, <c>false</c> otherwise.</returns>
+        /// <param name="bundleName">Bundle name.</param>
 		public bool IsAssetBundleCachedOnStorage (string bundleName) {
 			var candidateAssetBundles = list.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
 			if (candidateAssetBundles.Length == 0) {
@@ -586,6 +678,9 @@ namespace AutoyaFramework.AssetBundles {
 			return Caching.IsVersionCached(url, hash);
 		}
 
+        /// <summary>
+        /// Unloads the on memory asset bundles.
+        /// </summary>
 		public void UnloadOnMemoryAssetBundles () {
 			var assetBundleNames = assetBundleDict.Keys.ToArray();
 
@@ -599,6 +694,10 @@ namespace AutoyaFramework.AssetBundles {
 			assetBundleDict.Clear();
 		}
 
+        /// <summary>
+        /// Unloads the on memory asset bundle.
+        /// </summary>
+        /// <param name="bundleName">Bundle name.</param>
 		public void UnloadOnMemoryAssetBundle (string bundleName) {
 			if (assetBundleDict.ContainsKey(bundleName)) {
 				var asset = assetBundleDict[bundleName];
@@ -610,6 +709,10 @@ namespace AutoyaFramework.AssetBundles {
 			}
 		}
 
+        /// <summary>
+        /// Unloads the on memory asset.
+        /// </summary>
+        /// <param name="assetNameName">Asset name name.</param>
 		public void UnloadOnMemoryAsset (string assetNameName) {
 			var bundleName = GetContainedAssetBundleName(assetNameName);
 

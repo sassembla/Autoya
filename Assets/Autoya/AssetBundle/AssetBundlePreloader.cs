@@ -9,6 +9,15 @@ using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
 
+    /**
+       preloadList
+        └ name // human readable name of list.
+        └ bundleNames // string[]
+            └ bundleName // preload target bundle name.
+     */
+	/// <summary>
+    /// type of PreloadList.
+    /// </summary>
 	[Serializable] public class PreloadList {
 		public string name;
 		public string[] bundleNames;
@@ -20,12 +29,20 @@ namespace AutoyaFramework.AssetBundles {
 		/**
 			create preloadList which contains whole assetBundle names in the AssetBundleList.
 		 */
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.PreloadList"/> class.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="list">List.</param>
 		public PreloadList (string name, AssetBundleList list) {
 			this.name = name;
 			this.bundleNames = list.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
 		}
 	}
 
+    /// <summary>
+    /// Asset bundle preloader.
+    /// </summary>
 	public class AssetBundlePreloader {
 		/*
 			delegate for handle http response for modules.
@@ -51,6 +68,11 @@ namespace AutoyaFramework.AssetBundles {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 		
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundlePreloader"/> class.
+        /// </summary>
+        /// <param name="requestHeader">Request header.</param>
+        /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
 		public AssetBundlePreloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
 			if (requestHeader != null) {
 				this.assetBundleGetRequestHeaderDelegate = requestHeader;
@@ -68,7 +90,8 @@ namespace AutoyaFramework.AssetBundles {
 		/**
 			preload assetBundle from list url.
 		 */
-		public IEnumerator Preload (AssetBundleLoader loader, string listUrl, Func<string[], IEnumerator<bool>> shouldContinuePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1, double timeoutSec=0) {
+        
+		public IEnumerator Preload (AssetBundleLoader loader, string listUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1, double timeoutSec=0) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -122,16 +145,14 @@ namespace AutoyaFramework.AssetBundles {
 				yield break;
 			}
 
-			var bundleDownloadCor = Preload(loader, list, shouldContinuePreloading, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
+			var bundleDownloadCor = Preload(loader, list, onBeforePreloading, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
 			while (bundleDownloadCor.MoveNext()) {
 				yield return null;
 			}
 		}
 
-		/**
-			preload assetBundles by preloadList.
-		 */
-		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Func<string[], IEnumerator<bool>> shouldContinuePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
+		
+		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
 			if (0 < maxParallelCount) {
 				// pass.
 			} else {
@@ -222,9 +243,9 @@ namespace AutoyaFramework.AssetBundles {
 
 
 			/*
-				ask should continue or not.
+				ask should continue or not before downloading target assetBundles.
 			 */
-			var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray());
+			var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray(), onBeforePreloading);
 			while (shouldContinueCor.MoveNext()) {
 				yield return null;
 			}
@@ -321,6 +342,30 @@ namespace AutoyaFramework.AssetBundles {
 			
 			// every bundle downloading is done.
 			done();
+		}
+
+		private IEnumerator<bool> shouldContinuePreloading (string[] willLoadBundleNames, Action<string[], Action, Action> onBeforePreloading) {
+			var determined = false;
+			var go = false;
+			
+			Action proceed = () => {
+				determined = true;
+				go = true;
+			};
+
+			Action cancel = () => {
+				determined = true;
+				go = false;
+			};
+
+			// ask to user.
+			onBeforePreloading(willLoadBundleNames, proceed, cancel);
+
+			while (!determined) {
+				yield return false;
+			}
+
+			yield return go;
 		}
 
 		private IEnumerator DownloadPreloadList (

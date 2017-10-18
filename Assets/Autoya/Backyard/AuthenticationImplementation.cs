@@ -22,13 +22,23 @@ namespace AutoyaFramework {
 		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
 		
 		/*
+			delegate for supply assetBundleList get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundleListGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		/*
+			delegate for supply assetBundlePreloadList get request header geneate func for modules.
+		*/
+		public delegate Dictionary<string, string> AssetBundlePreloadListGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		/*
 			delegate for supply assetBundle get request header geneate func for modules.
 		*/
 		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
 
 		private HttpRequestHeaderDelegate httpRequestHeaderDelegate;
         private HttpResponseHandlingDelegate httpResponseHandlingDelegate;
-        private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+        private AssetBundleListGetRequestHeaderDelegate assetBundleListGetRequestHeaderDelegate;
+		private AssetBundlePreloadListGetRequestHeaderDelegate assetBundlePreloadListGetRequestHeaderDelegate;
+		private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
 
 		private AuthRouter _autoyaAuthRouter;
 
@@ -38,8 +48,11 @@ namespace AutoyaFramework {
 
 		private void Authenticate (bool isFirstBoot, Action internalOnAuthenticated) {
 			this.httpRequestHeaderDelegate = OnHttpRequest;
-			this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
 			this.httpResponseHandlingDelegate = HttpResponseHandling;
+
+			this.assetBundleListGetRequestHeaderDelegate = OnAssetBundleListGetRequest;
+			this.assetBundlePreloadListGetRequestHeaderDelegate = OnAssetBundlePreloadListGetRequest;
+			this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
 
 			Action onAuthSucceeded = () => {
 				internalOnAuthenticated();
@@ -612,17 +625,17 @@ namespace AutoyaFramework {
 			}
 
 			/**
-				attpemt to retry authentication flow.
+				attpemt to restart authentication flow.
 
 				this method is useful in these cases.
 					When first boot was failed and player saw that information, then player pushed to retry.
 						or
 					When token refreshing was failed and player saw that information, then player pushed to retry.
 			*/
-			public void RetryAuthentication () {
+			public bool RetryAuthentication () {
 				if (IsLogon()) {
 					// no fail detected. do nothing.
-					return;
+					return false;
 				}
 
 				switch (authState) {
@@ -630,16 +643,17 @@ namespace AutoyaFramework {
 					case AuthState.BootFailed: {
 						authState = AuthState.Booting;
 						mainthreadDispatcher.Commit(FirstBoot());
-						break;
+						return true;
+						
 					}
 					case AuthState.RefreshFailed: {
 						authState = AuthState.Refreshing;
 						mainthreadDispatcher.Commit(RefreshToken());
-						break;
+						return true;
 					}
 					default: {
 						// do nothing.
-						break;
+						return false;
 					}
 				}
 			}
@@ -662,6 +676,8 @@ namespace AutoyaFramework {
 			・httpコードのチェックを行い、200系でなければfailedを着火する
 
 			・200系であればsucceededを着火する。
+
+			・AssetBundleListのダウンロードを行なった後、resversionが含まれたレスポンスが来た場合、追加でリストの取得処理を行うかどうか判断する。
 		*/
 		private void HttpResponseHandling (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
 			if (forceFailHttp) {
@@ -725,13 +741,68 @@ namespace AutoyaFramework {
 			*/
 			if (inMaintenance || isAuthFailed) {
 				failed(connectionId, httpCode, "good status code but under maintenance or failed to auth or both.", new AutoyaStatus(inMaintenance, isAuthFailed));
-				return;// これ書いちゃいけなかったような気がするんだよな〜〜どうだったかな、
+				return;
 			}
 
 			/*
 				finally, connection is done as succeeded.
 			*/
 			succeeded(connectionId, data);
+
+			/*
+				fire assetBundleList-request check after succeeded.
+			*/
+			if (assetBundleFeatState == AssetBundlesFeatureState.Ready) {
+				if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION)) {
+					var newListVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
+
+					// compare with runtimeManifest data.
+					if (newListVersionOnResponseHeader != _appManifestStore.GetRuntimeManifest().resVersion) {
+
+						var answer = OnRequestNewAssetBundleList(newListVersionOnResponseHeader);
+						if (answer.doOrNot) {
+							if (_postponedNewAssetBundleList != null && _postponedNewAssetBundleList.version == newListVersionOnResponseHeader) {
+								// new list is already cached on memory. use this for update assetBundleList.
+								OnUpdatingListReceived(_postponedNewAssetBundleList);
+							} else {
+								// start download new list.
+								var listUrl = answer.url;
+								DownloadNewAssetBundleList(listUrl);
+							}
+						}
+					}
+				}
+			}
+
+			/*
+				fire application update request after succeeded.
+			 */
+			if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION)) {
+				var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
+				OnNewAppRequested(newappVersionOnResponseHeader);
+			}
+		}
+
+		public struct ShouldRequestOrNot {
+			public readonly bool doOrNot;
+			public readonly string url;
+			
+			private ShouldRequestOrNot (string url) {
+				this.doOrNot = true;
+				this.url = url;
+			}
+
+			private ShouldRequestOrNot (bool _unused) {
+				this.doOrNot = false;
+				this.url = string.Empty;
+			}
+
+			public static ShouldRequestOrNot Yes(string url) {
+				return new ShouldRequestOrNot(url);
+			}
+			public static ShouldRequestOrNot No() {
+				return new ShouldRequestOrNot(true);
+			}
 		}
 
 
@@ -785,6 +856,9 @@ namespace AutoyaFramework {
 			}
 		}
 
+		/**
+			set new handler for auth token refreshed.
+		 */
 		public static void Auth_SetOnRefreshAuthFailed (Action<int, string> refreshAuthenticationFailed=null) {
 			if (autoya._autoyaAuthRouter.IsTokenRefreshFailed()) {
 				if (refreshAuthenticationFailed != null) {
@@ -797,50 +871,19 @@ namespace AutoyaFramework {
 			}
 		}
 
-		/**
-			delete all user data. and set to logout.
-		*/
-		public static void Auth_DeleteAllUserData () {
-			if (autoya._autoyaAuthRouter.IsLogon()) { 
-				autoya.OnDeleteAllUserData();
-				autoya._autoyaAuthRouter.Logout();
-			}
-		}
 
 		public static bool Auth_IsAuthenticated () {
 			return autoya._autoyaAuthRouter.IsLogon();
 		}
 
-		public static void Auth_AttemptAuthentication () {
-			autoya._autoyaAuthRouter.RetryAuthentication();
+		public static bool Auth_AttemptAuthenticationIfNeed () {
+			return autoya._autoyaAuthRouter.RetryAuthentication();
 		}
 
 		public static void Auth_Logout () {
-			if (autoya._autoyaAuthRouter.IsLogon()) { 
-				autoya.OnLogout();
+			if (autoya._autoyaAuthRouter.IsLogon()) {
 				autoya._autoyaAuthRouter.Logout();
 			}
 		}
-		
-		/*
-			test methods.
-		*/
-
-		#if UNITY_EDITOR
-		public static void Auth_Test_CreateAuthError () {
-			/*
-				generate fake response for reproduce token expired situation.
-			*/
-			autoya.HttpResponseHandling(
-				"Auth_Test_AccidentialLogout_ConnectionId", 
-				new Dictionary<string, string>(),
-				401, 
-				string.Empty,
-				"Auth_Test_AccidentialLogout test error", 
-				(conId, data) => {}, 
-				(conId, code, reason, autoyaStatus) => {}
-			);
-		}
-		#endif
 	}
 }

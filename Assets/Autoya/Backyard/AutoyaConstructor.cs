@@ -4,6 +4,7 @@ using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Settings.Auth;
 using AutoyaFramework.Purchase;
 using System;
+using AutoyaFramework.Settings.App;
 
 /**
     constructor implementation of Autoya.
@@ -27,7 +28,7 @@ namespace AutoyaFramework {
             // Debug.LogWarning("autoya initialize start. basePath:" + basePath);
             
             var isPlayer = false;
-
+            
             if (Application.isPlaying) {
 
                 isPlayer = true;
@@ -52,6 +53,8 @@ namespace AutoyaFramework {
 
             InitializeAssetBundleFeature();
 
+            InitializeAppManifest();
+
             var isFirstBoot = IsFirstBoot();
             
             /*
@@ -69,13 +72,10 @@ namespace AutoyaFramework {
                 }
             );
         }
-        
-        public static int BuildNumber () {
-            return -1;
-        }
 
         public static void Shutdown () {
             autoya.mainthreadDispatcher.Destroy();
         }
     }
 }
+    

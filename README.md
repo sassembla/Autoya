@@ -1,5 +1,4 @@
 # Autoya
-ver 0.8.13
 
 ![loading](https://github.com/sassembla/Autoya/blob/master/doc/images/scr.png?raw=true)
 
@@ -53,7 +52,7 @@ already implemented.
 ### Notification(local/remote)
 
 iOS: already implemented.  
-Android: in 2017 summer.
+Android: in 2017.
 
 ### Information
 already implemented.
@@ -74,4 +73,6 @@ unitypackage is ready!
 all example usage is in Assets/AutoyaSamples folder.
 
 ## Document
-[Overview](./doc/Overview.md)
+[Autoya API and Modules](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch)
+
+

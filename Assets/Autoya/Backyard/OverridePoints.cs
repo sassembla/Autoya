@@ -8,19 +8,30 @@ using AutoyaFramework.Representation.Base64;
 using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using UnityEngine;
+using AutoyaFramework.Settings.App;
 
 /**
-	modify this class for your app's authentication, purchase and assetBundle dataflow.
+	modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
 */
 namespace AutoyaFramework {
 
 	public partial class Autoya {
+		
+		/*
+			maintenance handlers.
+		 */
+
 		/**
 			return if server is under maintenance or not.
 		*/
 		private bool IsUnderMaintenance (int httpCode, Dictionary<string, string> responseHeader) {
 			return httpCode == BackyardSettings.MAINTENANCE_CODE;
 		}
+
+
+		/*
+			authentication handlers.
+		 */
 
 		/**
 			return true if already authenticated, return false if not.
@@ -68,23 +79,6 @@ namespace AutoyaFramework {
 				bootAuthFailed(-1, "failed to boot validation.");
 			}
 			yield break;
-		}
-
-
-		/**
-			on logout handler.
-			after here, you can call "Autoya.Auth_AttemptAuthentication()". then "OnBootAuthRequest()" will be called.
-		*/
-		private void OnLogout () {
-			// do logout things here.
-		}
-
-		/**
-			handler of delete all user data.
-			after here, you can call "Autoya.Auth_AttemptAuthentication()". then "IsFirstBoot()" will be called.
-		*/
-		private void OnDeleteAllUserData () {
-			Autoya.Persist_DeleteByDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
 		}
 
 		/**
@@ -135,9 +129,10 @@ namespace AutoyaFramework {
 			yield break;
 		}
 
+
 		
 		/*
-			standard http request & response handler.
+			authorized http request & response handlers.
 		*/
 
 		/**
@@ -168,7 +163,8 @@ namespace AutoyaFramework {
 		// string version.
 		private bool OnValidateHttpResponse (string method, string url, Dictionary<string, string> responseHeader, string data, out string reason) {
 			// let's validate http response if need.
-			if (true) {
+			var isValid = true;
+			if (isValid) {
 				reason = string.Empty;
 				return true;
 			} else {
@@ -180,7 +176,8 @@ namespace AutoyaFramework {
 		// byte[] version.
 		private bool OnValidateHttpResponse (string method, string url, Dictionary<string, string> responseHeader, byte[] data, out string reason) {
 			// let's validate http response if need.
-			if (true) {
+			var isValid = true;
+			if (isValid) {
 				reason = string.Empty;
 				return true;
 			} else {
@@ -190,10 +187,10 @@ namespace AutoyaFramework {
 		}
 
 
+
 		/*
 			purchase feature handlers.
 		*/
-
 
 		/**
 			fire when the server returns product datas for this app.
@@ -253,15 +250,26 @@ namespace AutoyaFramework {
 			return ticketData;
 		}
 
+
+
 		/*
-			AssetBundles
+			AssetBundles handlers.
 		*/
+
+		private string AssetBundleListDownloadUrl () {
+			var targetListVersion = Autoya.Manifest_LoadRuntimeManifest().resVersion;
+			if (string.IsNullOrEmpty(targetListVersion)) {
+				return string.Empty;
+			}
+			
+			return AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + targetListVersion + "/AssetBundles.StandaloneOSXIntel64_" + targetListVersion.Replace(".", "_") + ".json";
+		}
 
 		private AssetBundleList LoadAssetBundleListFromStorage () {
 			// load stored assetBundleList then return it.
 			var listStr = _autoyaFilePersistence.Load(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
 			if (string.IsNullOrEmpty(listStr)) {
-				return null;
+				return new AssetBundleList();
 			}
 			
 			return JsonUtility.FromJson<AssetBundleList>(listStr);
@@ -271,23 +279,114 @@ namespace AutoyaFramework {
 			var result = _autoyaFilePersistence.Update(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME, listStr);
 			return result;
 		}
-
 		private bool DeleteAssetBundleListFromStorage () {
 			var result = _autoyaFilePersistence.Delete(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
 			return result;
 		}
+
+		/**
+			fire when you received new assetBundleList version parameter from authenticated http response's response header.
+		 */
+		private Func<string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string rceivedNewAssetBundleListVersion) => {
+			var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + rceivedNewAssetBundleListVersion + "/AssetBundles.StandaloneOSXIntel64_" + rceivedNewAssetBundleListVersion.Replace(".", "_") + ".json";
+
+			return ShouldRequestOrNot.Yes(url);
+			// return ShouldRequestOrNot.No();
+		};
 		
 		/**
-			request headers of AssetBundles features.
+			fire when you received new assetBundleList. 
+
+			condition 
+				the condition parameter tells you "current using assets are changed in the new AssetBundleList or not."
+				
+			return true:
+				AssetBundleList will be updated. runtime manifest's resVersion will be changed to new one.
+				changed assets will be loaded when you load these assets again.
+
+				current loaded && changed assets is not effected anything.
+
+			return false:
+				AssetBundleList will be ignored.
+				this means "Postpone updating assetBundleList to latest one." 
+
+				current loaded && changed(in ignored new list) assets is nothing changed.
+				internal list state will become "pending update assetBundleList" state.
+		 */
+		private Func<CurrentUsingBundleCondition, bool> ShouldUpdateToNewAssetBundleList = (CurrentUsingBundleCondition condition) => {
+			/*
+				according to your app's state & value of condition,
+				please select true(update assetBundleList) or false(cancel update assetBundleList now).
+
+				e,g, 
+					when your app's state is under battle, and you determine that no need to change asset now,
+					should 
+						retrun false. 
+					list update will be postponed.
+
+
+					otherwise when your app's state is good state to update assets,
+					should 
+						retrun true
+					for update assetBundleList.
+					app's assetBundleList will be updated to the latest and ready for load/download latest assetBundles.
+					using "Preload" feature on the beginning of app's state will help updating latest assets.
+			 */
+			return true;
+		};
+
+		/**
+			return request headers for getting AssetBundleList.
 		 */
 		private Dictionary<string, string> OnAssetBundleListGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
+
+		/**
+			return request headers for getting AssetBundlePreloadList.
+		 */
 		private Dictionary<string, string> OnAssetBundlePreloadListGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
+		
+		/**
+			return request headers for getting AssetBundles.
+		 */
 		private Dictionary<string, string> OnAssetBundleGetRequest (string url, Dictionary<string, string> requestHeader) {
 			return requestHeader;
 		}
+
+
+		/*
+			Application version control.
+		 */
+
+		/**
+			do something for server requested client to download latest app from store.
+		 */
+		private Action<string> OnNewAppRequested = newAppVersion => {
+			Debug.Log("new app version:" + newAppVersion + " is ready on store!");
+		};
+
+
+		/*
+			ApplicationManifest handlers.
+		*/
+
+		/**
+			called when runtimeManifest should overwrite.
+			please set the mechanism for store runtime manifest in this device.
+		 */
+        private bool OnOverwriteRuntimeManifest (string data) {
+            return _autoyaFilePersistence.Update(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME, data);
+        }
+
+		/**
+			called when runtimeManifest should load.
+			please set the mechanism for load runtime manifest in this device.
+		 */
+        private string OnLoadRuntimeManifest () {
+            return _autoyaFilePersistence.Load(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME);
+        }
 	}
 }

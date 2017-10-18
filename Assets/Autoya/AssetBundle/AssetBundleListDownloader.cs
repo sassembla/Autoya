@@ -8,6 +8,9 @@ using UnityEngine.Networking;
 
 namespace AutoyaFramework.AssetBundles {
 	
+    /// <summary>
+    /// Asset bundle list downloader.
+    /// </summary>
 	public class AssetBundleListDownloader {
 		/*
 			delegate for handle http response for modules.
@@ -18,8 +21,8 @@ namespace AutoyaFramework.AssetBundles {
 		/*
 			delegate for supply assetBundle get request header geneate func for modules.
 		*/
-		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
-		private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+		public delegate Dictionary<string, string> AssetBundleListGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
+		private readonly AssetBundleListGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
 
         
 		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
@@ -34,7 +37,12 @@ namespace AutoyaFramework.AssetBundles {
 			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
 		}
 
-		public AssetBundleListDownloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleListDownloader"/> class.
+        /// </summary>
+        /// <param name="requestHeader">Request header.</param>
+        /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
+		public AssetBundleListDownloader (AssetBundleListGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate =null) {
 			if (requestHeader != null) {
 				this.assetBundleGetRequestHeaderDelegate = requestHeader;
 			} else {
@@ -47,7 +55,15 @@ namespace AutoyaFramework.AssetBundles {
 				this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
 			}
 		}
-		
+
+        /// <summary>
+        /// Downloads the asset bundle list.
+        /// </summary>
+        /// <returns>The asset bundle list.</returns>
+        /// <param name="url">URL.</param>
+        /// <param name="done">Done.</param>
+        /// <param name="failed">Failed.</param>
+        /// <param name="timeoutSec">Timeout sec.</param>
 		public IEnumerator DownloadAssetBundleList (string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec=0) {
 			var connectionId = AssetBundlesSettings.ASSETBUNDLES_ASSETBUNDLELIST_PREFIX + Guid.NewGuid().ToString();
 			var reqHeader = assetBundleGetRequestHeaderDelegate(url, new Dictionary<string, string>());

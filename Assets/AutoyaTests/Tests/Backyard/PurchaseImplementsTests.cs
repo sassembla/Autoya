@@ -32,7 +32,8 @@ public class PurchaseImplementationTests : MiyamasuTestRunner {
 			() => {
 				return Autoya.Purchase_IsReady();
 			},
-			() => {throw new TimeoutException("failed to auth or failed to ready purchase.");}
+			() => {throw new TimeoutException("failed to auth or failed to ready purchase.");},
+			10
 		);
 	}
 

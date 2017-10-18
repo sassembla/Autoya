@@ -9,53 +9,39 @@ public class PreloadAssetBundle : MonoBehaviour {
 
 	// Use this for initialization
 	IEnumerator Start () {
+
 		/*
 			this is sample of "preload assetBundles feature".
 
-			the word "preload" in this sample means "download assetBundles before use."
+			the word "preload" in this sample means "download assetBundles without use."
 			preloaded assetBundles are stored in storage cache. no difference between preloaded and downloaded assetBundles.
 
 			case1:generate preloadList from assetBundleList, then get described assetBundles.
 		 */
 
-		// Autoya.AssetBundle_DiscardAssetBundleList();
+		Autoya.AssetBundle_DownloadAssetBundleListIfNeed(status => {}, (code, reason, autoyaStatus) => {});
 
-		// download assetBundleList if assetBundleList is not stored.
-		var isListStored = Autoya.AssetBundle_IsAssetBundleListReady();
-
-		if (!isListStored) {
-			// store assetBundleList in file storage.
-
-			var done = false;
-			Autoya.AssetBundle_DownloadAssetBundleList(
-				"https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json",
-				() => {
-					done = true;
-				},
-				(code, reason, autoyaStatus) => {
-					Debug.LogError("failed to download assetBundleList. code:" + code + " reason:" + reason);
-				}
-			);
-
-			while (!done) {
-				yield return null;
-			}
+		// wait downloading assetBundleList.
+		while (!Autoya.AssetBundle_IsAssetBundleFeatureReady()) {
+			yield return null;
 		}
 
 		/*
-			let's preload specific assetBundle into storage.
+			let's preload specific assetBundle into device storage.
 		*/
 
-		// get stored assetBundleList.
-		var storedList = Autoya.AssetBundle_AssetBundleList();
+		// get assetBundleList.
+		var assetBundleList = Autoya.AssetBundle_AssetBundleList();
 		
 		// create sample preloadList which contains all assetBundle names in assetBundleList.
-		var assetBundleNames = storedList.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
+		var assetBundleNames = assetBundleList.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
 		var newPreloadList = new PreloadList("samplePreloadList", assetBundleNames);
 
-		Autoya.AssetBundle_Preload(
+		Autoya.AssetBundle_PreloadByList(
 			newPreloadList,
-			ShouldContinuePreloading,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				Debug.Log("progress:" + progress);
 			},
@@ -91,11 +77,6 @@ public class PreloadAssetBundle : MonoBehaviour {
 	}
 
 	void OnApplicationQuit () {
-		Autoya.AssetBundle_DeleteAllStorageCache(
-			(result, message) => {
-				Debug.Log("the end of demo. in OnApplicationQuit, deleting all storage cached assetBundles. result:" + result + " (message:" + message + ")");
-			},
-			true
-		);
+		Autoya.AssetBundle_DeleteAllStorageCache();
 	}
 }

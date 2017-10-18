@@ -12,6 +12,14 @@ namespace AutoyaFramework {
 	public partial class Autoya {
 		private HTTPConnection _autoyaHttp;
 		
+		private void AddFrameworkHeaderParam (Dictionary<string, string> additionalRequestHeaders) {
+			additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_APPVERSION] = Autoya.Manifest_GetBuildManifest().appVerion;
+
+			if (autoya.assetBundleFeatState == AssetBundlesFeatureState.Ready) {
+				additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = Autoya.Manifest_LoadRuntimeManifest().resVersion;
+			}
+		}
+
 		/*
 			public HTTP APIs.
 		*/
@@ -22,17 +30,22 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -41,6 +54,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("GET", url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -80,17 +96,23 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -99,6 +121,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -139,17 +164,23 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -158,6 +189,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+			
 			var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -198,17 +232,23 @@ namespace AutoyaFramework {
 			Action<string, string> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -217,6 +257,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -257,17 +300,23 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -276,6 +325,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("GET", url, additionalHeader, string.Empty);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -315,17 +367,23 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -334,6 +392,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+			
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -374,17 +435,23 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
+			
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
 
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -393,6 +460,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -433,17 +503,23 @@ namespace AutoyaFramework {
 			Action<string, byte[]> succeeded, 
 			Action<string, int, string, AutoyaStatus> failed, 
 			Dictionary<string, string> additionalHeader=null, 
-			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC
+			double timeoutSec=BackyardSettings.HTTP_TIMEOUT_SEC,
+			string userConnectionId=null
 		) {
 			var connectionId = Guid.NewGuid().ToString();
 
+			if (!string.IsNullOrEmpty(userConnectionId)) {
+				connectionId = userConnectionId;
+			}
+
+
 			if (autoya == null) {
-				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				return connectionId;
 			} 
 			if (!Autoya.Auth_IsAuthenticated()) {
-				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", failed).Coroutine();
+				var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
 				autoya.mainthreadDispatcher.Commit(cor);
 				
 				return connectionId;
@@ -452,6 +528,9 @@ namespace AutoyaFramework {
 			if (additionalHeader == null) {
 				additionalHeader = new Dictionary<string, string>();
 			}
+
+			autoya.AddFrameworkHeaderParam(additionalHeader);
+
 			var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
 			
 			autoya.mainthreadDispatcher.Commit(
@@ -492,12 +571,13 @@ namespace AutoyaFramework {
 			private const int code = AuthSettings.AUTOYA_HTTP_CODE_INTERNAL_UNAUTHORIZED;
 			private readonly string reason;
 			private readonly Action<string, int, string, AutoyaStatus> failed;
-			private static AutoyaStatus status = new AutoyaStatus();
+			private readonly AutoyaStatus status;
 
-			public ConnectionErrorInstance (string connectionId, string reason, Action<string, int, string, AutoyaStatus> failed) {
+			public ConnectionErrorInstance (string connectionId, string reason, AutoyaStatus status, Action<string, int, string, AutoyaStatus> failed) {
 				this.connectionId = connectionId;
 				this.reason = reason;
 				this.failed = failed;
+				this.status = status;
 			}
 
 			public IEnumerator Coroutine () {

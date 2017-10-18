@@ -10,39 +10,22 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 
 	// Use this for initialization
 	IEnumerator Start () {
+		
 		/*
 			this is sample of "preload assetBundles feature".
 
-			the word "preload" in this sample means "download assetBundles before use."
+			the word "preload" in this sample means "download assetBundles without use."
 			preloaded assetBundles are stored in storage cache. no difference between preloaded and downloaded assetBundles.
 
 			case2:get preloadList from web, then get described assetBundles.
 		 */
 		
-		// Autoya.AssetBundle_DiscardAssetBundleList();
+		Autoya.AssetBundle_DownloadAssetBundleListIfNeed(status => {}, (code, reason, autoyaStatus) => {});
 
-		// download assetBundleList if assetBundleList is not stored.
-		var isListStored = Autoya.AssetBundle_IsAssetBundleListReady();
-
-		if (!isListStored) {
-			// store assetBundleList in file storage.
-			
-			var done = false;
-			Autoya.AssetBundle_DownloadAssetBundleList(
-				"https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/StandaloneOSXIntel64/1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json",
-				() => {
-					done = true;
-				},
-				(code, reason, autoyaStatus) => {
-					Debug.LogError("failed to download assetBundleList. code:" + code + " reason:" + reason);
-				}
-			);
-
-			while (!done) {
-				yield return null;
-			}
+		// wait downloading assetBundleList.
+		while (!Autoya.AssetBundle_IsAssetBundleFeatureReady()) {
+			yield return null;
 		}
-		
 
 		/*
 			get preloadList from web.
@@ -62,7 +45,9 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 		// download preloadList from web then preload described assetBundles.
 		Autoya.AssetBundle_Preload(
 			preloadListPath,
-			ShouldContinuePreloading,
+			(willLoadBundleNames, proceed, cancel) => {
+				proceed();
+			},
 			progress => {
 				Debug.Log("progress:" + progress);
 			},
@@ -104,11 +89,6 @@ public class PreloadAssetBundle2 : MonoBehaviour {
 	}
 
 	void OnApplicationQuit () {
-		Autoya.AssetBundle_DeleteAllStorageCache(
-			(result, message) => {
-				Debug.Log("the end of demo. in OnApplicationQuit, deleting all storage cached assetBundles. result:" + result + " (message:" + message + ")");
-			},
-			true
-		);
+		Autoya.AssetBundle_DeleteAllStorageCache();
 	}
 }
