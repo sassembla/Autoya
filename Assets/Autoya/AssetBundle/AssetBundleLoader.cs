@@ -202,7 +202,17 @@ namespace AutoyaFramework.AssetBundles {
 			var crc = assetBundleInfo[0].crc;
 			var hash = Hash128.Parse(assetBundleInfo[0].hash);
 			
-			var coroutine = LoadAssetBundleOnMemory(bundleName, assetName, crc, hash, loadSucceeded, loadFailed, timeoutTick);
+			var coroutine = LoadAssetBundleOnMemory(
+				bundleName, 
+				assetName, 
+				crc, 
+				hash, 
+				loadSucceeded, 
+				loadFailed, 
+				timeoutTick,
+				false,
+				new List<string>()
+			);
 			while (coroutine.MoveNext()) {
 				yield return null;
 			}
@@ -233,7 +243,8 @@ namespace AutoyaFramework.AssetBundles {
 			Action<string, T> loadSucceeded, 
 			Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed, 
 			long timeoutTick, 
-			bool isDependency=false
+			bool isDependency=false,
+			List<string> loadingDependentBundleNames=null
 		) where T : UnityEngine.Object {
 			while (!Caching.ready) {
 				yield return null;
@@ -258,6 +269,12 @@ namespace AutoyaFramework.AssetBundles {
 					var coroutines = new Dictionary<string, IEnumerator>();
 
 					foreach (var dependentBundleName in dependentBundleNames) {
+						if (loadingDependentBundleNames != null) {
+							if (loadingDependentBundleNames.Contains(dependentBundleName)) {
+								continue;
+							}
+						}
+
 						// skip if assetBundle is already loaded on memory.
 						if (assetBundleDict.ContainsKey(dependentBundleName) && assetBundleDict[dependentBundleName] != null) {
 							continue;
@@ -286,9 +303,13 @@ namespace AutoyaFramework.AssetBundles {
 								dependentBundleLoadErrors.Add(new DependentBundleError(depBundleName, depErr, depReason, autoyaStatus));
 							},
 							timeoutTick,
-							true // this loading is for resolve dependency of root asset. no need to return any instances.
+							true, // this loading is for resolve dependency of root asset. no need to return any instances.
+							loadingDependentBundleNames
 						);
 
+						if (loadingDependentBundleNames != null) {
+							loadingDependentBundleNames.Add(dependentBundleName);
+						}
 						coroutines[dependentBundleName] = loadCoroutine;
 					}
 
