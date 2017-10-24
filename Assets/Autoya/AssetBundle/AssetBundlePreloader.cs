@@ -198,7 +198,7 @@ namespace AutoyaFramework.AssetBundles {
 			 */
 			Action<string, object> bundlePreloadSucceededAct = (conId, obj) => {
 				// unload assetBundle anyway.
-				// downloaded assetBundle is 
+				// downloaded assetBundle is cached on storage.
 				var bundle = obj as AssetBundle;
 				bundle.Unload(true);
 				
@@ -250,14 +250,14 @@ namespace AutoyaFramework.AssetBundles {
 				yield return null;
 			}
 			
-			var shouldContine = shouldContinueCor.Current;
-			if (!shouldContine) {
+			var shouldContinue = shouldContinueCor.Current;
+			if (!shouldContinue) {
 				done();
 				yield break;
 			}
 
 			/*
-				bundles are not cached. should start download.
+				bundles are not cached on storage. should start download.
 			 */
 			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames) {
 				var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
@@ -268,6 +268,11 @@ namespace AutoyaFramework.AssetBundles {
 				var crc = targetBundleInfo.crc;
 				var hash = Hash128.Parse(targetBundleInfo.hash);
 				
+				if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName)) {
+					// bundle is not cached on storage, but old bundle is no memory. need to unload it.
+					loader.UnloadOnMemoryAssetBundle(shouldDownloadAssetBundleName);
+				}
+
 				var bundlePreloadTimeoutTick = 0;// preloader does not have limit now.
 
 				var cor = loader.DownloadAssetBundle(

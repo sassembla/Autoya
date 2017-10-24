@@ -31,6 +31,11 @@ namespace AutoyaFramework {
             return autoya._appManifestStore.GetRuntimeManifest();
         }
 
+        public static void Debug_Manifest_RenewRuntimeManifest () {
+            var newOne = new RuntimeManifestObject();
+            autoya._appManifestStore.UpdateRuntimeManifest(newOne);
+        }
+
         /*
             editor functions
          */

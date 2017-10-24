@@ -66,7 +66,12 @@ namespace AutoyaFramework.AssetBundles {
         /// <param name="list">List.</param>
         /// <param name="requestHeader">Request header.</param>
         /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
-		public AssetBundleLoader (string basePath, AssetBundleList list, AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+		public AssetBundleLoader (string basePath, AssetBundleList list, Dictionary<string, AssetBundle> onMemoryCache=null, AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
+			if (onMemoryCache == null) {
+				this.onMemoryCache = new Dictionary<string, AssetBundle>();
+			} else {
+				this.onMemoryCache = onMemoryCache;
+			}
 
 			this.assetDownloadBasePath = basePath;
 			this.list = list;
@@ -276,7 +281,7 @@ namespace AutoyaFramework.AssetBundles {
 						}
 
 						// skip if assetBundle is already loaded on memory.
-						if (assetBundleDict.ContainsKey(dependentBundleName) && assetBundleDict[dependentBundleName] != null) {
+						if (onMemoryCache.ContainsKey(dependentBundleName) && onMemoryCache[dependentBundleName] != null) {
 							continue;
 						}
 
@@ -353,17 +358,31 @@ namespace AutoyaFramework.AssetBundles {
 				}
 			}
 
-			// assetBundle is already allocated on memory. load that.
-			if (assetBundleDict.ContainsKey(bundleName)) {
-				if (isDependency) {
+			// assetBundle is already allocated on memory.
+			if (onMemoryCache.ContainsKey(bundleName)) {				
+				var isCached = Caching.IsVersionCached(url, hash);
+
+				if (isCached) {
+					// if current target is dependency, dependent assetBundle is already on memory. and no need to load it.
+					if (isDependency) {
+						yield break;
+					}
+					
+					// start loading assetBundle on memory.
+					var loadOnMemoryCachedAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
+					while (loadOnMemoryCachedAssetCoroutine.MoveNext()) {
+						yield return null;
+					}
+
+					// loading asset from on memory cache is done.
 					yield break;
 				}
 
-				var loadOnMemoryCachedAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
-				while (loadOnMemoryCachedAssetCoroutine.MoveNext()) {
-					yield return null;
-				}
-				yield break;
+				// assetBundle is cached on memory but it's not target hashed bundle. need to download other one.
+				var oldOnMemoryAssetBundle = onMemoryCache[bundleName];
+
+				// remove from on memory cache.
+				UnloadOnMemoryAssetBundle(bundleName);
 			}
 
 			/*
@@ -386,7 +405,7 @@ namespace AutoyaFramework.AssetBundles {
 						yield return null;
 					}
 
-					if (!assetBundleDict.ContainsKey(bundleName)) {
+					if (!onMemoryCache.ContainsKey(bundleName)) {
 						// error is already fired in above.
 						yield break;
 					}
@@ -467,7 +486,7 @@ namespace AutoyaFramework.AssetBundles {
 
 			Action<string, object> succeeded = (conId, downloadedAssetBundle) => {
 				// set loaded assetBundle to on-memory cache.
-				assetBundleDict[bundleName] = (AssetBundle)downloadedAssetBundle;
+				onMemoryCache[bundleName] = (AssetBundle)downloadedAssetBundle;
 			};
 
 			Action<string, int, string, AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) => {
@@ -604,9 +623,9 @@ namespace AutoyaFramework.AssetBundles {
 		/*
 			core dictionary of on memory cache.
 		 */
-		private Dictionary<string, AssetBundle> assetBundleDict = new Dictionary<string, AssetBundle>();
+		public readonly Dictionary<string, AssetBundle> onMemoryCache;
 		private IEnumerator LoadOnMemoryAssetAsync<T> (string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object {
-			var assetBundle = assetBundleDict[bundleName];
+			var assetBundle = onMemoryCache[bundleName];
 			var request = assetBundle.LoadAssetAsync<T>(assetName);			
 			while (!request.isDone) {
 				yield return null;
@@ -643,7 +662,7 @@ namespace AutoyaFramework.AssetBundles {
         /// </summary>
         /// <returns>The memory bundle names.</returns>
 		public string[] OnMemoryBundleNames () {
-			var loadedAssetBundleNames = assetBundleDict.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
+			var loadedAssetBundleNames = onMemoryCache.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
 			return loadedAssetBundleNames;
 		}
 
@@ -652,7 +671,7 @@ namespace AutoyaFramework.AssetBundles {
         /// </summary>
         /// <returns>The memory asset names.</returns>
 		public string[] OnMemoryAssetNames () {
-			var loadedAssetBundleNames = assetBundleDict.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
+			var loadedAssetBundleNames = onMemoryCache.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
 			return list.assetBundles.Where(ab => loadedAssetBundleNames.Contains(ab.bundleName)).SelectMany(ab => ab.assetNames).ToArray();
 		}
 
@@ -674,8 +693,8 @@ namespace AutoyaFramework.AssetBundles {
         /// <returns><c>true</c>, if asset bundle cached on memory was ised, <c>false</c> otherwise.</returns>
         /// <param name="bundleName">Bundle name.</param>
 		public bool IsAssetBundleCachedOnMemory (string bundleName) {
-			if (assetBundleDict.ContainsKey(bundleName)) {
-				if (assetBundleDict[bundleName] != null) {
+			if (onMemoryCache.ContainsKey(bundleName)) {
+				if (onMemoryCache[bundleName] != null) {
 					return true;
 				}
 			}
@@ -703,16 +722,16 @@ namespace AutoyaFramework.AssetBundles {
         /// Unloads the on memory asset bundles.
         /// </summary>
 		public void UnloadOnMemoryAssetBundles () {
-			var assetBundleNames = assetBundleDict.Keys.ToArray();
+			var assetBundleNames = onMemoryCache.Keys.ToArray();
 
 			foreach (var assetBundleName in assetBundleNames) {
-				var asset = assetBundleDict[assetBundleName];
+				var asset = onMemoryCache[assetBundleName];
 				if (asset != null) {
 					asset.Unload(true);
 				}
 			}
 
-			assetBundleDict.Clear();
+			onMemoryCache.Clear();
 		}
 
         /// <summary>
@@ -720,13 +739,13 @@ namespace AutoyaFramework.AssetBundles {
         /// </summary>
         /// <param name="bundleName">Bundle name.</param>
 		public void UnloadOnMemoryAssetBundle (string bundleName) {
-			if (assetBundleDict.ContainsKey(bundleName)) {
-				var asset = assetBundleDict[bundleName];
+			if (onMemoryCache.ContainsKey(bundleName)) {
+				var asset = onMemoryCache[bundleName];
 				if (asset != null) {
 					asset.Unload(true);
 				}
 				
-				assetBundleDict.Remove(bundleName);
+				onMemoryCache.Remove(bundleName);
 			}
 		}
 
@@ -737,14 +756,7 @@ namespace AutoyaFramework.AssetBundles {
 		public void UnloadOnMemoryAsset (string assetNameName) {
 			var bundleName = GetContainedAssetBundleName(assetNameName);
 
-			if (assetBundleDict.ContainsKey(bundleName)) {
-				var asset = assetBundleDict[bundleName];
-				if (asset != null) {
-					asset.Unload(true);
-				}
-				
-				assetBundleDict.Remove(bundleName);
-			}
+			UnloadOnMemoryAssetBundle(bundleName);
 		}
 	}
 }

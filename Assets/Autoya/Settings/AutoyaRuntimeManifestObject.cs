@@ -11,6 +11,6 @@ namespace AutoyaFramework.AppManifest {
         初期値を与えることができる。
     */
     [Serializable] public class RuntimeManifestObject {
-        [SerializeField] public string resVersion = "0.0.0";
+        [SerializeField] public string resVersion = "1.0.0";
     }
 }

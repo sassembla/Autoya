@@ -899,6 +899,20 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator UpdateListWithOnMemoryAssetsThenPRreloadChangedAsset() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "UpdateListWithOnMemoryAssetsThenPRreloadChangedAsset");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.UpdateListWithOnMemoryAssetsThenPRreloadChangedAsset();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class AssetUpdateTests_Miyamasu {
     [UnityTest] public IEnumerator ReceiveFirstList() {
