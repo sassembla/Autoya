@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.Purchasing.Security;
 
+
 /**
 	purchase feature of Autoya.
 	should be use as singleton.
@@ -96,7 +97,7 @@ namespace AutoyaFramework.Purchase {
 				set store kind by platform.
 			*/
 			#if UNITY_EDITOR
-				this.storeKind = AppleAppStore.Name;
+				this.storeKind = "dummy";//AppleAppStore.Name;
 			#elif UNITY_IOS
 				this.storeKind = AppleAppStore.Name;
 			#elif UNITY_ANDROID

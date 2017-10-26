@@ -245,6 +245,29 @@ namespace AutoyaFramework.Purchase {
 				yield return null;
 			}
 		}
+
+
+		// public class MyPurchasingModule : UnityEngine.Purchasing.Extension.IPurchasingModule {
+		// 	public void Configure (UnityEngine.Purchasing.Extension.IPurchasingBinder binder) {
+		// 		binder.RegisterStore("MyManufacturerAppStore", InstantiateMyManufacturerAppStore());
+		// 		// Our Purchasing service implementation provides the real implementation.
+		// 		binder.RegisterExtension<IStoreExtension>(new FakeManufacturerExtensions());
+		// 	}
+
+		// 	UnityEngine.Purchasing.Extension.IStore InstantiateMyManufacturerAppStore () {
+		// 		// Check for Manufacturer. "Android" used here for the sake of example.
+		// 		// In your implementation, return platform-appropriate store instead of "null".
+		// 		if (Application.platform == RuntimePlatform.Android) { return null; }
+		// 		else { return null; }
+		// 	}
+
+		// 	public IStoreExtension IManufacturerExtensions() { return null; }
+		// }
+
+		// public class FakeManufacturerExtensions : IStoreExtension {
+
+		// }
+
 		
 		private void ReadyIAPFeature (ProductInfo[] productInfos) {
 			routerState = RouterState.LoadingStore;
