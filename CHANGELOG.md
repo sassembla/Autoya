@@ -6,6 +6,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.21] - 2017/10/26
+### Changed
+- Preloader behaviour changed. never preload "using" AssetBundles.
+
 ## [0.8.20] - 2017/10/25
 ### Added
 - update old versioned on memory AssetBundle to new one by using LoadAsset or Preload.
@@ -61,7 +65,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.20...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.21...HEAD
+[0.8.21]: https://github.com/sassembla/autoya/compare/0.8.20...0.8.21
 [0.8.20]: https://github.com/sassembla/autoya/compare/0.8.19...0.8.20
 [0.8.19]: https://github.com/sassembla/autoya/compare/0.8.18...0.8.19
 [0.8.18]: https://github.com/sassembla/autoya/compare/0.8.17...0.8.18
