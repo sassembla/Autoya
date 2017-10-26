@@ -899,15 +899,29 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
-    [UnityTest] public IEnumerator UpdateListWithOnMemoryAssetsThenPRreloadChangedAsset() {
-        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "UpdateListWithOnMemoryAssetsThenPRreloadChangedAsset");
+    [UnityTest] public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadLoadedChangedAsset() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "UpdateListWithOnMemoryAssetsThenPreloadLoadedChangedAsset");
         var instance = new AssetBundlesImplementationTests();
         instance.rec = rec;
 
         
         yield return instance.Setup();
         
-        yield return instance.UpdateListWithOnMemoryAssetsThenPRreloadChangedAsset();
+        yield return instance.UpdateListWithOnMemoryAssetsThenPreloadLoadedChangedAsset();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadUnloadedChangedAsset() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "UpdateListWithOnMemoryAssetsThenPreloadUnloadedChangedAsset");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.UpdateListWithOnMemoryAssetsThenPreloadUnloadedChangedAsset();
         rec.MarkAsPassed();
 
         

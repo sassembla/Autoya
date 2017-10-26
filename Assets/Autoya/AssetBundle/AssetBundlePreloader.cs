@@ -229,18 +229,26 @@ namespace AutoyaFramework.AssetBundles {
 			var shouldDownloadAssetBundleNamesCandidate = wholeDownloadableAssetBundleNames.Distinct().ToArray();
 			var shouldDownloadAssetBundleNames = new List<string>();
 
+			
 			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNamesCandidate) {
 				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
 				var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
 				var hash = Hash128.Parse(targetBundleInfo.hash);
 				
-				// check if bundle is cached.
+				// ignore cached one.
 				if (Caching.IsVersionCached(bundleUrl, hash)) {
 					continue;
 				}
+
+				// ignore loaded one.
+				if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName)) {
+					continue;
+				}
+
 				shouldDownloadAssetBundleNames.Add(shouldDownloadAssetBundleName);
 			}
 
+			
 
 			/*
 				ask should continue or not before downloading target assetBundles.
