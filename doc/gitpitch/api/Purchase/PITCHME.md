@@ -2,30 +2,26 @@
 
 ---
 
-## remoteとlocal
-Autoyaには2種の課金機構が搭載されてる。
+## 概要
 
-サーバありのやつ  
-[remote](https://gitpitch.com/sassembla/aboutPurchase/remotePurchase#)  
+Purchase関連のAPI  
+RemoteとLocalの2種がある。
 
-[コード](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/Purchase/PurchaseRouter.cs)
-
-サーバなしのやつ  
-[local](https://gitpitch.com/sassembla/aboutPurchase/localPurchase#)
-
-[コード](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/Purchase/LocalPurchaseRouter.cs)
+* [サーバ有り Remote Purchase](#/2)
+* [サーバなし Local Purchase](#/30)
+* [API](#/105)
 
 
 +++
 
-サーバあり版は認証とかがっつり絡んでいる。
+サーバあり版は認証とかがっつり絡んでいる。  
+デフォルトの状態だとダミーサーバで動かせる。
 
-サーバなしのやつはコード単体で動かせる。
+サーバなしのやつは端末単体で動かせる。
 
 どちらも、動くサンプルが[ここ](https://github.com/sassembla/Autoya/tree/master/Assets/AutoyaSample/3_Purchase)にあるんで、  
 Autoyaを落としてPurchase.unityシーンを  
 動かしてみるといいと思う。
-
 
 ---
 
@@ -58,7 +54,7 @@ UnityIAPの機構を使った課金処理。
 
 ## 準備と動作のフロー
 
-先ずはクライアント側のみ。
+まずはクライアント側のみ。
 
 1. 各プラットフォームにアイテムをセット
 1. PurchaseSettings.csのURL調整
@@ -695,7 +691,7 @@ or
 
 
 
-## local purchaseについて
+## about local purchase
 
 UnityIAPの機構を使った課金処理。
 
@@ -1251,3 +1247,23 @@ MATEで通信いじった時にレシートを
 
 
 ---
+
+# API
+
+---
+
+### remote purchase
+
+**Methods**
+
+**OverridePoints**
+
+
+---
+
+### local purchase
+
+**Methods**
+
+**OverridePoints**
+
