@@ -28,7 +28,7 @@ Autoya.でアクセスできるAutoyaの機能。
 * [Information(in progress)](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Information)
 * [Manifest(in progress)](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Manifest)
 * [Persistence(in progress)](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Persistence)
-* [Purchase(in progress)](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Purchase)
+* [Purchase](https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Purchase)
 
 ---
 
