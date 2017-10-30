@@ -9,7 +9,7 @@ RemoteとLocalの2種がある。
 
 * [サーバ有り Remote Purchase](#/2)
 * [サーバなし Local Purchase](#/30)
-* [API](#/105)
+* [API](#/41)
 
 
 +++
