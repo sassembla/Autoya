@@ -1256,14 +1256,109 @@ MATEで通信いじった時にレシートを
 
 **Methods**
 
+* Purchase_IsReady
+* Purchase_NeedAttemptReadyPurchase
+* Purchase_ProductInfos
+* Purchase_AttemptReadyPurcase
+* Purchase
+
++++
+
 **OverridePoints**
 
+* OverridePoints/OnLoadProductsResponse
+* OverridePoints/OnPurchaseReady
+* OverridePoints/OnPurchaseReadyFailed
+* OverridePoints/OnTicketResponse
 
 ---
 
+**Purchase_IsReady**
+
+課金機構の準備が整ったらtrueを返す。
+
++++
+
+![seq](https://github.com/sassembla/Autoya/raw/doc/doc/images/api/purchase_ready.png)
+
++++
+
+課金機構はAutoyaにより自動的に初期化される。  
+
+サーバから購入可能アイテム一覧を取得、  
+完了後にこのメソッドがtrueを返すようになる。
+
+---
+
+**Purchase_NeedAttemptReadyPurchase**
+
+機構準備が失敗した後、再試行の必要がある場合  
+trueを返す。
+
+---
+
+**Purchase_ProductInfos**
+
+このユーザーが購入可能なProduct一覧を返す。
+
+[Purchase_NeedAttemptReadyPurchase](#/43)が  
+trueを返す状況でのみ使用可能。
+
+---
+
+**Purchase_AttemptReadyPurcase**
+
+課金機構の準備をやり直す。  
+
+[Purchase_NeedAttemptReadyPurchase](#/43)が  
+trueを返す状況でのみ使用可能。
+
+---
+
+**Purchase**
+
+Productの購入処理を行う。  
+
++++
+
+![seq](https://github.com/sassembla/Autoya/raw/doc/doc/images/api/purchase.png)
+
+---
+
+**OverridePoints/OnLoadProductsResponse**
+
+サーバから、このユーザーが購入できる  
+アイテム情報を受け取った際に実行される。  
+
+情報を[ProductInfo[]型](https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/Purchase/PurchaseRouter.cs#L19)に変換し返す必要がある。
+
+---
+
+**OverridePoints/OnPurchaseReady**
+
+課金機構の準備が完了した際に呼ばれる。
+
+---
+
+**OverridePoints/OnPurchaseReadyFailed**
+
+課金機構の準備が失敗した際に呼ばれる。  
+プレイヤーに適切な行動を促す必要がある。
+
+---
+
+**OverridePoints/OnTicketResponse**
+
+
+サーバからチケットを受け取った際に呼ばれる。  
+
+データをstringにし課金機構へと返す必要がある。
+
+---
+
+
 ### local purchase
 
-**Methods**
+Autoya経由で提供している機能はない。
 
-**OverridePoints**
-
+[local purchase module]()
