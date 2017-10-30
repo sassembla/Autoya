@@ -1,11 +1,10 @@
-# Connections Module
+# Encryption Module
 
 ---
 
 ## 概要
 
-通信を扱うモジュール。  
-HTTPやUDPに関してのAPIを提供する。  
+暗号/復号化の処理を扱うモジュール。  
 
 ---
 

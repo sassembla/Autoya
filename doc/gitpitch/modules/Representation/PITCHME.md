@@ -1,11 +1,11 @@
-# Connections Module
+# Representation Module
 
 ---
 
 ## 概要
 
-通信を扱うモジュール。  
-HTTPやUDPに関してのAPIを提供する。  
+JWT、Base64などの  
+変換ロジックを提供するモジュール。  
 
 ---
 

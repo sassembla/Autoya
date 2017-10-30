@@ -1,11 +1,10 @@
-# Connections Module
+# Information Module
 
 ---
 
 ## 概要
 
-通信を扱うモジュール。  
-HTTPやUDPに関してのAPIを提供する。  
+お知らせ画面の機構を提供するモジュール。
 
 ---
 

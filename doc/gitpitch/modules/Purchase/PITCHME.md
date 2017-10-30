@@ -1,12 +1,6 @@
-# Connections Module
+# purchase module
 
 ---
 
-## 概要
-
-通信を扱うモジュール。  
-HTTPやUDPに関してのAPIを提供する。  
-
----
-
-## 提供している機能一覧
+課金モジュール。  
+Unity IAPを使った課金機構を提供する。

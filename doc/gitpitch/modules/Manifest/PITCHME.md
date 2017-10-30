@@ -1,11 +1,11 @@
-# Connections Module
+# Manifest Module
 
 ---
 
 ## 概要
 
-通信を扱うモジュール。  
-HTTPやUDPに関してのAPIを提供する。  
+運用に関わる設定を保持するモジュール。  
+version情報や、その上書き機構を提供する。  
 
 ---
 
