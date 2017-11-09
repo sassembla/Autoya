@@ -116,17 +116,29 @@ public class UdpTests : MiyamasuTestRunner {
         // validate by hash. checking send data == received data or not.
         var md5 = MD5.Create();
         var origin = md5.ComputeHash(data);
-        
+        var hashLen = origin.Length;
+
+        // add hash data to head of new data.
+        var newData = new byte[data.Length + hashLen];
+        for (var i = 0; i < newData.Length; i++) {
+            if (i < hashLen) {
+                newData[i] = origin[i];
+            } else {
+                newData[i] = data[i-hashLen];
+            }
+        }
+
         udpReceiver = new UdpReceiver(
             IP.LocalIPAddressSync(),
             port, 
             bytes => {
-                True(bytes.Length == data.Length);
+                True(bytes.Length == newData.Length);
 
-                var hash = md5.ComputeHash(bytes);
+                var hash = md5.ComputeHash(bytes, hashLen, bytes.Length - hashLen);
                 for (var i = 0; i < hash.Length; i++) {
-                    True(hash[i] == origin[i]);
+                    True(hash[i] == bytes[i]);
                 }
+
                 receivedCount++;
             }
         );
@@ -134,7 +146,7 @@ public class UdpTests : MiyamasuTestRunner {
         // send udp data.
         udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
         for (var i = 0; i < count; i++) {
-            udpSender.Send(data);
+            udpSender.Send(newData);
         }
 
         yield return WaitUntil(
