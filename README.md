@@ -40,7 +40,7 @@ already implemented.
 | http/1 | done | 
 | http/2 | not yet | 
 | tcp      | not yet      | 
-| udp	| not yet      |  
+| udp	| done      |  
 
 
 ### app-version/asset-version/server-condition changed handles

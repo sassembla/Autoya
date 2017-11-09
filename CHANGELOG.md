@@ -6,6 +6,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.22] - 2017/11/09
+### Added
+- Udp receiver/server feature is implemented.
+
 ## [0.8.21] - 2017/10/26
 ### Changed
 - Preloader behaviour changed. never preload "using" AssetBundles.
@@ -65,7 +69,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.21...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.22...HEAD
+[0.8.22]: https://github.com/sassembla/autoya/compare/0.8.21...0.8.22
 [0.8.21]: https://github.com/sassembla/autoya/compare/0.8.20...0.8.21
 [0.8.20]: https://github.com/sassembla/autoya/compare/0.8.19...0.8.20
 [0.8.19]: https://github.com/sassembla/autoya/compare/0.8.18...0.8.19
