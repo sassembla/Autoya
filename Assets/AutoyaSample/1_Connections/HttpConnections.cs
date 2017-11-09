@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using AutoyaFramework;
 using UnityEngine;
 
-public class Connections : MonoBehaviour {
+/**
+	send http request to dummy server with authorized header.
+ */
+public class HttpConnections : MonoBehaviour {
 
 	// Use this for initialization
 	IEnumerator Start () {

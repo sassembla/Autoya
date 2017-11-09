@@ -1445,6 +1445,130 @@ public class PurchaseImplementationTests_Miyamasu {
         }
     }
 }
+public class IPTests_Miyamasu {
+    [UnityTest] public IEnumerator GetLocalIPSync() {
+        var rec = new Miyamasu.Recorder("IPTests", "GetLocalIPSync");
+        var instance = new IPTests();
+        instance.rec = rec;
+
+        
+        
+        yield return instance.GetLocalIPSync();
+        rec.MarkAsPassed();
+
+        
+    }
+    [UnityTest] public IEnumerator GetLocalIP() {
+        var rec = new Miyamasu.Recorder("IPTests", "GetLocalIP");
+        var instance = new IPTests();
+        instance.rec = rec;
+
+        
+        
+        yield return instance.GetLocalIP();
+        rec.MarkAsPassed();
+
+        
+    }
+}
+public class UdpTests_Miyamasu {
+    [UnityTest] public IEnumerator SetReceiverThenSend() {
+        var rec = new Miyamasu.Recorder("UdpTests", "SetReceiverThenSend");
+        var instance = new UdpTests();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        yield return instance.SetReceiverThenSend();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
+    [UnityTest] public IEnumerator SetReceiverThenSendTwice() {
+        var rec = new Miyamasu.Recorder("UdpTests", "SetReceiverThenSendTwice");
+        var instance = new UdpTests();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        yield return instance.SetReceiverThenSendTwice();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
+    [UnityTest] public IEnumerator SetReceiverThenSendManyTimes() {
+        var rec = new Miyamasu.Recorder("UdpTests", "SetReceiverThenSendManyTimes");
+        var instance = new UdpTests();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        yield return instance.SetReceiverThenSendManyTimes();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
+    [UnityTest] public IEnumerator SetReceiverThenSendManyTimesWithValidation() {
+        var rec = new Miyamasu.Recorder("UdpTests", "SetReceiverThenSendManyTimesWithValidation");
+        var instance = new UdpTests();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        yield return instance.SetReceiverThenSendManyTimesWithValidation();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
+}
 public class EncryptTests_Miyamasu {
     [UnityTest] public IEnumerator AESEncrypt() {
         var rec = new Miyamasu.Recorder("EncryptTests", "AESEncrypt");
