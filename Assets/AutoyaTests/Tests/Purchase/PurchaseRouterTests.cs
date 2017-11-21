@@ -170,6 +170,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			ticketData => ticketData,
 			() => {},
 			(err, code, reason) => {},
+			backgroundPurchasedProductId => {},
 			null,
 			DummyResponsehandlingDelegate
 		);
@@ -227,6 +228,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 
 		// done, but transaction is remaining.
 
+		var completed = false;
+
 		// reload router will finish remaining transaction.
 		router = new PurchaseRouter(
 			iEnum => {
@@ -241,13 +244,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			},
 			ticketData => ticketData,
 			() => {},
-			(err, code, reason) => {}
+			(err, code, reason) => {},
+			backgroundPurchasedProductId => {
+				completed = true;
+			}
 		);
-
-		var completed = false;
-		router._completed = () => {
-			completed = true;
-		};
 
 		yield return WaitUntil(
 			() => completed,
@@ -274,6 +275,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			ticketData => ticketData,
 			() => {},
 			(err, code, reason) => {},
+			backgroundPurchasedProductId => {},
 			null,
 			DummyResponsehandlingDelegate
 		);
@@ -354,6 +356,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			ticketData => Guid.NewGuid().ToString(),
 			() => {},
 			(err, code, reason) => {},
+			backgroundPurchasedProductId => {},
 			null,
 			DummyResponsehandlingDelegate
 		);
@@ -419,13 +422,12 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 			(err, code, reason) => {
 				Fail("failed to boot store func. err:" + err + " reason:" + reason);
 			},
+			backgroundPurchasedProductId => {
+				completed = true;
+			},
 			null,
 			DummyResponsehandlingDelegate
 		);
-
-		router._completed = () => {
-			completed = true;
-		};
 
 		yield return WaitUntil(
 			() => rebooted && completed,

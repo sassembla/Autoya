@@ -16,6 +16,8 @@ public class UdpConnections : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+		// create receiver.
 		udpReceiver = new UdpReceiver(
 			IP.LocalIPAddressSync(),
 			9339,
@@ -24,9 +26,9 @@ public class UdpConnections : MonoBehaviour {
 			}
 		);
 
-		// 一旦データをsendし、同じポートで聞く。
+		// send data to receiver.
 		udpSender = new UdpSender(
-			IPAddress.Parse("udpサーバ"),
+			IPAddress.Parse("127.0.0.1"),
 			9339
 		);
 		
@@ -36,7 +38,7 @@ public class UdpConnections : MonoBehaviour {
 	}
 	
 	void OnApplicationQuit () {
-		// udpReceiver.Close();
+		udpReceiver.Close();
 		udpSender.Close();
 	}
 }

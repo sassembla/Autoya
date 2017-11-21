@@ -223,7 +223,7 @@ namespace AutoyaFramework {
 		}
 
 		/**
-			fire when failed to ready the purchase feature.
+			called when failed to ready the purchase feature.
 			
 			offline, server returned error, or failed to ready IAPFeature.
 
@@ -241,13 +241,25 @@ namespace AutoyaFramework {
 		}
 
 		/**
-			received ticket data for purchasing product via Autoya.Purchase.
+			called when received ticket data for purchasing product via Autoya.Purchase.
 			you can modify received ticket data string to desired data.
 			returned string will be send to the server for item-deploy information of this purchase.
 		*/
 		private string OnTicketResponse (string ticketData) {
 			// modify if need.
 			return ticketData;
+		}
+
+		/**
+			called when uncompleted purchase is done in background.
+
+			you can handle the completion of failed purchase in this method.
+
+			server received "paid" information and returned response code 200,
+			after that, framework complete uncompleted purchase then fire this method.
+		 */
+		private void onPaidPurchaseDoneInBackground (string backgroundPurchasedProductId) {
+			// server deployed some products for this player. update player's parameter if need.
 		}
 
 

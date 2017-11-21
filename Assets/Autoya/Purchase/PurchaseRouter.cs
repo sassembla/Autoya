@@ -147,6 +147,7 @@ namespace AutoyaFramework.Purchase {
 		private readonly string storeId;
 		private readonly Action<IEnumerator> enumExecutor;
 		private readonly Func<string, string> onTicketResponse;
+		private readonly Action<string> onPurchaseCompletedInBackground;
 
 		private ProductInfo[] verifiedProducts;
 
@@ -165,6 +166,7 @@ namespace AutoyaFramework.Purchase {
 			Func<string, string> onTicketResponse,
 			Action onPurchaseReady, 
 			Action<PurchaseReadyError, int, string> onPurchaseReadyFailed,
+			Action<string> onPurchaseCompletedInBackground=null,
 			HttpRequestHeaderDelegate httpGetRequestHeaderDeletage=null, 
 			HttpResponseHandlingDelegate httpResponseHandlingDelegate =null
 		) {
@@ -198,6 +200,8 @@ namespace AutoyaFramework.Purchase {
 			}
 
 			this.onTicketResponse = onTicketResponse;
+			this.onPurchaseCompletedInBackground = onPurchaseCompletedInBackground;
+
 
 			var cor = _Ready(onLoadProducts, onPurchaseReady, onPurchaseReadyFailed);
 			enumExecutor(cor);
@@ -605,8 +609,6 @@ namespace AutoyaFramework.Purchase {
 			}
 		}
 
-		public Action _completed;
-
 		private void SendPaid (PurchaseEventArgs e) {
 			var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
 			var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
@@ -618,9 +620,11 @@ namespace AutoyaFramework.Purchase {
 				purchasedUrl,
 				dataStr,
 				(conId, responseData) => {
+					// complete paid product transaction.
 					controller.ConfirmPendingPurchase(e.purchasedProduct);
-					if (_completed != null) {
-						_completed();
+					
+					if (onPurchaseCompletedInBackground != null) {
+						onPurchaseCompletedInBackground(responseData);
 					}
 				},
 				(conId, code, reason) => {
