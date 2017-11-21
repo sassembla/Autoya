@@ -6,6 +6,12 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+
+## [0.8.23] - 2017/11/21
+### Changed
+- PurchaseRouter constructor is changed. added the handler for notify when some uncompleted purchase is done in background.
+- Udp receiver gets new "send udp API". both send&receive are enabled in receiver.
+
 ## [0.8.22] - 2017/11/09
 ### Added
 - Udp receiver/server feature is implemented.
@@ -69,7 +75,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.22...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.23...HEAD
+[0.8.23]: https://github.com/sassembla/autoya/compare/0.8.22...0.8.23
 [0.8.22]: https://github.com/sassembla/autoya/compare/0.8.21...0.8.22
 [0.8.21]: https://github.com/sassembla/autoya/compare/0.8.20...0.8.21
 [0.8.20]: https://github.com/sassembla/autoya/compare/0.8.19...0.8.20
