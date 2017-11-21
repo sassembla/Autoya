@@ -14,15 +14,37 @@ namespace AutoyaFramework.Connections.Udp {
      */
     public class UdpReceiver {
         private readonly UdpClient udp;
+        private readonly IPEndPoint remoteEndPoint;
+
         private readonly object lockObj;
         private bool closed;
 
-        public UdpReceiver (IPAddress target, int port, Action<byte[]> receiver) {
+        public UdpReceiver (IPAddress target, int port, Action<byte[]> receiver, IPEndPoint remoteEndPoint=null) {
             var endpoint = new IPEndPoint(target, port);
-            udp = new UdpClient(endpoint);
+            
+            if (remoteEndPoint != null) {
+                this.remoteEndPoint = remoteEndPoint;
+            }
+
+            udp = new UdpClient(new IPEndPoint(IPAddress.Any, port));
+            udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
             lockObj = new object();
 
+            // start receiving.
             ContinueReceive(receiver, endpoint);
+        }
+
+        /**
+            send whole bytes by udp to remoteEndPoint.
+         */
+        public int Send (byte[] data) {
+            if (!closed && remoteEndPoint != null) {
+                return udp.Send(data, data.Length, remoteEndPoint);
+            }
+
+            // socket is closed or remote endpoint is null(not set by constructor).
+            return 0;
         }
 
         private void ContinueReceive (Action<byte[]> receiver, IPEndPoint endpoint) {
@@ -66,7 +88,10 @@ namespace AutoyaFramework.Connections.Udp {
 
         public UdpSender (IPAddress target, int port) {
             udp = new UdpClient();
+            udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             udp.Connect(target, port);
+            // udp.EnableBroadcast = true;
+            
             lockObj = new object();
         }
 
@@ -74,18 +99,21 @@ namespace AutoyaFramework.Connections.Udp {
             return udp.Send(data, data.Length);
         }
 
-        public void Send (byte[] data) {
+        public void Send (byte[] data, Action<int> sended=null) {
             try {
                 udp.BeginSend(
                     data, 
                     data.Length, 
                     ar => {
-                        udp.EndSend(ar);
+                        var sendedLength = udp.EndSend(ar);
+                        if (sended != null) {
+                            sended(sendedLength);
+                        }
                     }, 
                     lockObj
                 );
             } catch (Exception e) {
-                Debug.Log("どんなエラーでるのこれ:" + e);
+                Debug.Log("udp send err:" + e);
             }
         }
 

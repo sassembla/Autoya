@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 using AutoyaFramework.Connections.IP;
 using AutoyaFramework.Connections.Udp;
@@ -15,16 +17,17 @@ public class UdpConnections : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		udpReceiver = new UdpReceiver(
-			IP.LocalIPAddressSync(), 
-			9999, 
+			IP.LocalIPAddressSync(),
+			9339,
 			bytes => {
 				Debug.Log("received udp data:" + Encoding.UTF8.GetString(bytes));
 			}
 		);
 
+		// 一旦データをsendし、同じポートで聞く。
 		udpSender = new UdpSender(
-			IP.LocalIPAddressSync(), 
-			9999
+			IPAddress.Parse("udpサーバ"),
+			9339
 		);
 		
 		udpSender.Send(
@@ -33,7 +36,7 @@ public class UdpConnections : MonoBehaviour {
 	}
 	
 	void OnApplicationQuit () {
-		udpReceiver.Close();
+		// udpReceiver.Close();
 		udpSender.Close();
 	}
 }
