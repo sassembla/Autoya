@@ -40,7 +40,10 @@ public class IAPDemo : MonoBehaviour, IStoreListener
     private bool m_IsUnityChannelSelected;
 
     private string m_LastTransationID;
+    
+    #pragma warning disable 414
     private string m_LastReceipt;
+    #pragma warning restore 414
     private string m_CloudMoolahUserName;
     private bool m_IsLoggedIn = false;
     private UnityChannelLoginHandler unityChannelLoginHandler; // Helper for interfacing with UnityChannel API

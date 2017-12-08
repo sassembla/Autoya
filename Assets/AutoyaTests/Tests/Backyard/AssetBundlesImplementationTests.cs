@@ -9,32 +9,40 @@ using AutoyaFramework.Settings.Auth;
 using Miyamasu;
 using UnityEngine;
 
-public class AssetBundlesImplementationTests : MiyamasuTestRunner {
-    [MSetup] public IEnumerator Setup () {
+public class AssetBundlesImplementationTests : MiyamasuTestRunner
+{
+    [MSetup]
+    public IEnumerator Setup()
+    {
         var discarded = false;
 
         // delete assetBundleList anyway.
         Autoya.AssetBundle_DiscardAssetBundleList(
-            () => {
+            () =>
+            {
                 discarded = true;
             },
-            (code, reason) => {
-                switch (code) {
-                    case -1: {
-                        discarded = true;
-                        break;
-                    }
-                    default: {
-                        Fail("code:" + code + " reason:" + reason);
-                        break;
-                    }
+            (code, reason) =>
+            {
+                switch (code)
+                {
+                    case -1:
+                        {
+                            discarded = true;
+                            break;
+                        }
+                    default:
+                        {
+                            Fail("code:" + code + " reason:" + reason);
+                            break;
+                        }
                 }
             }
         );
 
         yield return WaitUntil(
             () => discarded,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
@@ -44,7 +52,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         Autoya.Debug_Manifest_RenewRuntimeManifest();
     }
-    [MTeardown] public IEnumerator Teardown () {
+    [MTeardown]
+    public IEnumerator Teardown()
+    {
         Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
 
 
@@ -52,26 +62,31 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         // delete assetBundleList anyway.
         Autoya.AssetBundle_DiscardAssetBundleList(
-            () => {
+            () =>
+            {
                 discarded = true;
             },
-            (code, reason) => {
-                switch (code) {
-                    case -1: {
-                        discarded = true;
-                        break;
-                    }
-                    default: {
-                        Fail("code:" + code + " reason:" + reason);
-                        break;
-                    }
+            (code, reason) =>
+            {
+                switch (code)
+                {
+                    case -1:
+                        {
+                            discarded = true;
+                            break;
+                        }
+                    default:
+                        {
+                            Fail("code:" + code + " reason:" + reason);
+                            break;
+                        }
                 }
             }
         );
 
         yield return WaitUntil(
             () => discarded,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
@@ -81,34 +96,42 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
     }
 
 
-    [MTest] public IEnumerator GetAssetBundleListFromDebugMethod () {
+    [MTest]
+    public IEnumerator GetAssetBundleListFromDebugMethod()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 // do nothing.
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
     }
 
-    [MTest] public IEnumerator GetAssetBundleList () {
+    [MTest]
+    public IEnumerator GetAssetBundleList()
+    {
         var done = false;
         Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, asutoyaStatus) => {
+            (code, reason, asutoyaStatus) =>
+            {
                 Debug.Log("GetAssetBundleList failed, code:" + code + " reason:" + reason);
                 // do nothing.
             }
@@ -116,21 +139,25 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
     }
 
-    [MTest] public IEnumerator GetAssetBundleListUrl () {
+    [MTest]
+    public IEnumerator GetAssetBundleListUrl()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var listUrl = Autoya.AssetBundle_GetCurrentAssetBundleListUrl();
-        
+
         True(listUrl == AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName);
         yield break;
     }
 
-    [MTest] public IEnumerator GetAssetBundleListFailThenTryAgain () {
+    [MTest]
+    public IEnumerator GetAssetBundleListFailThenTryAgain()
+    {
         // fail once.
         {
             var notExistFileName = "fake_AssetBundles.StandaloneOSXIntel64_1_0_0.json";
@@ -138,10 +165,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
                 AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + notExistFileName,
-                status => {
+                status =>
+                {
                     Fail("should not be succeeded.");
                 },
-                (err, reason, autoyaStatus) => {
+                (err, reason, autoyaStatus) =>
+                {
                     True(err == Autoya.ListDownloadError.FailedToDownload, "err does not match.");
                     done = true;
                 }
@@ -149,7 +178,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
             yield return WaitUntil(
                 () => done,
-                () => {throw new TimeoutException("faild to fail getting assetBundleList.");}
+                () => { throw new TimeoutException("faild to fail getting assetBundleList."); }
             );
         }
 
@@ -161,10 +190,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
                 AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-                status => {
+                status =>
+                {
                     done = true;
                 },
-                (code, reason, autoyaStatus) => {
+                (code, reason, autoyaStatus) =>
+                {
                     // do nothing.
                     Fail("reason:" + reason);
                 }
@@ -172,12 +203,14 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
             yield return WaitUntil(
                 () => done,
-                () => {throw new TimeoutException("faild to get assetBundleList.");}
+                () => { throw new TimeoutException("faild to get assetBundleList."); }
             );
         }
     }
 
-    [MTest] public IEnumerator GetAssetBundleBeforeGetAssetBundleListBecomeFailed () {
+    [MTest]
+    public IEnumerator GetAssetBundleBeforeGetAssetBundleListBecomeFailed()
+    {
         var loaderTest = new AssetBundleLoaderTests();
         var cor = loaderTest.LoadListFromWeb();
         yield return cor;
@@ -188,10 +221,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var assetName = list.assetBundles[0].assetNames[0];
         Autoya.AssetBundle_LoadAsset<GameObject>(
             assetName,
-            (name, obj) => {
+            (name, obj) =>
+            {
                 Fail("should not comes here.");
             },
-            (name, err, reason, autoyaStatus) => {
+            (name, err, reason, autoyaStatus) =>
+            {
                 True(err == AssetBundleLoadError.AssetBundleListIsNotReady, "not match.");
                 done = true;
             }
@@ -199,13 +234,15 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("not yet failed.");}
+            () => { throw new TimeoutException("not yet failed."); }
         );
     }
 
-    [MTest] public IEnumerator GetAssetBundle () {
+    [MTest]
+    public IEnumerator GetAssetBundle()
+    {
         yield return GetAssetBundleList();
-        
+
         var list = Autoya.AssetBundle_AssetBundleList();
         True(list != null);
 
@@ -213,116 +250,141 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var assetName = list.assetBundles[0].assetNames[0];
         Autoya.AssetBundle_LoadAsset<Texture2D>(
             assetName,
-            (name, tex) => {
+            (name, tex) =>
+            {
                 done = true;
             },
-            (name, err, reason, autoyaStatus) => {
+            (name, err, reason, autoyaStatus) =>
+            {
                 Fail("err:" + err);
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("not yet done.");}
+            () => { throw new TimeoutException("not yet done."); }
         );
 
         Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
     }
 
-    [MTest] public IEnumerator PreloadAssetBundleBeforeGetAssetBundleListWillFail () {
+    [MTest]
+    public IEnumerator PreloadAssetBundleBeforeGetAssetBundleListWillFail()
+    {
         True(!Autoya.AssetBundle_IsAssetBundleFeatureReady(), "not match.");
-        
+
         var done = false;
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList.json",
-            (willLoadBundleNames, proceed, cancel) => {
-				proceed();
-			},
-            progress => {
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                proceed();
+            },
+            progress =>
+            {
 
             },
-            () => {
+            () =>
+            {
                 Fail("should not be succeeded.");
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 True(code == -(int)Autoya.AssetBundlesError.NeedToDownloadAssetBundleList, "not match. code:" + code + " reason:" + reason);
                 done = true;
             },
-            (failedAssetBundleName, code, reason, autoyaStatus) => {
+            (failedAssetBundleName, code, reason, autoyaStatus) =>
+            {
 
             },
             1
         );
 
-         yield return WaitUntil(
-            () => done,
-            () => {throw new TimeoutException("not yet done.");}
-        );
+        yield return WaitUntil(
+           () => done,
+           () => { throw new TimeoutException("not yet done."); }
+       );
     }
 
-    [MTest] public IEnumerator PreloadAssetBundle () {
+    [MTest]
+    public IEnumerator PreloadAssetBundle()
+    {
         yield return GetAssetBundleList();
-        
+
         var done = false;
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList.json",
-            (willLoadBundleNames, proceed, cancel) => {
-				proceed();
-			},
-            progress => {
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                proceed();
+            },
+            progress =>
+            {
 
             },
-            () => {
+            () =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 Fail("should not be failed. code:" + code + " reason:" + reason);
             },
-            (failedAssetBundleName, code, reason, autoyaStatus) => {
+            (failedAssetBundleName, code, reason, autoyaStatus) =>
+            {
 
             },
             1
         );
 
-         yield return WaitUntil(
-            () => done,
-            () => {throw new TimeoutException("not yet done.");}
-        );
+        yield return WaitUntil(
+           () => done,
+           () => { throw new TimeoutException("not yet done."); }
+       );
     }
-    [MTest] public IEnumerator PreloadAssetBundles () {
+    [MTest]
+    public IEnumerator PreloadAssetBundles()
+    {
         yield return GetAssetBundleList();
 
         var done = false;
 
         Autoya.AssetBundle_Preload(
             "1.0.0/sample.preloadList2.json",
-            (willLoadBundleNames, proceed, cancel) => {
-				proceed();
-			},
-            progress => {
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                proceed();
+            },
+            progress =>
+            {
 
             },
-            () => {
+            () =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 Fail("should not be failed. code:" + code + " reason:" + reason);
             },
-            (failedAssetBundleName, code, reason, autoyaStatus) => {
+            (failedAssetBundleName, code, reason, autoyaStatus) =>
+            {
 
             },
             2
         );
 
-         yield return WaitUntil(
-            () => done,
-            () => {throw new TimeoutException("not yet done.");}
-        );
+        yield return WaitUntil(
+           () => done,
+           () => { throw new TimeoutException("not yet done."); }
+       );
     }
 
-    [MTest] public IEnumerator PreloadAssetBundleWithGeneratedPreloadList () {
+    [MTest]
+    public IEnumerator PreloadAssetBundleWithGeneratedPreloadList()
+    {
         yield return GetAssetBundleList();
 
         var done = false;
@@ -331,75 +393,91 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var preloadList = new PreloadList("test", list);
 
         // rewrite. set 1st content of bundleName.
-        preloadList.bundleNames = new string[]{preloadList.bundleNames[0]};
-        
+        preloadList.bundleNames = new string[] { preloadList.bundleNames[0] };
+
         Autoya.AssetBundle_PreloadByList(
             preloadList,
-            (willLoadBundleNames, proceed, cancel) => {
-				proceed();
-			},
-            progress => {
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                proceed();
+            },
+            progress =>
+            {
 
             },
-            () => {
+            () =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 Fail("should not be failed. code:" + code + " reason:" + reason);
             },
-            (failedAssetBundleName, code, reason, autoyaStatus) => {
+            (failedAssetBundleName, code, reason, autoyaStatus) =>
+            {
 
             },
             1
         );
 
-         yield return WaitUntil(
-            () => done,
-            () => {throw new TimeoutException("not yet done.");}
-        );
+        yield return WaitUntil(
+           () => done,
+           () => { throw new TimeoutException("not yet done."); }
+       );
     }
-    [MTest] public IEnumerator PreloadAssetBundlesWithGeneratedPreloadList () {
+    [MTest]
+    public IEnumerator PreloadAssetBundlesWithGeneratedPreloadList()
+    {
         yield return GetAssetBundleList();
 
         var done = false;
 
         var list = Autoya.AssetBundle_AssetBundleList();
         var preloadList = new PreloadList("test", list);
-        
+
         Autoya.AssetBundle_PreloadByList(
             preloadList,
-            (willLoadBundleNames, proceed, cancel) => {
+            (willLoadBundleNames, proceed, cancel) =>
+            {
                 proceed();
             },
-            progress => {
+            progress =>
+            {
 
             },
-            () => {
+            () =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 Fail("should not be failed. code:" + code + " reason:" + reason);
             },
-            (failedAssetBundleName, code, reason, autoyaStatus) => {
+            (failedAssetBundleName, code, reason, autoyaStatus) =>
+            {
 
             },
             4
         );
 
-         yield return WaitUntil(
-            () => done,
-            () => {throw new TimeoutException("not yet done.");}
-        );
+        yield return WaitUntil(
+           () => done,
+           () => { throw new TimeoutException("not yet done."); }
+       );
     }
 
-    [MTest] public IEnumerator IsAssetExistInAssetBundleList () {
+    [MTest]
+    public IEnumerator IsAssetExistInAssetBundleList()
+    {
         yield return GetAssetBundleList();
         var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
         var exist = Autoya.AssetBundle_IsAssetExist(assetName);
         True(exist, "not exist:" + assetName);
     }
 
-    [MTest] public IEnumerator IsAssetBundleExistInAssetBundleList () {
+    [MTest]
+    public IEnumerator IsAssetBundleExistInAssetBundleList()
+    {
         yield return GetAssetBundleList();
         var bundleName = "bundlename";
         var exist = Autoya.AssetBundle_IsAssetBundleExist(bundleName);
@@ -407,95 +485,114 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
     }
 
-    [MTest] public IEnumerator AssetBundle_NotCachedBundleNames () {
+    [MTest]
+    public IEnumerator AssetBundle_NotCachedBundleNames()
+    {
         Debug.LogWarning("AssetBundle_NotCachedBundleNames not yet implemented.");
         yield break;
     }
 
-    private IEnumerator LoadAllAssetBundles (Action<UnityEngine.Object[]> onLoaded) {
+    private IEnumerator LoadAllAssetBundles(Action<UnityEngine.Object[]> onLoaded)
+    {
         var bundles = Autoya.AssetBundle_AssetBundleList().assetBundles;
-        
+
         var loaded = 0;
         var allAssetCount = bundles.Sum(s => s.assetNames.Length);
         True(1 < allAssetCount);
 
         var loadedAssets = new UnityEngine.Object[allAssetCount];
 
-        foreach (var bundle in bundles) {
-            foreach (var assetName in bundle.assetNames) {
-                if (assetName.EndsWith(".png")) {
+        foreach (var bundle in bundles)
+        {
+            foreach (var assetName in bundle.assetNames)
+            {
+                if (assetName.EndsWith(".png"))
+                {
                     Autoya.AssetBundle_LoadAsset(
                         assetName,
-                        (string name, Texture2D o) => {
+                        (string name, Texture2D o) =>
+                        {
                             loadedAssets[loaded] = o;
                             loaded++;
                         },
-                        (name, error, reason, autoyaStatus) => {
+                        (name, error, reason, autoyaStatus) =>
+                        {
                             Fail(name + " reason:" + reason);
                         }
                     );
-                } else {
+                }
+                else
+                {
                     Autoya.AssetBundle_LoadAsset(
                         assetName,
-                        (string name, GameObject o) => {
+                        (string name, GameObject o) =>
+                        {
                             loadedAssets[loaded] = o;
                             loaded++;
                         },
-                        (name, error, reason, autoyaStatus) => {
+                        (name, error, reason, autoyaStatus) =>
+                        {
                             Fail(name + " reason:" + reason);
                         }
                     );
                 }
             }
         }
-    
+
         yield return WaitUntil(
             () => allAssetCount == loaded,
-            () => {throw new TimeoutException("");},
+            () => { throw new TimeoutException(""); },
             10
         );
 
         onLoaded(loadedAssets);
     }
 
-    [MTest] public IEnumerator UpdateListWithOnMemoryAssets () {
+    [MTest]
+    public IEnumerator UpdateListWithOnMemoryAssets()
+    {
         var done = false;
         Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, asutoyaStatus) => {
+            (code, reason, asutoyaStatus) =>
+            {
                 Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
-        
+
         True(Autoya.AssetBundle_IsAssetBundleFeatureReady());
-        
+
 
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => {loadedAssets = objs;});
+        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver => {
+            ver =>
+            {
                 var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
-                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged) {
+            condition =>
+            {
+                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
+                {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
                 return true;
@@ -504,53 +601,60 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listContainsUsingAssetsAndShouldBeUpdate,
-            () => {throw new TimeoutException("failed to get response.");},
+            () => { throw new TimeoutException("failed to get response."); },
             10
         );
-        
+
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
 
         // load状態のAssetはそのまま使用できる
-        for (var i = 0; i < loadedAssets.Length; i++) {
+        for (var i = 0; i < loadedAssets.Length; i++)
+        {
             var loadedAsset = loadedAssets[i];
             True(loadedAsset != null);
         }
-	}
+    }
 
-	[MTest] public IEnumerator UpdateListWithOnMemoryAssetsThenReloadChangedAsset () {
+    [MTest]
+    public IEnumerator UpdateListWithOnMemoryAssetsThenReloadChangedAsset()
+    {
         var done = false;
         Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, asutoyaStatus) => {
+            (code, reason, asutoyaStatus) =>
+            {
                 Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
-        
+
         True(Autoya.AssetBundle_IsAssetBundleFeatureReady());
-        
+
 
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => {loadedAssets = objs;});
+        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
         var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
@@ -558,15 +662,18 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver => {
+            ver =>
+            {
                 var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
-                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged) {
+            condition =>
+            {
+                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
+                {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
                 return true;
@@ -575,78 +682,89 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listContainsUsingAssetsAndShouldBeUpdate,
-            () => {throw new TimeoutException("failed to get response.");},
+            () => { throw new TimeoutException("failed to get response."); },
             10
         );
-        
+
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
 
-		// 再度ロード済みのAssetをLoadしようとすると、更新があったABについて最新を取得してくる。
+        // 再度ロード済みのAssetをLoadしようとすると、更新があったABについて最新を取得してくる。
 
         UnityEngine.Object[] loadedAssets2 = null;
-        yield return LoadAllAssetBundles(objs => {loadedAssets2 = objs;});
+        yield return LoadAllAssetBundles(objs => { loadedAssets2 = objs; });
 
         var newGuids = loadedAssets2.Select(a => a.GetInstanceID()).ToArray();
 
-        foreach (var newGuid in newGuids) {
-            if (guids.Contains(newGuid)) {
+        foreach (var newGuid in newGuids)
+        {
+            if (guids.Contains(newGuid))
+            {
                 Fail("same instanceId detected. failed to refresh changed assetBundle.");
             }
         }
-	}
+    }
 
-    [MTest] public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadLoadedChangedAsset () {
+    [MTest]
+    public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadLoadedChangedAsset()
+    {
         var done = false;
         Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, asutoyaStatus) => {
+            (code, reason, asutoyaStatus) =>
+            {
                 Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
-        
+
         True(Autoya.AssetBundle_IsAssetBundleFeatureReady());
-        
+
 
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => {loadedAssets = objs;});
+        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
-        var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
-        
+        // var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
+
         var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList().assetBundles.Select(a => a.bundleName).ToArray();
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver => {
+            ver =>
+            {
                 var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
-                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged) {
+            condition =>
+            {
+                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
+                {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
                 return true;
@@ -655,21 +773,23 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listContainsUsingAssetsAndShouldBeUpdate,
-            () => {throw new TimeoutException("failed to get response.");},
+            () => { throw new TimeoutException("failed to get response."); },
             10
         );
-        
+
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
 
 
@@ -679,19 +799,23 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var preloadList = new PreloadList("dummy", loadedAssetBundleNames);
         Autoya.AssetBundle_PreloadByList(
             preloadList,
-            (preloadCandidateBundleNames, go, stop) => {
+            (preloadCandidateBundleNames, go, stop) =>
+            {
                 // all assetBundles should not be download. on memory loaded ABs are not updatable.
                 True(preloadCandidateBundleNames.Length == 0);
                 go();
             },
-            progress => {},
-            () => {
+            progress => { },
+            () =>
+            {
                 preloadDone = true;
             },
-            (code, reason, status) => {
+            (code, reason, status) =>
+            {
                 Fail("code:" + code + " reason:" + reason);
             },
-            (failedAssetBundleName, code, reason, status) => {
+            (failedAssetBundleName, code, reason, status) =>
+            {
                 Fail("failedAssetBundleName:" + failedAssetBundleName + " code:" + code + " reason:" + reason);
             },
             5
@@ -699,52 +823,59 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         yield return WaitUntil(
             () => preloadDone,
-            () => {throw new TimeoutException("failed to preload.");},
+            () => { throw new TimeoutException("failed to preload."); },
             10
         );
     }
 
-    [MTest] public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadUnloadedChangedAsset () {
+    [MTest]
+    public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadUnloadedChangedAsset()
+    {
         var done = false;
         Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, asutoyaStatus) => {
+            (code, reason, asutoyaStatus) =>
+            {
                 Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
-        
+
         True(Autoya.AssetBundle_IsAssetBundleFeatureReady());
-        
+
 
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => {loadedAssets = objs;});
+        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
-        var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
-        
+        // var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
+
         var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList().assetBundles.Select(a => a.bundleName).ToArray();
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver => {
+            ver =>
+            {
                 var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
-                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged) {
+            condition =>
+            {
+                if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
+                {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
                 return true;
@@ -753,21 +884,23 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listContainsUsingAssetsAndShouldBeUpdate,
-            () => {throw new TimeoutException("failed to get response.");},
+            () => { throw new TimeoutException("failed to get response."); },
             10
         );
-        
+
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
 
 
@@ -780,19 +913,23 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
         var preloadList = new PreloadList("dummy", loadedAssetBundleNames);
         Autoya.AssetBundle_PreloadByList(
             preloadList,
-            (preloadCandidateBundleNames, go, stop) => {
+            (preloadCandidateBundleNames, go, stop) =>
+            {
                 // all assetBundles should not be download. on memory loaded ABs are not updatable.
                 True(preloadCandidateBundleNames.Length == loadedAssetBundleNames.Length);
                 go();
             },
-            progress => {},
-            () => {
+            progress => { },
+            () =>
+            {
                 preloadDone = true;
             },
-            (code, reason, status) => {
+            (code, reason, status) =>
+            {
                 Fail("code:" + code + " reason:" + reason);
             },
-            (failedAssetBundleName, code, reason, status) => {
+            (failedAssetBundleName, code, reason, status) =>
+            {
                 Fail("failedAssetBundleName:" + failedAssetBundleName + " code:" + code + " reason:" + reason);
             },
             5
@@ -800,7 +937,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner {
 
         yield return WaitUntil(
             () => preloadDone,
-            () => {throw new TimeoutException("failed to preload.");},
+            () => { throw new TimeoutException("failed to preload."); },
             10
         );
     }

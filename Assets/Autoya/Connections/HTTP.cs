@@ -7,340 +7,422 @@ using UnityEngine.Networking;
 /**
 	implementation of HTTP connection with timeout.
 */
-namespace AutoyaFramework.Connections.HTTP {
+namespace AutoyaFramework.Connections.HTTP
+{
 
-	public class HTTPConnection {
-		
-		// response by string
-		public IEnumerator Get (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Get(url)) {
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
-				
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+    public class HTTPConnection
+    {
 
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+        // response by string
+        public IEnumerator Get(string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+            using (var request = UnityWebRequest.Get(url))
+            {
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
 
-				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                var p = request.Send();
 
-		public IEnumerator Post (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Post(url, data)) {
-				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
+                while (!p.isDone)
+                {
+                    yield return null;
 
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
-				
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
 
-				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
 
-		public IEnumerator Put (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Put(url, data)) {
-				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
 
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
 
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+        public IEnumerator Post(string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+            using (var request = UnityWebRequest.Post(url, data))
+            {
+                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
 
-				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                var p = request.Send();
 
-		public IEnumerator Delete (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Delete(url)) {
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
-				
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+                while (!p.isDone)
+                {
+                    yield return null;
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
 
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
 
-				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
 
-		// response by byte[]
-		public IEnumerator GetByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Get(url)) {
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
-				
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+        public IEnumerator Put(string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+            using (var request = UnityWebRequest.Put(url, data))
+            {
+                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                var p = request.Send();
 
-				var result = request.downloadHandler.data;
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                while (!p.isDone)
+                {
+                    yield return null;
 
-		public IEnumerator PostByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Post(url, data)) {
-				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
 
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
-				
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
 
-				var result = request.downloadHandler.data;
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
 
-		public IEnumerator PutByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Put(url, data)) {
-				request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
+                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
 
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+        public IEnumerator Delete(string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, string> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+            using (var request = UnityWebRequest.Delete(url))
+            {
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                var p = request.Send();
 
-				var result = request.downloadHandler.data;
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
+                while (!p.isDone)
+                {
+                    yield return null;
 
-		public IEnumerator DeleteByBytes (string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec=0) {
-			var currentDate = DateTime.UtcNow;
-			var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			
-			using (var request = UnityWebRequest.Delete(url)) {
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
-				
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
 
-					// check timeout.
-					if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
-						yield break;
-					}
-				}
-				
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
 
-				var result = request.downloadHandler.data;
-				if (200 <= responseCode && responseCode <= 299) {
-					succeeded(connectionId, responseCode, responseHeaders, result);
-				} else {
-					failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
-				}
-			}
-		}
-	}
+                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
+
+        // response by byte[]
+        public IEnumerator GetByBytes(string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+
+            using (var request = UnityWebRequest.Get(url))
+            {
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
+
+                var p = request.Send();
+
+                while (!p.isDone)
+                {
+                    yield return null;
+
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
+
+                var result = request.downloadHandler.data;
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
+
+        public IEnumerator PostByBytes(string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+
+            using (var request = UnityWebRequest.Post(url, data))
+            {
+                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
+
+                var p = request.Send();
+
+                while (!p.isDone)
+                {
+                    yield return null;
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
+
+                var result = request.downloadHandler.data;
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
+
+        public IEnumerator PutByBytes(string connectionId, Dictionary<string, string> requestHeader, string url, string data, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+
+            using (var request = UnityWebRequest.Put(url, data))
+            {
+                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
+
+                var p = request.Send();
+
+                while (!p.isDone)
+                {
+                    yield return null;
+
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
+
+                var result = request.downloadHandler.data;
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
+
+        public IEnumerator DeleteByBytes(string connectionId, Dictionary<string, string> requestHeader, string url, Action<string, int, Dictionary<string, string>, byte[]> succeeded, Action<string, int, string, Dictionary<string, string>> failed, double timeoutSec = 0)
+        {
+            var currentDate = DateTime.UtcNow;
+            var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+
+            using (var request = UnityWebRequest.Delete(url))
+            {
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
+
+                var p = request.Send();
+
+                while (!p.isDone)
+                {
+                    yield return null;
+
+                    // check timeout.
+                    if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        yield break;
+                    }
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
+
+                var result = request.downloadHandler.data;
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    succeeded(connectionId, responseCode, responseHeaders, result);
+                }
+                else
+                {
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                }
+            }
+        }
+    }
 }

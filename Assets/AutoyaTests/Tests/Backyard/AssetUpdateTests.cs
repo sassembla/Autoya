@@ -35,55 +35,67 @@ using UnityEngine;
         
         その上で、画面遷移をこの中 or 後ろで継続して実行してもらう。
  */
-public class AssetUpdateTests : MiyamasuTestRunner {
+public class AssetUpdateTests : MiyamasuTestRunner
+{
     private const string resversion = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
-    
-    [MSetup] public IEnumerator Setup () {
+
+    [MSetup]
+    public IEnumerator Setup()
+    {
         var discarded = false;
 
         // delete assetBundleList anyway.
         Autoya.AssetBundle_DiscardAssetBundleList(
-            () => {
+            () =>
+            {
                 discarded = true;
             },
-            (code, reason) => {
-                switch (code) {
-                    case -1: {
-                        discarded = true;
-                        break;
-                    }
-                    default: {
-                        Fail("code:" + code + " reason:" + reason);
-                        break;
-                    }
+            (code, reason) =>
+            {
+                switch (code)
+                {
+                    case -1:
+                        {
+                            discarded = true;
+                            break;
+                        }
+                    default:
+                        {
+                            Fail("code:" + code + " reason:" + reason);
+                            break;
+                        }
                 }
             }
         );
 
         yield return WaitUntil(
             () => discarded,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
     }
-    [MTeardown] public IEnumerator Teardown () {
+    [MTeardown]
+    public IEnumerator Teardown()
+    {
         var discarded = false;
 
         // delete assetBundleList anyway.
         Autoya.AssetBundle_DiscardAssetBundleList(
-            () => {
+            () =>
+            {
                 discarded = true;
             },
-            (code, reason) => {
+            (code, reason) =>
+            {
                 Fail("code:" + code + " reason:" + reason);
             }
         );
 
         yield return WaitUntil(
             () => discarded,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
@@ -92,35 +104,41 @@ public class AssetUpdateTests : MiyamasuTestRunner {
 
 
 
-    private Autoya.ShouldRequestOrNot RequestYes (string newVersion) {
+    private Autoya.ShouldRequestOrNot RequestYes(string newVersion)
+    {
         var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + newVersion + "/" + "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
         return Autoya.ShouldRequestOrNot.Yes(url);
     }
 
-    private Autoya.ShouldRequestOrNot RequestNo (string newVersion) {
+    private Autoya.ShouldRequestOrNot RequestNo(string newVersion)
+    {
         return Autoya.ShouldRequestOrNot.No();
     }
 
 
 
-    [MTest] public IEnumerator ReceiveFirstList () {
+    [MTest]
+    public IEnumerator ReceiveFirstList()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 // do nothing.
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
 
         // リスト1.0.0が保持されている。
@@ -129,36 +147,41 @@ public class AssetUpdateTests : MiyamasuTestRunner {
     }
 
 
-    [MTest] public IEnumerator ReceiveListUpdated () {
+    [MTest]
+    public IEnumerator ReceiveListUpdated()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 // do nothing.
                 Fail("code:" + code + " reason:" + reason);
             }
         );
 
-        
+
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
 
         // リスト1.0.0が保持されている。
         // 通信のレスポンスヘッダーに特定の値が含まれていることで、listの更新リクエストを送り出す機構を着火する。
-        
+
 
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            newVersion => {
+            newVersion =>
+            {
                 listWillBeDownloaded = true;
                 True(newVersion == "1.0.1");
                 return RequestYes(newVersion);
@@ -168,7 +191,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // リストの更新判断の関数をセット
         var listWillBeUpdated = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
+            condition =>
+            {
                 listWillBeUpdated = true;
                 return true;
             }
@@ -176,56 +200,63 @@ public class AssetUpdateTests : MiyamasuTestRunner {
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
-       
+
 
 
         yield return WaitUntil(
             () => listWillBeDownloaded,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         yield return WaitUntil(
             () => listWillBeUpdated,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
     }
 
-    [MTest] public IEnumerator ReceiveUpdatedListThenListWillBeUpdated () {
+    [MTest]
+    public IEnumerator ReceiveUpdatedListThenListWillBeUpdated()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 // do nothing.
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
 
         // リスト1.0.0が保持されている。
         // 通信のレスポンスヘッダーに特定の値が含まれていることで、listの更新リクエストを送り出す機構を着火する。
-        
+
 
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            newVersion => {
+            newVersion =>
+            {
                 True(newVersion == "1.0.1");
                 return RequestYes(newVersion);
             }
@@ -234,7 +265,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // リストの更新判断の関数をセット
         var listWillBeUpdated = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
+            condition =>
+            {
                 listWillBeUpdated = true;
                 return true;
             }
@@ -242,18 +274,20 @@ public class AssetUpdateTests : MiyamasuTestRunner {
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listWillBeUpdated,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         // list is updated.
@@ -262,34 +296,39 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
     }
 
-    [MTest] public IEnumerator ReceiveUpdatedListThenIgnore () {
+    [MTest]
+    public IEnumerator ReceiveUpdatedListThenIgnore()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 // do nothing.
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
 
         // リスト1.0.0が保持されている。
         // 通信のレスポンスヘッダーに特定の値が含まれていることで、listの更新リクエストを送り出す機構を着火する。
-        
+
 
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            newVersion => {
+            newVersion =>
+            {
                 listWillBeDownloaded = true;
                 True(newVersion == "1.0.1");
                 return RequestYes(newVersion);
@@ -299,7 +338,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // リストの更新判断の関数をセット、ここでは更新を無視する。
         var listWillBeIgnored = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
+            condition =>
+            {
                 listWillBeIgnored = true;
                 return false;
             }
@@ -307,58 +347,65 @@ public class AssetUpdateTests : MiyamasuTestRunner {
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listWillBeDownloaded,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         yield return WaitUntil(
             () => listWillBeIgnored,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
-        
+
         // list is not updated yet.
         True(Autoya.AssetBundle_AssetBundleList().version == "1.0.0");
 
         True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
     }
 
-    [MTest] public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached () {
+    [MTest]
+    public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached()
+    {
         var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
         var version = "1.0.0";
-        
+
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
             AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
-            status => {
+            status =>
+            {
                 done = true;
             },
-            (code, reason, autoyaStatus) => {
+            (code, reason, autoyaStatus) =>
+            {
                 // do nothing.
             }
         );
 
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("faild to get assetBundleList.");}
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
 
         // リスト1.0.0が保持されている。
         // 通信のレスポンスヘッダーに特定の値が含まれていることで、listの更新リクエストを送り出す機構を着火する。
-        
+
 
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            newVersion => {
+            newVersion =>
+            {
                 True(newVersion == "1.0.1");
                 return RequestYes(newVersion);
             }
@@ -368,7 +415,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // 無視されたリストはpostponedなリストとしてメモリ上に保持される。これによって無駄な取得リクエストを省く。
         var listWillBeIgnored = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
+            condition =>
+            {
                 listWillBeIgnored = true;
                 return false;
             }
@@ -376,18 +424,20 @@ public class AssetUpdateTests : MiyamasuTestRunner {
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listWillBeIgnored,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         // list is not updated yet.
@@ -402,7 +452,8 @@ public class AssetUpdateTests : MiyamasuTestRunner {
         // set to the new list to be updated.
         var listWillBeUpdated = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition => {
+            condition =>
+            {
                 listWillBeUpdated = true;
                 return true;
             }
@@ -410,18 +461,20 @@ public class AssetUpdateTests : MiyamasuTestRunner {
 
         // get list again.
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1", 
-            (conId, data) => {
+            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            (conId, data) =>
+            {
                 // pass.
-            }, 
-            (conId, code, reason, status) => {
+            },
+            (conId, code, reason, status) =>
+            {
                 Fail();
             }
         );
 
         yield return WaitUntil(
             () => listWillBeUpdated,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
 
         // cached postponed list is deleted.

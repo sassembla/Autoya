@@ -9,44 +9,54 @@ using AutoyaFramework.Settings.App;
 /**
     constructor implementation of Autoya.
 */
-namespace AutoyaFramework {
-    public partial class Autoya {
+namespace AutoyaFramework
+{
+    public partial class Autoya
+    {
 
         private ICoroutineUpdater mainthreadDispatcher;
-        
+
         /**
             all conditions which Autoya has.
         */
-        private class AutoyaParameters {
-            public string _app_version;
-            public string _assets_version;
-            
-            public string _buildNumber;
+        private class AutoyaParameters
+        {
+            // public string _app_version;
+            // public string _assets_version;
+
+            // public string _buildNumber;
         }
 
-        private Autoya (string basePath="") {
+        private Autoya(string basePath = "")
+        {
             // Debug.LogWarning("autoya initialize start. basePath:" + basePath);
-            
+
             var isPlayer = false;
-            
-            if (Application.isPlaying) {
+
+            if (Application.isPlaying)
+            {
 
                 isPlayer = true;
 
                 // create game object for Autoya.
                 var go = GameObject.Find("AutoyaMainthreadDispatcher");
-                if (go == null) {
+                if (go == null)
+                {
                     go = new GameObject("AutoyaMainthreadDispatcher");
                     this.mainthreadDispatcher = go.AddComponent<AutoyaMainThreadDispatcher>();
                     GameObject.DontDestroyOnLoad(go);
-                } else {
+                }
+                else
+                {
                     this.mainthreadDispatcher = go.GetComponent<AutoyaMainThreadDispatcher>();
                 }
-            } else {
+            }
+            else
+            {
                 // create editor runnner for Autoya.
                 this.mainthreadDispatcher = new EditorUpdator();
             }
-            
+
             _autoyaFilePersistence = new FilePersistence(basePath);
 
             _autoyaHttp = new HTTPConnection();
@@ -56,26 +66,28 @@ namespace AutoyaFramework {
             InitializeAppManifest();
 
             var isFirstBoot = IsFirstBoot();
-            
+
             /*
                 start authentication.
             */
             Authenticate(
-                isFirstBoot, 
-                () => {
+                isFirstBoot,
+                () =>
+                {
                     /*
                         initialize purchase feature.
                     */
-                    if (isPlayer) {
+                    if (isPlayer)
+                    {
                         ReloadPurchasability();
                     }
                 }
             );
         }
 
-        public static void Shutdown () {
+        public static void Shutdown()
+        {
             autoya.mainthreadDispatcher.Destroy();
         }
     }
 }
-    

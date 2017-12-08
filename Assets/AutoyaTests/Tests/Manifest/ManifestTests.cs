@@ -3,35 +3,45 @@ using AutoyaFramework.AppManifest;
 using Miyamasu;
 using UnityEngine;
 
-public class ManifestTests : MiyamasuTestRunner {
+public class ManifestTests : MiyamasuTestRunner
+{
     AppManifestStore<RuntimeManifestObject, BuildManifestObject> store;
 
-    private bool Overwriter (string dataStr) {
+    private bool Overwriter(string dataStr)
+    {
         return true;
     }
 
-    private string Loader () {
+    private string Loader()
+    {
         return string.Empty;
     }
 
-    [MSetup] public void Setup () {
+    [MSetup]
+    public void Setup()
+    {
         store = new AppManifestStore<RuntimeManifestObject, BuildManifestObject>(Overwriter, Loader);
     }
-    
+
     // マニフェストを取得する
-	[MTest] public IEnumerator GetManifest () {
+    [MTest]
+    public IEnumerator GetManifest()
+    {
         var manifestDict = store.GetParamDict();
-        
+
         var any = false;
-        foreach (var manifestParamItem in manifestDict) {
+        foreach (var manifestParamItem in manifestDict)
+        {
             any = true;
         }
         True(any);
-        
-        yield break;
-	}
 
-    [MTest] public IEnumerator UpdateRuntimeManifest () {
+        yield break;
+    }
+
+    [MTest]
+    public IEnumerator UpdateRuntimeManifest()
+    {
         // load
         var oldOne = store.GetRuntimeManifest();
 
@@ -40,10 +50,10 @@ public class ManifestTests : MiyamasuTestRunner {
         // update
         var succeeded = store.UpdateRuntimeManifest(oldOne);
         True(succeeded);
-        
+
         var newOne = store.GetRuntimeManifest();
         True(newOne.resVersion == "1.1.0");
 
         yield break;
-	}
+    }
 }

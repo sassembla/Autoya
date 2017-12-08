@@ -9,180 +9,208 @@ using UnityEngine;
 /**
 	test for purchase via Autoya.
 */
-public class PurchaseImplementationTests : MiyamasuTestRunner {
-	private void DeleteAllData (string path) {
-		if (Directory.Exists(path)) {
-			Directory.Delete(path, true);
-		}
-	}
-	
-	[MSetup] public IEnumerator Setup () {
-		Autoya.forceMaintenance = false;
-		Autoya.forceFailAuthentication = false;
-		Autoya.forceFailHttp = false;
+public class PurchaseImplementationTests : MiyamasuTestRunner
+{
+    private void DeleteAllData(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
+    }
 
-		var dataPath = Application.persistentDataPath;
+    [MSetup]
+    public IEnumerator Setup()
+    {
+        Autoya.forceMaintenance = false;
+        Autoya.forceFailAuthentication = false;
+        Autoya.forceFailHttp = false;
 
-		var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-		DeleteAllData(fwPath);
+        var dataPath = Application.persistentDataPath;
 
-		Autoya.TestEntryPoint(dataPath);
-		
-		yield return WaitUntil(
-			() => {
-				return Autoya.Purchase_IsReady();
-			},
-			() => {throw new TimeoutException("failed to auth or failed to ready purchase.");},
-			10
-		);
-	}
+        var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+        DeleteAllData(fwPath);
 
-	[MTeardown] public void Teardown () {
-		Autoya.forceMaintenance = false;
-		Autoya.forceFailAuthentication = false;
-		Autoya.forceFailHttp = false;
-	}
+        Autoya.TestEntryPoint(dataPath);
 
-	[MTest] public IEnumerator GetProductInfos () {
-		var products = Autoya.Purchase_ProductInfos();
-		True(products.Length == 3, "not match.");
-		yield break;
-	}
+        yield return WaitUntil(
+            () =>
+            {
+                return Autoya.Purchase_IsReady();
+            },
+            () => { throw new TimeoutException("failed to auth or failed to ready purchase."); },
+            10
+        );
+    }
 
-	[MTest] public IEnumerator PurchaseViaAutoya () {
-		var succeeded = false;
-		var done = false;
-		
-		var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
+    [MTeardown]
+    public void Teardown()
+    {
+        Autoya.forceMaintenance = false;
+        Autoya.forceFailAuthentication = false;
+        Autoya.forceFailHttp = false;
+    }
 
-		Autoya.Purchase(
-			purchaseId, 
-			"1000_gold_coins",
-			pId => {
-				done = true;
-				succeeded = true;
-			}, 
-			(pId, err, reason, autoyaStatus) => {
-				done = true;
-				succeeded = false;
-			}
-		);
+    [MTest]
+    public IEnumerator GetProductInfos()
+    {
+        var products = Autoya.Purchase_ProductInfos();
+        True(products.Length == 3, "not match.");
+        yield break;
+    }
 
-		yield return WaitUntil(
-			() => done,
-			() => {throw new TimeoutException("failed to purchase.");},
-			10
-		);
-		True(succeeded, "not successed.");
-	}
+    [MTest]
+    public IEnumerator PurchaseViaAutoya()
+    {
+        var succeeded = false;
+        var done = false;
 
-	// 課金中にリソースが切り替わったよエラーが来たら <- これは来ないようにしたい。
+        var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
 
-	[MTest] public IEnumerator RetrievePaidPurchase () {
-		Debug.LogWarning("not yet.");
-		// SendPaidTicketが発生する状態を作り出す。まずPurchaseを作り出す。そしてそのPurchaseをPendingした状態で、ブロックを解除する。
-		// なんか難しいので簡単に書ける方法ないかな。そもそもサポートしないほうがいいのかな。どうなんだろ。
-		/*
+        Autoya.Purchase(
+            purchaseId,
+            "1000_gold_coins",
+            pId =>
+            {
+                done = true;
+                succeeded = true;
+            },
+            (pId, err, reason, autoyaStatus) =>
+            {
+                done = true;
+                succeeded = false;
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("failed to purchase."); },
+            10
+        );
+        True(succeeded, "not successed.");
+    }
+
+    // 課金中にリソースが切り替わったよエラーが来たら <- これは来ないようにしたい。
+
+    [MTest]
+    public IEnumerator RetrievePaidPurchase()
+    {
+        Debug.LogWarning("not yet.");
+        // SendPaidTicketが発生する状態を作り出す。まずPurchaseを作り出す。そしてそのPurchaseをPendingした状態で、ブロックを解除する。
+        // なんか難しいので簡単に書ける方法ないかな。そもそもサポートしないほうがいいのかな。どうなんだろ。
+        /*
 			機構を起動 -> 停止
 		 */
-		 yield break;
-	}
+        yield break;
+    }
 
-	[MTest] public IEnumerator MaintenainceInPurchase () {
-		var failed = false;
-		
-		var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
+    [MTest]
+    public IEnumerator MaintenainceInPurchase()
+    {
+        var failed = false;
 
-		Autoya.forceMaintenance = true;
+        var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
 
-		Autoya.Purchase(
-			purchaseId, 
-			"1000_gold_coins",
-			pId => {
-				Fail();
-			}, 
-			(pId, err, reason, autoyaStatus) => {
-				True(autoyaStatus.inMaintenance);
-				failed = true;
-			}
-		);
+        Autoya.forceMaintenance = true;
 
-		yield return WaitUntil(
-			() => failed,
-			() => {throw new TimeoutException("failed to fail.");},
-			10
-		);
-	}
+        Autoya.Purchase(
+            purchaseId,
+            "1000_gold_coins",
+            pId =>
+            {
+                Fail();
+            },
+            (pId, err, reason, autoyaStatus) =>
+            {
+                True(autoyaStatus.inMaintenance);
+                failed = true;
+            }
+        );
 
-	[MTest] public IEnumerator AuthFailedInPurchase () {
-		var failed = false;
-		
-		var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
+        yield return WaitUntil(
+            () => failed,
+            () => { throw new TimeoutException("failed to fail."); },
+            10
+        );
+    }
 
-		Autoya.forceFailAuthentication = true;
+    [MTest]
+    public IEnumerator AuthFailedInPurchase()
+    {
+        var failed = false;
 
-		Autoya.Purchase(
-			purchaseId, 
-			"1000_gold_coins",
-			pId => {
-				Fail();
-			}, 
-			(pId, err, reason, autoyaStatus) => {
-				True(autoyaStatus.isAuthFailed);
-				failed = true;
-			}
-		);
+        var purchaseId = "myPurchaseId_" + Guid.NewGuid().ToString();
 
-		yield return WaitUntil(
-			() => failed,
-			() => {throw new TimeoutException("failed to fail.");},
-			10
-		);
-	}
+        Autoya.forceFailAuthentication = true;
 
-	[MTest] public IEnumerator PurchaseReadyGetProductsFail () {
-		// まずシャットダウン
-		Autoya.Purchase_DEBUG_Shutdown();
+        Autoya.Purchase(
+            purchaseId,
+            "1000_gold_coins",
+            pId =>
+            {
+                Fail();
+            },
+            (pId, err, reason, autoyaStatus) =>
+            {
+                True(autoyaStatus.isAuthFailed);
+                failed = true;
+            }
+        );
 
-		// 通信を必ず失敗するようにセット
-		Autoya.forceFailHttp = true;
+        yield return WaitUntil(
+            () => failed,
+            () => { throw new TimeoutException("failed to fail."); },
+            10
+        );
+    }
 
-		// routerを再度生成する。
-		Autoya.Purchase_DEBUG_Reload();
+    [MTest]
+    public IEnumerator PurchaseReadyGetProductsFail()
+    {
+        // まずシャットダウン
+        Autoya.Purchase_DEBUG_Shutdown();
 
-		// attemptReadyPurchaseを着火する必要があるタイミングに切り替わるのを待つ
-		yield return WaitUntil(
-			() => Autoya.Purchase_NeedAttemptReadyPurchase(),
-			() => {throw new TimeoutException("too late.");},
-			10
-		);
-	}
+        // 通信を必ず失敗するようにセット
+        Autoya.forceFailHttp = true;
 
-	[MTest] public IEnumerator PurchaseReadyGetProductsFailThenReadyAgain () {
-		// まずシャットダウン
-		Autoya.Purchase_DEBUG_Shutdown();
+        // routerを再度生成する。
+        Autoya.Purchase_DEBUG_Reload();
 
-		// 通信を必ず失敗するようにセット
-		Autoya.forceFailHttp = true;
+        // attemptReadyPurchaseを着火する必要があるタイミングに切り替わるのを待つ
+        yield return WaitUntil(
+            () => Autoya.Purchase_NeedAttemptReadyPurchase(),
+            () => { throw new TimeoutException("too late."); },
+            10
+        );
+    }
 
-		// routerを再度生成する。
-		Autoya.Purchase_DEBUG_Reload();
+    [MTest]
+    public IEnumerator PurchaseReadyGetProductsFailThenReadyAgain()
+    {
+        // まずシャットダウン
+        Autoya.Purchase_DEBUG_Shutdown();
 
-		// attemptReadyPurchaseを着火する必要があるタイミングに切り替わるのを待つ
-		yield return WaitUntil(
-			() => Autoya.Purchase_NeedAttemptReadyPurchase(),
-			() => {throw new TimeoutException("too late.");},
-			10
-		);
+        // 通信を必ず失敗するようにセット
+        Autoya.forceFailHttp = true;
 
-		Autoya.forceFailHttp = false;
+        // routerを再度生成する。
+        Autoya.Purchase_DEBUG_Reload();
 
-		Autoya.Purchase_AttemptReadyPurcase();
+        // attemptReadyPurchaseを着火する必要があるタイミングに切り替わるのを待つ
+        yield return WaitUntil(
+            () => Autoya.Purchase_NeedAttemptReadyPurchase(),
+            () => { throw new TimeoutException("too late."); },
+            10
+        );
 
-		yield return WaitUntil(
-			() => Autoya.Purchase_IsReady(),
-			() => {throw new TimeoutException("too late.");},
-			10
-		);
-	}
+        Autoya.forceFailHttp = false;
+
+        Autoya.Purchase_AttemptReadyPurcase();
+
+        yield return WaitUntil(
+            () => Autoya.Purchase_IsReady(),
+            () => { throw new TimeoutException("too late."); },
+            10
+        );
+    }
 }

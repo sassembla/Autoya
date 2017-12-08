@@ -53,7 +53,7 @@ public class InformationEventReceiver : MonoBehaviour, IUUebViewEventHandler
         throw new System.NotImplementedException();
         // このイベントを呼ぶ実装がどこにもないのでまだ着火されない。
     }
-    
+
 
 
 

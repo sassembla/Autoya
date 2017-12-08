@@ -16,27 +16,35 @@ using UnityEngine;
 /**
 	tests for Autoya Udp feature.
 */
-public class UdpTests : MiyamasuTestRunner {
+public class UdpTests : MiyamasuTestRunner
+{
     private UdpReceiver udpReceiver;
     private UdpSender udpSender;
 
-    [MSetup] public void Setup () {
+    [MSetup]
+    public void Setup()
+    {
 
     }
 
-    [MTeardown] public void Teardown () {
+    [MTeardown]
+    public void Teardown()
+    {
         udpReceiver.Close();
         udpSender.Close();
     }
-    
-    [MTest] public IEnumerator SetReceiverThenSend () {
+
+    [MTest]
+    public IEnumerator SetReceiverThenSend()
+    {
         var received = false;
         var port = 8888;
 
         udpReceiver = new UdpReceiver(
             IP.LocalIPAddressSync(),
-            port, 
-            bytes => {
+            port,
+            bytes =>
+            {
                 True(bytes.Length == 4);
                 received = true;
             }
@@ -44,23 +52,26 @@ public class UdpTests : MiyamasuTestRunner {
 
         // send udp data.
         udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        udpSender.Send(new byte[]{1,2,3,4});
+        udpSender.Send(new byte[] { 1, 2, 3, 4 });
 
         yield return WaitUntil(
             () => received,
-            () => {throw new TimeoutException("failed.");}
+            () => { throw new TimeoutException("failed."); }
         );
     }
 
-    [MTest] public IEnumerator SetReceiverThenSendTwice () {
+    [MTest]
+    public IEnumerator SetReceiverThenSendTwice()
+    {
         var count = 2;
         var receivedCount = 0;
         var port = 8888;
 
         udpReceiver = new UdpReceiver(
             IP.LocalIPAddressSync(),
-            port, 
-            bytes => {
+            port,
+            bytes =>
+            {
                 True(bytes.Length == 4);
                 receivedCount++;
             }
@@ -68,24 +79,27 @@ public class UdpTests : MiyamasuTestRunner {
 
         // send udp data.
         udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        udpSender.Send(new byte[]{1,2,3,4});
-        udpSender.Send(new byte[]{1,2,3,4});
+        udpSender.Send(new byte[] { 1, 2, 3, 4 });
+        udpSender.Send(new byte[] { 1, 2, 3, 4 });
 
         yield return WaitUntil(
             () => count == receivedCount,
-            () => {throw new TimeoutException("failed.");}
+            () => { throw new TimeoutException("failed."); }
         );
     }
 
-    [MTest] public IEnumerator SetReceiverThenSendManyTimes () {
+    [MTest]
+    public IEnumerator SetReceiverThenSendManyTimes()
+    {
         var count = 1000;
         var receivedCount = 0;
         var port = 8888;
 
         udpReceiver = new UdpReceiver(
             IP.LocalIPAddressSync(),
-            port, 
-            bytes => {
+            port,
+            bytes =>
+            {
                 True(bytes.Length == 4);
                 receivedCount++;
             }
@@ -93,23 +107,27 @@ public class UdpTests : MiyamasuTestRunner {
 
         // send udp data.
         udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        for (var i = 0; i < count; i++) {
-            udpSender.Send(new byte[]{1,2,3,4});
+        for (var i = 0; i < count; i++)
+        {
+            udpSender.Send(new byte[] { 1, 2, 3, 4 });
         }
 
         yield return WaitUntil(
             () => count == receivedCount,
-            () => {throw new TimeoutException("failed.");}
+            () => { throw new TimeoutException("failed."); }
         );
     }
 
-    [MTest] public IEnumerator SetReceiverThenSendManyTimesWithValidation () {
+    [MTest]
+    public IEnumerator SetReceiverThenSendManyTimesWithValidation()
+    {
         var count = 1000;
         var receivedCount = 0;
         var port = 8888;
 
         var data = new byte[100];
-        for (var i = 0; i < data.Length; i++) {
+        for (var i = 0; i < data.Length; i++)
+        {
             data[i] = (byte)UnityEngine.Random.Range(byte.MinValue, byte.MaxValue);
         }
 
@@ -120,22 +138,28 @@ public class UdpTests : MiyamasuTestRunner {
 
         // add hash data to head of new data.
         var newData = new byte[data.Length + hashLen];
-        for (var i = 0; i < newData.Length; i++) {
-            if (i < hashLen) {
+        for (var i = 0; i < newData.Length; i++)
+        {
+            if (i < hashLen)
+            {
                 newData[i] = origin[i];
-            } else {
-                newData[i] = data[i-hashLen];
+            }
+            else
+            {
+                newData[i] = data[i - hashLen];
             }
         }
 
         udpReceiver = new UdpReceiver(
             IP.LocalIPAddressSync(),
-            port, 
-            bytes => {
+            port,
+            bytes =>
+            {
                 True(bytes.Length == newData.Length);
 
                 var hash = md5.ComputeHash(bytes, hashLen, bytes.Length - hashLen);
-                for (var i = 0; i < hash.Length; i++) {
+                for (var i = 0; i < hash.Length; i++)
+                {
                     True(hash[i] == bytes[i]);
                 }
 
@@ -145,15 +169,16 @@ public class UdpTests : MiyamasuTestRunner {
 
         // send udp data.
         udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        for (var i = 0; i < count; i++) {
+        for (var i = 0; i < count; i++)
+        {
             udpSender.Send(newData);
         }
 
         yield return WaitUntil(
             () => count == receivedCount,
-            () => {throw new TimeoutException("failed. receivedCount:" + receivedCount);}
+            () => { throw new TimeoutException("failed. receivedCount:" + receivedCount); }
         );
     }
 
-    
+
 }

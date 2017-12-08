@@ -4,8 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class NotificationSample : MonoBehaviour {
-	#if UNITY_IOS
+/*
+	実験中。
+ */
+public class NotificationSample : MonoBehaviour
+{
+
+#if UNITY_IOS
 	public void UnregisterRemoteNotification () {
 		// この処理はlocalには関係がないので、うーーん、リモートのみの解除っていうものすごく特殊な奴になるな。
 		// この概念のlocalに該当するものは無い。なぜなら登録してないから。なるほど。
@@ -142,5 +147,5 @@ public class NotificationSample : MonoBehaviour {
 		}
 		frame++;
 	}
-	#endif
+#endif
 }

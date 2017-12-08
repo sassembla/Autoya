@@ -10,374 +10,424 @@ using UnityEngine;
 /**
 	test for authorization flow control.
 */
-public class AuthImplementationTests : MiyamasuTestRunner {
-	private void DeleteAllData (string path) {
-		if (Directory.Exists(path)) {
-			Directory.Delete(path, true);
-		}
-	}
-	
-	[MSetup] public IEnumerator Setup () {
-		Autoya.ResetAllForceSetting();
+public class AuthImplementationTests : MiyamasuTestRunner
+{
+    private void DeleteAllData(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+        }
+    }
 
-		var authorized = false;
-		var dataPath = Application.persistentDataPath;
+    [MSetup]
+    public IEnumerator Setup()
+    {
+        Autoya.ResetAllForceSetting();
 
-		var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
-		DeleteAllData(fwPath);
+        var authorized = false;
+        var dataPath = Application.persistentDataPath;
 
-		Autoya.TestEntryPoint(dataPath);
+        var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
+        DeleteAllData(fwPath);
 
-		Autoya.Auth_SetOnAuthenticated(
-			() => {
-				authorized = true;
-			}
-		);
+        Autoya.TestEntryPoint(dataPath);
 
-		yield return WaitUntil(
-			() => {
-				return authorized;
-			},
-			() => {throw new TimeoutException("timeout in setup.");},
-			10
-		);
+        Autoya.Auth_SetOnAuthenticated(
+            () =>
+            {
+                authorized = true;
+            }
+        );
 
-		True(Autoya.Auth_IsAuthenticated(), "not logged in.");
-	}
+        yield return WaitUntil(
+            () =>
+            {
+                return authorized;
+            },
+            () => { throw new TimeoutException("timeout in setup."); },
+            10
+        );
 
-	[MTeardown] public IEnumerator Teardown () {
-		Autoya.Shutdown();
-		Autoya.ResetAllForceSetting();
-		while (GameObject.Find("AutoyaMainthreadDispatcher") != null) {
-			yield return null;
-		}
-	}
+        True(Autoya.Auth_IsAuthenticated(), "not logged in.");
+    }
 
-	
-	[MTest] public IEnumerator WaitDefaultAuthenticate () {
-		True(Autoya.Auth_IsAuthenticated(), "not yet logged in.");
-		yield break;
-	}
+    [MTeardown]
+    public IEnumerator Teardown()
+    {
+        Autoya.Shutdown();
+        Autoya.ResetAllForceSetting();
+        while (GameObject.Find("AutoyaMainthreadDispatcher") != null)
+        {
+            yield return null;
+        }
+    }
 
-	[MTest] public IEnumerator DeleteAllUserData () {
-		Autoya.Auth_Logout();
-		
-		var authenticated = Autoya.Auth_IsAuthenticated();
-		True(!authenticated, "not deleted.");
 
-		Autoya.Auth_AttemptAuthenticationIfNeed();
-		
-		yield return WaitUntil(
-			() => Autoya.Auth_IsAuthenticated(),
-			() => {throw new TimeoutException("failed to firstBoot.");}
-		);
-	}
+    [MTest]
+    public IEnumerator WaitDefaultAuthenticate()
+    {
+        True(Autoya.Auth_IsAuthenticated(), "not yet logged in.");
+        yield break;
+    }
 
-	[MTest] public IEnumerator HandleBootAuthFailed () {
-		Autoya.forceFailFirstBoot = true;
+    [MTest]
+    public IEnumerator DeleteAllUserData()
+    {
+        Autoya.Auth_Logout();
 
-		Autoya.Auth_Logout();
-		
-		var bootAuthFailHandled = false;
-		Autoya.Auth_SetOnBootAuthFailed(
-			(code, reason) => {
-				bootAuthFailHandled = true;
-			}
-		);
+        var authenticated = Autoya.Auth_IsAuthenticated();
+        True(!authenticated, "not deleted.");
 
-		Autoya.Auth_AttemptAuthenticationIfNeed();
-		
-		yield return WaitUntil(
-			() => bootAuthFailHandled,
-			() => {throw new TimeoutException("failed to handle bootAuthFailed.");},
-			10
-		);
-		
-		Autoya.forceFailFirstBoot = false;
-	}
+        Autoya.Auth_AttemptAuthenticationIfNeed();
 
-	[MTest] public IEnumerator HandleBootAuthFailedThenAttemptAuthentication () {
-		Autoya.forceFailFirstBoot = true;
+        yield return WaitUntil(
+            () => Autoya.Auth_IsAuthenticated(),
+            () => { throw new TimeoutException("failed to firstBoot."); }
+        );
+    }
 
-		Autoya.Auth_Logout();
-		
-		var bootAuthFailHandled = false;
-		Autoya.Auth_SetOnBootAuthFailed(
-			(code, reason) => {
-				bootAuthFailHandled = true;
-			}
-		);
-		
-		Autoya.Auth_AttemptAuthenticationIfNeed();
-		
-		yield return WaitUntil(
-			() => bootAuthFailHandled,
-			() => {throw new TimeoutException("failed to handle bootAuthFailed.");},
-			10
-		);
-		
-		Autoya.forceFailFirstBoot = false;
+    [MTest]
+    public IEnumerator HandleBootAuthFailed()
+    {
+        Autoya.forceFailFirstBoot = true;
 
-		Autoya.Auth_AttemptAuthenticationIfNeed();
-		
-		yield return WaitUntil(
-			() => Autoya.Auth_IsAuthenticated(),
-			() => {throw new TimeoutException("failed to attempt auth.");}
-		);
-	}
-	
-	[MTest] public IEnumerator HandleLogoutThenAuthenticationAttemptSucceeded () {
-		Autoya.Auth_Logout();
+        Autoya.Auth_Logout();
 
-		Autoya.Auth_AttemptAuthenticationIfNeed();
+        var bootAuthFailHandled = false;
+        Autoya.Auth_SetOnBootAuthFailed(
+            (code, reason) =>
+            {
+                bootAuthFailHandled = true;
+            }
+        );
 
-		yield return WaitUntil(
-			() => Autoya.Auth_IsAuthenticated(),
-			() => {throw new TimeoutException("failed to auth");}
-		);
-	}
+        Autoya.Auth_AttemptAuthenticationIfNeed();
 
-	
-	[MTest] public IEnumerator IntentionalLogout () {
-		Autoya.Auth_Logout();
-		
-		var loggedIn = Autoya.Auth_IsAuthenticated();
-		True(!loggedIn, "state does not match.");
-		yield break;
-	}
+        yield return WaitUntil(
+            () => bootAuthFailHandled,
+            () => { throw new TimeoutException("failed to handle bootAuthFailed."); },
+            10
+        );
 
-	[MTest] public IEnumerator HandleTokenRefreshFailed () {
-		Autoya.forceFailTokenRefresh = true;
-		
-		var tokenRefreshFailed = false;
-		Autoya.Auth_SetOnRefreshAuthFailed(
-			(code, reason) => {
-				tokenRefreshFailed = true;
-			}
-		);
+        Autoya.forceFailFirstBoot = false;
+    }
 
-		// forcibly get 401 response.
-		Autoya.Http_Get(
-			"https://httpbin.org/status/401", 
-			(conId, resultData) => {
-				// do nothing.
-			},
-			(conId, code, reason, autoyaStatus) => {
-				// do nothing.
-			}
-		);
+    [MTest]
+    public IEnumerator HandleBootAuthFailedThenAttemptAuthentication()
+    {
+        Autoya.forceFailFirstBoot = true;
 
-		yield return WaitUntil(
-			() => tokenRefreshFailed,
-			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
-			20
-		);
-		
-		Autoya.forceFailTokenRefresh = false;
-	}
+        Autoya.Auth_Logout();
 
-	[MTest] public IEnumerator HandleTokenRefreshFailedThenAttemptAuthentication () {
-		Autoya.forceFailTokenRefresh = true;
-		
-		var tokenRefreshFailed = false;
-		Autoya.Auth_SetOnRefreshAuthFailed(
-			(code, reason) => {
-				tokenRefreshFailed = true;
-			}
-		);
-		
-		// forcibly get 401 response.
-		Autoya.Http_Get(
-			"https://httpbin.org/status/401", 
-			(conId, resultData) => {
-				// do nothing.
-			},
-			(conId, code, reason, autoyaStatus) => {
-				// do nothing.
-			}
-		);
+        var bootAuthFailHandled = false;
+        Autoya.Auth_SetOnBootAuthFailed(
+            (code, reason) =>
+            {
+                bootAuthFailHandled = true;
+            }
+        );
 
-		yield return WaitUntil(
-			() => tokenRefreshFailed,
-			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
-			20
-		);
-		
-		Autoya.forceFailTokenRefresh = false;
-		
-		Autoya.Auth_AttemptAuthenticationIfNeed();
-		
-		yield return WaitUntil(
-			() => Autoya.Auth_IsAuthenticated(),
-			() => {throw new TimeoutException("failed to handle tokenRefreshFailed.");},
-			15
-		);
-	}
+        Autoya.Auth_AttemptAuthenticationIfNeed();
 
-    [MTest] public IEnumerator UnauthorizedThenHttpGet () {
-		var reauthenticationSucceeded = false;
+        yield return WaitUntil(
+            () => bootAuthFailHandled,
+            () => { throw new TimeoutException("failed to handle bootAuthFailed."); },
+            10
+        );
 
-		// forcibly get 401 response.
-		Autoya.Http_Get(
-			"https://httpbin.org/status/401",
-			(conId, resultData) => {
-				// do nothing.
-			},
-			(conId, code, reason, autoyaStatus) => {
+        Autoya.forceFailFirstBoot = false;
+
+        Autoya.Auth_AttemptAuthenticationIfNeed();
+
+        yield return WaitUntil(
+            () => Autoya.Auth_IsAuthenticated(),
+            () => { throw new TimeoutException("failed to attempt auth."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator HandleLogoutThenAuthenticationAttemptSucceeded()
+    {
+        Autoya.Auth_Logout();
+
+        Autoya.Auth_AttemptAuthenticationIfNeed();
+
+        yield return WaitUntil(
+            () => Autoya.Auth_IsAuthenticated(),
+            () => { throw new TimeoutException("failed to auth"); }
+        );
+    }
+
+
+    [MTest]
+    public IEnumerator IntentionalLogout()
+    {
+        Autoya.Auth_Logout();
+
+        var loggedIn = Autoya.Auth_IsAuthenticated();
+        True(!loggedIn, "state does not match.");
+        yield break;
+    }
+
+    [MTest]
+    public IEnumerator HandleTokenRefreshFailed()
+    {
+        Autoya.forceFailTokenRefresh = true;
+
+        var tokenRefreshFailed = false;
+        Autoya.Auth_SetOnRefreshAuthFailed(
+            (code, reason) =>
+            {
+                tokenRefreshFailed = true;
+            }
+        );
+
+        // forcibly get 401 response.
+        Autoya.Http_Get(
+            "https://httpbin.org/status/401",
+            (conId, resultData) =>
+            {
+                // do nothing.
+            },
+            (conId, code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => tokenRefreshFailed,
+            () => { throw new TimeoutException("failed to handle tokenRefreshFailed."); },
+            20
+        );
+
+        Autoya.forceFailTokenRefresh = false;
+    }
+
+    [MTest]
+    public IEnumerator HandleTokenRefreshFailedThenAttemptAuthentication()
+    {
+        Autoya.forceFailTokenRefresh = true;
+
+        var tokenRefreshFailed = false;
+        Autoya.Auth_SetOnRefreshAuthFailed(
+            (code, reason) =>
+            {
+                tokenRefreshFailed = true;
+            }
+        );
+
+        // forcibly get 401 response.
+        Autoya.Http_Get(
+            "https://httpbin.org/status/401",
+            (conId, resultData) =>
+            {
+                // do nothing.
+            },
+            (conId, code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => tokenRefreshFailed,
+            () => { throw new TimeoutException("failed to handle tokenRefreshFailed."); },
+            20
+        );
+
+        Autoya.forceFailTokenRefresh = false;
+
+        Autoya.Auth_AttemptAuthenticationIfNeed();
+
+        yield return WaitUntil(
+            () => Autoya.Auth_IsAuthenticated(),
+            () => { throw new TimeoutException("failed to handle tokenRefreshFailed."); },
+            15
+        );
+    }
+
+    [MTest]
+    public IEnumerator UnauthorizedThenHttpGet()
+    {
+        var reauthenticationSucceeded = false;
+
+        // forcibly get 401 response.
+        Autoya.Http_Get(
+            "https://httpbin.org/status/401",
+            (conId, resultData) =>
+            {
+                // do nothing.
+            },
+            (conId, code, reason, autoyaStatus) =>
+            {
                 // these handler will be fired automatically.
-				Autoya.Auth_SetOnAuthenticated(
-                    () => {
+                Autoya.Auth_SetOnAuthenticated(
+                    () =>
+                    {
                         Autoya.Http_Get(
                             "https://httpbin.org/get",
-                            (string conId2, string data2) => {
+                            (string conId2, string data2) =>
+                            {
                                 reauthenticationSucceeded = true;
                             },
-                            (conId2, code2, reason2, autoyaStatus2) => {
+                            (conId2, code2, reason2, autoyaStatus2) =>
+                            {
                                 // do nothing.
                             }
                         );
                     }
                 );
-			}
-		);
+            }
+        );
 
-		yield return WaitUntil(
-			() => reauthenticationSucceeded,
-			() => {throw new TimeoutException("failed to handle SetOnAuthenticated.");},
-			10
-		);
-	}
+        yield return WaitUntil(
+            () => reauthenticationSucceeded,
+            () => { throw new TimeoutException("failed to handle SetOnAuthenticated."); },
+            10
+        );
+    }
 
-	[MTest] public IEnumerator AvoidHttpAuthFailCascade () {
-		Autoya.forceFailAuthentication = true;
+    [MTest]
+    public IEnumerator AvoidHttpAuthFailCascade()
+    {
+        Autoya.forceFailAuthentication = true;
 
-		var retryActs = new List<Action>();
+        var retryActs = new List<Action>();
 
-		Action authDoneAct = () => {
-			retryActs.ForEach(r => r());
-			retryActs.Clear();
-		};
+        Action authDoneAct = () =>
+        {
+            retryActs.ForEach(r => r());
+            retryActs.Clear();
+        };
 
-		Autoya.Auth_SetOnAuthenticated(authDoneAct);
+        Autoya.Auth_SetOnAuthenticated(authDoneAct);
 
-		
-		var conCount = 10;
-		
-		var doneConIds = new List<string>();
-		var onceFailed = new List<string>();
-		
-		var connections = new List<Action>();
 
-		for (var i = 0; i < conCount; i++) {
-			var index = i;
-			var currentConId = i.ToString();
-			connections.Add(
-				() => {
-					Autoya.Http_Get(
-						"https://httpbin.org/status/200",
-						(conId, resultData) => {
-							doneConIds.Add(conId);
-						},
-						(conId, code, reason, autoyaStatus) => {
-							if (autoyaStatus.isAuthFailed) {
-								onceFailed.Add(conId);
+        var conCount = 10;
 
-								retryActs.Add(connections[index]);
-							}
-						},
-						null,
-						5,
-						currentConId
-					);
-				}
-			);
-		}
+        var doneConIds = new List<string>();
+        var onceFailed = new List<string>();
 
-		// 通信の全てが行われればOK
-		foreach (var act in connections) {
-			act();
-		}
+        var connections = new List<Action>();
 
-		// once failed.
-		yield return WaitUntil(
-			() => onceFailed.Count == conCount,
-			() => {throw new TimeoutException("too late.");},
-			10
-		);
+        for (var i = 0; i < conCount; i++)
+        {
+            var index = i;
+            var currentConId = i.ToString();
+            connections.Add(
+                () =>
+                {
+                    Autoya.Http_Get(
+                        "https://httpbin.org/status/200",
+                        (conId, resultData) =>
+                        {
+                            doneConIds.Add(conId);
+                        },
+                        (conId, code, reason, autoyaStatus) =>
+                        {
+                            if (autoyaStatus.isAuthFailed)
+                            {
+                                onceFailed.Add(conId);
 
-		// refreshの完全なfailまでには8秒以上あるので、ここでフラグを変更しても十分にリトライに間に合うはず
-		Autoya.forceFailAuthentication = false;
+                                retryActs.Add(connections[index]);
+                            }
+                        },
+                        null,
+                        5,
+                        currentConId
+                    );
+                }
+            );
+        }
 
-		// once failed.
-		yield return WaitUntil(
-			() => doneConIds.Count == conCount,
-			() => {throw new TimeoutException("too late.");},
-			10
-		);
-	}
+        // 通信の全てが行われればOK
+        foreach (var act in connections)
+        {
+            act();
+        }
 
-	// [MTest] public IEnumerator AvoidHttpAuthFailCascadeWithAppendOnAuthRefreshed () {
-	// 	Autoya.forceFailAuthentication = true;
+        // once failed.
+        yield return WaitUntil(
+            () => onceFailed.Count == conCount,
+            () => { throw new TimeoutException("too late."); },
+            10
+        );
 
-	// 	var conCount = 10;
-		
-	// 	var doneConIds = new List<string>();
-	// 	var onceFailed = new List<string>();
-		
-	// 	var connections = new List<Action>();
+        // refreshの完全なfailまでには8秒以上あるので、ここでフラグを変更しても十分にリトライに間に合うはず
+        Autoya.forceFailAuthentication = false;
 
-	// 	for (var i = 0; i < conCount; i++) {
-	// 		var index = i;
-	// 		var currentConId = i.ToString();
-	// 		connections.Add(
-	// 			() => {
-	// 				Autoya.Http_Get(
-	// 					"https://httpbin.org/status/200",
-	// 					(conId, resultData) => {
-	// 						doneConIds.Add(conId);
-	// 						Debug.Log("done! currentConId:" + currentConId);
-	// 					},
-	// 					(conId, code, reason, autoyaStatus) => {
-	// 						if (autoyaStatus.isAuthFailed) {
-	// 							onceFailed.Add(conId);
+        // once failed.
+        yield return WaitUntil(
+            () => doneConIds.Count == conCount,
+            () => { throw new TimeoutException("too late."); },
+            10
+        );
+    }
 
-	// 							Autoya.Auth_OnAuthenticated += () => {
-	// 								connections[index]();
-	// 							};
+    // [MTest] public IEnumerator AvoidHttpAuthFailCascadeWithAppendOnAuthRefreshed () {
+    // 	Autoya.forceFailAuthentication = true;
 
-	// 							Debug.Log("リトライを行う。自分自身をリトライ動作にaddする。currentConId:" + currentConId);
-	// 						}
-	// 					},
-	// 					null,
-	// 					5,
-	// 					currentConId
-	// 				);
-	// 			}
-	// 		);
-	// 	}
+    // 	var conCount = 10;
 
-	// 	// 通信の全てが行われればOK
-	// 	foreach (var act in connections) {
-	// 		act();
-	// 	}
+    // 	var doneConIds = new List<string>();
+    // 	var onceFailed = new List<string>();
 
-	// 	// once failed.
-	// 	yield return WaitUntil(
-	// 		() => onceFailed.Count == conCount,
-	// 		() => {throw new TimeoutException("too late.");},
-	// 		10
-	// 	);
+    // 	var connections = new List<Action>();
 
-	// 	// refreshの完全なfailまでには8秒以上あるので、ここでフラグを変更しても十分にリトライに間に合うはず
-	// 	Autoya.forceFailAuthentication = false;
+    // 	for (var i = 0; i < conCount; i++) {
+    // 		var index = i;
+    // 		var currentConId = i.ToString();
+    // 		connections.Add(
+    // 			() => {
+    // 				Autoya.Http_Get(
+    // 					"https://httpbin.org/status/200",
+    // 					(conId, resultData) => {
+    // 						doneConIds.Add(conId);
+    // 						Debug.Log("done! currentConId:" + currentConId);
+    // 					},
+    // 					(conId, code, reason, autoyaStatus) => {
+    // 						if (autoyaStatus.isAuthFailed) {
+    // 							onceFailed.Add(conId);
 
-	// 	// once failed.
-	// 	yield return WaitUntil(
-	// 		() => doneConIds.Count == conCount,
-	// 		() => {throw new TimeoutException("too late.");},
-	// 		10
-	// 	);
-	// }
+    // 							Autoya.Auth_OnAuthenticated += () => {
+    // 								connections[index]();
+    // 							};
 
-	
+    // 							Debug.Log("リトライを行う。自分自身をリトライ動作にaddする。currentConId:" + currentConId);
+    // 						}
+    // 					},
+    // 					null,
+    // 					5,
+    // 					currentConId
+    // 				);
+    // 			}
+    // 		);
+    // 	}
+
+    // 	// 通信の全てが行われればOK
+    // 	foreach (var act in connections) {
+    // 		act();
+    // 	}
+
+    // 	// once failed.
+    // 	yield return WaitUntil(
+    // 		() => onceFailed.Count == conCount,
+    // 		() => {throw new TimeoutException("too late.");},
+    // 		10
+    // 	);
+
+    // 	// refreshの完全なfailまでには8秒以上あるので、ここでフラグを変更しても十分にリトライに間に合うはず
+    // 	Autoya.forceFailAuthentication = false;
+
+    // 	// once failed.
+    // 	yield return WaitUntil(
+    // 		() => doneConIds.Count == conCount,
+    // 		() => {throw new TimeoutException("too late.");},
+    // 		10
+    // 	);
+    // }
+
+
 }

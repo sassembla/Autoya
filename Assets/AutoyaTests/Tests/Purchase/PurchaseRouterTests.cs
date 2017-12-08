@@ -9,8 +9,9 @@ using UnityEngine;
 /**
 	tests for Autoya Purchase
 */
-public class PurchaseRouterTests : MiyamasuTestRunner {
-	/**
+public class PurchaseRouterTests : MiyamasuTestRunner
+{
+    /**
 		Unity 5.5以降対応のpurchaseのテスト。以下のようなことをまるっとやっている。
 
 		{アイテム一覧取得処理}
@@ -36,403 +37,460 @@ public class PurchaseRouterTests : MiyamasuTestRunner {
 		特定のUnityのIAPの ConfigurationBuilder.Instance メソッドが、Playing中でないとProgressしない。そのため、このテストをEditorで走らせることができない。
 		ちょっと回避しようがない。
 	*/
-	private PurchaseRouter router;
+    private PurchaseRouter router;
 
-	private TestMBRunner runner;
-	
-	[MSetup] public IEnumerator Setup () {
-		var done = false;
-		
-		// overwrite Autoya instance for test purchase feature.
-		yield return WaitPurchaseFeatureOfAutoya(
-			() => {
-				done = true;
-			}
-		);
-		
-		yield return WaitUntil(
-			() => done,
-			() => {throw new TimeoutException("failed to ready.");}
-		);
+    private TestMBRunner runner;
 
-		if (!done) {
-			Fail("Purchase feature test setup is failed to ready.");
-			yield break;
-		}
+    [MSetup]
+    public IEnumerator Setup()
+    {
+        var done = false;
 
-		// shutdown purchase feature for get valid result from Unity IAP.
-		Autoya.Purchase_DEBUG_Shutdown();
-		
-		var purchaseRunner = new GameObject("PurchaseTestRunner");
-		runner = purchaseRunner.AddComponent<TestMBRunner>();
+        // overwrite Autoya instance for test purchase feature.
+        yield return WaitPurchaseFeatureOfAutoya(
+            () =>
+            {
+                done = true;
+            }
+        );
 
-		router = new PurchaseRouter(
-			iEnum => {
-				runner.StartCoroutine(iEnum);
-			},
-			productData => {
-				// dummy response.
-				return new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-				};
-			},
-			ticketData => ticketData,
-			() => {},
-			(err, code, reason) => {}
-		);
-	
-		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
-	}
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("failed to ready."); }
+        );
 
-	[MTeardown] public void Teardown () {
-		GameObject.Destroy(runner.gameObject);
-	}
+        if (!done)
+        {
+            Fail("Purchase feature test setup is failed to ready.");
+            yield break;
+        }
 
-	private IEnumerator WaitPurchaseFeatureOfAutoya (Action done) {
-		Autoya.TestEntryPoint(Application.persistentDataPath);
-		
-		while (!Autoya.Purchase_IsReady()) {
-			yield return null;
-		}
-		done();
-	}
+        // shutdown purchase feature for get valid result from Unity IAP.
+        Autoya.Purchase_DEBUG_Shutdown();
 
+        var purchaseRunner = new GameObject("PurchaseTestRunner");
+        runner = purchaseRunner.AddComponent<TestMBRunner>();
 
-	private bool forceFailResponse = false;
-	private int forceFailCount = 0;
-	private void DummyResponsehandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed) {
-		if (forceFailResponse) {
-			forceFailCount++;
-			failed(connectionId, httpCode, "expected failure in test.");
-			return;
-		}
+        router = new PurchaseRouter(
+            iEnum =>
+            {
+                runner.StartCoroutine(iEnum);
+            },
+            productData =>
+            {
+                // dummy response.
+                return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+                };
+            },
+            ticketData => ticketData,
+            () => { },
+            (err, code, reason) => { }
+        );
 
-		if (200 <= httpCode && httpCode < 299) {
-			succeeded(connectionId, data);
-			return;
-		}
+        yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
+    }
 
-		failed(connectionId, httpCode, errorReason);
-	}
+    [MTeardown]
+    public void Teardown()
+    {
+        GameObject.Destroy(runner.gameObject);
+    }
+
+    private IEnumerator WaitPurchaseFeatureOfAutoya(Action done)
+    {
+        Autoya.TestEntryPoint(Application.persistentDataPath);
+
+        while (!Autoya.Purchase_IsReady())
+        {
+            yield return null;
+        }
+        done();
+    }
 
 
+    private bool forceFailResponse = false;
+    private int forceFailCount = 0;
+    private void DummyResponsehandlingDelegate(string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string> failed)
+    {
+        if (forceFailResponse)
+        {
+            forceFailCount++;
+            failed(connectionId, httpCode, "expected failure in test.");
+            return;
+        }
+
+        if (200 <= httpCode && httpCode < 299)
+        {
+            succeeded(connectionId, data);
+            return;
+        }
+
+        failed(connectionId, httpCode, errorReason);
+    }
 
 
-	[MTest] public IEnumerator ShowProductInfos () {
-		var products = router.ProductInfos();
-		True(products.Length == 2, "not match.");
-		yield break;
-	}
 
 
-	[MTest] public IEnumerator Purchase () {
-		var purchaseId = "dummy purchase Id";
-		var productId = "100_gold_coins";
+    [MTest]
+    public IEnumerator ShowProductInfos()
+    {
+        var products = router.ProductInfos();
+        True(products.Length == 2, "not match.");
+        yield break;
+    }
 
-		var purchaseDone = false;
-		var purchaseSucceeded = false;
-		var failedReason = string.Empty;
 
-		yield return router.PurchaseAsync(
-			purchaseId,
-			productId,
-			pId => {
-				purchaseDone = true;
-				purchaseSucceeded = true;
-			},
-			(pId, err, reason) => {
-				purchaseDone = true;
-				failedReason = reason;
-			}
-		);
+    [MTest]
+    public IEnumerator Purchase()
+    {
+        var purchaseId = "dummy purchase Id";
+        var productId = "100_gold_coins";
 
-		yield return WaitUntil(() => purchaseDone, () => {throw new TimeoutException("failed to purchase async.");});
-		True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
-	}
+        var purchaseDone = false;
+        var purchaseSucceeded = false;
+        var failedReason = string.Empty;
 
-	[MTest] public IEnumerator RetryPurchaseThenFail () {
-		forceFailResponse = false;
+        yield return router.PurchaseAsync(
+            purchaseId,
+            productId,
+            pId =>
+            {
+                purchaseDone = true;
+                purchaseSucceeded = true;
+            },
+            (pId, err, reason) =>
+            {
+                purchaseDone = true;
+                failedReason = reason;
+            }
+        );
 
-		// routerをhandling付きで生成すればいい。
-		
-		router = new PurchaseRouter(
-			iEnum => {
-				runner.StartCoroutine(iEnum);
-			},
-			productData => {
-				// dummy response.
-				return new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-				};
-			},
-			ticketData => ticketData,
-			() => {},
-			(err, code, reason) => {},
-			backgroundPurchasedProductId => {},
-			null,
-			DummyResponsehandlingDelegate
-		);
-	
-		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
+        yield return WaitUntil(() => purchaseDone, () => { throw new TimeoutException("failed to purchase async."); });
+        True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
+    }
 
-		var purchaseId = "dummy purchase Id";
-		var productId = "100_gold_coins";
+    [MTest]
+    public IEnumerator RetryPurchaseThenFail()
+    {
+        forceFailResponse = false;
 
-		var purchaseDone = false;
-		var failedReason = string.Empty;
+        // routerをhandling付きで生成すればいい。
 
-		var cor = router.PurchaseAsync(
-			purchaseId,
-			productId,
-			pId => {
-				// never success.
-			},
-			(pId, err, reason) => {
-				purchaseDone = true;
-			}
-		);
+        router = new PurchaseRouter(
+            iEnum =>
+            {
+                runner.StartCoroutine(iEnum);
+            },
+            productData =>
+            {
+                // dummy response.
+                return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+                };
+            },
+            ticketData => ticketData,
+            () => { },
+            (err, code, reason) => { },
+            backgroundPurchasedProductId => { },
+            null,
+            DummyResponsehandlingDelegate
+        );
 
-		while (cor.MoveNext()) {
-			yield return null;
-		}
+        yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
 
-		yield return WaitUntil(
-			() => {
-				var state = router.State();
-				if (state == PurchaseRouter.RouterState.Purchasing) {
-					// httpが強制的に失敗するようにする。
-					forceFailResponse = true;
-				}
-				return purchaseDone;
-			},
-			() => {throw new TimeoutException("timeout.");},
-			15
-		);
+        var purchaseId = "dummy purchase Id";
+        var productId = "100_gold_coins";
 
-		True(router.State() == PurchaseRouter.RouterState.RetryFailed);
-		
-		/*
+        var purchaseDone = false;
+
+        var cor = router.PurchaseAsync(
+            purchaseId,
+            productId,
+            pId =>
+            {
+                // never success.
+            },
+            (pId, err, reason) =>
+            {
+                purchaseDone = true;
+            }
+        );
+
+        while (cor.MoveNext())
+        {
+            yield return null;
+        }
+
+        yield return WaitUntil(
+            () =>
+            {
+                var state = router.State();
+                if (state == PurchaseRouter.RouterState.Purchasing)
+                {
+                    // httpが強制的に失敗するようにする。
+                    forceFailResponse = true;
+                }
+                return purchaseDone;
+            },
+            () => { throw new TimeoutException("timeout."); },
+            15
+        );
+
+        True(router.State() == PurchaseRouter.RouterState.RetryFailed);
+
+        /*
 			・storeのリブートに際して失敗したtransactionが復活するかどうか
 			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
 		 */
-		#if UNITY_EDITOR
-		var a = true;
-		if (a) yield break;
-		#elif UNITY_IOS || UNITY_ANDROID
+#if UNITY_EDITOR
+        var a = true;
+        if (a) yield break;
+#elif UNITY_IOS || UNITY_ANDROID
 		// pass.
-		#else
+#else
 		yield break;
-		#endif
+#endif
 
-		// done, but transaction is remaining.
+        // done, but transaction is remaining.
 
-		var completed = false;
+        var completed = false;
 
-		// reload router will finish remaining transaction.
-		router = new PurchaseRouter(
-			iEnum => {
-				runner.StartCoroutine(iEnum);
-			},
-			productData => {
-				// dummy response.
-				return new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-				};
-			},
-			ticketData => ticketData,
-			() => {},
-			(err, code, reason) => {},
-			backgroundPurchasedProductId => {
-				completed = true;
-			}
-		);
+        // reload router will finish remaining transaction.
+        router = new PurchaseRouter(
+            iEnum =>
+            {
+                runner.StartCoroutine(iEnum);
+            },
+            productData =>
+            {
+                // dummy response.
+                return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+                };
+            },
+            ticketData => ticketData,
+            () => { },
+            (err, code, reason) => { },
+            backgroundPurchasedProductId =>
+            {
+                completed = true;
+            }
+        );
 
-		yield return WaitUntil(
-			() => completed,
-			() => {throw new TimeoutException("failed to complete remaining transaction.");}
-		);
-	}
+        yield return WaitUntil(
+            () => completed,
+            () => { throw new TimeoutException("failed to complete remaining transaction."); }
+        );
+    }
 
-	[MTest] public IEnumerator RetryPurchaseThenFinallySuccess () {
-		forceFailResponse = false;
+    [MTest]
+    public IEnumerator RetryPurchaseThenFinallySuccess()
+    {
+        forceFailResponse = false;
 
-		// routerをhandling付きで生成すればいい。
-		
-		router = new PurchaseRouter(
-			iEnum => {
-				runner.StartCoroutine(iEnum);
-			},
-			productData => {
-				// dummy response.
-				return new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-				};
-			},
-			ticketData => ticketData,
-			() => {},
-			(err, code, reason) => {},
-			backgroundPurchasedProductId => {},
-			null,
-			DummyResponsehandlingDelegate
-		);
-	
-		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
+        // routerをhandling付きで生成すればいい。
+
+        router = new PurchaseRouter(
+            iEnum =>
+            {
+                runner.StartCoroutine(iEnum);
+            },
+            productData =>
+            {
+                // dummy response.
+                return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+                };
+            },
+            ticketData => ticketData,
+            () => { },
+            (err, code, reason) => { },
+            backgroundPurchasedProductId => { },
+            null,
+            DummyResponsehandlingDelegate
+        );
+
+        yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
 
 
-		var purchaseId = "dummy purchase Id";
-		var productId = "100_gold_coins";
+        var purchaseId = "dummy purchase Id";
+        var productId = "100_gold_coins";
 
-		var purchaseDone = false;
-		var failedReason = string.Empty;
+        var purchaseDone = false;
 
-		var cor = router.PurchaseAsync(
-			purchaseId,
-			productId,
-			pId => {
-				purchaseDone = true;
-			},
-			(pId, err, reason) => {
-				// never fail.
-			}
-		);
+        var cor = router.PurchaseAsync(
+            purchaseId,
+            productId,
+            pId =>
+            {
+                purchaseDone = true;
+            },
+            (pId, err, reason) =>
+            {
+                // never fail.
+            }
+        );
 
-		while (cor.MoveNext()) {
-			yield return null;
-		}
+        while (cor.MoveNext())
+        {
+            yield return null;
+        }
 
-		yield return WaitUntil(
-			() => {
-				var state = router.State();
-				if (state == PurchaseRouter.RouterState.Purchasing) {
-					// httpが強制的に失敗するようにする。
-					forceFailResponse = true;
-				}
+        yield return WaitUntil(
+            () =>
+            {
+                var state = router.State();
+                if (state == PurchaseRouter.RouterState.Purchasing)
+                {
+                    // httpが強制的に失敗するようにする。
+                    forceFailResponse = true;
+                }
 
-				// リトライにN-1回失敗したあとに成功するようにフラグを変更する。
-				if (forceFailCount == PurchaseSettings.PURCHASED_MAX_RETRY_COUNT - 1) {
-					forceFailResponse = false;
-				}
+                // リトライにN-1回失敗したあとに成功するようにフラグを変更する。
+                if (forceFailCount == PurchaseSettings.PURCHASED_MAX_RETRY_COUNT - 1)
+                {
+                    forceFailResponse = false;
+                }
 
-				return purchaseDone;
-			},
-			() => {throw new TimeoutException("timeout.");},
-			10
-		);
-	}
+                return purchaseDone;
+            },
+            () => { throw new TimeoutException("timeout."); },
+            10
+        );
+    }
 
-	[MTest] public IEnumerator RetryPurchaseThenFailThenComplete () {
+    [MTest]
+    public IEnumerator RetryPurchaseThenFailThenComplete()
+    {
 
-		/*
+        /*
 			・storeのリブートに際して失敗したtransactionが復活するかどうか
 			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
 		 */
-		#if UNITY_EDITOR
-		var a = true;
-		if (a) yield break;
-		#elif UNITY_IOS || UNITY_ANDROID
+#if UNITY_EDITOR
+        var a = true;
+        if (a) yield break;
+#elif UNITY_IOS || UNITY_ANDROID
 		// pass.
-		#else
+#else
 		yield break;
-		#endif
+#endif
 
 
-		forceFailResponse = false;
-		
-		router = new PurchaseRouter(
-			iEnum => {
-				runner.StartCoroutine(iEnum);
-			},
-			productData => {
-				// dummy response.
-				return new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-				};
-			},
-			ticketData => Guid.NewGuid().ToString(),
-			() => {},
-			(err, code, reason) => {},
-			backgroundPurchasedProductId => {},
-			null,
-			DummyResponsehandlingDelegate
-		);
-	
-		yield return WaitUntil(() => router.IsPurchaseReady(), () => {throw new TimeoutException("failed to ready.");});
+        forceFailResponse = false;
 
-		var purchaseId = "dummy purchase Id";
-		var productId = "100_gold_coins";
+        router = new PurchaseRouter(
+            iEnum =>
+            {
+                runner.StartCoroutine(iEnum);
+            },
+            productData =>
+            {
+                // dummy response.
+                return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+                };
+            },
+            ticketData => Guid.NewGuid().ToString(),
+            () => { },
+            (err, code, reason) => { },
+            backgroundPurchasedProductId => { },
+            null,
+            DummyResponsehandlingDelegate
+        );
 
-		var purchaseDone = false;
-		var failedReason = string.Empty;
+        var storeId = router.StoreId();
 
-		var cor = router.PurchaseAsync(
-			purchaseId,
-			productId,
-			pId => {
-				// never success.
-				Fail();
-			},
-			(pId, err, reason) => {
-				purchaseDone = true;
-			}
-		);
+        yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
 
-		while (cor.MoveNext()) {
-			yield return null;
-		}
+        var purchaseId = "dummy purchase Id";
+        var productId = "100_gold_coins";
 
-		yield return WaitUntil(
-			() => {
-				var state = router.State();
-				if (state == PurchaseRouter.RouterState.Purchasing) {
-					// httpが強制的に失敗するようにする。
-					forceFailResponse = true;
-				}
-				return purchaseDone;
-			},
-			() => {throw new TimeoutException("timeout.");},
-			15
-		);
-		
-		forceFailResponse = false;
+        var purchaseDone = false;
+
+        var cor = router.PurchaseAsync(
+            purchaseId,
+            productId,
+            pId =>
+            {
+                // never success.
+                Fail();
+            },
+            (pId, err, reason) =>
+            {
+                purchaseDone = true;
+            }
+        );
+
+        while (cor.MoveNext())
+        {
+            yield return null;
+        }
+
+        yield return WaitUntil(
+            () =>
+            {
+                var state = router.State();
+                if (state == PurchaseRouter.RouterState.Purchasing)
+                {
+                    // httpが強制的に失敗するようにする。
+                    forceFailResponse = true;
+                }
+                return purchaseDone;
+            },
+            () => { throw new TimeoutException("timeout."); },
+            15
+        );
+
+        forceFailResponse = false;
 
 
-		var rebooted = false;
-		var completed = false;
+        var rebooted = false;
+        var completed = false;
 
-		router = new PurchaseRouter(
-			iEnum => {
-				runner.StartCoroutine(iEnum);
-			},
-			productData => {
-				// dummy response.
-				return new ProductInfo[] {
-					new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
-					new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
-				};
-			},
-			ticketData => Guid.NewGuid().ToString(),
-			() => {
-				rebooted = true;
-			},
-			(err, code, reason) => {
-				Fail("failed to boot store func. err:" + err + " reason:" + reason);
-			},
-			backgroundPurchasedProductId => {
-				completed = true;
-			},
-			null,
-			DummyResponsehandlingDelegate
-		);
+        router = new PurchaseRouter(
+            iEnum =>
+            {
+                runner.StartCoroutine(iEnum);
+            },
+            productData =>
+            {
+                // dummy response.
+                return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+                };
+            },
+            ticketData => Guid.NewGuid().ToString(),
+            () =>
+            {
+                rebooted = true;
+            },
+            (err, code, reason) =>
+            {
+                Fail("failed to boot store func. err:" + err + " reason:" + reason);
+            },
+            backgroundPurchasedProductId =>
+            {
+                completed = true;
+            },
+            null,
+            DummyResponsehandlingDelegate
+        );
 
-		yield return WaitUntil(
-			() => rebooted && completed,
-			() => {throw new TimeoutException("timeout.");},
-			10
-		);
-	}
+        // store is renewed. not same id.
+        AreNotEqual(storeId, router.StoreId());
+
+        yield return WaitUntil(
+            () => rebooted && completed,
+            () => { throw new TimeoutException("timeout."); },
+            10
+        );
+    }
 }

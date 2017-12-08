@@ -7,7 +7,8 @@ using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace AutoyaFramework.AssetBundles {
+namespace AutoyaFramework.AssetBundles
+{
 
     /**
        preloadList
@@ -15,18 +16,21 @@ namespace AutoyaFramework.AssetBundles {
         └ bundleNames // string[]
             └ bundleName // preload target bundle name.
      */
-	/// <summary>
+    /// <summary>
     /// type of PreloadList.
     /// </summary>
-	[Serializable] public class PreloadList {
-		public string name;
-		public string[] bundleNames;
-		public PreloadList (string name, string[] bundleNames) {
-			this.name = name;
-			this.bundleNames = bundleNames;
-		}
+    [Serializable]
+    public class PreloadList
+    {
+        public string name;
+        public string[] bundleNames;
+        public PreloadList(string name, string[] bundleNames)
+        {
+            this.name = name;
+            this.bundleNames = bundleNames;
+        }
 
-		/**
+        /**
 			create preloadList which contains whole assetBundle names in the AssetBundleList.
 		 */
         /// <summary>
@@ -34,405 +38,486 @@ namespace AutoyaFramework.AssetBundles {
         /// </summary>
         /// <param name="name">Name.</param>
         /// <param name="list">List.</param>
-		public PreloadList (string name, AssetBundleList list) {
-			this.name = name;
-			this.bundleNames = list.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
-		}
-	}
+        public PreloadList(string name, AssetBundleList list)
+        {
+            this.name = name;
+            this.bundleNames = list.assetBundles.Select(abInfo => abInfo.bundleName).ToArray();
+        }
+    }
 
     /// <summary>
     /// Asset bundle preloader.
     /// </summary>
-	public class AssetBundlePreloader {
-		/*
+	public class AssetBundlePreloader
+    {
+        /*
 			delegate for handle http response for modules.
 		*/
-		public delegate void HttpResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
-		
-		/*
+        public delegate void HttpResponseHandlingDelegate(string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
+
+        /*
 			delegate for supply assetBundle get request header geneate func for modules.
 		*/
-		public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader);
-		private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
+        public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
+        private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
         private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
 
-		private Dictionary<string, string> BasicRequestHeaderDelegate (string url, Dictionary<string, string> requestHeader) {
-			return requestHeader;
-		}
+        private Dictionary<string, string> BasicRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader)
+        {
+            return requestHeader;
+        }
 
-		private void BasicResponseHandlingDelegate (string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed) {
-			if (200 <= httpCode && httpCode < 299) {
-				succeeded(connectionId, data);
-				return;
-			}
-			failed(connectionId, httpCode, errorReason, new AutoyaStatus());
-		}
-		
+        private void BasicResponseHandlingDelegate(string connectionId, Dictionary<string, string> responseHeaders, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed)
+        {
+            if (200 <= httpCode && httpCode < 299)
+            {
+                succeeded(connectionId, data);
+                return;
+            }
+            failed(connectionId, httpCode, errorReason, new AutoyaStatus());
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundlePreloader"/> class.
         /// </summary>
         /// <param name="requestHeader">Request header.</param>
         /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
-		public AssetBundlePreloader (AssetBundleGetRequestHeaderDelegate requestHeader=null, HttpResponseHandlingDelegate httpResponseHandlingDelegate=null) {
-			if (requestHeader != null) {
-				this.assetBundleGetRequestHeaderDelegate = requestHeader;
-			} else {
-				this.assetBundleGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
-			}
+        public AssetBundlePreloader(AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
+        {
+            if (requestHeader != null)
+            {
+                this.assetBundleGetRequestHeaderDelegate = requestHeader;
+            }
+            else
+            {
+                this.assetBundleGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
+            }
 
-			if (httpResponseHandlingDelegate != null) {
-				this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
-			} else {
-				this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
-			}
-		}
+            if (httpResponseHandlingDelegate != null)
+            {
+                this.httpResponseHandlingDelegate = httpResponseHandlingDelegate;
+            }
+            else
+            {
+                this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
+            }
+        }
 
-		/**
+        /**
 			preload assetBundle from list url.
 		 */
-        
-		public IEnumerator Preload (AssetBundleLoader loader, string listUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1, double timeoutSec=0) {
-			if (0 < maxParallelCount) {
-				// pass.
-			} else {
-				yield return null;
-				preloadFailed(-1, "maxParallelCount is negative or 0. unable to start preload.", new AutoyaStatus());
-				yield break;
-			}
 
-			if (loader != null) {
-				// pass.
-			} else {
-				yield return null;
-				preloadFailed(-1, "attached AssetBundleLoader is null. unable to start preload.", new AutoyaStatus());
-				yield break;
-			}
+        public IEnumerator Preload(AssetBundleLoader loader, string listUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1, double timeoutSec = 0)
+        {
+            if (0 < maxParallelCount)
+            {
+                // pass.
+            }
+            else
+            {
+                yield return null;
+                preloadFailed(-1, "maxParallelCount is negative or 0. unable to start preload.", new AutoyaStatus());
+                yield break;
+            }
 
-			var connectionId = AssetBundlesSettings.ASSETBUNDLES_PRELOADLIST_PREFIX + Guid.NewGuid().ToString();
-			var reqHeader = assetBundleGetRequestHeaderDelegate(listUrl, new Dictionary<string, string>());
-			
-			PreloadList list = null;
-			Action<string, object> listDonwloadSucceeded = (conId, listData) => {
-				var listStr = listData as string;
-				list = JsonUtility.FromJson<PreloadList>(listStr);
-			};
+            if (loader != null)
+            {
+                // pass.
+            }
+            else
+            {
+                yield return null;
+                preloadFailed(-1, "attached AssetBundleLoader is null. unable to start preload.", new AutoyaStatus());
+                yield break;
+            }
 
-			Action<string, int, string, AutoyaStatus> listDownloadFailedAct = (conId, code, reason, autoyaStatus) => {
-				preloadFailed(code, reason, autoyaStatus);
-			};
+            var connectionId = AssetBundlesSettings.ASSETBUNDLES_PRELOADLIST_PREFIX + Guid.NewGuid().ToString();
+            var reqHeader = assetBundleGetRequestHeaderDelegate(listUrl, new Dictionary<string, string>());
 
-			var downloadCoroutine = DownloadPreloadList(
-				connectionId,
-				reqHeader,
-				listUrl,
-				(conId, code, responseHeaders, listData) => {
-					httpResponseHandlingDelegate(connectionId, responseHeaders, code, listData, string.Empty, listDonwloadSucceeded, listDownloadFailedAct);
-				}, 
-				(conId, code, reason, responseHeaders) => {
-					httpResponseHandlingDelegate(connectionId, responseHeaders, code, string.Empty, reason, listDonwloadSucceeded, listDownloadFailedAct);
-				},
-				timeoutSec
-			);
+            PreloadList list = null;
+            Action<string, object> listDonwloadSucceeded = (conId, listData) =>
+            {
+                var listStr = listData as string;
+                list = JsonUtility.FromJson<PreloadList>(listStr);
+            };
 
-			while (downloadCoroutine.MoveNext()) {
-				yield return null;
-			}
+            Action<string, int, string, AutoyaStatus> listDownloadFailedAct = (conId, code, reason, autoyaStatus) =>
+            {
+                preloadFailed(code, reason, autoyaStatus);
+            };
 
-			// check if the list download is done.
-			if (list != null) {
-				// pass.
-			} else {
-				yield break;
-			}
+            var downloadCoroutine = DownloadPreloadList(
+                connectionId,
+                reqHeader,
+                listUrl,
+                (conId, code, responseHeaders, listData) =>
+                {
+                    httpResponseHandlingDelegate(connectionId, responseHeaders, code, listData, string.Empty, listDonwloadSucceeded, listDownloadFailedAct);
+                },
+                (conId, code, reason, responseHeaders) =>
+                {
+                    httpResponseHandlingDelegate(connectionId, responseHeaders, code, string.Empty, reason, listDonwloadSucceeded, listDownloadFailedAct);
+                },
+                timeoutSec
+            );
 
-			var bundleDownloadCor = Preload(loader, list, onBeforePreloading, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
-			while (bundleDownloadCor.MoveNext()) {
-				yield return null;
-			}
-		}
+            while (downloadCoroutine.MoveNext())
+            {
+                yield return null;
+            }
 
-		
-		public IEnumerator Preload (AssetBundleLoader loader, PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount=1) {
-			if (0 < maxParallelCount) {
-				// pass.
-			} else {
-				yield return null;
-				preloadFailed(-1, "maxParallelCount is negative or 0. unable to start preload.", new AutoyaStatus());
-				yield break;
-			}
+            // check if the list download is done.
+            if (list != null)
+            {
+                // pass.
+            }
+            else
+            {
+                yield break;
+            }
 
-			if (loader != null) {
-				// pass.
-			} else {
-				yield return null;
-				preloadFailed(-1, "attached AssetBundleLoader is null. unable to start preload.", new AutoyaStatus());
-				yield break;
-			}
+            var bundleDownloadCor = Preload(loader, list, onBeforePreloading, progress, done, preloadFailed, bundlePreloadFailed, maxParallelCount);
+            while (bundleDownloadCor.MoveNext())
+            {
+                yield return null;
+            }
+        }
 
-			if (preloadList != null) {
-				// pass.
-			} else {
-				yield return null;
-				preloadFailed(-1, "preloadList is null. unable to start preload.", new AutoyaStatus());
-				yield break;
-			}
 
-			/*
+        public IEnumerator Preload(AssetBundleLoader loader, PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1)
+        {
+            if (0 < maxParallelCount)
+            {
+                // pass.
+            }
+            else
+            {
+                yield return null;
+                preloadFailed(-1, "maxParallelCount is negative or 0. unable to start preload.", new AutoyaStatus());
+                yield break;
+            }
+
+            if (loader != null)
+            {
+                // pass.
+            }
+            else
+            {
+                yield return null;
+                preloadFailed(-1, "attached AssetBundleLoader is null. unable to start preload.", new AutoyaStatus());
+                yield break;
+            }
+
+            if (preloadList != null)
+            {
+                // pass.
+            }
+            else
+            {
+                yield return null;
+                preloadFailed(-1, "preloadList is null. unable to start preload.", new AutoyaStatus());
+                yield break;
+            }
+
+            /*
 				check if preloadList's assetBundleNames are contained by assetBundleList.
 			 */
-			var assetBundleList = loader.list;
+            var assetBundleList = loader.list;
 
-			var targetAssetBundleNames = preloadList.bundleNames;
-			var assetBundleListContainedAssetBundleNames = assetBundleList.assetBundles.Select(a => a.bundleName).ToList();
+            var targetAssetBundleNames = preloadList.bundleNames;
+            var assetBundleListContainedAssetBundleNames = assetBundleList.assetBundles.Select(a => a.bundleName).ToList();
 
-			// start preload assetBundles.
-			var loadingCoroutines = new Queue<IEnumerator>();
+            // start preload assetBundles.
+            var loadingCoroutines = new Queue<IEnumerator>();
 
-			var currentDownloadCount = 0;
+            var currentDownloadCount = 0;
 
-			// define.
-			var totalLoadingCoroutinesCount = 0;
+            // define.
+            var totalLoadingCoroutinesCount = 0;
 
-			/*
+            /*
 				assetBundle downloaded actions.
 			 */
-			Action<string, object> bundlePreloadSucceededAct = (conId, obj) => {
-				// unload assetBundle anyway.
-				// downloaded assetBundle is cached on storage.
-				var bundle = obj as AssetBundle;
-				bundle.Unload(true);
-				
-				currentDownloadCount++;
+            Action<string, object> bundlePreloadSucceededAct = (conId, obj) =>
+            {
+                // unload assetBundle anyway.
+                // downloaded assetBundle is cached on storage.
+                var bundle = obj as AssetBundle;
+                bundle.Unload(true);
 
-				var count = ((currentDownloadCount * 100.0) / totalLoadingCoroutinesCount)*0.01;
-				progress(count);
-			};
+                currentDownloadCount++;
 
-			Action<string, int, string, AutoyaStatus> bundlePreloadFailedAct = (bundleName, code, reason, autoyaStatus) => {
-				bundlePreloadFailed(bundleName, code, reason, autoyaStatus);
-			};
+                var count = ((currentDownloadCount * 100.0) / totalLoadingCoroutinesCount) * 0.01;
+                progress(count);
+            };
 
-			var wholeDownloadableAssetBundleNames = new List<string>();
-			foreach (var targetAssetBundleName in targetAssetBundleNames) {
-				if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName)) {
-					bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.list.version, new AutoyaStatus());
-					yield break;
-				}
-				
-				// reserve this assetBundle and dependencies as "should be download".
-				wholeDownloadableAssetBundleNames.Add(targetAssetBundleName);
+            Action<string, int, string, AutoyaStatus> bundlePreloadFailedAct = (bundleName, code, reason, autoyaStatus) =>
+            {
+                bundlePreloadFailed(bundleName, code, reason, autoyaStatus);
+            };
 
-				var dependentBundleNames = assetBundleList.assetBundles.Where(bundle => bundle.bundleName == targetAssetBundleName).FirstOrDefault().dependsBundleNames;
-				wholeDownloadableAssetBundleNames.AddRange(dependentBundleNames);
-			}
+            var wholeDownloadableAssetBundleNames = new List<string>();
+            foreach (var targetAssetBundleName in targetAssetBundleNames)
+            {
+                if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName))
+                {
+                    bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.list.version, new AutoyaStatus());
+                    yield break;
+                }
 
-			var shouldDownloadAssetBundleNamesCandidate = wholeDownloadableAssetBundleNames.Distinct().ToArray();
-			var shouldDownloadAssetBundleNames = new List<string>();
+                // reserve this assetBundle and dependencies as "should be download".
+                wholeDownloadableAssetBundleNames.Add(targetAssetBundleName);
 
-			
-			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNamesCandidate) {
-				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
-				var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
-				var hash = Hash128.Parse(targetBundleInfo.hash);
-				
-				// ignore cached one.
-				if (Caching.IsVersionCached(bundleUrl, hash)) {
-					continue;
-				}
+                var dependentBundleNames = assetBundleList.assetBundles.Where(bundle => bundle.bundleName == targetAssetBundleName).FirstOrDefault().dependsBundleNames;
+                wholeDownloadableAssetBundleNames.AddRange(dependentBundleNames);
+            }
 
-				// ignore loaded one.
-				if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName)) {
-					continue;
-				}
+            var shouldDownloadAssetBundleNamesCandidate = wholeDownloadableAssetBundleNames.Distinct().ToArray();
+            var shouldDownloadAssetBundleNames = new List<string>();
 
-				shouldDownloadAssetBundleNames.Add(shouldDownloadAssetBundleName);
-			}
 
-			
+            foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNamesCandidate)
+            {
+                var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
+                var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
+                var hash = Hash128.Parse(targetBundleInfo.hash);
 
-			/*
+                // ignore cached one.
+                if (Caching.IsVersionCached(bundleUrl, hash))
+                {
+                    continue;
+                }
+
+                // ignore loaded one.
+                if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName))
+                {
+                    continue;
+                }
+
+                shouldDownloadAssetBundleNames.Add(shouldDownloadAssetBundleName);
+            }
+
+
+
+            /*
 				ask should continue or not before downloading target assetBundles.
 			 */
-			var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray(), onBeforePreloading);
-			while (shouldContinueCor.MoveNext()) {
-				yield return null;
-			}
-			
-			var shouldContinue = shouldContinueCor.Current;
-			if (!shouldContinue) {
-				done();
-				yield break;
-			}
+            var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray(), onBeforePreloading);
+            while (shouldContinueCor.MoveNext())
+            {
+                yield return null;
+            }
 
-			/*
+            var shouldContinue = shouldContinueCor.Current;
+            if (!shouldContinue)
+            {
+                done();
+                yield break;
+            }
+
+            /*
 				bundles are not cached on storage. should start download.
 			 */
-			foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames) {
-				var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
-				var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
-				var bundleReqHeader = assetBundleGetRequestHeaderDelegate(bundleUrl, new Dictionary<string, string>());
+            foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames)
+            {
+                var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
+                var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
+                var bundleReqHeader = assetBundleGetRequestHeaderDelegate(bundleUrl, new Dictionary<string, string>());
 
-				var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
-				var crc = targetBundleInfo.crc;
-				var hash = Hash128.Parse(targetBundleInfo.hash);
-				
-				if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName)) {
-					// bundle is not cached on storage, but old bundle is no memory. need to unload it.
-					loader.UnloadOnMemoryAssetBundle(shouldDownloadAssetBundleName);
-				}
+                var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
+                var crc = targetBundleInfo.crc;
+                var hash = Hash128.Parse(targetBundleInfo.hash);
 
-				var bundlePreloadTimeoutTick = 0;// preloader does not have limit now.
+                if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName))
+                {
+                    // bundle is not cached on storage, but old bundle is no memory. need to unload it.
+                    loader.UnloadOnMemoryAssetBundle(shouldDownloadAssetBundleName);
+                }
 
-				var cor = loader.DownloadAssetBundle(
-					shouldDownloadAssetBundleName, 
-					bundleLoadConId,
-					bundleReqHeader,
-					bundleUrl,
-					crc,
-					hash,
-					(conId, code, responseHeaders, bundle) => {
-						httpResponseHandlingDelegate(conId, responseHeaders, code, bundle, string.Empty, bundlePreloadSucceededAct, bundlePreloadFailedAct);
-					},
-					(conId, code, reason, responseHeaders) => {
-						httpResponseHandlingDelegate(conId, responseHeaders, code, string.Empty, reason, bundlePreloadSucceededAct, bundlePreloadFailedAct);
-					},
-					bundlePreloadTimeoutTick
-				);
+                var bundlePreloadTimeoutTick = 0;// preloader does not have limit now.
 
-				loadingCoroutines.Enqueue(cor);
-			}
+                var cor = loader.DownloadAssetBundle(
+                    shouldDownloadAssetBundleName,
+                    bundleLoadConId,
+                    bundleReqHeader,
+                    bundleUrl,
+                    crc,
+                    hash,
+                    (conId, code, responseHeaders, bundle) =>
+                    {
+                        httpResponseHandlingDelegate(conId, responseHeaders, code, bundle, string.Empty, bundlePreloadSucceededAct, bundlePreloadFailedAct);
+                    },
+                    (conId, code, reason, responseHeaders) =>
+                    {
+                        httpResponseHandlingDelegate(conId, responseHeaders, code, string.Empty, reason, bundlePreloadSucceededAct, bundlePreloadFailedAct);
+                    },
+                    bundlePreloadTimeoutTick
+                );
 
-			// update total count to actual.
-			totalLoadingCoroutinesCount = loadingCoroutines.Count;
+                loadingCoroutines.Enqueue(cor);
+            }
 
-			/*
+            // update total count to actual.
+            totalLoadingCoroutinesCount = loadingCoroutines.Count;
+
+            /*
 				execute loading.
 			 */
-			var currentLoadingCoroutines = new IEnumerator[maxParallelCount];
-			while (true) {
-				for (var j = 0; j < currentLoadingCoroutines.Length; j++) {
-					var currentLoadingCoroutine = currentLoadingCoroutines[j];
-					if (currentLoadingCoroutine == null) {
-						// set next coroutine to currentLoadingCoroutines.
-						if (0 < loadingCoroutines.Count) {
-							var next = loadingCoroutines.Dequeue();
-							currentLoadingCoroutines[j] = next;
-						} else {
-							// no coroutine exists.
-							continue;
-						}
-					}
-				}
-				
-				var loading = false;
-				for (var j = 0; j < currentLoadingCoroutines.Length; j++) {
-					var cor = currentLoadingCoroutines[j];
-					if (cor == null) {
-						continue;
-					}
+            var currentLoadingCoroutines = new IEnumerator[maxParallelCount];
+            while (true)
+            {
+                for (var j = 0; j < currentLoadingCoroutines.Length; j++)
+                {
+                    var currentLoadingCoroutine = currentLoadingCoroutines[j];
+                    if (currentLoadingCoroutine == null)
+                    {
+                        // set next coroutine to currentLoadingCoroutines.
+                        if (0 < loadingCoroutines.Count)
+                        {
+                            var next = loadingCoroutines.Dequeue();
+                            currentLoadingCoroutines[j] = next;
+                        }
+                        else
+                        {
+                            // no coroutine exists.
+                            continue;
+                        }
+                    }
+                }
 
-					var result = cor.MoveNext();
+                var loading = false;
+                for (var j = 0; j < currentLoadingCoroutines.Length; j++)
+                {
+                    var cor = currentLoadingCoroutines[j];
+                    if (cor == null)
+                    {
+                        continue;
+                    }
 
-					// just finished.
-					if (!result) {
-						currentLoadingCoroutines[j] = null;
-					} else {
-						loading = true;
-					}
-				}
+                    var result = cor.MoveNext();
 
-				if (0 < loadingCoroutines.Count) {
-					loading = true;
-				}
+                    // just finished.
+                    if (!result)
+                    {
+                        currentLoadingCoroutines[j] = null;
+                    }
+                    else
+                    {
+                        loading = true;
+                    }
+                }
 
-				if (loading) {
-					yield return null;
-				} else {
-					// nothing loading.
-					break;
-				}
-			}
-			
-			// every bundle downloading is done.
-			done();
-		}
+                if (0 < loadingCoroutines.Count)
+                {
+                    loading = true;
+                }
 
-		private IEnumerator<bool> shouldContinuePreloading (string[] willLoadBundleNames, Action<string[], Action, Action> onBeforePreloading) {
-			var determined = false;
-			var go = false;
-			
-			Action proceed = () => {
-				determined = true;
-				go = true;
-			};
+                if (loading)
+                {
+                    yield return null;
+                }
+                else
+                {
+                    // nothing loading.
+                    break;
+                }
+            }
 
-			Action cancel = () => {
-				determined = true;
-				go = false;
-			};
+            // every bundle downloading is done.
+            done();
+        }
 
-			// ask to user.
-			onBeforePreloading(willLoadBundleNames, proceed, cancel);
+        private IEnumerator<bool> shouldContinuePreloading(string[] willLoadBundleNames, Action<string[], Action, Action> onBeforePreloading)
+        {
+            var determined = false;
+            var go = false;
 
-			while (!determined) {
-				yield return false;
-			}
+            Action proceed = () =>
+            {
+                determined = true;
+                go = true;
+            };
 
-			yield return go;
-		}
+            Action cancel = () =>
+            {
+                determined = true;
+                go = false;
+            };
 
-		private IEnumerator DownloadPreloadList (
-			string connectionId, 
-			Dictionary<string, string> requestHeader, 
-			string url, 
-			Action<string, int, Dictionary<string, string>, string> succeeded, 
-			Action<string, int, string, Dictionary<string, string>> failed, 
-			double timeoutSec=0
-		) {
-			var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
-			using (var request = UnityWebRequest.Get(url)) {
-				if (requestHeader != null) {
-					foreach (var kv in requestHeader) {
-						request.SetRequestHeader(kv.Key, kv.Value);
-					}
-				}
-				
-				var p = request.Send();
-				
-				while (!p.isDone) {
-					yield return null;
+            // ask to user.
+            onBeforePreloading(willLoadBundleNames, proceed, cancel);
 
-					// check timeout.
-					if (timeoutSec != 0 && timeoutTick < DateTime.UtcNow.Ticks) {
-						request.Abort();
-						failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "timeout to download preload list:" + url, new Dictionary<string, string>());
-						yield break;
-					}
-				}
+            while (!determined)
+            {
+                yield return false;
+            }
 
-				while (!request.isDone) {
-					yield return null;
-				}
+            yield return go;
+        }
 
-				var responseCode = (int)request.responseCode;
-				var responseHeaders = request.GetResponseHeaders();
+        private IEnumerator DownloadPreloadList(
+            string connectionId,
+            Dictionary<string, string> requestHeader,
+            string url,
+            Action<string, int, Dictionary<string, string>, string> succeeded,
+            Action<string, int, string, Dictionary<string, string>> failed,
+            double timeoutSec = 0
+        )
+        {
+            var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+            using (var request = UnityWebRequest.Get(url))
+            {
+                if (requestHeader != null)
+                {
+                    foreach (var kv in requestHeader)
+                    {
+                        request.SetRequestHeader(kv.Key, kv.Value);
+                    }
+                }
 
-				if (request.isError) {
-					failed(connectionId, responseCode, request.error, responseHeaders);
-					yield break;
-				}
+                var p = request.Send();
 
-				if (200 <= responseCode && responseCode <= 299) {
-					// do nothing.
-				} else {
-					failed(connectionId, responseCode, "failed to download preload list:" + url + " was not downloaded.", responseHeaders);
-					yield break;
-				}
+                while (!p.isDone)
+                {
+                    yield return null;
 
-				var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-				succeeded(connectionId, responseCode, responseHeaders, result);
-			}
-		}
-		
-	}
+                    // check timeout.
+                    if (timeoutSec != 0 && timeoutTick < DateTime.UtcNow.Ticks)
+                    {
+                        request.Abort();
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, "timeout to download preload list:" + url, new Dictionary<string, string>());
+                        yield break;
+                    }
+                }
+
+                while (!request.isDone)
+                {
+                    yield return null;
+                }
+
+                var responseCode = (int)request.responseCode;
+                var responseHeaders = request.GetResponseHeaders();
+
+                if (request.isError)
+                {
+                    failed(connectionId, responseCode, request.error, responseHeaders);
+                    yield break;
+                }
+
+                if (200 <= responseCode && responseCode <= 299)
+                {
+                    // do nothing.
+                }
+                else
+                {
+                    failed(connectionId, responseCode, "failed to download preload list:" + url + " was not downloaded.", responseHeaders);
+                    yield break;
+                }
+
+                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
+                succeeded(connectionId, responseCode, responseHeaders, result);
+            }
+        }
+
+    }
 }

@@ -13,17 +13,23 @@ using UnityEngine;
 /**
 	tests for Autoya IP feature.
 */
-public class IPTests : MiyamasuTestRunner {
-    [MTest] public IEnumerator GetLocalIPSync () {
+public class IPTests : MiyamasuTestRunner
+{
+    [MTest]
+    public IEnumerator GetLocalIPSync()
+    {
         var ip = IP.LocalIPAddressSync();
         True(ip.GetAddressBytes()[0] != 0);
         yield break;
     }
 
-    [MTest] public IEnumerator GetLocalIP () {
+    [MTest]
+    public IEnumerator GetLocalIP()
+    {
         var done = false;
         IP.LocalIPAddress(
-            ipAddress => {
+            ipAddress =>
+            {
                 True(ipAddress.GetAddressBytes()[0] != 0);
                 // Debug.Log("ipAddress:" + ipAddress);
                 done = true;
@@ -31,7 +37,7 @@ public class IPTests : MiyamasuTestRunner {
         );
         yield return WaitUntil(
             () => done,
-            () => {throw new TimeoutException("too late.");}
+            () => { throw new TimeoutException("too late."); }
         );
     }
 }
