@@ -32,7 +32,7 @@ namespace AutoyaFramework.Settings.AssetBundles
 			"Mac/";
 #endif
 
-        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://github.com/sassembla/Autoya/blob/assetbundle_multi_list_support/AssetBundles/" + PLATFORM_STR;
+        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
         public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
         public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
 

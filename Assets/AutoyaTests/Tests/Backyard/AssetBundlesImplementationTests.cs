@@ -941,4 +941,102 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
     }
+
+    [MTest]
+    public IEnumerator DownloadSameBundleListAtOnce()
+    {
+        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var version = "1.0.0";
+
+        var done1 = false;
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            status =>
+            {
+                done1 = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        var done2 = false;
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            status =>
+            {
+                done2 = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => done1 && done2,
+            () =>
+            {
+                throw new TimeoutException("failed to download multiple list in time.");
+            },
+            5
+        );
+    }
+
+
+
+    private string MULTIPLE_BUNDLE_DL_URL = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
+
+    [MTest]
+    public IEnumerator DownloadMultipleBundleListAtOnce()
+    {
+        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var version = "2.0.0";
+
+        var done1 = false;
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            MULTIPLE_BUNDLE_DL_URL + AssetBundlesSettings.PLATFORM_STR + version + "/" + fileName,
+            status =>
+            {
+                done1 = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+
+        var fileName2 = "AssetBundles.StandaloneOSXIntel64_1_0_0_alt.json";
+        var version2 = "2.0.0";
+        var done2 = false;
+        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            MULTIPLE_BUNDLE_DL_URL + AssetBundlesSettings.PLATFORM_STR + version2 + "/" + fileName2,
+            status =>
+            {
+                done2 = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => done1 && done2,
+            () =>
+            {
+                throw new TimeoutException("failed to download multiple list in time.");
+            },
+            5
+        );
+    }
+
+    [MTest]
+    public IEnumerator DownloadedMultipleListsAreIsorated()
+    {
+        yield return DownloadMultipleBundleListAtOnce();
+        // ダウンロードが終わったリストの内容を取得すると、混ざったものが得られるはず。
+    }
 }
