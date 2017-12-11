@@ -927,6 +927,48 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator DownloadSameBundleListAtOnce() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "DownloadSameBundleListAtOnce");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.DownloadSameBundleListAtOnce();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator DownloadMultipleBundleListAtOnce() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "DownloadMultipleBundleListAtOnce");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.DownloadMultipleBundleListAtOnce();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator DownloadedMultipleListsAreIsorated() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "DownloadedMultipleListsAreIsorated");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.DownloadedMultipleListsAreIsorated();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class AssetUpdateTests_Miyamasu {
     [UnityTest] public IEnumerator ReceiveFirstList() {
