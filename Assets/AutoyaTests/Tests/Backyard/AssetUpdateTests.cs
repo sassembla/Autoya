@@ -38,7 +38,7 @@ using UnityEngine;
 public class AssetUpdateTests : MiyamasuTestRunner
 {
     private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
-    private const string resversion = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
+    private const string resversionDesc = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
 
     [MSetup]
     public IEnumerator Setup()
@@ -107,7 +107,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
     private Autoya.ShouldRequestOrNot RequestYes(string newVersion)
     {
-        var url = abListPath + newVersion + "/" + "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
+        var url = abListPath + newVersion + "/main_assets.json";
         return Autoya.ShouldRequestOrNot.Yes(url);
     }
 
@@ -177,7 +177,6 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // リスト1.0.0が保持されている。
         // 通信のレスポンスヘッダーに特定の値が含まれていることで、listの更新リクエストを送り出す機構を着火する。
 
-
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
@@ -199,9 +198,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
             }
         );
 
-
+        // この通信でresponseHeaderを指定してリストの更新機能を着火する。
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -275,7 +274,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -348,7 +347,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -425,7 +424,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -462,7 +461,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         // get list again.
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversion + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
             (conId, data) =>
             {
                 // pass.
