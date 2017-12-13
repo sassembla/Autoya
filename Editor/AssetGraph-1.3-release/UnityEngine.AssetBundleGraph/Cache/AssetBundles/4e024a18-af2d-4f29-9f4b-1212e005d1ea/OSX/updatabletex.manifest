@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 2547650809
+CRC: 1261654697
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: 6139754ef1bd9b4217f3f6fb7628803c
+    Hash: f82094123be0665d400ddfe74b294440
   TypeTreeHash:
     serializedVersion: 2
     Hash: 80b604ddfb6ec87e740beaed3da17941
@@ -24,6 +24,6 @@ ClassTypes:
 - Class: 213
   Script: {instanceID: 0}
 Assets:
-- Assets/AutoyaTests/RuntimeData/AssetBundles/MaintResources/updatableTex.prefab
+- Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/updatableTex.prefab
 Dependencies:
 - /Users/passepied/Desktop/autoya/Editor/AssetGraph-1.3-release/UnityEngine.AssetBundleGraph/Cache/AssetBundles/4e024a18-af2d-4f29-9f4b-1212e005d1ea/OSX/texturename
