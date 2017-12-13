@@ -37,8 +37,7 @@ using UnityEngine;
  */
 public class AssetUpdateTests : MiyamasuTestRunner
 {
-    private string abListPath = "リストパス";
-
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
     private const string resversion = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
 
     [MSetup]
@@ -122,7 +121,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveFirstList()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;
@@ -152,7 +151,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveListUpdated()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;
@@ -230,7 +229,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveUpdatedListThenListWillBeUpdated()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;
@@ -301,7 +300,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveUpdatedListThenIgnore()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;
@@ -379,7 +378,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;

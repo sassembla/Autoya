@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 619716310
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: c5f062fc4cd1af36bb8458b78172eedc
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 2973e7e5e128b5453eee3c3bbbbd4b69
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 54
+  Script: {instanceID: 0}
+- Class: 212
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab
+Dependencies:
+- /Users/passepied/Desktop/autoya/Editor/AssetGraph-1.3-release/UnityEngine.AssetBundleGraph/Cache/AssetBundles/4e024a18-af2d-4f29-9f4b-1212e005d1ea/OSX/texturename

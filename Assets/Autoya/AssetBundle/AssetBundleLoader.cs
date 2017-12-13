@@ -237,7 +237,6 @@ namespace AutoyaFramework.AssetBundles
             }
 
             var crc = assetBundleInfo[0].crc;
-            Debug.Log("crc:" + crc);
             var hash = Hash128.Parse(assetBundleInfo[0].hash);
 
             var coroutine = LoadAssetBundleOnMemory(

@@ -17,6 +17,8 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
 {
     private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/";
 
+    private string preloadListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/";
+
     private AssetBundlePreloader assetBundlePreloader;
 
     private AssetBundleLoader loader;
@@ -60,7 +62,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
 
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -71,8 +73,8 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
             },
             () =>
             {
-                True(!loader.IsAssetBundleCachedOnMemory("bundlename"), "cached on memory.");
-                True(loader.IsAssetBundleCachedOnStorage("bundlename"), "not cached on storage.");
+                True(!loader.IsAssetBundleCachedOnMemory("texturename"), "cached on memory.");
+                True(loader.IsAssetBundleCachedOnStorage("texturename"), "not cached on storage.");
                 done = true;
             },
             (code, reason, autoyaStatus) =>
@@ -97,7 +99,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         var done = false;
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -132,7 +134,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         var doneCount = 0;
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList2.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -166,7 +168,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         var doneCount = 0;
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList2.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -240,7 +242,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         var doneCount = 0;
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList2.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -278,7 +280,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         var done = false;
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList2.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 cancel();
@@ -310,7 +312,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         var doneCount = 0;
         yield return assetBundlePreloader.Preload(
             loader,
-            abDlPath + "1.0.0/sample.preloadList2.json",
+            preloadListDlPath + "1.0.0.preload/sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 True(0 < willLoadBundleNames.Length);
