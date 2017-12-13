@@ -62,7 +62,7 @@ namespace AutoyaFramework
                 return;
             }
 
-            _currentAssetBundleList = listCandidate;
+            UpdateAssetBundleList(listCandidate);
             assetBundleFeatState = AssetBundlesFeatureState.Ready;
             ReadyLoaderAndPreloader();
         }
@@ -73,7 +73,7 @@ namespace AutoyaFramework
             {
                 case AssetBundlesFeatureState.Ready:
                     {
-                        return basePath + _currentAssetBundleList.version + "/";
+                        return basePath + AssetBundleListVersion() + "/";
                     }
                 default:
                     {
@@ -152,6 +152,20 @@ namespace AutoyaFramework
             return Caching.CleanCache();
         }
 
+        private void UpdateAssetBundleList(AssetBundleList newList)
+        {
+            _currentAssetBundleList = newList;
+        }
+
+        private string AssetBundleListVersion()
+        {
+            return _currentAssetBundleList.version;
+        }
+
+        private Dictionary<string, uint> BundleNameCrcDict()
+        {
+            return _currentAssetBundleList.assetBundles.ToDictionary(bundle => bundle.bundleName, bundle => bundle.crc);
+        }
 
         private AssetBundleList _currentAssetBundleList;
 
@@ -166,7 +180,7 @@ namespace AutoyaFramework
 
             // check version of new list and current stored list.
 
-            var currentListVersion = _currentAssetBundleList.version;
+            var currentListVersion = AssetBundleListVersion();
             var newListVersion = newList.version;
 
             if (currentListVersion != newListVersion)
@@ -174,7 +188,7 @@ namespace AutoyaFramework
                 // check using assets are changed or not.
 
                 var newBundleCrcs = newList.assetBundles.ToDictionary(bundle => bundle.bundleName, bundle => bundle.crc);
-                var oldBundleCrcs = _currentAssetBundleList.assetBundles.ToDictionary(bundle => bundle.bundleName, bundle => bundle.crc);
+                var oldBundleCrcs = BundleNameCrcDict();
 
                 var changedUsingBundleNames = new List<string>();
                 foreach (var oldBundleCrcItem in oldBundleCrcs)
@@ -267,7 +281,7 @@ namespace AutoyaFramework
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
 
-                    _currentAssetBundleList = newList;
+                    UpdateAssetBundleList(newList);
                     ReadyLoaderAndPreloader();
 
                     // discard postponed cache.
@@ -305,15 +319,6 @@ namespace AutoyaFramework
             FailedToStoreDownloadedAssetBundleList
         }
 
-        public static string AssetBundle_GetCurrentAssetBundleListUrl()
-        {
-            if (autoya == null)
-            {
-                return string.Empty;
-            }
-
-            return autoya.AssetBundleListDownloadUrl();
-        }
 
         /**
 			Download assetBundleList from OverridePoints url if need.
@@ -386,7 +391,8 @@ namespace AutoyaFramework
                                 Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                             }
 
-                            autoya._currentAssetBundleList = newList;
+
+                            autoya.UpdateAssetBundleList(newList);
 
                             // set state to loaded.
                             autoya.assetBundleFeatState = AssetBundlesFeatureState.Ready;
@@ -663,12 +669,12 @@ namespace AutoyaFramework
 
                 if (_assetBundleLoader != null)
                 {
-                    var onMemoryCache = _assetBundleLoader.onMemoryCache;
-                    _assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, onMemoryCache, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
                 }
                 else
                 {
-                    _assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList, null, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    _assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), null, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
                 }
             }
 

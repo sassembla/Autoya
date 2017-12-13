@@ -33,7 +33,8 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         yield return listCor;
 
         var assetBundleList = listCor.Current as AssetBundleList;
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/", assetBundleList);
+        loader = new AssetBundleLoader(abDlPath + "1.0.0/");
+        loader.UpdateAssetBundleList(assetBundleList);
 
 
         var cleaned = loader.CleanCachedAssetBundles();

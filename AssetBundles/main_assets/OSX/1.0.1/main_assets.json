@@ -20,9 +20,9 @@
                 "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png"
             ],
             "dependsBundleNames": [],
-            "crc": 2084034666,
-            "hash": "332d3369900ce643f66650696cd9e366",
-            "size": 247586
+            "crc": 2553110813,
+            "hash": "ffb5b60fe10c8877a6fd1ed3d8908ad6",
+            "size": 247593
         },
         {
             "bundleName": "texturename1",

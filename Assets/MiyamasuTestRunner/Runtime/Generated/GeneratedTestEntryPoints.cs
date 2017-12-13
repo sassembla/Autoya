@@ -703,20 +703,6 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
-    [UnityTest] public IEnumerator GetAssetBundleListUrl() {
-        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "GetAssetBundleListUrl");
-        var instance = new AssetBundlesImplementationTests();
-        instance.rec = rec;
-
-        
-        yield return instance.Setup();
-        
-        yield return instance.GetAssetBundleListUrl();
-        rec.MarkAsPassed();
-
-        
-        yield return instance.Teardown();
-    }
     [UnityTest] public IEnumerator GetAssetBundleListFailThenTryAgain() {
         var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "GetAssetBundleListFailThenTryAgain");
         var instance = new AssetBundlesImplementationTests();

@@ -11,6 +11,7 @@ using UnityEngine;
 
 public class AssetBundlesImplementationTests : MiyamasuTestRunner
 {
+    private string abListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
 
     private string mainAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
     private string subAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/sub_assets/" + "OSX/";
@@ -103,12 +104,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator GetAssetBundleListFromDebugMethod()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListDlPath + version + "/" + fileName,
             status =>
             {
                 done = true;
@@ -148,27 +149,15 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     }
 
     [MTest]
-    public IEnumerator GetAssetBundleListUrl()
-    {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
-        var version = "1.0.0";
-
-        var listUrl = Autoya.AssetBundle_GetCurrentAssetBundleListUrl();
-
-        True(listUrl == AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName);
-        yield break;
-    }
-
-    [MTest]
     public IEnumerator GetAssetBundleListFailThenTryAgain()
     {
         // fail once.
         {
-            var notExistFileName = "fake_AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+            var notExistFileName = "fake_main_assets.json";
             var version = "1.0.0";
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-                AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + notExistFileName,
+                abListDlPath + version + "/" + notExistFileName,
                 status =>
                 {
                     Fail("should not be succeeded.");
@@ -188,12 +177,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         // try again with valid fileName.
         {
-            var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+            var fileName = "main_assets.json";
             var version = "1.0.0";
 
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-                AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+                abListDlPath + version + "/" + fileName,
                 status =>
                 {
                     done = true;
@@ -587,7 +576,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/main_assets.json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -668,7 +657,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -759,7 +748,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -870,7 +859,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -949,12 +938,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator DownloadSameBundleListAtOnce()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done1 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListDlPath + version + "/" + fileName,
             status =>
             {
                 done1 = true;
@@ -967,7 +956,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var done2 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListDlPath + version + "/" + fileName,
             status =>
             {
                 done2 = true;
@@ -1040,5 +1029,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     {
         yield return DownloadMultipleBundleListAtOnce();
         // ダウンロードが終わったリストの内容を取得すると、混ざったものが得られるはず。
+
     }
 }

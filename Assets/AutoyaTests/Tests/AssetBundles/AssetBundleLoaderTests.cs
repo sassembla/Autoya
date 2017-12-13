@@ -41,7 +41,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         yield return listCor;
         bundleList = listCor.Current as AssetBundleList;
 
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/", bundleList, null);
+        loader = new AssetBundleLoader(abDlPath + "1.0.0/");
+        loader.UpdateAssetBundleList(bundleList);
 
         var cleaned = loader.CleanCachedAssetBundles();
 
@@ -506,7 +507,8 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
             }
         }
 
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/", bundleList, null);
+        loader = new AssetBundleLoader(abDlPath + "1.0.0/");
+        loader.UpdateAssetBundleList(bundleList);
 
         // intentional fail.
         {
@@ -537,7 +539,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         yield return listCor;
         bundleList = listCor.Current as AssetBundleList;
 
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/", bundleList, null);
+        loader.UpdateAssetBundleList(bundleList);
 
         // retry.
         {

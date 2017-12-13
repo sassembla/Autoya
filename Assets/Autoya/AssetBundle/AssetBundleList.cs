@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 /**
-	data structure for AssetBunlde - Asset information.
+	data structure for AssetBundle and Asset information.
 
     list
         └ target // human readable target platform name.

@@ -14,7 +14,6 @@ namespace AutoyaFramework.Settings.AssetBundles
 
         /*
 			urls and prefixs.
-			めっちゃ未調整だここ。Mac -> OSXなんちゃらに揃えた方がいいかも。
 		*/
         public const string PLATFORM_STR =
 
@@ -25,16 +24,19 @@ namespace AutoyaFramework.Settings.AssetBundles
 #elif UNITY_WEBGL
 			"Mac/";
 #elif UNITY_UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-            "Mac/";
+            "OSX/";
 #elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 			"Mac/";
 #else
 			"Mac/";
 #endif
 
-        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
-        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
-        public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
+        // public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
+        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + PLATFORM_STR;
+        // public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
+        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + PLATFORM_STR;
+        // public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
+        public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + PLATFORM_STR;
 
 
         public const string ASSETBUNDLES_DOWNLOAD_PREFIX = "assetbundle_";

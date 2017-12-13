@@ -300,13 +300,14 @@ namespace AutoyaFramework
 
         private string AssetBundleListDownloadUrl()
         {
+            // this feature will be deprecated.
             var targetListVersion = Autoya.Manifest_LoadRuntimeManifest().resVersion;
             if (string.IsNullOrEmpty(targetListVersion))
             {
                 return string.Empty;
             }
 
-            return AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + targetListVersion + "/AssetBundles.StandaloneOSXIntel64_" + targetListVersion.Replace(".", "_") + ".json";
+            return AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + targetListVersion + "/main_assets.json";
         }
 
         private AssetBundleList LoadAssetBundleListFromStorage()

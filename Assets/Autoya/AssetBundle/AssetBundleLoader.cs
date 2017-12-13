@@ -48,7 +48,11 @@ namespace AutoyaFramework.AssetBundles
         public const int CODE_CRC_MISMATCHED = 399;
 
         public readonly string assetDownloadBasePath;
-        public readonly AssetBundleList list;
+        public AssetBundleList list
+        {
+            private set;
+            get;
+        }
 
         private Dictionary<string, string> BasicRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader)
         {
@@ -72,7 +76,7 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="list">List.</param>
         /// <param name="requestHeader">Request header.</param>
         /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
-		public AssetBundleLoader(string basePath, AssetBundleList list, Dictionary<string, AssetBundle> onMemoryCache = null, AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
+		public AssetBundleLoader(string basePath, Dictionary<string, AssetBundle> onMemoryCache = null, AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
         {
             if (onMemoryCache == null)
             {
@@ -84,7 +88,6 @@ namespace AutoyaFramework.AssetBundles
             }
 
             this.assetDownloadBasePath = basePath;
-            this.list = list;
 
             if (requestHeader != null)
             {
@@ -103,6 +106,11 @@ namespace AutoyaFramework.AssetBundles
             {
                 this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             }
+        }
+
+        public void UpdateAssetBundleList(AssetBundleList newList)
+        {
+            this.list = newList;
 
             /*
 				construct assetName - AssetBundleName dictionary for fast loading.
@@ -163,14 +171,8 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="assetName">Asset name.</param>
         public AssetBundleInfo AssetBundleInfoOfAsset(string assetName)
         {
-            Debug.Log("assetName:" + assetName);
-            foreach (var assetNamesAndAssetBundleNames in assetNamesAndAssetBundleNamesDict)
-            {
-                Debug.Log("assetNamesAndAssetBundleNames:" + assetNamesAndAssetBundleNames.Key);
-            }
             if (assetNamesAndAssetBundleNamesDict.ContainsKey(assetName))
             {
-                Debug.Log("fmm?");
                 var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
                 return AssetBundleInfo(bundleName);
             }
