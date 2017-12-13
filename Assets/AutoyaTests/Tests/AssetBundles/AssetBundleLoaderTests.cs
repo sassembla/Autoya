@@ -16,7 +16,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
 {
 
     private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/1.0.0/main_assets.json";
-    private string assetDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/";
+    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/";
 
     /*
 		・リスト取得/更新API 最初のリスト取得 -> リストのデータを保存
@@ -32,16 +32,16 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
 	*/
 
     private AssetBundleLoader loader;
-    private AssetBundleList dummyList;
+    private AssetBundleList bundleList;
     [MSetup]
     public IEnumerator Setup()
     {
         var listCor = LoadListFromWeb();
 
         yield return listCor;
-        dummyList = listCor.Current as AssetBundleList;
+        bundleList = listCor.Current as AssetBundleList;
 
-        loader = new AssetBundleLoader(assetDlPath + "1.0.0/", dummyList, null);
+        loader = new AssetBundleLoader(abDlPath + "1.0.0/", bundleList, null);
 
         var cleaned = loader.CleanCachedAssetBundles();
 
@@ -496,27 +496,34 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator LoadCrcMismatchedBundle()
     {
-        var modifiedDummyList = new AssetBundleList(dummyList);
-        modifiedDummyList.assetBundles[0].crc = 1;// set wrong crc.
+        // change specific bumdle's crc to incorrect one.
+        for (var i = 0; i < bundleList.assetBundles.Length; i++)
+        {
+            var bundle = bundleList.assetBundles[i];
+            if (bundle.bundleName == "texturename")
+            {
+                bundleList.assetBundles[i] = new AssetBundleInfo(bundle.bundleName, bundle.assetNames, bundle.dependsBundleNames, 1, bundle.hash, bundle.size);
+            }
+        }
 
-        loader = new AssetBundleLoader(assetDlPath + "1.0.0/", modifiedDummyList, null);
+        loader = new AssetBundleLoader(abDlPath + "1.0.0/", bundleList, null);
 
         // intentional fail.
         {
             var done = false;
 
             yield return loader.LoadAsset(
-                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
-                (string assetName, Texture2D texAsset) =>
-                {
-                    // do nothing.
-                },
-                (assetName, failEnum, reason, status) =>
-                {
-                    True(failEnum == AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
-                    done = true;
-                }
-            );
+                            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
+                            (string assetName, Texture2D texAsset) =>
+                            {
+                                // do nothing.
+                            },
+                            (assetName, failEnum, reason, status) =>
+                            {
+                                True(failEnum == AssetBundleLoadError.CrcMismatched, "error is not crc mismatched. failEnum:" + failEnum);
+                                done = true;
+                            }
+                        );
 
             yield return WaitUntil(
                 () => done,
@@ -524,8 +531,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
             );
         }
 
-        modifiedDummyList = new AssetBundleList(dummyList);// use valid crc.
-        loader = new AssetBundleLoader(assetDlPath + "1.0.0/", dummyList, null);
+        // refresh list.
+        var listCor = LoadListFromWeb();
+
+        yield return listCor;
+        bundleList = listCor.Current as AssetBundleList;
+
+        loader = new AssetBundleLoader(abDlPath + "1.0.0/", bundleList, null);
 
         // retry.
         {
@@ -533,19 +545,19 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
             var done = false;
 
             yield return loader.LoadAsset(
-                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
-                (string assetName, Texture2D texAsset) =>
-                {
-                    tex = texAsset;
-                    done = true;
-                },
-                (assetName, failEnum, reason, status) =>
-                {
-                    Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
-                    Fail("fail, failEnum:" + failEnum + " reason:" + reason);
-                    done = true;
-                }
-            );
+                            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
+                            (string assetName, Texture2D texAsset) =>
+                            {
+                                tex = texAsset;
+                                done = true;
+                            },
+                            (assetName, failEnum, reason, status) =>
+                            {
+                                Debug.Log("fail, failEnum:" + failEnum + " reason:" + reason);
+                                Fail("fail, failEnum:" + failEnum + " reason:" + reason);
+                                done = true;
+                            }
+                        );
 
             yield return WaitUntil(
                 () => done,
@@ -585,7 +597,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     public IEnumerator LoadAllAssetsOnce()
     {
         var loadedAssetAssets = new Dictionary<string, object>();
-        var assetNames = dummyList.assetBundles.SelectMany(a => a.assetNames).ToArray();
+        var assetNames = bundleList.assetBundles.SelectMany(a => a.assetNames).ToArray();
 
         var loaderGameObject = new GameObject();
         var runner = loaderGameObject.AddComponent<TestMBRunner>();
@@ -649,11 +661,11 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     public IEnumerator OnMemoryBundleNames()
     {
         /*
-			load all assets.
-		*/
+            load all assets.
+        */
         yield return LoadAllAssetsOnce();
 
-        var totalBundleCount = dummyList.assetBundles.Length;
+        var totalBundleCount = bundleList.assetBundles.Length;
 
         var onMemoryBundleNames = loader.OnMemoryBundleNames();
         True(onMemoryBundleNames.Length == totalBundleCount, "unmatched.");
@@ -663,11 +675,11 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     public IEnumerator OnMemoryAssetNames()
     {
         /*
-			load all assets.
-		*/
+            load all assets.
+        */
         yield return LoadAllAssetsOnce();
 
-        var totalAssetCount = dummyList.assetBundles.SelectMany(ab => ab.assetNames).ToArray().Length;
+        var totalAssetCount = bundleList.assetBundles.SelectMany(ab => ab.assetNames).ToArray().Length;
 
         var onMemoryAssetNames = loader.OnMemoryAssetNames();
         True(onMemoryAssetNames.Length == totalAssetCount, "unmatched.");
@@ -677,13 +689,13 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     public IEnumerator UnloadAllAssetBundles()
     {
         /*
-			load all.
-		*/
+            load all.
+        */
         LoadAllAssetsOnce();
 
         /*
-			unload all.
-		*/
+            unload all.
+        */
         loader.UnloadOnMemoryAssetBundles();
 
         yield return WaitUntil(
@@ -721,7 +733,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         yield return WaitUntil(() => done, () => { throw new TimeoutException("failed to load asset in time."); });
 
         var containedAssetBundleName = loader.GetContainedAssetBundleName(assetName);
-        True(containedAssetBundleName == "bundlename", "not match.");
+        True(containedAssetBundleName == "texturename", "not match. actual:" + containedAssetBundleName);
     }
 
     [MTest]
@@ -805,7 +817,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png";
         var bundleInfo = loader.AssetBundleInfoOfAsset(assetName);
 
-        True(bundleInfo.size == 100, "not match. actual:" + bundleInfo.size);
+        True(bundleInfo.size != 0, "not match. actual:" + bundleInfo.size);
         yield break;
     }
 

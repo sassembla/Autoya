@@ -164,7 +164,8 @@ namespace AutoyaFramework.AssetBundles
         public AssetBundleInfo AssetBundleInfoOfAsset(string assetName)
         {
             Debug.Log("assetName:" + assetName);
-            foreach (var assetNamesAndAssetBundleNames in assetNamesAndAssetBundleNamesDict) {
+            foreach (var assetNamesAndAssetBundleNames in assetNamesAndAssetBundleNamesDict)
+            {
                 Debug.Log("assetNamesAndAssetBundleNames:" + assetNamesAndAssetBundleNames.Key);
             }
             if (assetNamesAndAssetBundleNamesDict.ContainsKey(assetName))
@@ -236,6 +237,7 @@ namespace AutoyaFramework.AssetBundles
             }
 
             var crc = assetBundleInfo[0].crc;
+            Debug.Log("crc:" + crc);
             var hash = Hash128.Parse(assetBundleInfo[0].hash);
 
             var coroutine = LoadAssetBundleOnMemory(
