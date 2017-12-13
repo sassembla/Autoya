@@ -1,0 +1,23 @@
+ManifestFileVersion: 0
+CRC: 2592575940
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: nestedprefab
+      Dependencies:
+        Dependency_0: texturename1
+    Info_1:
+      Name: texturename
+      Dependencies: {}
+    Info_2:
+      Name: texturename1
+      Dependencies:
+        Dependency_0: texturename
+    Info_3:
+      Name: texturename2
+      Dependencies:
+        Dependency_0: texturename
+    Info_4:
+      Name: updatabletex
+      Dependencies:
+        Dependency_0: texturename

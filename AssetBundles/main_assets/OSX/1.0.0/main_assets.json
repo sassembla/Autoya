@@ -1,0 +1,64 @@
+{
+    "target": "OSX",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MaintResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename1"
+            ],
+            "crc": 4046169700,
+            "hash": "2f5af8e4985936fe9d7f089ceb5712ba",
+            "size": 2168
+        },
+        {
+            "bundleName": "texturename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MaintResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 2738957534,
+            "hash": "7a2dbd19ccf0688abf224989b51056e6",
+            "size": 247584
+        },
+        {
+            "bundleName": "texturename1",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MaintResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 3826857843,
+            "hash": "6718b57028d6cc51b2c52b5d76985943",
+            "size": 2420
+        },
+        {
+            "bundleName": "texturename2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MaintResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 863859063,
+            "hash": "1f5731581b5105842bc6d27b6b22ef8e",
+            "size": 2418
+        },
+        {
+            "bundleName": "updatabletex",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MaintResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 2547650809,
+            "hash": "6139754ef1bd9b4217f3f6fb7628803c",
+            "size": 2448
+        }
+    ]
+}
