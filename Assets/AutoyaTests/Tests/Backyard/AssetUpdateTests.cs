@@ -37,6 +37,8 @@ using UnityEngine;
  */
 public class AssetUpdateTests : MiyamasuTestRunner
 {
+    private string abListPath = "リストパス";
+
     private const string resversion = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
 
     [MSetup]
@@ -106,7 +108,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
     private Autoya.ShouldRequestOrNot RequestYes(string newVersion)
     {
-        var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + newVersion + "/" + "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
+        var url = abListPath + newVersion + "/" + "AssetBundles.StandaloneOSXIntel64_" + newVersion.Replace(".", "_") + ".json";
         return Autoya.ShouldRequestOrNot.Yes(url);
     }
 
@@ -125,7 +127,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListPath + version + "/" + fileName,
             status =>
             {
                 done = true;
@@ -155,7 +157,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListPath + version + "/" + fileName,
             status =>
             {
                 done = true;
@@ -233,7 +235,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListPath + version + "/" + fileName,
             status =>
             {
                 done = true;
@@ -304,7 +306,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListPath + version + "/" + fileName,
             status =>
             {
                 done = true;
@@ -382,7 +384,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + version + "/" + fileName,
+            abListPath + version + "/" + fileName,
             status =>
             {
                 done = true;

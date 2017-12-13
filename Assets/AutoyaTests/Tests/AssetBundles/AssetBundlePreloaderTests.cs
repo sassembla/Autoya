@@ -15,7 +15,6 @@ using UnityEngine;
 */
 public class AssetBundlePreloaderTests : MiyamasuTestRunner
 {
-
     private AssetBundlePreloader assetBundlePreloader;
 
     private AssetBundleLoader loader;
@@ -30,7 +29,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         yield return listCor;
 
         var assetBundleList = listCor.Current as AssetBundleList;
-        loader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET + "1.0.0/", assetBundleList);
+        // loader = new AssetBundleLoader(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET + "1.0.0/", assetBundleList);
 
 
         var cleaned = loader.CleanCachedAssetBundles();

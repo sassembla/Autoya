@@ -14,10 +14,12 @@ using UnityEngine;
 */
 public class AssetBundleListDownloaderTests : MiyamasuTestRunner
 {
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
+
     [MTest]
     public IEnumerator GetAssetBundleList()
     {
-        var listPath = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + "1.0.0/AssetBundles.StandaloneOSXIntel64_1_0_0.json";
+        var listPath = abListPath + "1.0.0/main_assets.json";
         var listDownloader = new AssetBundleListDownloader();
 
         var done = false;
@@ -42,7 +44,7 @@ public class AssetBundleListDownloaderTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator GetAssetBundleListFailed()
     {
-        var listPath = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + "FAKEPATH";
+        var listPath = abListPath + "FAKEPATH";
         var loader = new AssetBundleListDownloader();
 
         var done = false;

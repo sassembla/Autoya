@@ -163,13 +163,18 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="assetName">Asset name.</param>
         public AssetBundleInfo AssetBundleInfoOfAsset(string assetName)
         {
+            Debug.Log("assetName:" + assetName);
+            foreach (var assetNamesAndAssetBundleNames in assetNamesAndAssetBundleNamesDict) {
+                Debug.Log("assetNamesAndAssetBundleNames:" + assetNamesAndAssetBundleNames.Key);
+            }
             if (assetNamesAndAssetBundleNamesDict.ContainsKey(assetName))
             {
+                Debug.Log("fmm?");
                 var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
                 return AssetBundleInfo(bundleName);
             }
 
-            // return empty assetBundle info.
+            // return empty assetBundle info if not contained.
             return new AssetBundleInfo();
         }
 

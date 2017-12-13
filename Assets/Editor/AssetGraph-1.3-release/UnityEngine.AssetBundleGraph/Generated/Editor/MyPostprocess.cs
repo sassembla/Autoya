@@ -85,8 +85,8 @@ public class MyPostprocess : IPostprocess
         if (Directory.Exists(targetDirectory))
         {
             Debug.Log("same version files are already exists. version:" + listVersion + " path:" + targetDirectory + " need to delete directory.");
-            // return;
-            Directory.Delete(targetDirectory, true);
+            return;
+            // Directory.Delete(targetDirectory, true);
         }
 
         // create version directory under exportPlatformStr.
