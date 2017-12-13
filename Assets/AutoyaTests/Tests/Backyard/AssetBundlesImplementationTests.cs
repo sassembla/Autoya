@@ -11,6 +11,10 @@ using UnityEngine;
 
 public class AssetBundlesImplementationTests : MiyamasuTestRunner
 {
+
+    private string mainAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
+    private string subAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/sub_assets/" + "OSX/";
+
     [MSetup]
     public IEnumerator Setup()
     {
@@ -986,17 +990,15 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
 
 
-    private string MULTIPLE_BUNDLE_DL_URL = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
-
     [MTest]
     public IEnumerator DownloadMultipleBundleListAtOnce()
     {
-        var fileName = "AssetBundles.StandaloneOSXIntel64_1_0_0.json";
-        var version = "2.0.0";
+        var fileName = "main_assets.json";
+        var version = "1.0.0";
 
         var done1 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            MULTIPLE_BUNDLE_DL_URL + AssetBundlesSettings.PLATFORM_STR + version + "/" + fileName,
+            mainAbListPath + version + "/" + fileName,
             status =>
             {
                 done1 = true;
@@ -1008,11 +1010,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
 
-        var fileName2 = "AssetBundles.StandaloneOSXIntel64_1_0_0_alt.json";
-        var version2 = "2.0.0";
+        var fileName2 = "sub_assets.json";
+        var version2 = "1.0.0";
         var done2 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            MULTIPLE_BUNDLE_DL_URL + AssetBundlesSettings.PLATFORM_STR + version2 + "/" + fileName2,
+            subAbListPath + version2 + "/" + fileName2,
             status =>
             {
                 done2 = true;
