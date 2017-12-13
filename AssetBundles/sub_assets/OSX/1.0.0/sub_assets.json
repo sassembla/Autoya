@@ -1,0 +1,16 @@
+{
+    "target": "OSX",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 4239167114,
+            "hash": "e936d22a1f8015e0067b2db8991011f2",
+            "size": 754
+        }
+    ]
+}
