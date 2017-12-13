@@ -47,8 +47,12 @@ namespace AutoyaFramework.AssetBundles
 
         public const int CODE_CRC_MISMATCHED = 399;
 
-        public readonly string assetDownloadBasePath;
-        public AssetBundleList list
+        public string bundleDownloadBasePath
+        {
+            private set;
+            get;
+        }
+        public AssetBundleList bundleList
         {
             private set;
             get;
@@ -72,22 +76,11 @@ namespace AutoyaFramework.AssetBundles
         /// <summary>
         /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleLoader"/> class.
         /// </summary>
-        /// <param name="basePath">Base path.</param>
-        /// <param name="list">List.</param>
         /// <param name="requestHeader">Request header.</param>
         /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
-		public AssetBundleLoader(string basePath, Dictionary<string, AssetBundle> onMemoryCache = null, AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
+		public AssetBundleLoader(AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
         {
-            if (onMemoryCache == null)
-            {
-                this.onMemoryCache = new Dictionary<string, AssetBundle>();
-            }
-            else
-            {
-                this.onMemoryCache = onMemoryCache;
-            }
-
-            this.assetDownloadBasePath = basePath;
+            this.onMemoryCache = new Dictionary<string, AssetBundle>();
 
             if (requestHeader != null)
             {
@@ -108,16 +101,17 @@ namespace AutoyaFramework.AssetBundles
             }
         }
 
-        public void UpdateAssetBundleList(AssetBundleList newList)
+        public void UpdateAssetBundleList(string assetBundleDownloadBasePath, AssetBundleList newList)
         {
-            this.list = newList;
+            this.bundleDownloadBasePath = assetBundleDownloadBasePath;
+            this.bundleList = newList;
 
             /*
 				construct assetName - AssetBundleName dictionary for fast loading.
 			*/
             assetNamesAndAssetBundleNamesDict.Clear();
 
-            foreach (var assetBundle in list.assetBundles)
+            foreach (var assetBundle in bundleList.assetBundles)
             {
                 var bundleName = assetBundle.bundleName;
                 foreach (var assetName in assetBundle.assetNames)
@@ -151,7 +145,7 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="bundleNames">Bundle names.</param>
         public long GetAssetBundlesWeight(string[] bundleNames)
         {
-            var list = this.list;
+            var list = this.bundleList;
             if (list.Exists())
             {
                 return list.assetBundles.Where(bundleInfo => bundleNames.Contains(bundleInfo.bundleName)).Sum(b => b.size);
@@ -188,7 +182,7 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="bundleName">Bundle name.</param>
 		public AssetBundleInfo AssetBundleInfo(string bundleName)
         {
-            return list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault();
+            return bundleList.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault();
         }
 
 
@@ -229,7 +223,7 @@ namespace AutoyaFramework.AssetBundles
             if (timeoutSec == 0) timeoutTick = 0;
 
             var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
-            var assetBundleInfo = list.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
+            var assetBundleInfo = bundleList.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
 
             if (assetBundleInfo.Length == 0)
             {
@@ -294,8 +288,8 @@ namespace AutoyaFramework.AssetBundles
                 yield return null;
             }
 
-            var dependentBundleNames = list.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault().dependsBundleNames;
-            var assetBundleInfo = list.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
+            var dependentBundleNames = bundleList.assetBundles.Where(bundle => bundle.bundleName == bundleName).FirstOrDefault().dependsBundleNames;
+            var assetBundleInfo = bundleList.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
 
             if (assetBundleInfo.Length == 0)
             {
@@ -330,7 +324,7 @@ namespace AutoyaFramework.AssetBundles
                             continue;
                         }
 
-                        var dependedBundleInfos = list.assetBundles.Where(a => a.bundleName == dependentBundleName).ToArray();
+                        var dependedBundleInfos = bundleList.assetBundles.Where(a => a.bundleName == dependentBundleName).ToArray();
                         if (dependedBundleInfos.Length != 1)
                         {
                             continue;
@@ -761,7 +755,7 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="bundleName">Bundle name.</param>
 		public string GetAssetBundleDownloadUrl(string bundleName)
         {
-            return assetDownloadBasePath + bundleName;
+            return bundleDownloadBasePath + bundleName;
         }
 
         /// <summary>
@@ -781,7 +775,7 @@ namespace AutoyaFramework.AssetBundles
 		public string[] OnMemoryAssetNames()
         {
             var loadedAssetBundleNames = onMemoryCache.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
-            return list.assetBundles.Where(ab => loadedAssetBundleNames.Contains(ab.bundleName)).SelectMany(ab => ab.assetNames).ToArray();
+            return bundleList.assetBundles.Where(ab => loadedAssetBundleNames.Contains(ab.bundleName)).SelectMany(ab => ab.assetNames).ToArray();
         }
 
         /// <summary>
@@ -823,7 +817,7 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="bundleName">Bundle name.</param>
 		public bool IsAssetBundleCachedOnStorage(string bundleName)
         {
-            var candidateAssetBundles = list.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
+            var candidateAssetBundles = bundleList.assetBundles.Where(a => a.bundleName == bundleName).ToArray();
             if (candidateAssetBundles.Length == 0)
             {
                 return false;

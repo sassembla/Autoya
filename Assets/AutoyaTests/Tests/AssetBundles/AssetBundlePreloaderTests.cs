@@ -33,8 +33,8 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         yield return listCor;
 
         var assetBundleList = listCor.Current as AssetBundleList;
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/");
-        loader.UpdateAssetBundleList(assetBundleList);
+        loader = new AssetBundleLoader();
+        loader.UpdateAssetBundleList(abDlPath + assetBundleList.version + "/", assetBundleList);
 
 
         var cleaned = loader.CleanCachedAssetBundles();
@@ -204,7 +204,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator PreloadWithPreloadList()
     {
-        var preloadBundleNames = loader.list.assetBundles.Select(info => info.bundleName).ToArray();
+        var preloadBundleNames = loader.bundleList.assetBundles.Select(info => info.bundleName).ToArray();
         var preloadList = new PreloadList("PreloadWithPreloadList", preloadBundleNames);
 
         var doneCount = 0;

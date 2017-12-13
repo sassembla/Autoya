@@ -658,38 +658,47 @@ namespace AutoyaFramework
         {
             // initialize/reload AssetBundleLoader.
             {
-                AssetBundleLoader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
-                {
-                    httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
-                };
-                AssetBundleLoader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>
-                {
-                    return assetBundleGetRequestHeaderDelegate(p1, p2);
-                };
-
                 if (_assetBundleLoader != null)
                 {
-                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
+                    _assetBundleLoader.UpdateAssetBundleList(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList);
                 }
                 else
                 {
-                    _assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), null, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
-                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
+                    AssetBundleLoader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
+                    {
+                        httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+                    };
+
+                    AssetBundleLoader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>
+                    {
+                        return assetBundleGetRequestHeaderDelegate(p1, p2);
+                    };
+
+                    _assetBundleLoader = new AssetBundleLoader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    _assetBundleLoader.UpdateAssetBundleList(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList);
                 }
             }
 
             // initialize AssetBundlePreloader.
             {
-                AssetBundlePreloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
+                if (_assetBundlePreloader != null)
                 {
-                    httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
-                };
-                AssetBundlePreloader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>
+                    // do nothing.
+                }
+                else
                 {
-                    return assetBundlePreloadListGetRequestHeaderDelegate(p1, p2);
-                };
+                    AssetBundlePreloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
+                    {
+                        httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
+                    };
 
-                _assetBundlePreloader = new AssetBundlePreloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    AssetBundlePreloader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>
+                    {
+                        return assetBundlePreloadListGetRequestHeaderDelegate(p1, p2);
+                    };
+
+                    _assetBundlePreloader = new AssetBundlePreloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                }
             }
         }
 

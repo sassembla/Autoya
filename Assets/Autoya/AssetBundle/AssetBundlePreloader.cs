@@ -222,7 +222,7 @@ namespace AutoyaFramework.AssetBundles
             /*
 				check if preloadList's assetBundleNames are contained by assetBundleList.
 			 */
-            var assetBundleList = loader.list;
+            var assetBundleList = loader.bundleList;
 
             var targetAssetBundleNames = preloadList.bundleNames;
             var assetBundleListContainedAssetBundleNames = assetBundleList.assetBundles.Select(a => a.bundleName).ToList();
@@ -261,7 +261,7 @@ namespace AutoyaFramework.AssetBundles
             {
                 if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName))
                 {
-                    bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.list.version, new AutoyaStatus());
+                    bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.bundleList.version, new AutoyaStatus());
                     yield break;
                 }
 

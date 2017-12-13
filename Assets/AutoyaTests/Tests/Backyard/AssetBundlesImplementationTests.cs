@@ -241,17 +241,36 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var done = false;
         var assetName = list.assetBundles[0].assetNames[0];
-        Autoya.AssetBundle_LoadAsset<Texture2D>(
-            assetName,
-            (name, tex) =>
-            {
-                done = true;
-            },
-            (name, err, reason, autoyaStatus) =>
-            {
-                Fail("err:" + err);
-            }
-        );
+
+        if (assetName.EndsWith(".png"))
+        {
+            Autoya.AssetBundle_LoadAsset<Texture2D>(
+                assetName,
+                (name, tex) =>
+                {
+                    done = true;
+                },
+                (name, err, reason, autoyaStatus) =>
+                {
+                    Fail("err:" + err + " reason:" + reason);
+                }
+            );
+        }
+        else
+        {
+            Autoya.AssetBundle_LoadAsset<GameObject>(
+                assetName,
+                (name, obj) =>
+                {
+                    done = true;
+                },
+                (name, err, reason, autoyaStatus) =>
+                {
+                    Fail("err:" + err + " reason:" + reason);
+                }
+            );
+        }
+
 
         yield return WaitUntil(
             () => done,
@@ -308,7 +327,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var done = false;
 
         Autoya.AssetBundle_Preload(
-            "1.0.0/sample.preloadList.json",
+            "1.0.0.preload/sample.preloadList.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -345,7 +364,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var done = false;
 
         Autoya.AssetBundle_Preload(
-            "1.0.0/sample.preloadList2.json",
+            "1.0.0.preload/sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -463,7 +482,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator IsAssetExistInAssetBundleList()
     {
         yield return GetAssetBundleList();
-        var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png";
+        var assetName = "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png";
         var exist = Autoya.AssetBundle_IsAssetExist(assetName);
         True(exist, "not exist:" + assetName);
     }
@@ -472,7 +491,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator IsAssetBundleExistInAssetBundleList()
     {
         yield return GetAssetBundleList();
-        var bundleName = "bundlename";
+        var bundleName = "texturename";
         var exist = Autoya.AssetBundle_IsAssetBundleExist(bundleName);
         True(exist, "not exist:" + bundleName);
 
@@ -510,7 +529,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                         },
                         (name, error, reason, autoyaStatus) =>
                         {
-                            Fail(name + " reason:" + reason);
+                            Fail("failed to load asset:" + name + " reason:" + reason);
                         }
                     );
                 }
@@ -525,7 +544,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                         },
                         (name, error, reason, autoyaStatus) =>
                         {
-                            Fail(name + " reason:" + reason);
+                            Fail("failed to load asset:" + name + " reason:" + reason);
                         }
                     );
                 }
@@ -534,7 +553,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         yield return WaitUntil(
             () => allAssetCount == loaded,
-            () => { throw new TimeoutException(""); },
+            () => { throw new TimeoutException("failed to load asset in time."); },
             10
         );
 
@@ -650,14 +669,18 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
-        var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
+
+        var guidsDict = loadedAssets.ToDictionary(
+            a => a.name,
+            a => a.GetInstanceID()
+        );
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = abListDlPath + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/main_assets.json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -699,15 +722,22 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         UnityEngine.Object[] loadedAssets2 = null;
         yield return LoadAllAssetBundles(objs => { loadedAssets2 = objs; });
 
-        var newGuids = loadedAssets2.Select(a => a.GetInstanceID()).ToArray();
+        var newGuidsDict = loadedAssets2.ToDictionary(
+            a => a.name,
+            a => a.GetInstanceID()
+        );
 
-        foreach (var newGuid in newGuids)
+        var changedAssetCount = 0;
+        foreach (var newGuidItem in newGuidsDict)
         {
-            if (guids.Contains(newGuid))
+            var name = newGuidItem.Key;
+            var guid = newGuidItem.Value;
+            if (guidsDict[name] != guid)
             {
-                Fail("same instanceId detected. failed to refresh changed assetBundle.");
+                changedAssetCount++;
             }
         }
+        True(changedAssetCount == 1);
     }
 
     [MTest]
@@ -748,7 +778,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = abListDlPath + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/main_assets.json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -859,7 +889,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             ver =>
             {
-                var url = abListDlPath + ver + "/AssetBundles.StandaloneOSXIntel64_" + ver.Replace(".", "_") + ".json";
+                var url = abListDlPath + ver + "/main_assets.json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -903,13 +933,17 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // preload all.
         var preloadDone = false;
 
+
+        // リストが書き換わってないからエラーみたいな感じっぽい。
+
+        // 更新がかかっているABを取得する。
         var preloadList = new PreloadList("dummy", loadedAssetBundleNames);
         Autoya.AssetBundle_PreloadByList(
             preloadList,
             (preloadCandidateBundleNames, go, stop) =>
             {
                 // all assetBundles should not be download. on memory loaded ABs are not updatable.
-                True(preloadCandidateBundleNames.Length == loadedAssetBundleNames.Length);
+                True(preloadCandidateBundleNames.Length == 1);
                 go();
             },
             progress => { },
