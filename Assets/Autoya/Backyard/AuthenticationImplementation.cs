@@ -4,6 +4,8 @@ using AutoyaFramework.Settings.Auth;
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
+using AutoyaFramework.Settings.AssetBundles;
 
 
 /*
@@ -860,38 +862,45 @@ namespace AutoyaFramework
             {
                 if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION))
                 {
-                    var newListVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
+                    var newListVersionsOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
 
-                    // compare with runtimeManifest data.
-                    if (newListVersionOnResponseHeader != _appManifestStore.GetRuntimeManifest().resVersion)
+                    // compare with format. identity:version,identity2:version2
+                    var listInfosStrs = newListVersionsOnResponseHeader.Split(',');
+
+                    foreach (var listInfosStr in listInfosStrs)
                     {
+                        var identityAndVersion = listInfosStr.Split(':');
+                        var identity = identityAndVersion[0];
+                        var version = identityAndVersion[1];
 
-                        var answer = OnRequestNewAssetBundleList(newListVersionOnResponseHeader);
-                        if (answer.doOrNot)
+                        // compare with runtimeManifest data.
+                        var resourceInfos = _appManifestStore.GetRuntimeManifest().resourceInfos;
+                        foreach (var resourceInfo in resourceInfos)
                         {
-                            if (_postponedNewAssetBundleList != null && _postponedNewAssetBundleList.version == newListVersionOnResponseHeader)
+                            if (resourceInfo.listIdentity == identity)
                             {
-                                // new list is already cached on memory. use this for update assetBundleList.
-                                OnUpdatingListReceived(_postponedNewAssetBundleList);
-                            }
-                            else
-                            {
-                                // start download new list.
-                                var listUrl = answer.url;
-                                DownloadNewAssetBundleList(listUrl);
+                                var answer = OnRequestNewAssetBundleList(identity, version);
+                                if (answer.doOrNot)
+                                {
+                                    // start download new list.
+                                    var listUrl = resourceInfo.listDownloadUrl + resourceInfo.listIdentity + AssetBundlesSettings.PLATFORM_STR + resourceInfo.listVersion + resourceInfo.listIdentity + ".json";
+                                    Debug.Log("listUrl:" + listUrl);
+                                    DownloadNewAssetBundleList(listUrl);
+                                }
+                                break;
                             }
                         }
                     }
                 }
-            }
 
-            /*
-				fire application update request after succeeded.
-			 */
-            if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION))
-            {
-                var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
-                OnNewAppRequested(newappVersionOnResponseHeader);
+                /*
+                    fire application update request after succeeded.
+                 */
+                if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION))
+                {
+                    var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
+                    OnNewAppRequested(newappVersionOnResponseHeader);
+                }
             }
         }
 
