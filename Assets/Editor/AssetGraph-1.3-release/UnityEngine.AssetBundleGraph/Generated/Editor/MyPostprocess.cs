@@ -73,18 +73,18 @@ public class MyPostprocess : IPostprocess
 
         var settingProfile = JsonUtility.FromJson<ListProfile>(Encoding.UTF8.GetString(settingFileData));
 
-        var listName = settingProfile.name;
+        var listIdentity = settingProfile.identity;
         var listVersion = settingProfile.version;
 
         var rootManifestPath = rootManifestEntry.destination;
-        Debug.Log("rootManifestPath:" + rootManifestPath + " generate list name:" + listName + " version:" + listVersion);
+        Debug.Log("rootManifestPath:" + rootManifestPath + " generate list identity:" + listIdentity + " version:" + listVersion);
 
         var targetDirectory = FileController.PathCombine(wholeExportFolderName, exportPlatformStr, listVersion);
 
         // check if version folder is exists.
         if (Directory.Exists(targetDirectory))
         {
-            Debug.Log("same version files are already exists. version:" + listVersion + " path:" + targetDirectory + " need to delete directory.");
+            Debug.Log("same version files are already exists. list identity:" + listIdentity + " version:" + listVersion + " path:" + targetDirectory + " need to delete directory.");
             return;
             // Directory.Delete(targetDirectory, true);
         }
@@ -298,11 +298,11 @@ public class MyPostprocess : IPostprocess
                 }
             }
 
-            var assetBundleList = new AssetBundleList(exportPlatformStr, listVersion, assetBundleInfos.ToArray());
+            var assetBundleList = new AssetBundleList(listIdentity, exportPlatformStr, listVersion, assetBundleInfos.ToArray());
             var str = JsonUtility.ToJson(assetBundleList, true);
 
 
-            var listOutputPaht = FileController.PathCombine(wholeExportFolderName, exportPlatformStr, listVersion, listName + ".json");
+            var listOutputPaht = FileController.PathCombine(wholeExportFolderName, exportPlatformStr, listVersion, listIdentity + ".json");
             using (var sw = new StreamWriter(listOutputPaht))
             {
                 sw.WriteLine(str);
@@ -314,6 +314,6 @@ public class MyPostprocess : IPostprocess
 [Serializable]
 public class ListProfile
 {
-    [SerializeField] public string name;
+    [SerializeField] public string identity;
     [SerializeField] public string version;
 }

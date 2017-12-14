@@ -660,7 +660,7 @@ namespace AutoyaFramework
             {
                 if (_assetBundleLoader != null)
                 {
-                    _assetBundleLoader.UpdateAssetBundleList(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList);
+                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
                 }
                 else
                 {
@@ -674,8 +674,8 @@ namespace AutoyaFramework
                         return assetBundleGetRequestHeaderDelegate(p1, p2);
                     };
 
-                    _assetBundleLoader = new AssetBundleLoader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
-                    _assetBundleLoader.UpdateAssetBundleList(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), _currentAssetBundleList);
+                    _assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
                 }
             }
 

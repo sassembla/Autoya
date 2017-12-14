@@ -259,6 +259,7 @@ namespace UnityEngine.AssetBundles.GraphTool
             }
         }
 
+        BuildPlayerOptions opt;
         public override void Build(BuildTarget target,
             Model.NodeData node,
             IEnumerable<PerformGraph.AssetGroups> incoming,
@@ -293,7 +294,6 @@ namespace UnityEngine.AssetBundles.GraphTool
                 }
             }
 
-            BuildPlayerOptions opt;
             opt.options = (BuildOptions)m_buildOptions[target];
             opt.locationPathName = m_buildLocations[target] + "/" + m_playerName[target];
             opt.assetBundleManifestPath = manifestPath;

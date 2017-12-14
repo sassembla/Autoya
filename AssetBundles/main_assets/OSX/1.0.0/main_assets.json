@@ -1,4 +1,5 @@
 {
+    "identity": "main_assets",
     "target": "OSX",
     "version": "1.0.0",
     "assetBundles": [

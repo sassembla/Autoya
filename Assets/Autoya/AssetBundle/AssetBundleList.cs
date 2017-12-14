@@ -26,33 +26,22 @@ namespace AutoyaFramework.AssetBundles
     [Serializable]
     public class AssetBundleList
     {
+        [SerializeField] public string identity;
         [SerializeField] public string target;
         [SerializeField] public string version;
         [SerializeField] public AssetBundleInfo[] assetBundles;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleList"/> class.
-        /// </summary>
-		public AssetBundleList() { }
+        public AssetBundleList() { }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleList"/> class.
-        /// </summary>
-        /// <param name="target">Target.</param>
-        /// <param name="version">Version.</param>
-        /// <param name="assetBundles">Asset bundles.</param>
-		public AssetBundleList(string target, string version, AssetBundleInfo[] assetBundles)
+        public AssetBundleList(string identity, string target, string version, AssetBundleInfo[] assetBundles)
         {
+            this.identity = identity;
             this.target = target;
             this.version = version;
             this.assetBundles = assetBundles;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleList"/> class.
-        /// </summary>
-        /// <param name="baseList">Base list.</param>
-		public AssetBundleList(AssetBundleList baseList)
+        public AssetBundleList(AssetBundleList baseList)
         {
             this.target = baseList.target;
             this.version = baseList.version;
@@ -63,20 +52,13 @@ namespace AutoyaFramework.AssetBundles
             }
         }
 
-        /// <summary>
-        /// Exists this instance.
-        /// </summary>
-        /// <returns>The exists.</returns>
-		public bool Exists()
+        public bool Exists()
         {
             return (!string.IsNullOrEmpty(this.target) && !string.IsNullOrEmpty(this.version) && this.assetBundles.Any());
         }
     }
 
-    /// <summary>
-    /// type of Asset bundle info.
-    /// </summary>
-	[Serializable]
+    [Serializable]
     public struct AssetBundleInfo
     {
         [SerializeField] public string bundleName;
@@ -86,16 +68,7 @@ namespace AutoyaFramework.AssetBundles
         [SerializeField] public string hash;
         [SerializeField] public long size;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleInfo"/> struct.
-        /// </summary>
-        /// <param name="bundleName">Bundle name.</param>
-        /// <param name="assetNames">Asset names.</param>
-        /// <param name="dependsBundleNames">Depends bundle names.</param>
-        /// <param name="crc">Crc.</param>
-        /// <param name="hash">Hash.</param>
-        /// <param name="size">Size.</param>
-		public AssetBundleInfo(string bundleName, string[] assetNames, string[] dependsBundleNames, uint crc, string hash, long size)
+        public AssetBundleInfo(string bundleName, string[] assetNames, string[] dependsBundleNames, uint crc, string hash, long size)
         {
             this.bundleName = bundleName;
             this.assetNames = assetNames;
@@ -105,11 +78,7 @@ namespace AutoyaFramework.AssetBundles
             this.size = size;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleInfo"/> struct.
-        /// </summary>
-        /// <param name="baseAssetBundleInfo">Base asset bundle info.</param>
-		public AssetBundleInfo(AssetBundleInfo baseAssetBundleInfo)
+        public AssetBundleInfo(AssetBundleInfo baseAssetBundleInfo)
         {
             this.bundleName = baseAssetBundleInfo.bundleName;
             this.assetNames = new string[baseAssetBundleInfo.assetNames.Length];
@@ -127,6 +96,11 @@ namespace AutoyaFramework.AssetBundles
             this.crc = baseAssetBundleInfo.crc;
             this.hash = baseAssetBundleInfo.hash;
             this.size = baseAssetBundleInfo.size;
+        }
+
+        public static bool IsEmpty(AssetBundleInfo target)
+        {
+            return target.size == 0 || target.assetNames.Length == 0 || string.IsNullOrEmpty(target.bundleName);
         }
     }
 }

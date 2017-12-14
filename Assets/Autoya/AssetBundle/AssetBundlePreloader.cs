@@ -222,10 +222,8 @@ namespace AutoyaFramework.AssetBundles
             /*
 				check if preloadList's assetBundleNames are contained by assetBundleList.
 			 */
-            var assetBundleList = loader.bundleList;
-
             var targetAssetBundleNames = preloadList.bundleNames;
-            var assetBundleListContainedAssetBundleNames = assetBundleList.assetBundles.Select(a => a.bundleName).ToList();
+            var assetBundleListContainedAssetBundleNames = loader.bundleListStorage.WholeBundleNames();
 
             // start preload assetBundles.
             var loadingCoroutines = new Queue<IEnumerator>();
@@ -261,14 +259,14 @@ namespace AutoyaFramework.AssetBundles
             {
                 if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName))
                 {
-                    bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list ver:" + loader.bundleList.version, new AutoyaStatus());
+                    bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list versions:" + loader.bundleListStorage.CurrentAssetBundleListInfos(), new AutoyaStatus());
                     yield break;
                 }
 
                 // reserve this assetBundle and dependencies as "should be download".
                 wholeDownloadableAssetBundleNames.Add(targetAssetBundleName);
 
-                var dependentBundleNames = assetBundleList.assetBundles.Where(bundle => bundle.bundleName == targetAssetBundleName).FirstOrDefault().dependsBundleNames;
+                var dependentBundleNames = loader.AssetBundleInfoFromBundleName(targetAssetBundleName).dependsBundleNames;
                 wholeDownloadableAssetBundleNames.AddRange(dependentBundleNames);
             }
 
@@ -279,7 +277,7 @@ namespace AutoyaFramework.AssetBundles
             foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNamesCandidate)
             {
                 var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
-                var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
+                var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
                 var hash = Hash128.Parse(targetBundleInfo.hash);
 
                 // ignore cached one.
@@ -324,7 +322,7 @@ namespace AutoyaFramework.AssetBundles
                 var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
                 var bundleReqHeader = assetBundleGetRequestHeaderDelegate(bundleUrl, new Dictionary<string, string>());
 
-                var targetBundleInfo = loader.AssetBundleInfo(shouldDownloadAssetBundleName);
+                var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
                 var crc = targetBundleInfo.crc;
                 var hash = Hash128.Parse(targetBundleInfo.hash);
 
