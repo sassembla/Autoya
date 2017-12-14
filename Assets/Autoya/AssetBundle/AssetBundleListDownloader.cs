@@ -78,6 +78,7 @@ namespace AutoyaFramework.AssetBundles
         /// <param name="timeoutSec">Timeout sec.</param>
 		public IEnumerator DownloadAssetBundleList(string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec = 0)
         {
+            Debug.Log("url:" + url);
             var connectionId = AssetBundlesSettings.ASSETBUNDLES_ASSETBUNDLELIST_PREFIX + Guid.NewGuid().ToString();
             var reqHeader = assetBundleGetRequestHeaderDelegate(url, new Dictionary<string, string>());
 
@@ -85,6 +86,7 @@ namespace AutoyaFramework.AssetBundles
             Action<string, object> listDonwloadSucceeded = (conId, listData) =>
             {
                 var listString = listData as string;
+                Debug.Log("listString:" + listString);
                 assetBundleList = JsonUtility.FromJson<AssetBundleList>(listString);
 
                 done(assetBundleList);

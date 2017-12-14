@@ -61,7 +61,7 @@ namespace AutoyaFramework
                 assetBundleFeatState = AssetBundlesFeatureState.None;
                 return;
             }
-
+            Debug.Log("c");
             UpdateAssetBundleList(listCandidate);
             assetBundleFeatState = AssetBundlesFeatureState.Ready;
             ReadyLoaderAndPreloader();
@@ -154,6 +154,7 @@ namespace AutoyaFramework
 
         private void UpdateAssetBundleList(AssetBundleList newList)
         {
+            Debug.Log("newList:" + newList.identity);
             _currentAssetBundleList = newList;
         }
 
@@ -280,7 +281,7 @@ namespace AutoyaFramework
                         runtimeManifest.resVersion = newList.version;
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
-
+                    Debug.Log("b");
                     UpdateAssetBundleList(newList);
                     ReadyLoaderAndPreloader();
 
@@ -386,12 +387,13 @@ namespace AutoyaFramework
                         {
                             // update runtime manifest. set "resVersion" to downloaded version.
                             {
+                                Debug.Log("ここが副列に変わる");
                                 var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
                                 runtimeManifest.resVersion = newList.version;
                                 Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                             }
 
-
+                            Debug.Log("a");
                             autoya.UpdateAssetBundleList(newList);
 
                             // set state to loaded.
@@ -658,11 +660,7 @@ namespace AutoyaFramework
         {
             // initialize/reload AssetBundleLoader.
             {
-                if (_assetBundleLoader != null)
-                {
-                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
-                }
-                else
+                if (_assetBundleLoader == null)
                 {
                     AssetBundleLoader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
                     {
@@ -675,8 +673,9 @@ namespace AutoyaFramework
                     };
 
                     _assetBundleLoader = new AssetBundleLoader(GetAssetBundleListVersionedBasePath(AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSET), assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
-                    _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
                 }
+
+                _assetBundleLoader.UpdateAssetBundleList(_currentAssetBundleList);
             }
 
             // initialize AssetBundlePreloader.

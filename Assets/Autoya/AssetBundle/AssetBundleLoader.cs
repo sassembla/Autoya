@@ -105,7 +105,7 @@ namespace AutoyaFramework.AssetBundles
 
             public string[] WholeBundleNames()
             {
-                return storage.Values.SelectMany(list => list.assetBundles).SelectMany(bundles => bundles.assetNames).ToArray();
+                return storage.Values.SelectMany(list => list.assetBundles).Select(bundles => bundles.bundleName).ToArray();
             }
 
             public string CurrentAssetBundleListInfos()

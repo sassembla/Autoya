@@ -268,7 +268,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
             },
             (preloadFailedAssetBundleName, code, reason, autoyaStatus) =>
             {
-                Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " code:" + code);
+                Debug.LogError("failed to download, name:" + preloadFailedAssetBundleName + " code:" + code + " reason:" + reason);
             }
         );
 

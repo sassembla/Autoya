@@ -43,6 +43,7 @@ namespace AutoyaFramework.AssetBundles
 
         public AssetBundleList(AssetBundleList baseList)
         {
+            this.identity = baseList.identity;
             this.target = baseList.target;
             this.version = baseList.version;
             this.assetBundles = new AssetBundleInfo[baseList.assetBundles.Length];
@@ -54,7 +55,9 @@ namespace AutoyaFramework.AssetBundles
 
         public bool Exists()
         {
-            return (!string.IsNullOrEmpty(this.target) && !string.IsNullOrEmpty(this.version) && this.assetBundles.Any());
+            var exists = !(string.IsNullOrEmpty(this.identity) || string.IsNullOrEmpty(this.target) || string.IsNullOrEmpty(this.version) || this.assetBundles.Length == 0);
+            Debug.Log("exists:" + exists);
+            return exists;
         }
     }
 
