@@ -45,14 +45,20 @@ public class ManifestTests : MiyamasuTestRunner
         // load
         var oldOne = store.GetRuntimeManifest();
 
-        oldOne.resVersion = "1.1.0";
+        foreach (var info in oldOne.resourceInfos)
+        {
+            info.listVersion = "1.1.0";
+        }
 
         // update
         var succeeded = store.UpdateRuntimeManifest(oldOne);
         True(succeeded);
 
         var newOne = store.GetRuntimeManifest();
-        True(newOne.resVersion == "1.1.0");
+        foreach (var info in newOne.resourceInfos)
+        {
+            IsTrue(info.listVersion == "1.1.0");
+        }
 
         yield break;
     }

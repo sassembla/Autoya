@@ -223,7 +223,7 @@ namespace AutoyaFramework.AssetBundles
 				check if preloadList's assetBundleNames are contained by assetBundleList.
 			 */
             var targetAssetBundleNames = preloadList.bundleNames;
-            var assetBundleListContainedAssetBundleNames = loader.bundleListStorage.WholeBundleNames();
+            var assetBundleListContainedAssetBundleNames = loader.GetWholeBundleNames();
 
             // start preload assetBundles.
             var loadingCoroutines = new Queue<IEnumerator>();
@@ -257,10 +257,10 @@ namespace AutoyaFramework.AssetBundles
             var wholeDownloadableAssetBundleNames = new List<string>();
             foreach (var targetAssetBundleName in targetAssetBundleNames)
             {
+                // skip not contained bundle.
                 if (!assetBundleListContainedAssetBundleNames.Contains(targetAssetBundleName))
                 {
-                    bundlePreloadFailed(targetAssetBundleName, -1, "the bundle:" + targetAssetBundleName + " is not contained current AssetBundleList. list versions:" + loader.bundleListStorage.CurrentAssetBundleListInfos(), new AutoyaStatus());
-                    yield break;
+                    continue;
                 }
 
                 // reserve this assetBundle and dependencies as "should be download".
@@ -324,6 +324,10 @@ namespace AutoyaFramework.AssetBundles
 
                 var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
                 var crc = targetBundleInfo.crc;
+                Debug.Log("crc:" + crc + " bundleUrl:" + bundleUrl);
+
+
+
                 var hash = Hash128.Parse(targetBundleInfo.hash);
 
                 if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName))

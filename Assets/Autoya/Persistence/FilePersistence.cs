@@ -15,6 +15,7 @@ namespace AutoyaFramework.Persistence.Files
         public FilePersistence(string basePathSource)
         {
             this.basePath = basePathSource;
+            UnityEngine.Debug.Log("basePath:" + basePath);
         }
 
         /*

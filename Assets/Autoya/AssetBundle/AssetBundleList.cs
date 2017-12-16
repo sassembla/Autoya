@@ -56,7 +56,6 @@ namespace AutoyaFramework.AssetBundles
         public bool Exists()
         {
             var exists = !(string.IsNullOrEmpty(this.identity) || string.IsNullOrEmpty(this.target) || string.IsNullOrEmpty(this.version) || this.assetBundles.Length == 0);
-            Debug.Log("exists:" + exists);
             return exists;
         }
     }

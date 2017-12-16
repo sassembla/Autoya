@@ -11,10 +11,10 @@ using UnityEngine;
 
 public class AssetBundlesImplementationTests : MiyamasuTestRunner
 {
-    private string abListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
+    private string abListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
 
-    private string mainAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
-    private string subAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/sub_assets/" + "OSX/";
+    private string mainAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
+    private string subAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
 
     [MSetup]
     public IEnumerator Setup()
@@ -31,7 +31,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             {
                 switch (code)
                 {
-                    case -1:
+                    case Autoya.AssetBundlesError.NeedToDownloadAssetBundleList:
                         {
                             discarded = true;
                             break;
@@ -75,7 +75,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             {
                 switch (code)
                 {
-                    case -1:
+                    case Autoya.AssetBundlesError.NeedToDownloadAssetBundleList:
                         {
                             discarded = true;
                             break;
@@ -104,12 +104,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator GetAssetBundleListFromDebugMethod()
     {
+        var listIdentity = "main_assets";
         var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListDlPath + version + "/" + fileName,
+            abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
                 done = true;
@@ -153,11 +154,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     {
         // fail once.
         {
+            var listIdentity = "fake_main_assets";
             var notExistFileName = "fake_main_assets.json";
             var version = "1.0.0";
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-                abListDlPath + version + "/" + notExistFileName,
+                abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + notExistFileName,
                 status =>
                 {
                     Fail("should not be succeeded.");
@@ -177,12 +179,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         // try again with valid fileName.
         {
+            var listIdentity = "main_assets";
             var fileName = "main_assets.json";
             var version = "1.0.0";
 
             var done = false;
             Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-                abListDlPath + version + "/" + fileName,
+                abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
                 status =>
                 {
                     done = true;
@@ -236,11 +239,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     {
         yield return GetAssetBundleList();
 
-        var list = Autoya.AssetBundle_AssetBundleList();
-        True(list != null);
+        var lists = Autoya.AssetBundle_AssetBundleList();
+        True(lists != null);
 
         var done = false;
-        var assetName = list.assetBundles[0].assetNames[0];
+        var assetName = lists[0].assetBundles[0].assetNames[0];
 
         if (assetName.EndsWith(".png"))
         {
@@ -327,7 +330,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var done = false;
 
         Autoya.AssetBundle_Preload(
-            "1.0.0.preload/sample.preloadList.json",
+            "sample.preloadList.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -364,7 +367,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var done = false;
 
         Autoya.AssetBundle_Preload(
-            "1.0.0.preload/sample.preloadList2.json",
+            "sample.preloadList2.json",
             (willLoadBundleNames, proceed, cancel) =>
             {
                 proceed();
@@ -401,8 +404,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var done = false;
 
-        var list = Autoya.AssetBundle_AssetBundleList();
-        var preloadList = new PreloadList("test", list);
+        var lists = Autoya.AssetBundle_AssetBundleList();
+        var preloadList = new PreloadList("test", lists[0]);
 
         // rewrite. set 1st content of bundleName.
         preloadList.bundleNames = new string[] { preloadList.bundleNames[0] };
@@ -445,7 +448,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var done = false;
 
         var list = Autoya.AssetBundle_AssetBundleList();
-        var preloadList = new PreloadList("test", list);
+        var preloadList = new PreloadList("test", list[0]);
 
         Autoya.AssetBundle_PreloadByList(
             preloadList,
@@ -506,7 +509,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
     private IEnumerator LoadAllAssetBundles(Action<UnityEngine.Object[]> onLoaded)
     {
-        var bundles = Autoya.AssetBundle_AssetBundleList().assetBundles;
+        var bundles = Autoya.AssetBundle_AssetBundleList().SelectMany(list => list.assetBundles);
 
         var loaded = 0;
         var allAssetCount = bundles.Sum(s => s.assetNames.Length);
@@ -593,9 +596,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver =>
+            (basePath, identity, ver) =>
             {
-                var url = abListDlPath + ver + "/main_assets.json";
+                var url = basePath + "" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -610,6 +613,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 return true;
             }
         );
+
+        Debug.LogWarning("書き換えないといけない");
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
@@ -630,7 +635,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
 
         // load状態のAssetはそのまま使用できる
         for (var i = 0; i < loadedAssets.Length; i++)
@@ -678,9 +683,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver =>
+            (basePath, identity, ver) =>
             {
-                var url = abListDlPath + ver + "/main_assets.json";
+                var url = basePath + "" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -695,6 +700,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 return true;
             }
         );
+
+        Debug.LogWarning("書き換えないといけない");
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
@@ -715,7 +722,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
 
         // 再度ロード済みのAssetをLoadしようとすると、更新があったABについて最新を取得してくる。
 
@@ -771,14 +778,14 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         True(loadedAssets != null);
         // var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
 
-        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList().assetBundles.Select(a => a.bundleName).ToArray();
+        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList()[0].assetBundles.Select(a => a.bundleName).ToArray();
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver =>
+            (basePath, identity, ver) =>
             {
-                var url = abListDlPath + ver + "/main_assets.json";
+                var url = basePath + "" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -793,6 +800,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 return true;
             }
         );
+
+        Debug.LogWarning("書き換えないといけない");
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
@@ -813,7 +822,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
 
 
         // preload all.
@@ -880,16 +889,15 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
-        // var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
 
-        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList().assetBundles.Select(a => a.bundleName).ToArray();
+        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList()[0].assetBundles.Select(a => a.bundleName).ToArray();
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            ver =>
+            (basePath, identity, ver) =>
             {
-                var url = abListDlPath + ver + "/main_assets.json";
+                var url = basePath + "" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -904,6 +912,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 return true;
             }
         );
+
+        Debug.LogWarning("書き換えないといけない");
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
@@ -924,7 +934,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList().version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
 
 
         // unload all assets on memory.
@@ -942,6 +952,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             preloadList,
             (preloadCandidateBundleNames, go, stop) =>
             {
+                Debug.Log("ここで使ってるリストが古いんだろうか。crc見るか。");
                 // all assetBundles should not be download. on memory loaded ABs are not updatable.
                 True(preloadCandidateBundleNames.Length == 1);
                 go();
@@ -972,12 +983,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator DownloadSameBundleListAtOnce()
     {
+        var listIdentity = "main_assets";
         var fileName = "main_assets.json";
         var version = "1.0.0";
 
         var done1 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListDlPath + version + "/" + fileName,
+            abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
                 done1 = true;
@@ -990,7 +1002,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var done2 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListDlPath + version + "/" + fileName,
+            abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
                 done2 = true;

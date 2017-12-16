@@ -20,7 +20,7 @@ namespace AutoyaFramework
 
             if (autoya.assetBundleFeatState == AssetBundlesFeatureState.Ready)
             {
-                additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = Autoya.Manifest_LoadRuntimeManifest().resVersion;
+                additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = Autoya.Manifest_ResourceVersionDescription();
             }
         }
 

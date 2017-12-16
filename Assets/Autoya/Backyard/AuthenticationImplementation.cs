@@ -871,7 +871,7 @@ namespace AutoyaFramework
                     {
                         var identityAndVersion = listInfosStr.Split(':');
                         var identity = identityAndVersion[0];
-                        var version = identityAndVersion[1];
+                        var newVersion = identityAndVersion[1];
 
                         // compare with runtimeManifest data.
                         var resourceInfos = _appManifestStore.GetRuntimeManifest().resourceInfos;
@@ -879,11 +879,12 @@ namespace AutoyaFramework
                         {
                             if (resourceInfo.listIdentity == identity)
                             {
-                                var answer = OnRequestNewAssetBundleList(identity, version);
+                                // request new version.
+                                var answer = OnRequestNewAssetBundleList(resourceInfo.listDownloadUrl, resourceInfo.listIdentity, newVersion);
                                 if (answer.doOrNot)
                                 {
                                     // start download new list.
-                                    var listUrl = resourceInfo.listDownloadUrl + resourceInfo.listIdentity + AssetBundlesSettings.PLATFORM_STR + resourceInfo.listVersion + resourceInfo.listIdentity + ".json";
+                                    var listUrl = answer.url;
                                     Debug.Log("listUrl:" + listUrl);
                                     DownloadNewAssetBundleList(listUrl);
                                 }

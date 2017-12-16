@@ -51,7 +51,7 @@ public class LoadAssetBundle : MonoBehaviour
             },
             (code, reason, autoyaStatus) =>
             {
-                Debug.LogError("failed to download assetBundleList from url:" + AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + " code:" + code + " reason:" + reason);
+                Debug.LogError("failed to download assetBundleList from OverridePoints.AssetBundleListDownloadUrl() supplied url. code:" + code + " reason:" + reason);
             }
         );
     }

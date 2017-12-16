@@ -38,6 +38,12 @@ namespace AutoyaFramework
             return autoya._appManifestStore.GetRuntimeManifest();
         }
 
+        public static string Manifest_ResourceVersionDescription()
+        {
+            var manifest = autoya._appManifestStore.GetRuntimeManifest();
+            return string.Join(",", manifest.resourceInfos.Select(info => info.listIdentity + ":" + info.listVersion).ToArray());
+        }
+
         public static void Debug_Manifest_RenewRuntimeManifest()
         {
             var newOne = new RuntimeManifestObject();

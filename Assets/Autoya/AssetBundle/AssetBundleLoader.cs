@@ -27,9 +27,6 @@ namespace AutoyaFramework.AssetBundles
         NotContainedAssetBundle,
     }
 
-    /// <summary>
-    /// Asset bundle loader.
-    /// </summary>
     public class AssetBundleLoader
     {
         /*
@@ -47,16 +44,19 @@ namespace AutoyaFramework.AssetBundles
 
         public const int CODE_CRC_MISMATCHED = 399;
 
-        public readonly string bundleDownloadBasePath;
-        public AssetBundleListStorage bundleListStorage
-        {
-            private set;
-            get;
-        }
+        private AssetBundleListStorage bundleListStorage;
 
         public class AssetBundleListStorage
         {
             private Dictionary<string, AssetBundleList> storage = new Dictionary<string, AssetBundleList>();
+            private Dictionary<string, string> bundleNameAndDownloadUrlDict = new Dictionary<string, string>();
+
+            private readonly Func<string, string> OnBundleDownloadUrlRequired;
+
+            public AssetBundleListStorage(Func<string, string> onBundleDownloadUrlRequired)
+            {
+                this.OnBundleDownloadUrlRequired = onBundleDownloadUrlRequired;
+            }
 
             /**
                 update list then regenerate assetName-bundleNameDict.
@@ -65,10 +65,23 @@ namespace AutoyaFramework.AssetBundles
             {
                 storage[newList.identity] = newList;
 
+                // reset bundleName - downloadableUrl dictionary.
+                {
+                    bundleNameAndDownloadUrlDict.Clear();
+
+                    foreach (var bundleList in storage.Values)
+                    {
+                        var bundleDownloadUrl = OnBundleDownloadUrlRequired(bundleList.identity);
+                        foreach (var assetBundleInfo in bundleList.assetBundles)
+                        {
+                            bundleNameAndDownloadUrlDict[assetBundleInfo.bundleName] = bundleDownloadUrl;
+                        }
+                    }
+                }
 
                 var assetNamesAndAssetBundleNamesDict = new Dictionary<string, string>();
-                var assetBundleInfos = storage.Values.SelectMany(s => s.assetBundles).ToList();
-                foreach (var assetBundle in assetBundleInfos)
+                var wholeAssetBundleInfos = storage.Values.SelectMany(s => s.assetBundles).ToList();
+                foreach (var assetBundle in wholeAssetBundleInfos)
                 {
                     var bundleName = assetBundle.bundleName;
                     foreach (var assetName in assetBundle.assetNames)
@@ -76,10 +89,11 @@ namespace AutoyaFramework.AssetBundles
                         assetNamesAndAssetBundleNamesDict[assetName] = bundleName;
                     }
                 }
+
                 return assetNamesAndAssetBundleNamesDict;
             }
 
-            internal long AssetBundleWeightFromBundleNames(string[] bundleNames)
+            public long AssetBundleWeightFromBundleNames(string[] bundleNames)
             {
                 var total = 0L;
                 foreach (var list in this.storage.Values)
@@ -90,7 +104,7 @@ namespace AutoyaFramework.AssetBundles
                 return total;
             }
 
-            internal AssetBundleInfo AssetBundleInfoFromBundleName(string bundleName)
+            public AssetBundleInfo AssetBundleInfoFromBundleName(string bundleName)
             {
                 foreach (var list in storage.Values)
                 {
@@ -113,6 +127,22 @@ namespace AutoyaFramework.AssetBundles
                 var informations = storage.Values.Select(list => "list:" + list.identity + " ver:" + list.version).ToArray();
                 return string.Join(", ", informations);
             }
+
+            public string GetAssetBundleUrl(string bundleName)
+            {
+                var url = bundleNameAndDownloadUrlDict[bundleName] + bundleName;
+                return url;
+            }
+
+            public AssetBundleList GetListByIdentity(string identity)
+            {
+                return storage[identity];
+            }
+        }
+
+        public AssetBundleList GetAssetBundleListByIdentity(string identity)
+        {
+            return bundleListStorage.GetListByIdentity(identity);
         }
 
         private Dictionary<string, string> BasicRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader)
@@ -130,15 +160,9 @@ namespace AutoyaFramework.AssetBundles
             failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundleLoader"/> class.
-        /// </summary>
-        /// <param name="requestHeader">Request header.</param>
-        /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
-		public AssetBundleLoader(string bundleDownloadBasePath, AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
+        public AssetBundleLoader(Func<string, string> onBundleDownloadUrlRequired, AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
         {
-            this.bundleDownloadBasePath = bundleDownloadBasePath;
-            this.bundleListStorage = new AssetBundleListStorage();
+            this.bundleListStorage = new AssetBundleListStorage(onBundleDownloadUrlRequired);
 
             this.onMemoryCache = new Dictionary<string, AssetBundle>();
 
@@ -210,8 +234,14 @@ namespace AutoyaFramework.AssetBundles
             return bundleListStorage.AssetBundleInfoFromBundleName(bundleName);
         }
 
+        public string[] GetWholeBundleNames()
+        {
+            return bundleListStorage.WholeBundleNames();
+        }
+
 
         private List<string> loadingAssetBundleNames = new List<string>();
+
         private Dictionary<string, string> assetNamesAndAssetBundleNamesDict = new Dictionary<string, string>();
 
         /**
@@ -756,43 +786,34 @@ namespace AutoyaFramework.AssetBundles
             }
         }
 
-        /// <summary>
-        /// Gets the asset bundle download URL.
-        /// </summary>
-        /// <returns>The asset bundle download URL.</returns>
-        /// <param name="bundleName">Bundle name.</param>
-		public string GetAssetBundleDownloadUrl(string bundleName)
+        public bool IsAssetExists(string assetName)
         {
-            // ここにversionとかも入ってるのか＝＝〜どうするかな。やっぱ可変部分は動的にやろう。リストのバージョン取れればいいんだし。
-            return bundleDownloadBasePath + bundleName;
+            return assetNamesAndAssetBundleNamesDict.ContainsKey(assetName);
         }
 
-        /// <summary>
-        /// Ons the memory bundle names.
-        /// </summary>
-        /// <returns>The memory bundle names.</returns>
-		public string[] OnMemoryBundleNames()
+        public bool IsBundleExists(string bundleName)
+        {
+            return assetNamesAndAssetBundleNamesDict.ContainsValue(bundleName);
+        }
+
+        public string GetAssetBundleDownloadUrl(string bundleName)
+        {
+            return bundleListStorage.GetAssetBundleUrl(bundleName);
+        }
+
+        public string[] OnMemoryBundleNames()
         {
             var loadedAssetBundleNames = onMemoryCache.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
             return loadedAssetBundleNames;
         }
 
-        /// <summary>
-        /// Ons the memory asset names.
-        /// </summary>
-        /// <returns>The memory asset names.</returns>
-		public string[] OnMemoryAssetNames()
+        public string[] OnMemoryAssetNames()
         {
             var loadedAssetBundleNames = onMemoryCache.Where(kv => kv.Value != null).Select(kv => kv.Key).ToArray();
             return assetNamesAndAssetBundleNamesDict.Where(assetNameAndbundleName => loadedAssetBundleNames.Contains(assetNameAndbundleName.Value)).Select(assetNameAndbundleName => assetNameAndbundleName.Key).ToArray();
         }
 
-        /// <summary>
-        /// Gets the name of the contained asset bundle.
-        /// </summary>
-        /// <returns>The contained asset bundle name.</returns>
-        /// <param name="assetName">Asset name.</param>
-		public string GetContainedAssetBundleName(string assetName)
+        public string GetContainedAssetBundleName(string assetName)
         {
             if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName))
             {
@@ -801,12 +822,7 @@ namespace AutoyaFramework.AssetBundles
             return assetNamesAndAssetBundleNamesDict[assetName];
         }
 
-        /// <summary>
-        /// Ises the asset bundle cached on memory.
-        /// </summary>
-        /// <returns><c>true</c>, if asset bundle cached on memory was ised, <c>false</c> otherwise.</returns>
-        /// <param name="bundleName">Bundle name.</param>
-		public bool IsAssetBundleCachedOnMemory(string bundleName)
+        public bool IsAssetBundleCachedOnMemory(string bundleName)
         {
             if (onMemoryCache.ContainsKey(bundleName))
             {
@@ -819,12 +835,7 @@ namespace AutoyaFramework.AssetBundles
             return false;
         }
 
-        /// <summary>
-        /// Ises the asset bundle cached on storage.
-        /// </summary>
-        /// <returns><c>true</c>, if asset bundle cached on storage was ised, <c>false</c> otherwise.</returns>
-        /// <param name="bundleName">Bundle name.</param>
-		public bool IsAssetBundleCachedOnStorage(string bundleName)
+        public bool IsAssetBundleCachedOnStorage(string bundleName)
         {
             var candidateAssetBundle = bundleListStorage.AssetBundleInfoFromBundleName(bundleName);
             if (AssetBundleInfo.IsEmpty(candidateAssetBundle))
@@ -856,11 +867,7 @@ namespace AutoyaFramework.AssetBundles
             onMemoryCache.Clear();
         }
 
-        /// <summary>
-        /// Unloads the on memory asset bundle.
-        /// </summary>
-        /// <param name="bundleName">Bundle name.</param>
-		public void UnloadOnMemoryAssetBundle(string bundleName)
+        public void UnloadOnMemoryAssetBundle(string bundleName)
         {
             if (onMemoryCache.ContainsKey(bundleName))
             {
@@ -874,11 +881,7 @@ namespace AutoyaFramework.AssetBundles
             }
         }
 
-        /// <summary>
-        /// Unloads the on memory asset.
-        /// </summary>
-        /// <param name="assetNameName">Asset name name.</param>
-		public void UnloadOnMemoryAsset(string assetNameName)
+        public void UnloadOnMemoryAsset(string assetNameName)
         {
             var bundleName = GetContainedAssetBundleName(assetNameName);
 

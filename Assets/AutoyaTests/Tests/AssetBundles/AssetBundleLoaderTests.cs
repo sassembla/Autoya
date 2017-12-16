@@ -41,7 +41,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         yield return listCor;
         bundleList = listCor.Current as AssetBundleList;
 
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/");// バージョン値が入ってるので失敗する。
+        loader = new AssetBundleLoader(identity => abDlPath + "1.0.0/");
         loader.UpdateAssetBundleList(bundleList);
 
         var cleaned = loader.CleanCachedAssetBundles();
@@ -507,7 +507,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
             }
         }
 
-        loader = new AssetBundleLoader(abDlPath + "1.0.0/");// バージョン値が入ってるのでそのうち失敗する。
+        loader = new AssetBundleLoader(identity => abDlPath + "1.0.0/");// バージョン値が入ってるのでそのうち失敗する。
         loader.UpdateAssetBundleList(bundleList);
 
         // intentional fail.

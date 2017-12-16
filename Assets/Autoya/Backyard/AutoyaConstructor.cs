@@ -61,9 +61,9 @@ namespace AutoyaFramework
 
             _autoyaHttp = new HTTPConnection();
 
-            InitializeAssetBundleFeature();
-
             InitializeAppManifest();
+
+            InitializeAssetBundleFeature();
 
             var isFirstBoot = IsFirstBoot();
 

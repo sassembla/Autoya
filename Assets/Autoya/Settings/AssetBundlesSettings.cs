@@ -9,7 +9,6 @@ namespace AutoyaFramework.Settings.AssetBundles
     public class AssetBundlesSettings
     {
         public const string ASSETBUNDLES_LIST_STORED_DOMAIN = "assetbundles";
-        public const string ASSETBUNDLES_LIST_FILENAME = "assetbundleslist.txt";
 
 
         /*
@@ -18,25 +17,20 @@ namespace AutoyaFramework.Settings.AssetBundles
         public const string PLATFORM_STR =
 
 #if UNITY_IOS
-			"Mac/";
+			"Mac";
 #elif UNITY_ANDROID
-			"Mac/";
+			"Mac";
 #elif UNITY_WEBGL
-			"Mac/";
+			"Mac";
 #elif UNITY_UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
-            "OSX/";
+            "OSX";
 #elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-			"Mac/";
+			"Mac";
 #else
-			"Mac/";
+			"Mac";
 #endif
 
-        // public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
-        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + PLATFORM_STR;
-        // public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
-        public const string ASSETBUNDLES_URL_DOWNLOAD_ASSET = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + PLATFORM_STR;
-        // public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://sassembla.github.io/Autoya/AssetBundles/" + PLATFORM_STR;
-        public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + PLATFORM_STR;
+        public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/preload";
 
 
         public const string ASSETBUNDLES_DOWNLOAD_PREFIX = "assetbundle_";

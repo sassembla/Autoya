@@ -180,7 +180,7 @@ namespace AutoyaFramework.AppManifest
         {
             return obj.GetType()
                 .GetFields(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(prop => prop.Name, prop => (string)prop.GetValue(obj));
+                .ToDictionary(prop => prop.Name, prop => prop.GetValue(obj).ToString());
         }
 
         public RuntimeManifestType Obj()

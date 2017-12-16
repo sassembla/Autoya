@@ -9,6 +9,8 @@ using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using UnityEngine;
 using AutoyaFramework.Settings.App;
+using System.Linq;
+using System.IO;
 
 /**
 	modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
@@ -298,113 +300,114 @@ namespace AutoyaFramework
 			AssetBundles handlers.
 		*/
 
-        private string AssetBundleListDownloadUrl()
+        private string OnBundleDownloadUrlRequired(string listIdentity)
         {
-            // this feature will be deprecated.
-            var targetListVersion = Autoya.Manifest_LoadRuntimeManifest().resVersion;
-            if (string.IsNullOrEmpty(targetListVersion))
+            var targetListInfo = _appManifestStore.GetRuntimeManifest().resourceInfos.Where(info => info.listIdentity == listIdentity).FirstOrDefault();
+            if (targetListInfo == null)
             {
-                return string.Empty;
+                throw new Exception("failed to detect bundle info from runtime manifest. requested listIdentity:" + listIdentity + " is not contained in runtime manifest.");
             }
 
-            return AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + targetListVersion + "/main_assets.json";
+            var url = targetListInfo.listDownloadUrl + "/" + targetListInfo.listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + targetListInfo.listVersion + "/";
+            Debug.LogWarning("preloadのAPI化(パラメータの名前をなんとかするだけ)");
+            return url;
         }
 
-        private AssetBundleList LoadAssetBundleListFromStorage()
+        private AssetBundleList[] LoadAssetBundleListFromStorage()
         {
             // load stored assetBundleList then return it.
-            var listStr = _autoyaFilePersistence.Load(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
-            if (string.IsNullOrEmpty(listStr))
-            {
-                return new AssetBundleList();
-            }
-
-            return JsonUtility.FromJson<AssetBundleList>(listStr);
+            var filePaths = _autoyaFilePersistence.FileNamesInDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
+            return filePaths.Select(
+                path => JsonUtility.FromJson<AssetBundleList>(
+                    _autoyaFilePersistence.Load(
+                        AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, Path.GetFileName(path)
+                    )
+                )
+            ).ToArray();
         }
         private bool StoreAssetBundleListToStorage(AssetBundleList list)
         {
             var listStr = JsonUtility.ToJson(list);
-            var result = _autoyaFilePersistence.Update(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME, listStr);
+            var result = _autoyaFilePersistence.Update(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, list.identity, listStr);
             return result;
         }
         private bool DeleteAssetBundleListFromStorage()
         {
-            var result = _autoyaFilePersistence.Delete(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, AssetBundlesSettings.ASSETBUNDLES_LIST_FILENAME);
+            var result = _autoyaFilePersistence.DeleteByDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
             return result;
         }
 
         /**
 			fire when you received new assetBundleList version parameter from authenticated http response's response header.
 		 */
-        private Func<string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string rceivedNewAssetBundleListVersion) =>
+        private Func<string, string, string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string basePath, string receivedNewAssetBundleIdentity, string rceivedNewAssetBundleListVersion) =>
         {
-            var url = AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST + rceivedNewAssetBundleListVersion + "/AssetBundles.StandaloneOSXIntel64_" + rceivedNewAssetBundleListVersion.Replace(".", "_") + ".json";
-
+            var url = basePath + receivedNewAssetBundleIdentity + rceivedNewAssetBundleListVersion + receivedNewAssetBundleIdentity + ".json";
             return ShouldRequestOrNot.Yes(url);
             // return ShouldRequestOrNot.No();
         };
 
         /**
-			fire when you received new assetBundleList. 
+            fire when you received new assetBundleList. 
 
-			condition 
-				the condition parameter tells you "current using assets are changed in the new AssetBundleList or not."
-				
-			return true:
-				AssetBundleList will be updated. runtime manifest's resVersion will be changed to new one.
-				changed assets will be loaded when you load these assets again.
+            condition 
+                the condition parameter tells you "current using assets are changed in the new AssetBundleList or not."
+                
+            return true:
+                AssetBundleList will be updated. runtime manifest's resVersion will be changed to new one.
+                changed assets will be loaded when you load these assets again.
 
-				current loaded && changed assets is not effected anything.
+                current loaded && changed assets is not effected anything.
 
-			return false:
-				AssetBundleList will be ignored.
-				this means "Postpone updating assetBundleList to latest one." 
+            return false:
+                AssetBundleList will be ignored.
+                this means "Postpone updating assetBundleList to latest one." 
 
-				current loaded && changed(in ignored new list) assets is nothing changed.
-				internal list state will become "pending update assetBundleList" state.
-		 */
+                current loaded && changed(in ignored new list) assets is nothing changed.
+                internal list state will become "pending update assetBundleList" state.
+         */
         private Func<CurrentUsingBundleCondition, bool> ShouldUpdateToNewAssetBundleList = (CurrentUsingBundleCondition condition) =>
         {
             /*
-				according to your app's state & value of condition,
-				please select true(update assetBundleList) or false(cancel update assetBundleList now).
+                according to your app's state & value of condition,
+                please select true(update assetBundleList) or false(cancel update assetBundleList now).
 
-				e,g, 
-					when your app's state is under battle, and you determine that no need to change asset now,
-					should 
-						retrun false. 
-					list update will be postponed.
+                e,g, 
+                    when your app's state is under battle, and you determine that no need to change asset now,
+                    should 
+                        retrun false. 
+                    list update will be postponed.
 
 
-					otherwise when your app's state is good state to update assets,
-					should 
-						retrun true
-					for update assetBundleList.
-					app's assetBundleList will be updated to the latest and ready for load/download latest assetBundles.
-					using "Preload" feature on the beginning of app's state will help updating latest assets.
-			 */
+                    otherwise when your app's state is good state to update assets,
+                    should 
+                        retrun true
+                    for update assetBundleList.
+                    app's assetBundleList will be updated to the latest and ready for load/download latest assetBundles.
+                    using "Preload" feature on the beginning of app's state will help updating latest assets.
+             */
             return true;
         };
 
         /**
-			return request headers for getting AssetBundleList.
-		 */
+            return request headers for getting AssetBundleList.
+         */
         private Dictionary<string, string> OnAssetBundleListGetRequest(string url, Dictionary<string, string> requestHeader)
         {
             return requestHeader;
         }
 
         /**
-			return request headers for getting AssetBundlePreloadList.
-		 */
+            return request headers for getting AssetBundlePreloadList.
+         */
         private Dictionary<string, string> OnAssetBundlePreloadListGetRequest(string url, Dictionary<string, string> requestHeader)
         {
             return requestHeader;
         }
 
         /**
-			return request headers for getting AssetBundles.
-		 */
+            return request headers for getting AssetBundles.
+         */
         private Dictionary<string, string> OnAssetBundleGetRequest(string url, Dictionary<string, string> requestHeader)
         {
             return requestHeader;
@@ -412,12 +415,12 @@ namespace AutoyaFramework
 
 
         /*
-			Application version control.
-		 */
+            Application version control.
+         */
 
         /**
-			do something for server requested client to download latest app from store.
-		 */
+            do something for server requested client to download latest app from store.
+         */
         private Action<string> OnNewAppRequested = newAppVersion =>
         {
             Debug.Log("new app version:" + newAppVersion + " is ready on store!");
@@ -425,22 +428,22 @@ namespace AutoyaFramework
 
 
         /*
-			ApplicationManifest handlers.
-		*/
+            ApplicationManifest handlers.
+        */
 
         /**
-			called when runtimeManifest should overwrite.
-			please set the mechanism for store runtime manifest in this device.
-		 */
+            called when runtimeManifest should overwrite.
+            please set the mechanism for store runtime manifest in this device.
+         */
         private bool OnOverwriteRuntimeManifest(string data)
         {
             return _autoyaFilePersistence.Update(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME, data);
         }
 
         /**
-			called when runtimeManifest should load.
-			please set the mechanism for load runtime manifest in this device.
-		 */
+            called when runtimeManifest should load.
+            please set the mechanism for load runtime manifest in this device.
+         */
         private string OnLoadRuntimeManifest()
         {
             return _autoyaFilePersistence.Load(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME);
