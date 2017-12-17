@@ -1,0 +1,17 @@
+{
+    "identity": "sub_assets",
+    "target": "Android",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 2096048225,
+            "hash": "5b22c3777cbcbb29fcb97bdf64adfce4",
+            "size": 754
+        }
+    ]
+}

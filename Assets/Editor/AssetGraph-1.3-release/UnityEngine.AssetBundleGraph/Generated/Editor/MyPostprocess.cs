@@ -51,6 +51,11 @@ public class MyPostprocess : IPostprocess
         var platformDelimiter = exportPlatformStr + "/" + exportPlatformStr + ".manifest";// XPlatform/XPlatform.manifest
 
         var rootManifestEntry = sampleExportArray[0].ExportedItems.Where(p => p.destination.Contains(platformDelimiter)).FirstOrDefault();
+        if (rootManifestEntry == null)
+        {
+            Debug.Log("no exported root manifest with :" + platformDelimiter + " found.");
+            return;
+        }
 
         var wholeExportFolderName = rootManifestEntry.destination.Substring(0, rootManifestEntry.destination.IndexOf(platformDelimiter) - 1/*remove last / */);
 

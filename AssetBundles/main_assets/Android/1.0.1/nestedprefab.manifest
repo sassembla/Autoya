@@ -1,0 +1,27 @@
+ManifestFileVersion: 0
+CRC: 952525268
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 62933ae2244a5fcc62ad486ef7f418da
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 11817dad4d3c8e9c24248d58700284ea
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 102
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 7e73406419bf54a50a1b5faf24749c6c, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab
+Dependencies:
+- /Users/passepied/Desktop/autoya/Editor/AssetGraph-1.3-release/UnityEngine.AssetBundleGraph/Cache/AssetBundles/4e024a18-af2d-4f29-9f4b-1212e005d1ea/Android/texturename1

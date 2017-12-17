@@ -1,0 +1,65 @@
+{
+    "identity": "main_assets",
+    "target": "Android",
+    "version": "1.0.1",
+    "assetBundles": [
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename1"
+            ],
+            "crc": 952525268,
+            "hash": "62933ae2244a5fcc62ad486ef7f418da",
+            "size": 2169
+        },
+        {
+            "bundleName": "texturename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 45403663,
+            "hash": "1ddf544c39edabf2b4634535d7919ee0",
+            "size": 247593
+        },
+        {
+            "bundleName": "texturename1",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 2547778767,
+            "hash": "add23d87ced4d4a842fd665d72775142",
+            "size": 2421
+        },
+        {
+            "bundleName": "texturename2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 4285422679,
+            "hash": "d57a353b70c0e6202cfa398750127e59",
+            "size": 2421
+        },
+        {
+            "bundleName": "updatabletex",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 3413807695,
+            "hash": "a22e08eb98096c7848ac9c039818c018",
+            "size": 2448
+        }
+    ]
+}
