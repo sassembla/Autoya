@@ -1,0 +1,17 @@
+{
+    "identity": "sub_assets",
+    "target": "iOS",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 1672014196,
+            "hash": "720461ec2bb1aecd2ce41903f3a7d205",
+            "size": 754
+        }
+    ]
+}

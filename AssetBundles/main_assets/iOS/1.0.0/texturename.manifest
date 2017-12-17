@@ -1,0 +1,18 @@
+ManifestFileVersion: 0
+CRC: 3653692553
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 89155f1b50457e6e447caf782953be93
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 36c33a819640bead83b84b1645a12e6d
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png
+Dependencies: []

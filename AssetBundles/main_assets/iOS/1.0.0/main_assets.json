@@ -1,0 +1,65 @@
+{
+    "identity": "main_assets",
+    "target": "iOS",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename1"
+            ],
+            "crc": 2200902407,
+            "hash": "c088a4b2797e99ed3c95d8ce957816af",
+            "size": 2169
+        },
+        {
+            "bundleName": "texturename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3653692553,
+            "hash": "89155f1b50457e6e447caf782953be93",
+            "size": 247576
+        },
+        {
+            "bundleName": "texturename1",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 3827593352,
+            "hash": "72274df1bc42528ac20301a3cdaf4364",
+            "size": 2422
+        },
+        {
+            "bundleName": "texturename2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 1324107767,
+            "hash": "20043d8306608150c5ace935b8367341",
+            "size": 2416
+        },
+        {
+            "bundleName": "updatabletex",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 3055959314,
+            "hash": "598b95f7dd346ad8c0a4702273ff4e60",
+            "size": 2448
+        }
+    ]
+}

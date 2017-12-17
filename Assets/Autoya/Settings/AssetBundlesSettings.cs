@@ -17,17 +17,17 @@ namespace AutoyaFramework.Settings.AssetBundles
         public const string PLATFORM_STR =
 
 #if UNITY_IOS
-			"Mac";
+			"iOS";
 #elif UNITY_ANDROID
-			"Mac";
+			"Android";
 #elif UNITY_WEBGL
-			"Mac";
+			"WebGL";
 #elif UNITY_UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
             "OSX";
 #elif UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-			"Mac";
+			"Windows";
 #else
-			"Mac";
+			"OSX";
 #endif
 
         public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/preload/";

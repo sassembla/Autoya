@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 3134857666
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: sample
+      Dependencies: {}
