@@ -53,7 +53,6 @@ public class MyPostprocess : IPostprocess
         var rootManifestEntry = sampleExportArray[0].ExportedItems.Where(p => p.destination.Contains(platformDelimiter)).FirstOrDefault();
 
         var wholeExportFolderName = rootManifestEntry.destination.Substring(0, rootManifestEntry.destination.IndexOf(platformDelimiter) - 1/*remove last / */);
-        var exportFolderName = Path.GetDirectoryName(wholeExportFolderName).Split('/').Last();
 
         var settingFilePath = wholeExportFolderName + ".json";
 

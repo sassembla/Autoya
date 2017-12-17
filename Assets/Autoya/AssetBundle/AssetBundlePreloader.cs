@@ -324,9 +324,6 @@ namespace AutoyaFramework.AssetBundles
 
                 var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
                 var crc = targetBundleInfo.crc;
-                Debug.Log("crc:" + crc + " bundleUrl:" + bundleUrl);
-
-
 
                 var hash = Hash128.Parse(targetBundleInfo.hash);
 

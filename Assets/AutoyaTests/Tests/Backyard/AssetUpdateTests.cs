@@ -37,7 +37,7 @@ using UnityEngine;
  */
 public class AssetUpdateTests : MiyamasuTestRunner
 {
-    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/" + "OSX/";
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
 
     private const string resversionDesc = AuthSettings.AUTH_RESPONSEHEADER_RESVERSION;
 
@@ -56,7 +56,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
             {
                 switch (code)
                 {
-                    case Autoya.AssetBundlesError.FailedToDiscardList:
+                    case Autoya.AssetBundlesError.NeedToDownloadAssetBundleList:
                         {
                             discarded = true;
                             break;
@@ -122,12 +122,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveFirstList()
     {
-        var fileName = "main_assets.json";
-        var version = "1.0.0";
-
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListPath + version + "/" + fileName,
+            abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done = true;
@@ -152,12 +149,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveListUpdated()
     {
-        var fileName = "main_assets.json";
-        var version = "1.0.0";
-
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListPath + version + "/" + fileName,
+            abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done = true;
@@ -201,7 +195,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         // この通信でresponseHeaderを指定してリストの更新機能を着火する。
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -229,12 +223,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveUpdatedListThenListWillBeUpdated()
     {
-        var fileName = "main_assets.json";
-        var version = "1.0.0";
-
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListPath + version + "/" + fileName,
+            abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done = true;
@@ -275,7 +266,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -300,12 +291,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveUpdatedListThenIgnore()
     {
-        var fileName = "main_assets.json";
-        var version = "1.0.0";
-
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListPath + version + "/" + fileName,
+            abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done = true;
@@ -348,7 +336,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -378,12 +366,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached()
     {
-        var fileName = "main_assets.json";
-        var version = "1.0.0";
-
         var done = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            abListPath + version + "/" + fileName,
+            abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done = true;
@@ -425,7 +410,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -458,7 +443,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         // get list again.
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + resversionDesc + "=1.0.1",
+            "https://httpbin.org/response-headers?" + resversionDesc + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.

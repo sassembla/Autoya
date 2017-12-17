@@ -309,7 +309,6 @@ namespace AutoyaFramework
             }
 
             var url = targetListInfo.listDownloadUrl + "/" + targetListInfo.listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + targetListInfo.listVersion + "/";
-            Debug.LogWarning("preloadのAPI化(パラメータの名前をなんとかするだけ)");
             return url;
         }
 

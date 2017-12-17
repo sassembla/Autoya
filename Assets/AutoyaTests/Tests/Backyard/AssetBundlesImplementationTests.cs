@@ -13,9 +13,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 {
     private string abListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
 
-    private string mainAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
-    private string subAbListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
-
     [MSetup]
     public IEnumerator Setup()
     {
@@ -255,7 +252,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 },
                 (name, err, reason, autoyaStatus) =>
                 {
-                    Fail("err:" + err + " reason:" + reason);
+                    Fail("name:" + name + " err:" + err + " reason:" + reason);
                 }
             );
         }
@@ -269,7 +266,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 },
                 (name, err, reason, autoyaStatus) =>
                 {
-                    Fail("err:" + err + " reason:" + reason);
+                    Fail("name:" + name + " err:" + err + " reason:" + reason);
                 }
             );
         }
@@ -509,7 +506,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
     private IEnumerator LoadAllAssetBundles(Action<UnityEngine.Object[]> onLoaded)
     {
-        var bundles = Autoya.AssetBundle_AssetBundleList().SelectMany(list => list.assetBundles);
+        var bundles = Autoya.AssetBundle_AssetBundleList()[0].assetBundles;
 
         var loaded = 0;
         var allAssetCount = bundles.Sum(s => s.assetNames.Length);
@@ -614,11 +611,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             }
         );
 
-        Debug.LogWarning("書き換えないといけない");
+
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -701,11 +698,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             }
         );
 
-        Debug.LogWarning("書き換えないといけない");
+
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -801,11 +798,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             }
         );
 
-        Debug.LogWarning("書き換えないといけない");
+
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -913,11 +910,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             }
         );
 
-        Debug.LogWarning("書き換えないといけない");
+
 
         // 1.0.1リストを取得
         Autoya.Http_Get(
-            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=1.0.1",
+            "https://httpbin.org/response-headers?" + AuthSettings.AUTH_RESPONSEHEADER_RESVERSION + "=main_assets:1.0.1",
             (conId, data) =>
             {
                 // pass.
@@ -952,7 +949,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             preloadList,
             (preloadCandidateBundleNames, go, stop) =>
             {
-                Debug.Log("ここで使ってるリストが古いんだろうか。crc見るか。");
                 // all assetBundles should not be download. on memory loaded ABs are not updatable.
                 True(preloadCandidateBundleNames.Length == 1);
                 go();
@@ -1028,12 +1024,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator DownloadMultipleBundleListAtOnce()
     {
-        var fileName = "main_assets.json";
-        var version = "1.0.0";
-
         var done1 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            mainAbListPath + version + "/" + fileName,
+            abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done1 = true;
@@ -1045,11 +1038,9 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
 
-        var fileName2 = "sub_assets.json";
-        var version2 = "1.0.0";
         var done2 = false;
         Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
-            subAbListPath + version2 + "/" + fileName2,
+            abListDlPath + "sub_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/sub_assets.json",
             status =>
             {
                 done2 = true;

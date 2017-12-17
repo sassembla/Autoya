@@ -132,7 +132,6 @@ namespace AutoyaFramework
 
             // reset runtime manifest resource infos.
             var currentRuntimeManifest = Autoya.Manifest_LoadRuntimeManifest();
-            var currentRuntimeResourceInfos = currentRuntimeManifest.resourceInfos;
             currentRuntimeManifest.resourceInfos = new AppManifest.RuntimeManifestObject().resourceInfos;
             Autoya.Manifest_UpdateRuntimeManifest(currentRuntimeManifest);
 

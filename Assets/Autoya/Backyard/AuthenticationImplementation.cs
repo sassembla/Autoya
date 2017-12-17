@@ -885,7 +885,6 @@ namespace AutoyaFramework
                                 {
                                     // start download new list.
                                     var listUrl = answer.url;
-                                    Debug.Log("listUrl:" + listUrl);
                                     DownloadNewAssetBundleList(listUrl);
                                 }
                                 break;
