@@ -19,15 +19,15 @@ namespace AutoyaFramework.AppManifest
     public class RuntimeManifestObject
     {
         [SerializeField]
-        public ResourceInfos resourceInfos = new ResourceInfos()
+        public AssetBundleListInfos resourceInfos = new AssetBundleListInfos()
         {
-            new ResourceInfo
+            new AssetBundleListInfo
             {
                  listIdentity = "main_assets",
                  listVersion = "1.0.0",
                  listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
             },
-            new ResourceInfo
+            new AssetBundleListInfo
             {
                  listIdentity = "sub_assets",
                  listVersion = "1.0.0",
@@ -37,16 +37,16 @@ namespace AutoyaFramework.AppManifest
     }
 
     [Serializable]
-    public class ResourceInfos : List<ResourceInfo>
+    public class AssetBundleListInfos : List<AssetBundleListInfo>
     {
         public override string ToString()
         {
-            return "ResourceInfos:" + string.Join(",\n", this.Select(item => "listIdentity:" + item.listIdentity + " listDownloadUrl:" + item.listDownloadUrl + " listVersion:" + item.listVersion).ToArray());
+            return "AssetBundleListInfos:" + string.Join(",\n", this.Select(item => "listIdentity:" + item.listIdentity + " listDownloadUrl:" + item.listDownloadUrl + " listVersion:" + item.listVersion).ToArray());
         }
     }
 
     [Serializable]
-    public class ResourceInfo
+    public class AssetBundleListInfo
     {
         [SerializeField] public string listIdentity;
         [SerializeField] public string listDownloadUrl;

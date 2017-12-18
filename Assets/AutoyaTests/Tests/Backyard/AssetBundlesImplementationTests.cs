@@ -128,7 +128,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator GetAssetBundleList()
     {
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 done = true;
@@ -504,7 +504,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator AssetBundle_CachedBundleNames()
     {
         var listDownloaded = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 listDownloaded = true;
@@ -542,7 +542,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator AssetBundle_CachedBundleNamesWillBeUpdated()
     {
         var listDownloaded = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 listDownloaded = true;
@@ -560,7 +560,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // load 1 asset.
         var done = false;
         var assetName = string.Empty;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 assetName = Autoya.AssetBundle_AssetBundleLists().Where(list => list.identity == "main_assets").FirstOrDefault().assetBundles[0].assetNames[0];
@@ -611,7 +611,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator AssetBundle_NotCachedBundleNames()
     {
         var listDownloaded = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 listDownloaded = true;
@@ -656,7 +656,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // load 1 asset.
         var done = false;
         var assetName = string.Empty;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 assetName = Autoya.AssetBundle_AssetBundleLists().Where(list => list.identity == "main_assets").FirstOrDefault().assetBundles[0].assetNames[0];
@@ -785,7 +785,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator UpdateListWithOnMemoryAssets()
     {
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 done = true;
@@ -867,7 +867,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator UpdateListWithOnMemoryAssetsThenReloadChangedAsset()
     {
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 done = true;
@@ -969,7 +969,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadLoadedChangedAsset()
     {
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 done = true;
@@ -1082,7 +1082,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator UpdateListWithOnMemoryAssetsThenPreloadUnloadedChangedAsset()
     {
         var done = false;
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             status =>
             {
                 done = true;

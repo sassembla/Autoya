@@ -13,15 +13,17 @@ namespace AutoyaFramework
         private static void EntryPoint()
         {
             autoya = new Autoya(Application.persistentDataPath);
+            autoya.InitializeAssetBundleFeature();
         }
 
 
         /**
-			this method can be called for testing.
+			this method can be called for only testing.
 		*/
         public static void TestEntryPoint(string basePath)
         {
             autoya = new Autoya(basePath);
+            autoya.InitializeAssetBundleFeature();
         }
 
         public static bool forceFailFirstBoot = false;

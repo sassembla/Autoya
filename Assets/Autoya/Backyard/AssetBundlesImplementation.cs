@@ -56,16 +56,26 @@ namespace AutoyaFramework
             _assetBundleListDownloader = new AssetBundleListDownloader(assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
 
             // check if assetBundleList are stored.
-            var listCandidates = LoadAssetBundleListsFromStorage();
+            var storedLists = LoadAssetBundleListsFromStorage();
+            var storedListIdentities = storedLists.Select(list => list.identity).ToArray();
 
-            if (!listCandidates.Any())
+            // get assetBundleList identitiy from manifest info.
+            var runtimeManifestContaindAssetBundleListIdentities = LoadAppUsingAssetBundleListIdentities();
+
+
+            // 取得失敗などでmanifestの内容の方が多いことがあり得る。差を取り出し、Dlが必要な状態かどうか判断する。
+            var excepts = runtimeManifestContaindAssetBundleListIdentities.Except(storedListIdentities);
+
+            // not all assetBundleList are stored yet.
+            // need to run AssetBundle_DownloadAssetBundleListsIfNeed()
+            if (excepts.Any())
             {
-                // no list stored yet.
                 assetBundleFeatState = AssetBundlesFeatureState.None;
                 return;
             }
 
-            foreach (var listCandidate in listCandidates)
+            // all assetBundleList is stored and ready.
+            foreach (var listCandidate in storedLists)
             {
                 ReadyLoaderAndPreloader(listCandidate);
             }
@@ -295,7 +305,7 @@ namespace AutoyaFramework
 			Download assetBundleList if need.
             using the url which supplied from OverridePoints.
 		 */
-        public static void AssetBundle_DownloadAssetBundleListIfNeed(Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
+        public static void AssetBundle_DownloadAssetBundleListsIfNeed(Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
         {
             if (autoya == null)
             {
@@ -339,7 +349,7 @@ namespace AutoyaFramework
 				assetBundleFeatState is None.
                 load assetBundleList info from runtimeManifest.
 			 */
-            var listUrls = Manifest_LoadRuntimeManifest().resourceInfos.Select(info => autoya.OnBundleDownloadUrlRequired(info.listIdentity) + info.listIdentity + ".json").ToArray();
+            var listUrls = Manifest_LoadRuntimeManifest().resourceInfos.Select(info => autoya.OnAssetBundleListDownloadUrlRequired(info.listIdentity) + info.listIdentity + ".json").ToArray();
             autoya.Internal_AssetBundle_DownloadAssetBundleListFromUrl(listUrls, downloadSucceeded, downloadFailed, timeoutSec);
         }
 
@@ -707,7 +717,7 @@ namespace AutoyaFramework
                         return assetBundleGetRequestHeaderDelegate(p1, p2);
                     };
 
-                    _assetBundleLoader = new AssetBundleLoader(OnBundleDownloadUrlRequired, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
+                    _assetBundleLoader = new AssetBundleLoader(OnAssetBundleDownloadUrlRequired, assetBundleGetRequestHeaderDel, httpResponseHandlingDel);
                 }
 
                 _assetBundleLoader.UpdateAssetBundleList(list);

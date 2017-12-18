@@ -300,14 +300,14 @@ namespace AutoyaFramework
 			AssetBundles handlers.
 		*/
 
-        // assetBundleList controls.
+        // assetBundleList store controls.
         private AssetBundleList[] LoadAssetBundleListsFromStorage()
         {
             // load stored assetBundleList then return it.
-            var filePaths = _autoyaFilePersistence.FileNamesInDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
+            var filePaths = Autoya.Persist_FileNamesInDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
             return filePaths.Select(
                 path => JsonUtility.FromJson<AssetBundleList>(
-                    _autoyaFilePersistence.Load(
+                    Autoya.Persist_Load(
                         AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, Path.GetFileName(path)
                     )
                 )
@@ -321,13 +321,39 @@ namespace AutoyaFramework
         }
         private bool DeleteAssetBundleListsFromStorage()
         {
-            var result = _autoyaFilePersistence.DeleteByDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
+            var result = Autoya.Persist_DeleteByDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
             return result;
         }
 
-        private string OnBundleDownloadUrlRequired(string listIdentity)
+        /**
+            should return identities of AssetBundleLists in persisted place.
+         */
+        private string[] LoadAppUsingAssetBundleListIdentities()
         {
-            var targetListInfo = _appManifestStore.GetRuntimeManifest().resourceInfos.Where(info => info.listIdentity == listIdentity).FirstOrDefault();
+            return Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Select(info => info.listIdentity).ToArray();
+        }
+
+        /**
+            should return the url for downloading assetBundleList.
+         */
+        private string OnAssetBundleListDownloadUrlRequired(string listIdentity)
+        {
+            var targetListInfo = Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Where(info => info.listIdentity == listIdentity).FirstOrDefault();
+            if (targetListInfo == null)
+            {
+                throw new Exception("failed to detect bundle info from runtime manifest. requested listIdentity:" + listIdentity + " is not contained in runtime manifest.");
+            }
+
+            var url = targetListInfo.listDownloadUrl + "/" + targetListInfo.listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + targetListInfo.listVersion + "/";
+            return url;
+        }
+
+        /**
+            should return the url for downloading assetBundle.
+         */
+        private string OnAssetBundleDownloadUrlRequired(string listIdentity)
+        {
+            var targetListInfo = Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Where(info => info.listIdentity == listIdentity).FirstOrDefault();
             if (targetListInfo == null)
             {
                 throw new Exception("failed to detect bundle info from runtime manifest. requested listIdentity:" + listIdentity + " is not contained in runtime manifest.");

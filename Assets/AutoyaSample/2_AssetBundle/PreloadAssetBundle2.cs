@@ -22,7 +22,7 @@ public class PreloadAssetBundle2 : MonoBehaviour
 			case2:get preloadList from web, then get described assetBundles.
 		 */
 
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(status => { }, (code, reason, autoyaStatus) => { });
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(status => { }, (code, reason, autoyaStatus) => { });
 
         // wait downloading assetBundleList.
         while (!Autoya.AssetBundle_IsAssetBundleFeatureReady())

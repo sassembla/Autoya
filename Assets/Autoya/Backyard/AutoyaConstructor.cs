@@ -63,8 +63,6 @@ namespace AutoyaFramework
 
             InitializeAppManifest();
 
-            InitializeAssetBundleFeature();
-
             var isFirstBoot = IsFirstBoot();
 
             /*

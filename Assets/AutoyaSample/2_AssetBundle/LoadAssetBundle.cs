@@ -16,7 +16,7 @@ public class LoadAssetBundle : MonoBehaviour
 				AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_ASSETBUNDLELIST
 				
 		 */
-        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
             (status) =>
             {
                 Debug.Log("assetBundleList download succeeded. status:" + status);
