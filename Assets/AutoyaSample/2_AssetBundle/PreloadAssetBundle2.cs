@@ -32,8 +32,7 @@ public class PreloadAssetBundle2 : MonoBehaviour
 
         /*
 			get preloadList from web.
-			the base filePath settings is located at below.
-				https://github.com/sassembla/Autoya/blob/f020e02d707781f80e70c91a3dfd943b95cda25c/Assets/Autoya/Settings/AssetBundlesSettings.cs
+			the base filePath settings is located at AssetBundlesSettings.ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST.
 
 			this preloadList contains 1 assetBundleName, "bundlename", contains 1 asset, "textureName.png"
 
@@ -41,8 +40,8 @@ public class PreloadAssetBundle2 : MonoBehaviour
 				this feature requires the condition:"assetBundleList is stored." for getting assetBundleInfo. (crc, hash, and dependencies.)
 		 */
 
-        var preloadListPath = "1.0.0/sample.preloadList.json";
-        // this will become "https://dl.dropboxusercontent.com/u/36583594/outsource/Autoya/AssetBundle/Mac/1.0.0/sample.preloadList.json".
+        var preloadListPath = "sample.preloadList.json";
+        // this will become ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + sample.preloadList.json.
 
 
         // download preloadList from web then preload described assetBundles.
@@ -50,6 +49,9 @@ public class PreloadAssetBundle2 : MonoBehaviour
             preloadListPath,
             (willLoadBundleNames, proceed, cancel) =>
             {
+                var totalWeight = Autoya.AssetBundle_GetAssetBundlesWeight(willLoadBundleNames);
+                Debug.Log("start downloading bundles. total weight:" + totalWeight);
+
                 proceed();
             },
             progress =>
@@ -62,7 +64,7 @@ public class PreloadAssetBundle2 : MonoBehaviour
 
                 // then, you can use these assetBundles immediately. without any downloading.
                 Autoya.AssetBundle_LoadAsset<Texture2D>(
-                    "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName.png",
+                    "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
                     (assetName, image) =>
                     {
                         Debug.Log("asset:" + assetName + " is successfully loaded as:" + image);
@@ -92,11 +94,6 @@ public class PreloadAssetBundle2 : MonoBehaviour
             },
             10 // 10 parallel download! you can set more than 0.
         );
-    }
-
-    private IEnumerator<bool> ShouldContinuePreloading(string[] bundleNames)
-    {
-        yield return true;
     }
 
     void OnApplicationQuit()

@@ -35,7 +35,7 @@ public class LoadAssetBundle : MonoBehaviour
 					automatically download bundle then load asset on memory.
 				*/
                 Autoya.AssetBundle_LoadAsset<GameObject>(
-                    "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab",
+                    "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab",
                     (assetName, prefab) =>
                     {
                         Debug.Log("asset:" + assetName + " is successfully loaded as:" + prefab);

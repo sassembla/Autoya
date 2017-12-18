@@ -67,7 +67,7 @@ namespace AutoyaFramework
             var excepts = runtimeManifestContaindAssetBundleListIdentities.Except(storedListIdentities);
 
             // not all assetBundleList are stored yet.
-            // need to run AssetBundle_DownloadAssetBundleListsIfNeed()
+            // need to run AssetBundle_DownloadAssetBundleListsIfNeed().
             if (excepts.Any())
             {
                 assetBundleFeatState = AssetBundlesFeatureState.None;

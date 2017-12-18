@@ -29,6 +29,7 @@ public class PreloadAssetBundle : MonoBehaviour
             yield return null;
         }
 
+
         /*
 			let's preload specific assetBundle into device storage.
 		*/
@@ -56,7 +57,7 @@ public class PreloadAssetBundle : MonoBehaviour
 
                 // then, you can use these assetBundles immediately. without any downloading.
                 Autoya.AssetBundle_LoadAsset<GameObject>(
-                    "Assets/AutoyaTests/RuntimeData/AssetBundles/TestResources/textureName1.prefab",
+                    "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab",
                     (assetName, prefab) =>
                     {
                         Debug.Log("asset:" + assetName + " is successfully loaded as:" + prefab);
@@ -80,11 +81,6 @@ public class PreloadAssetBundle : MonoBehaviour
             },
             10 // 10 parallel download! you can set more than 0.
         );
-    }
-
-    private IEnumerator<bool> ShouldContinuePreloading(string[] preloadingBundleNames)
-    {
-        yield return true;
     }
 
     void OnApplicationQuit()

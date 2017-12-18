@@ -864,14 +864,12 @@ namespace AutoyaFramework
                 {
                     var newListVersionsOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
 
-                    // compare with format. identity:version,identity2:version2
-                    var listInfosStrs = newListVersionsOnResponseHeader.Split(',');
+                    var listIdentitiesAndNewVersionDescriptions = GetListIdentityAndNewVersionDescriptions(newListVersionsOnResponseHeader);
 
-                    foreach (var listInfosStr in listInfosStrs)
+                    foreach (var listItem in listIdentitiesAndNewVersionDescriptions)
                     {
-                        var identityAndVersion = listInfosStr.Split(':');
-                        var identity = identityAndVersion[0];
-                        var newVersion = identityAndVersion[1];
+                        var identity = listItem.Key;
+                        var newVersion = listItem.Value;
 
                         // compare with runtimeManifest data.
                         var resourceInfos = _appManifestStore.GetRuntimeManifest().resourceInfos;

@@ -18,11 +18,15 @@ public class AutoyaEditorTool
     public static void UnityPackage()
     {
         var assetPaths = new List<string>();
-        var frameworkPath = "Assets/Autoya";
 
+        var frameworkPath = "Assets/Autoya";
         CollectPathRecursive(frameworkPath, assetPaths);
 
         AssetDatabase.ExportPackage(assetPaths.ToArray(), "Autoya.unitypackage", ExportPackageOptions.IncludeDependencies);
+
+        var assetGraphPath = "Assets/Editor";
+        CollectPathRecursive(assetGraphPath, assetPaths);
+        AssetDatabase.ExportPackage(assetPaths.ToArray(), "Autoya+AssetGraph.unitypackage", ExportPackageOptions.IncludeDependencies);
     }
 
     private static void CollectPathRecursive(string path, List<string> collectedPaths)

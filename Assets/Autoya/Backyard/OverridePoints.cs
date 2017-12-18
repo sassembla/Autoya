@@ -326,6 +326,26 @@ namespace AutoyaFramework
         }
 
         /**
+            should return assetBundleList-identity & version pair.
+
+            the source is the value of responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION].
+         */
+        private KeyValuePair<string, string>[] GetListIdentityAndNewVersionDescriptions(string source)
+        {
+            var listInfosStrs = source.Split(',');
+
+            var identityAndNewVersionPairs = new KeyValuePair<string, string>[listInfosStrs.Length];
+            for (var i = 0; i < listInfosStrs.Length; i++)
+            {
+                var listInfosStr = listInfosStrs[i];
+                var identityAndVersion = listInfosStr.Split(':');
+                identityAndNewVersionPairs[i] = new KeyValuePair<string, string>(identityAndVersion[0], identityAndVersion[1]);
+            }
+
+            return identityAndNewVersionPairs;
+        }
+
+        /**
             should return identities of AssetBundleLists in persisted place.
          */
         private string[] LoadAppUsingAssetBundleListIdentities()
