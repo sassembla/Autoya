@@ -16,9 +16,6 @@ namespace AutoyaFramework.AssetBundles
         └ bundleNames // string[]
             └ bundleName // preload target bundle name.
      */
-    /// <summary>
-    /// type of PreloadList.
-    /// </summary>
     [Serializable]
     public class PreloadList
     {
@@ -33,11 +30,6 @@ namespace AutoyaFramework.AssetBundles
         /**
 			create preloadList which contains whole assetBundle names in the AssetBundleList.
 		 */
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.PreloadList"/> class.
-        /// </summary>
-        /// <param name="name">Name.</param>
-        /// <param name="list">List.</param>
         public PreloadList(string name, AssetBundleList list)
         {
             this.name = name;
@@ -45,10 +37,8 @@ namespace AutoyaFramework.AssetBundles
         }
     }
 
-    /// <summary>
-    /// Asset bundle preloader.
-    /// </summary>
-	public class AssetBundlePreloader
+
+    public class AssetBundlePreloader
     {
         /*
 			delegate for handle http response for modules.
@@ -77,11 +67,6 @@ namespace AutoyaFramework.AssetBundles
             failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="T:AutoyaFramework.AssetBundles.AssetBundlePreloader"/> class.
-        /// </summary>
-        /// <param name="requestHeader">Request header.</param>
-        /// <param name="httpResponseHandlingDelegate">Http response handling delegate.</param>
         public AssetBundlePreloader(AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
         {
             if (requestHeader != null)

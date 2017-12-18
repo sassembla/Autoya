@@ -300,19 +300,8 @@ namespace AutoyaFramework
 			AssetBundles handlers.
 		*/
 
-        private string OnBundleDownloadUrlRequired(string listIdentity)
-        {
-            var targetListInfo = _appManifestStore.GetRuntimeManifest().resourceInfos.Where(info => info.listIdentity == listIdentity).FirstOrDefault();
-            if (targetListInfo == null)
-            {
-                throw new Exception("failed to detect bundle info from runtime manifest. requested listIdentity:" + listIdentity + " is not contained in runtime manifest.");
-            }
-
-            var url = targetListInfo.listDownloadUrl + "/" + targetListInfo.listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + targetListInfo.listVersion + "/";
-            return url;
-        }
-
-        private AssetBundleList[] LoadAssetBundleListFromStorage()
+        // assetBundleList controls.
+        private AssetBundleList[] LoadAssetBundleListsFromStorage()
         {
             // load stored assetBundleList then return it.
             var filePaths = _autoyaFilePersistence.FileNamesInDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
@@ -330,18 +319,38 @@ namespace AutoyaFramework
             var result = _autoyaFilePersistence.Update(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, list.identity, listStr);
             return result;
         }
-        private bool DeleteAssetBundleListFromStorage()
+        private bool DeleteAssetBundleListsFromStorage()
         {
             var result = _autoyaFilePersistence.DeleteByDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
             return result;
         }
 
+        private string OnBundleDownloadUrlRequired(string listIdentity)
+        {
+            var targetListInfo = _appManifestStore.GetRuntimeManifest().resourceInfos.Where(info => info.listIdentity == listIdentity).FirstOrDefault();
+            if (targetListInfo == null)
+            {
+                throw new Exception("failed to detect bundle info from runtime manifest. requested listIdentity:" + listIdentity + " is not contained in runtime manifest.");
+            }
+
+            var url = targetListInfo.listDownloadUrl + "/" + targetListInfo.listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + targetListInfo.listVersion + "/";
+            return url;
+        }
+
         /**
-			fire when you received new assetBundleList version parameter from authenticated http response's response header.
+			return yes & url: start downloading new assetBundleList from url.
+            return no: cancel downloading new assetBundleList.
+
+            fire when you received new assetBundleList version parameter from authenticated http response's response header.
+
+            basepath is from: runtimeManifest. see AutoyaRuntimeManifestObject.cs.
+            receivedNewAssetBundleIdentity is from: response header of some http connection.
+            rceivedNewAssetBundleListVersion is from : response header of some http connection.
 		 */
         private Func<string, string, string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string basePath, string receivedNewAssetBundleIdentity, string rceivedNewAssetBundleListVersion) =>
         {
-            var url = basePath + receivedNewAssetBundleIdentity + rceivedNewAssetBundleListVersion + receivedNewAssetBundleIdentity + ".json";
+            Debug.Log("ここってまだ動いてないよね。テストではこの関数を書き換えている。");
+            var url = basePath + receivedNewAssetBundleIdentity + "/" + rceivedNewAssetBundleListVersion + "/" + receivedNewAssetBundleIdentity + ".json";
             return ShouldRequestOrNot.Yes(url);
             // return ShouldRequestOrNot.No();
         };
