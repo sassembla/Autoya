@@ -1,0 +1,27 @@
+{
+    "identity": "sub_assets",
+    "target": "OSX",
+    "version": "2.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 4239167114,
+            "hash": "e936d22a1f8015e0067b2db8991011f2",
+            "size": 754
+        },
+        {
+            "bundleName": "sample2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample2.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3701325984,
+            "hash": "e0f37abcff54b9e7ed2c334f290f8096",
+            "size": 756
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "identity": "sub_assets",
+    "target": "Android",
+    "version": "2.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 2096048225,
+            "hash": "5b22c3777cbcbb29fcb97bdf64adfce4",
+            "size": 754
+        },
+        {
+            "bundleName": "sample2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample2.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 1558079051,
+            "hash": "8ab74bc0332f05f417b2fee4d94b8a9a",
+            "size": 756
+        }
+    ]
+}

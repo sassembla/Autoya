@@ -142,7 +142,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         // リスト1.0.0が保持されている。
         True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.0");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.0");
     }
 
 
@@ -283,7 +283,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
         );
 
         // list is updated.
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
 
         True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
     }
@@ -358,7 +358,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
         );
 
         // list is not updated yet.
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.0");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.0");
 
         True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
     }
@@ -427,7 +427,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
         );
 
         // list is not updated yet.
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.0");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.0");
 
         True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
 
@@ -459,6 +459,6 @@ public class AssetUpdateTests : MiyamasuTestRunner
             () => { throw new TimeoutException("too late."); }
         );
 
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
     }
 }

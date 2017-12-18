@@ -26,6 +26,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             },
             (code, reason) =>
             {
+                Debug.Log("code:" + code + " reason:" + reason);
                 switch (code)
                 {
                     case Autoya.AssetBundlesError.NeedToDownloadAssetBundleList:
@@ -236,7 +237,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     {
         yield return GetAssetBundleList();
 
-        var lists = Autoya.AssetBundle_AssetBundleList();
+        var lists = Autoya.AssetBundle_AssetBundleLists();
         True(lists != null);
 
         var done = false;
@@ -401,7 +402,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var done = false;
 
-        var lists = Autoya.AssetBundle_AssetBundleList();
+        var lists = Autoya.AssetBundle_AssetBundleLists();
         var preloadList = new PreloadList("test", lists[0]);
 
         // rewrite. set 1st content of bundleName.
@@ -444,7 +445,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var done = false;
 
-        var list = Autoya.AssetBundle_AssetBundleList();
+        var list = Autoya.AssetBundle_AssetBundleLists();
         var preloadList = new PreloadList("test", list[0]);
 
         Autoya.AssetBundle_PreloadByList(
@@ -498,19 +499,222 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     }
 
     [MTest]
-    public IEnumerator AssetBundle_NotCachedBundleNames()
+    public IEnumerator AssetBundle_CachedBundleNames()
     {
-        Debug.LogWarning("AssetBundle_NotCachedBundleNames not yet implemented.");
-        yield break;
+        var listDownloaded = false;
+        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+            status =>
+            {
+                listDownloaded = true;
+            },
+            (error, reason, status) =>
+            {
+
+            }
+        );
+        yield return WaitUntil(
+            () => listDownloaded,
+            () => { throw new TimeoutException("failed to download list."); }
+        );
+
+        var done = false;
+        Autoya.AssetBundle_CachedBundleNames(
+            names =>
+            {
+                True(!names.Any());
+                done = true;
+            },
+            (error, reason) =>
+            {
+
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("failed to get cached bundle names in time."); }
+        );
     }
 
-    private IEnumerator LoadAllAssetBundles(Action<UnityEngine.Object[]> onLoaded)
+    [MTest]
+    public IEnumerator AssetBundle_CachedBundleNamesWillBeUpdated()
     {
-        var bundles = Autoya.AssetBundle_AssetBundleList()[0].assetBundles;
+        var listDownloaded = false;
+        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+            status =>
+            {
+                listDownloaded = true;
+            },
+            (error, reason, status) =>
+            {
+
+            }
+        );
+        yield return WaitUntil(
+            () => listDownloaded,
+            () => { throw new TimeoutException("failed to download list."); }
+        );
+
+        // load 1 asset.
+        var done = false;
+        var assetName = string.Empty;
+        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+            status =>
+            {
+                assetName = Autoya.AssetBundle_AssetBundleLists()[0].assetBundles[0].assetNames[0];
+                Autoya.AssetBundle_LoadAsset<GameObject>(
+                    assetName,
+                    (name, asset) =>
+                    {
+                        // succeeded to download AssetBundle and got asset from AB.
+                        done = true;
+                    },
+                    (name, error, reason, autoyaStatus) =>
+                    {
+
+                    }
+                );
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var done2 = false;
+        Autoya.AssetBundle_CachedBundleNames(
+            names =>
+            {
+                True(names.Any());
+                done2 = true;
+            },
+            (error, reason) =>
+            {
+
+            }
+        );
+
+        yield return WaitUntil(
+            () => done2,
+            () => { throw new TimeoutException("failed to get cached bundle names in time."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator AssetBundle_NotCachedBundleNames()
+    {
+        var listDownloaded = false;
+        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+            status =>
+            {
+                listDownloaded = true;
+            },
+            (error, reason, status) =>
+            {
+
+            }
+        );
+        yield return WaitUntil(
+            () => listDownloaded,
+            () => { throw new TimeoutException("failed to download list."); }
+        );
+
+        string[] names = null;
+        Autoya.AssetBundle_NotCachedBundleNames(
+            bundleNames =>
+            {
+                names = bundleNames;
+            },
+            (error, reason) =>
+            {
+                Debug.Log("error:" + error + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => names != null && 0 < names.Length,
+            () => { throw new TimeoutException("failed to get Not chached bundle names."); }
+        );
+
+        // no asset cached.
+        var wholeAssetBundleNames = Autoya.AssetBundle_AssetBundleLists().SelectMany(list => list.assetBundles).Select(bundleInfo => bundleInfo.bundleName).ToArray();
+        True(names.Length == wholeAssetBundleNames.Length);
+    }
+
+
+    [MTest]
+    public IEnumerator AssetBundle_NotCachedBundleNamesInSomeAssetCached()
+    {
+
+        // load 1 asset.
+        var done = false;
+        var assetName = string.Empty;
+        Autoya.AssetBundle_DownloadAssetBundleListIfNeed(
+            status =>
+            {
+                assetName = Autoya.AssetBundle_AssetBundleLists()[0].assetBundles[0].assetNames[0];
+                Autoya.AssetBundle_LoadAsset<GameObject>(
+                    assetName,
+                    (name, asset) =>
+                    {
+                        // succeeded to download AssetBundle and got asset from AB.
+                        done = true;
+                    },
+                    (name, error, reason, autoyaStatus) =>
+                    {
+
+                    }
+                );
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        // 1 or more assets are cached.(by dependencies.)
+
+
+        string[] names = null;
+        Autoya.AssetBundle_NotCachedBundleNames(
+            bundleNames =>
+            {
+                names = bundleNames;
+            },
+            (error, reason) =>
+            {
+                Debug.Log("error:" + error + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => names != null && 0 < names.Length,
+            () => { throw new TimeoutException("failed to get Not chached bundle names."); }
+        );
+
+        // 1 or more assets are cached.(by dependencies.)
+        var wholeAssetBundleNames = Autoya.AssetBundle_AssetBundleLists().SelectMany(list => list.assetBundles).Select(bundleInfo => bundleInfo.bundleName).ToArray();
+        True(names.Length < wholeAssetBundleNames.Length);
+        True(!names.Contains(assetName), "cotntains.");
+    }
+
+    private IEnumerator LoadAllAssetBundlesOfMainAssets(Action<UnityEngine.Object[]> onLoaded)
+    {
+        var bundles = Autoya.AssetBundle_AssetBundleLists()[0].assetBundles;
 
         var loaded = 0;
         var allAssetCount = bundles.Sum(s => s.assetNames.Length);
-        True(1 < allAssetCount);
+        True(0 < allAssetCount, "allAssetCount:" + allAssetCount);
 
         var loadedAssets = new UnityEngine.Object[allAssetCount];
 
@@ -523,6 +727,21 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                     Autoya.AssetBundle_LoadAsset(
                         assetName,
                         (string name, Texture2D o) =>
+                        {
+                            loadedAssets[loaded] = o;
+                            loaded++;
+                        },
+                        (name, error, reason, autoyaStatus) =>
+                        {
+                            Fail("failed to load asset:" + name + " reason:" + reason);
+                        }
+                    );
+                }
+                else if (assetName.EndsWith(".txt"))
+                {
+                    Autoya.AssetBundle_LoadAsset(
+                        assetName,
+                        (string name, TextAsset o) =>
                         {
                             loadedAssets[loaded] = o;
                             loaded++;
@@ -586,7 +805,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
+        yield return LoadAllAssetBundlesOfMainAssets(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
 
@@ -632,7 +851,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
 
         // load状態のAssetはそのまま使用できる
         for (var i = 0; i < loadedAssets.Length; i++)
@@ -668,7 +887,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
+        yield return LoadAllAssetBundlesOfMainAssets(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
 
@@ -709,7 +928,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             },
             (conId, code, reason, status) =>
             {
-                Fail();
+                Fail("code:" + code + " reason:" + reason);
             }
         );
 
@@ -719,12 +938,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
 
         // 再度ロード済みのAssetをLoadしようとすると、更新があったABについて最新を取得してくる。
 
         UnityEngine.Object[] loadedAssets2 = null;
-        yield return LoadAllAssetBundles(objs => { loadedAssets2 = objs; });
+        yield return LoadAllAssetBundlesOfMainAssets(objs => { loadedAssets2 = objs; });
 
         var newGuidsDict = loadedAssets2.ToDictionary(
             a => a.name,
@@ -770,12 +989,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
+        yield return LoadAllAssetBundlesOfMainAssets(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
         // var guids = loadedAssets.Select(a => a.GetInstanceID()).ToArray();
 
-        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList()[0].assetBundles.Select(a => a.bundleName).ToArray();
+        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleLists()[0].assetBundles.Select(a => a.bundleName).ToArray();
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
@@ -819,7 +1038,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
 
 
         // preload all.
@@ -883,11 +1102,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         UnityEngine.Object[] loadedAssets = null;
 
         // 全てのABをロード
-        yield return LoadAllAssetBundles(objs => { loadedAssets = objs; });
+        yield return LoadAllAssetBundlesOfMainAssets(objs => { loadedAssets = objs; });
 
         True(loadedAssets != null);
 
-        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleList()[0].assetBundles.Select(a => a.bundleName).ToArray();
+        var loadedAssetBundleNames = Autoya.AssetBundle_AssetBundleLists()[0].assetBundles.Select(a => a.bundleName).ToArray();
 
         // 1.0.1 リストの更新判断の関数をセット
         var listContainsUsingAssetsAndShouldBeUpdate = false;
@@ -931,7 +1150,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             10
         );
 
-        True(Autoya.AssetBundle_AssetBundleList()[0].version == "1.0.1");
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
 
 
         // unload all assets on memory.
@@ -940,8 +1159,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // preload all.
         var preloadDone = false;
 
-
-        // リストが書き換わってないからエラーみたいな感じっぽい。
 
         // 更新がかかっているABを取得する。
         var preloadList = new PreloadList("dummy", loadedAssetBundleNames);
@@ -1062,10 +1279,50 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     }
 
     [MTest]
-    public IEnumerator DownloadedMultipleListsAreIsorated()
+    public IEnumerator DownloadedMultipleListsAreEnabled()
     {
         yield return DownloadMultipleBundleListAtOnce();
-        // ダウンロードが終わったリストの内容を取得すると、混ざったものが得られるはず。
+        // それぞれのリストの要素を使って、動作していることを確認する。
 
+        var mainAssetsAssetName = Autoya.AssetBundle_AssetBundleLists()[0].assetBundles[0].assetNames[0];
+        var subAssetsAssetName = Autoya.AssetBundle_AssetBundleLists()[1].assetBundles[0].assetNames[0];
+
+
+        GameObject mainAsset = null;
+        Autoya.AssetBundle_LoadAsset<GameObject>(
+            mainAssetsAssetName,
+            (name, asset) =>
+            {
+                mainAsset = asset;
+            },
+            (name, error, reason, status) =>
+            {
+
+            }
+        );
+
+        TextAsset subAsset = null;
+        Autoya.AssetBundle_LoadAsset<TextAsset>(
+            subAssetsAssetName,
+            (name, asset) =>
+            {
+                subAsset = asset;
+            },
+            (name, error, reason, status) =>
+            {
+
+            }
+        );
+
+        yield return WaitUntil(
+            () => mainAsset != null && subAsset != null,
+            () => { throw new TimeoutException("failed to load."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator UpdateMultipleListAtOnce()
+    {
+        yield return null;
     }
 }

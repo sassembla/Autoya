@@ -843,6 +843,34 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator AssetBundle_CachedBundleNames() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "AssetBundle_CachedBundleNames");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.AssetBundle_CachedBundleNames();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator AssetBundle_CachedBundleNamesWillBeUpdated() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "AssetBundle_CachedBundleNamesWillBeUpdated");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.AssetBundle_CachedBundleNamesWillBeUpdated();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
     [UnityTest] public IEnumerator AssetBundle_NotCachedBundleNames() {
         var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "AssetBundle_NotCachedBundleNames");
         var instance = new AssetBundlesImplementationTests();
@@ -852,6 +880,20 @@ public class AssetBundlesImplementationTests_Miyamasu {
         yield return instance.Setup();
         
         yield return instance.AssetBundle_NotCachedBundleNames();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator AssetBundle_NotCachedBundleNamesInSomeAssetCached() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "AssetBundle_NotCachedBundleNamesInSomeAssetCached");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.AssetBundle_NotCachedBundleNamesInSomeAssetCached();
         rec.MarkAsPassed();
 
         
@@ -941,15 +983,29 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
-    [UnityTest] public IEnumerator DownloadedMultipleListsAreIsorated() {
-        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "DownloadedMultipleListsAreIsorated");
+    [UnityTest] public IEnumerator DownloadedMultipleListsAreEnabled() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "DownloadedMultipleListsAreEnabled");
         var instance = new AssetBundlesImplementationTests();
         instance.rec = rec;
 
         
         yield return instance.Setup();
         
-        yield return instance.DownloadedMultipleListsAreIsorated();
+        yield return instance.DownloadedMultipleListsAreEnabled();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator UpdateMultipleListAtOnce() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "UpdateMultipleListAtOnce");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.UpdateMultipleListAtOnce();
         rec.MarkAsPassed();
 
         

@@ -34,7 +34,7 @@ public class PreloadAssetBundle : MonoBehaviour
 		*/
 
         // get assetBundleList.
-        var assetBundleLists = Autoya.AssetBundle_AssetBundleList();
+        var assetBundleLists = Autoya.AssetBundle_AssetBundleLists();
 
         // create sample preloadList which contains all assetBundle names in assetBundleList.
         var assetBundleNames = assetBundleLists.SelectMany(list => list.assetBundles).Select(abInfo => abInfo.bundleName).ToArray();

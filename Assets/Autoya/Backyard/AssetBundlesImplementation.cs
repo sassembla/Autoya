@@ -417,7 +417,7 @@ namespace AutoyaFramework
         /**
 			get copy of assetBundleList which is storead in this device.
 		 */
-        public static AssetBundleList[] AssetBundle_AssetBundleList()
+        public static AssetBundleList[] AssetBundle_AssetBundleLists()
         {
             return autoya.LoadAssetBundleListFromStorage();
         }
@@ -481,15 +481,60 @@ namespace AutoyaFramework
             return autoya._assetBundleLoader.GetAssetBundlesWeight(bundleNames);
         }
 
+        /**
+            get bundle names of "storage cached" assetBundle from assetBundleList. 
+         */
+        public static void AssetBundle_CachedBundleNames(Action<string[]> onBundleNamesReady, Action<AssetBundlesError, string> onError)
+        {
+            var cont = CheckAssetBundlesFeatureCondition(
+                (code, reason) => onError(code, reason)
+            );
 
+            if (!cont)
+            {
+                return;
+            }
+
+            var cor = autoya.GetCachedAssetBundleNames(onBundleNamesReady);
+            Autoya.Mainthread_Commit(cor);
+        }
+
+        private IEnumerator GetCachedAssetBundleNames(Action<string[]> onBundleNamesReady)
+        {
+            while (!Caching.ready)
+            {
+                yield return null;
+            }
+
+            var chachedBundleNames = new List<string>();
+
+            var bundleNames = _assetBundleLoader.GetWholeBundleNames();
+            foreach (var bundleName in bundleNames)
+            {
+                var url = _assetBundleLoader.GetAssetBundleDownloadUrl(bundleName);
+                var bundleInfo = _assetBundleLoader.AssetBundleInfoFromBundleName(bundleName);
+                var hash = Hash128.Parse(bundleInfo.hash);
+
+                var isCachedOnStorage = Caching.IsVersionCached(url, hash);
+
+                if (!isCachedOnStorage)
+                {
+                    continue;
+                }
+
+                chachedBundleNames.Add(bundleName);
+            }
+
+            onBundleNamesReady(chachedBundleNames.ToArray());
+        }
 
         /**
 			get bundle names of "not storage cached" assetBundle from assetBundleList.
 		 */
-        public static void AssetBundle_NotCachedBundleNames(Action<string[]> onBundleNamesReady)
+        public static void AssetBundle_NotCachedBundleNames(Action<string[]> onBundleNamesReady, Action<AssetBundlesError, string> onError)
         {
             var cont = CheckAssetBundlesFeatureCondition(
-                (code, reason) => { }
+                (code, reason) => onError(code, reason)
             );
 
             if (!cont)
