@@ -6,6 +6,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.24] - 2017/12/18
+### Feature
+- multiple AssetBundle lists enabled. a lot of method signatures are changed.
+
 
 ## [0.8.23] - 2017/11/21
 ### Changed
@@ -75,7 +79,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.23...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.24...HEAD
+[0.8.24]: https://github.com/sassembla/autoya/compare/0.8.23...0.8.24
 [0.8.23]: https://github.com/sassembla/autoya/compare/0.8.22...0.8.23
 [0.8.22]: https://github.com/sassembla/autoya/compare/0.8.21...0.8.22
 [0.8.21]: https://github.com/sassembla/autoya/compare/0.8.20...0.8.21
