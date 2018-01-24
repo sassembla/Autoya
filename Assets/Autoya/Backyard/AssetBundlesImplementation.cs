@@ -233,7 +233,7 @@ namespace AutoyaFramework
             mainthreadDispatcher.Commit(
                 autoya._assetBundleListDownloader.DownloadAssetBundleList(
                     url,
-                    newList =>
+                    (downloadedUrl, newList) =>
                     {
                         // got new list.
                         OnUpdatingListReceived(newList);
@@ -363,7 +363,7 @@ namespace AutoyaFramework
             var isDownloadFailed = false;
 
             var downloadedListIdentities = new List<string>();
-            Action<AssetBundleList> succeeded = newList =>
+            Action<string, AssetBundleList> succeeded = (url, newList) =>
             {
                 /**
                     リストの保存に失敗した場合、全ての処理が失敗した扱いになる。
@@ -375,14 +375,33 @@ namespace AutoyaFramework
                     {
                         var newListIdentity = newList.identity;
                         var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+
+                        var contained = false;
+
                         foreach (var resInfo in runtimeManifest.resourceInfos)
                         {
                             if (resInfo.listIdentity == newListIdentity)
                             {
                                 resInfo.listVersion = newList.version;
+                                resInfo.listDownloadUrl = url;
+
+                                contained = true;
                                 break;
                             }
                         }
+
+                        // downloaded assetBundleList is not contained runtimeManifest yet.
+                        if (!contained)
+                        {
+                            var newListInfo = new AppManifest.AssetBundleListInfo();
+                            newListInfo.listIdentity = newList.identity;
+
+                            newListInfo.listDownloadUrl = url;
+                            newListInfo.listVersion = newList.version;
+
+                            runtimeManifest.resourceInfos.Add(newListInfo);
+                        }
+
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
 
@@ -393,7 +412,7 @@ namespace AutoyaFramework
                     if (downloadedListIdentities.Count == wholeAssetBundleListCount)
                     {
                         // set state to loaded.
-                        autoya.assetBundleFeatState = AssetBundlesFeatureState.Ready;
+                        assetBundleFeatState = AssetBundlesFeatureState.Ready;
 
                         // fire downloaded.
                         downloadSucceeded(ListDownloadResult.ListDownloaded);
@@ -891,15 +910,39 @@ namespace AutoyaFramework
             yield break;
         }
 
+        /**
+            download AssetBundleList from url manually.
+         */
+        public static void AssetBundle_DownloadAssetBundleListFromUrlManually(string listUrl, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
+        {
+            switch (autoya.assetBundleFeatState)
+            {
+                case AssetBundlesFeatureState.ListDownoading:
+                    {
+                        // already loading another AssetBundleList.
+                        downloadFailed(ListDownloadError.AlreadyDownloading, "already downloading another AssetBundleList. please wait finish downloading.", new AutoyaStatus());
+                        return;
+                    }
+                case AssetBundlesFeatureState.Ready:
+                case AssetBundlesFeatureState.None:
+                    {
+                        // pass.
+                        break;
+                    }
+                default:
+                    {
+                        downloadFailed(ListDownloadError.FailedToDownload, "unexpected state:" + autoya.assetBundleFeatState, new AutoyaStatus());
+                        return;
+                    }
+            }
+
+            autoya.Internal_AssetBundle_DownloadAssetBundleListFromUrl(new string[] { listUrl }, downloadSucceeded, downloadFailed, timeoutSec);
+        }
+
 
         /*
             debug
          */
-
-        public static void Debug_AssetBundle_DownloadAssetBundleListFromUrl(string listUrl, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
-        {
-            autoya.Internal_AssetBundle_DownloadAssetBundleListFromUrl(new string[] { listUrl }, downloadSucceeded, downloadFailed, timeoutSec);
-        }
 
         public static AssetBundlesFeatureState Debug_AssetBundle_FeatureState()
         {

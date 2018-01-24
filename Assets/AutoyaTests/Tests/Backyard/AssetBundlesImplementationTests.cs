@@ -106,7 +106,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var version = "1.0.0";
 
         var done = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
@@ -155,7 +155,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             var notExistFileName = "fake_main_assets.json";
             var version = "1.0.0";
             var done = false;
-            Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
                 abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + notExistFileName,
                 status =>
                 {
@@ -181,7 +181,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             var version = "1.0.0";
 
             var done = false;
-            Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+            Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
                 abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
                 status =>
                 {
@@ -1203,7 +1203,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var version = "1.0.0";
 
         var done1 = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
@@ -1216,7 +1216,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
         var done2 = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
@@ -1244,7 +1244,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator DownloadMultipleBundleListAtOnce()
     {
         var done1 = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
@@ -1258,7 +1258,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
 
         var done2 = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + "sub_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/sub_assets.json",
             status =>
             {
@@ -1372,5 +1372,34 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         True(Autoya.AssetBundle_AssetBundleLists().Where(list => list.identity == "main_assets").FirstOrDefault().version == "1.0.1");
         True(Autoya.AssetBundle_AssetBundleLists().Where(list => list.identity == "sub_assets").FirstOrDefault().version == "2.0.0");
+    }
+
+    [MTest]
+    public IEnumerator DownloadAssetBundleListManually()
+    {
+        var url = abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json";
+        var done1 = false;
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
+            url,
+            status =>
+            {
+                done1 = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => done1,
+            () => { throw new TimeoutException("timeout."); }
+        );
+
+        // この時点で、Readyになっている + RuntimeManifestにいろいろ入っているはず。
+        var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+        True(runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").Any());
+        True(runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").Where(rInfo => rInfo.listDownloadUrl == url).Any(), runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").FirstOrDefault().listDownloadUrl);
+        True(runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").Where(rInfo => rInfo.listVersion == "1.0.0").Any());
     }
 }

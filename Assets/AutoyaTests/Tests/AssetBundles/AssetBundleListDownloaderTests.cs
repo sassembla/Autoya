@@ -25,7 +25,7 @@ public class AssetBundleListDownloaderTests : MiyamasuTestRunner
         var done = false;
         yield return listDownloader.DownloadAssetBundleList(
             listPath,
-            list =>
+            (downloadedUrl, list) =>
             {
                 done = true;
             },
@@ -50,7 +50,7 @@ public class AssetBundleListDownloaderTests : MiyamasuTestRunner
         var done = false;
         yield return loader.DownloadAssetBundleList(
             listPath,
-            list =>
+            (downloadedUrl, list) =>
             {
                 True(false, "should not be succeeded.");
             },

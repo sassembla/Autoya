@@ -123,7 +123,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     public IEnumerator ReceiveFirstList()
     {
         var done = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
@@ -150,7 +150,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     public IEnumerator ReceiveListUpdated()
     {
         var done = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
@@ -224,7 +224,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     public IEnumerator ReceiveUpdatedListThenListWillBeUpdated()
     {
         var done = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
@@ -292,7 +292,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     public IEnumerator ReceiveUpdatedListThenIgnore()
     {
         var done = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
@@ -367,7 +367,7 @@ public class AssetUpdateTests : MiyamasuTestRunner
     public IEnumerator ReceiveUpdatedListThenIgnoreAndIgnoredListIsCached()
     {
         var done = false;
-        Autoya.Debug_AssetBundle_DownloadAssetBundleListFromUrl(
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {

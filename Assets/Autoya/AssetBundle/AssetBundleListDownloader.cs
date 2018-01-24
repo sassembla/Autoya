@@ -68,7 +68,7 @@ namespace AutoyaFramework.AssetBundles
             }
         }
 
-        public IEnumerator DownloadAssetBundleList(string url, Action<AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec = 0)
+        public IEnumerator DownloadAssetBundleList(string url, Action<string, AssetBundleList> done, Action<int, string, AutoyaStatus> failed, double timeoutSec = 0)
         {
             var connectionId = AssetBundlesSettings.ASSETBUNDLES_ASSETBUNDLELIST_PREFIX + Guid.NewGuid().ToString();
             var reqHeader = assetBundleGetRequestHeaderDelegate(url, new Dictionary<string, string>());
@@ -78,8 +78,7 @@ namespace AutoyaFramework.AssetBundles
             {
                 var listString = listData as string;
                 assetBundleList = JsonUtility.FromJson<AssetBundleList>(listString);
-
-                done(assetBundleList);
+                done(url, assetBundleList);
             };
 
             Action<string, int, string, AutoyaStatus> listDownloadFailed = (conId, code, reason, autoyaStatus) =>
