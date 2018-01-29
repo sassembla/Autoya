@@ -200,6 +200,7 @@ namespace AutoyaFramework
                     }
                 }
 
+
                 if (changedUsingBundleNames.Any())
                 {
                     // using assetBundle is updated in new list.
@@ -240,7 +241,9 @@ namespace AutoyaFramework
                     },
                     (code, reason, autoyaStatus) =>
                     {
-                        // do nothing.
+                        // failed to get new list.
+                        // Debug.Log("failed to download new AssetBundleList from url:" + url + " code:" + code + " reason:" + reason);
+                        newListDownloaderState = NewListDownloaderState.Ready;
                     }
                 )
             );
@@ -267,7 +270,6 @@ namespace AutoyaFramework
                                 break;
                             }
                         }
-                        Debug.Log("case OnUpdatingListReceived");
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
 
@@ -298,7 +300,8 @@ namespace AutoyaFramework
             AutoyaNotReady,
             AlreadyDownloading,
             FailedToDownload,
-            FailedToStoreDownloadedAssetBundleList
+            FailedToStoreDownloadedAssetBundleList,
+            NotCointainedInRuntimeManifestOrOther
         }
 
 
@@ -377,40 +380,28 @@ namespace AutoyaFramework
                         var newListIdentity = newList.identity;
                         var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
 
-                        var contained = false;
-
                         foreach (var resInfo in runtimeManifest.resourceInfos)
                         {
                             if (resInfo.listIdentity == newListIdentity)
                             {
                                 resInfo.listVersion = newList.version;
-                                resInfo.listDownloadUrl = url;
-
-                                contained = true;
                                 break;
                             }
                         }
 
-                        // downloaded assetBundleList is not contained runtimeManifest yet.
-                        if (!contained)
-                        {
-                            var newListInfo = new AppManifest.AssetBundleListInfo();
-                            newListInfo.listIdentity = newList.identity;
-                            newListInfo.listDownloadUrl = url;
-                            newListInfo.listVersion = newList.version;
-
-                            // append new list data to runtime manifest.
-                            var current = runtimeManifest.resourceInfos.ToList();
-                            current.Add(newListInfo);
-                            runtimeManifest.resourceInfos = current.ToArray();
-                        }
-
-                        var dataStr = JsonUtility.ToJson(runtimeManifest);
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
-
-                    // update list in loader.
-                    ReadyLoaderAndPreloader(newList);
+                    try
+                    {
+                        // update list in loader.
+                        ReadyLoaderAndPreloader(newList);
+                    }
+                    catch (Exception e)
+                    {
+                        assetBundleFeatState = AssetBundlesFeatureState.Ready;
+                        downloadFailed(ListDownloadError.NotCointainedInRuntimeManifestOrOther, e.ToString(), new AutoyaStatus());
+                        return;
+                    }
 
                     downloadedListIdentities.Add(newList.identity);
                     if (downloadedListIdentities.Count == wholeAssetBundleListCount)

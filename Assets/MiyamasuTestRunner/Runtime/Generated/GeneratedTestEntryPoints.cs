@@ -1025,6 +1025,20 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator DownloadAssetBundleListManuallyWithoutPrepareWillFail() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "DownloadAssetBundleListManuallyWithoutPrepareWillFail");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.DownloadAssetBundleListManuallyWithoutPrepareWillFail();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class AssetUpdateTests_Miyamasu {
     [UnityTest] public IEnumerator ReceiveFirstList() {

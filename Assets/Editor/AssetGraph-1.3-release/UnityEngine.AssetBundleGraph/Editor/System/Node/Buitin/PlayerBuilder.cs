@@ -259,7 +259,9 @@ namespace UnityEngine.AssetBundles.GraphTool
             }
         }
 
+#pragma warning disable 0649
         BuildPlayerOptions opt;
+#pragma warning restore 0649
         public override void Build(BuildTarget target,
             Model.NodeData node,
             IEnumerable<PerformGraph.AssetGroups> incoming,

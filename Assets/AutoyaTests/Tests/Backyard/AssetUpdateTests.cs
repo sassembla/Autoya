@@ -108,7 +108,13 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
     private Autoya.ShouldRequestOrNot RequestYes(string basePath, string identity, string newVersion)
     {
-        var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + newVersion + "/main_assets.json";
+        // ここだな〜〜どうするかな〜〜。自分でリストを取得した時に、そのリストのアップデートを行わせるためのデータをどうやって入れるか。
+        /*
+            自分でリストを取得する
+            リストのバージョンとidentityは手に入るので、それを分解するようなコードからbasePathを出す(これ絶対難しい)
+            or basePathみたいなパラメータをリストに入れるようにする
+         */
+        var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + newVersion + "/" + identity + ".json";
         return Autoya.ShouldRequestOrNot.Yes(url);
     }
 

@@ -669,7 +669,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                     },
                     (name, error, reason, autoyaStatus) =>
                     {
-
+                        Fail("err:" + error + " reason:" + reason);
                     }
                 );
             },
@@ -1203,28 +1203,27 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var version = "1.0.0";
 
         var done1 = false;
-        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
-            abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
-            status =>
-            {
-                done1 = true;
-            },
-            (code, reason, autoyaStatus) =>
-            {
-                // do nothing.
-            }
-        );
-
         var done2 = false;
         Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
             status =>
             {
-                done2 = true;
+                done1 = true;
+                Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
+                    abListDlPath + listIdentity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + version + "/" + fileName,
+                    status2 =>
+                    {
+                        done2 = true;
+                    },
+                    (code, reason, autoyaStatus) =>
+                    {
+                        Fail("code:" + code + " reason:" + reason);
+                    }
+                );
             },
             (code, reason, autoyaStatus) =>
             {
-                // do nothing.
+                Fail("code:" + code + " reason:" + reason);
             }
         );
 
@@ -1244,25 +1243,23 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator DownloadMultipleBundleListAtOnce()
     {
         var done1 = false;
+        var done2 = false;
         Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
             abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
             status =>
             {
                 done1 = true;
-            },
-            (code, reason, autoyaStatus) =>
-            {
-                // do nothing.
-            }
-        );
-
-
-        var done2 = false;
-        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
-            abListDlPath + "sub_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/sub_assets.json",
-            status =>
-            {
-                done2 = true;
+                Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
+                    abListDlPath + "sub_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/sub_assets.json",
+                    status2 =>
+                    {
+                        done2 = true;
+                    },
+                    (code, reason, autoyaStatus) =>
+                    {
+                        Fail("code:" + code + " reason:" + reason);
+                    }
+                );
             },
             (code, reason, autoyaStatus) =>
             {
@@ -1377,13 +1374,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator DownloadAssetBundleListManually()
     {
-        // ここで、まずruntimeManifestのリソースリストを空にしておく必要がある。
-        {
-            var defaultRuntimeManifest = Autoya.Manifest_LoadRuntimeManifest();
-            defaultRuntimeManifest.resourceInfos = new AutoyaFramework.AppManifest.AssetBundleListInfo[0];
-            Autoya.Manifest_UpdateRuntimeManifest(defaultRuntimeManifest);
-        }
-
         var url = abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json";
         var done1 = false;
         Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
@@ -1406,7 +1396,43 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         // この時点で、Readyになっている + RuntimeManifestにいろいろ入っているはず。
         var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
         True(runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").Any());
-        True(runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").Where(rInfo => rInfo.listDownloadUrl == url).Any(), runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").FirstOrDefault().listDownloadUrl);
         True(runtimeManifest.resourceInfos.Where(rInfo => rInfo.listIdentity == "main_assets").Where(rInfo => rInfo.listVersion == "1.0.0").Any());
+    }
+
+    /*
+        あらかじめRuntimeManifestにAssetBundleListのidentityやbasePath(url)が記載されていない状態で
+        AssetBundleListをダウンロードしようとすると、特にurlに関して解決できない問題を持った状態になるため、前提としてDLに失敗する。
+     */
+    [MTest]
+    public IEnumerator DownloadAssetBundleListManuallyWithoutPrepareWillFail()
+    {
+        // runtimeManifestのリソースリストを空にする。これで、取得したAssetBundleListのidentityが記録上存在しないという状態を作り出せる。
+        {
+            var defaultRuntimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+            defaultRuntimeManifest.resourceInfos = new AutoyaFramework.AppManifest.AssetBundleListInfo[0];
+            Autoya.Manifest_UpdateRuntimeManifest(defaultRuntimeManifest);
+        }
+
+        var url = abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json";
+        var done1 = false;
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
+            url,
+            status =>
+            {
+                Fail();
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                done1 = true;
+            }
+        );
+
+        yield return WaitUntil(
+            () => done1,
+            () => { throw new TimeoutException("timeout."); }
+        );
+
+        // リソースリストの復帰。
+        Autoya.Debug_Manifest_RenewRuntimeManifest();
     }
 }
