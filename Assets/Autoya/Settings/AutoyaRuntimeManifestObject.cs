@@ -19,29 +19,29 @@ namespace AutoyaFramework.AppManifest
     public class RuntimeManifestObject
     {
         [SerializeField]
-        public AssetBundleListInfos resourceInfos = new AssetBundleListInfos()
-        {
-            new AssetBundleListInfo
-            {
-                 listIdentity = "main_assets",
-                 listVersion = "1.0.0",
-                 listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
-            },
-            new AssetBundleListInfo
-            {
-                 listIdentity = "sub_assets",
-                 listVersion = "1.0.0",
-                 listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
-            }
-        };
-    }
+        public AssetBundleListInfo[] resourceInfos;
 
-    [Serializable]
-    public class AssetBundleListInfos : List<AssetBundleListInfo>
-    {
+        public RuntimeManifestObject()
+        {
+            resourceInfos = new AssetBundleListInfo[]{
+               new AssetBundleListInfo
+               {
+                   listIdentity = "main_assets",
+                   listVersion = "1.0.0",
+                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
+               },
+               new AssetBundleListInfo
+               {
+                   listIdentity = "sub_assets",
+                   listVersion = "1.0.0",
+                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
+               }
+           };
+        }
+
         public override string ToString()
         {
-            return "AssetBundleListInfos:" + string.Join(",\n", this.Select(item => "listIdentity:" + item.listIdentity + " listDownloadUrl:" + item.listDownloadUrl + " listVersion:" + item.listVersion).ToArray());
+            return "AssetBundleListInfos:" + string.Join(",\n", resourceInfos.Select(item => "listIdentity:" + item.listIdentity + " listDownloadUrl:" + item.listDownloadUrl + " listVersion:" + item.listVersion).ToArray());
         }
     }
 

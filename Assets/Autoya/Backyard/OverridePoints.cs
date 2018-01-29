@@ -395,7 +395,6 @@ namespace AutoyaFramework
 		 */
         private Func<string, string, string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string basePath, string receivedNewAssetBundleIdentity, string rceivedNewAssetBundleListVersion) =>
         {
-            Debug.Log("ここってまだ動いてないよね。テストではこの関数を書き換えている。");
             var url = basePath + receivedNewAssetBundleIdentity + "/" + rceivedNewAssetBundleListVersion + "/" + receivedNewAssetBundleIdentity + ".json";
             return ShouldRequestOrNot.Yes(url);
             // return ShouldRequestOrNot.No();

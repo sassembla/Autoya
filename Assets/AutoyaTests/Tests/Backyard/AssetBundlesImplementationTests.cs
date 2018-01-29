@@ -1377,6 +1377,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator DownloadAssetBundleListManually()
     {
+        // ここで、まずruntimeManifestのリソースリストを空にしておく必要がある。
+        {
+            var defaultRuntimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+            defaultRuntimeManifest.resourceInfos = new AutoyaFramework.AppManifest.AssetBundleListInfo[0];
+            Autoya.Manifest_UpdateRuntimeManifest(defaultRuntimeManifest);
+        }
+
         var url = abListDlPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json";
         var done1 = false;
         Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(

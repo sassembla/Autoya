@@ -267,6 +267,7 @@ namespace AutoyaFramework
                                 break;
                             }
                         }
+                        Debug.Log("case OnUpdatingListReceived");
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
 
@@ -395,13 +396,16 @@ namespace AutoyaFramework
                         {
                             var newListInfo = new AppManifest.AssetBundleListInfo();
                             newListInfo.listIdentity = newList.identity;
-
                             newListInfo.listDownloadUrl = url;
                             newListInfo.listVersion = newList.version;
 
-                            runtimeManifest.resourceInfos.Add(newListInfo);
+                            // append new list data to runtime manifest.
+                            var current = runtimeManifest.resourceInfos.ToList();
+                            current.Add(newListInfo);
+                            runtimeManifest.resourceInfos = current.ToArray();
                         }
 
+                        var dataStr = JsonUtility.ToJson(runtimeManifest);
                         Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
                     }
 
