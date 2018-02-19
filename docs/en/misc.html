@@ -1,0 +1,82 @@
+<html lang="en"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>まだ行き場のないドキュメント · Autoya</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta property="og:title" content="まだ行き場のないドキュメント · Autoya"/><meta property="og:type" content="website"/><meta property="og:url" content="https://facebook.github.io途中/test-site/index.html"/><meta property="og:description" content="# Autoya"/><link rel="shortcut icon" href="/test-site/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://facebook.github.io途中/blog/atom.xml" title="Autoya Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://facebook.github.io途中/blog/feed.xml" title="Autoya Blog RSS Feed"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/test-site/css/main.css"/></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/test-site/"><img class="logo" src="/test-site/img/Autoya.svg"/><h2 class="headerTitle">Autoya</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li><a href="/test-site/docs/en/install0.html" target="_self">Docs</a></li><li><a href="/test-site/docs/en/api_auth0.html" target="_self">API</a></li><li><a href="/test-site/blog" target="_self">Blog</a></li><li><a href="https://github.com/sassembla/autoya" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1>まだ行き場のないドキュメント</h1></header><article><div><span><h1><a class="anchor" aria-hidden="true" name="autoya"></a><a href="#autoya" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Autoya</h1>
+<h1><a class="anchor" aria-hidden="true" name="api-modules"></a><a href="#api-modules" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>API &amp; modules</h1>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>概要</h2>
+<p>Autoyaの各機能のAPIと、<br>
+その内部実装である<br>
+モジュール(Module,Mod)の紹介をする。</p>
+<p>APIとModからAutoyaの全機能が把握できる。</p>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name="api"></a><a href="#api" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>APIって何</h2>
+<p>Autoya.でアクセスできるAutoyaの機能。<br>
+ここにない機能はModを直接使うことで<br>
+実現できる。</p>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name="api"></a><a href="#api" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>API一覧</h2>
+<ul>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/AssetBundle">AssetBundle</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Connections">Http(in progress)</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Information">Information(in progress)</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Manifest">Manifest(in progress)</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Persistence">Persistence(in progress)</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/api/Purchase">Purchase</a></li>
+</ul>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>モジュールって何</h2>
+<p>Autoyaが内部で使用している、<br>
+機能単位に分割された実装のこと。</p>
+<p>それぞれ単体でも使用することができる。</p>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name="module"></a><a href="#module" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>module一覧</h2>
+<ul>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/AssetBundle">AssetBundle</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Connections">Connections</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Encrypt">Encrypt</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Information">Information</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Manifest">Manifest</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Persistence">Persistence</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Purchase">Purchase</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Representation">Representation</a></li>
+<li><a href="https://gitpitch.com/sassembla/autoya/doc?p=doc/gitpitch/modules/Backyard">Backyard</a></li>
+</ul>
+<hr>
+<p>それぞれのモジュールの機能は<br>
+名前やリンク先から察してもらうとして、</p>
+<p>Autoyaでは各Modを<strong>Backyard</strong>から使う形で<br>
+フレームワークとしての機能を提供している。</p>
+<p>+++</p>
+<p>各モジュールは単体でも動作可能。<br>
+Autoyaを介さずに各機能を単体で<br>
+使用することも可能になっている。</p>
+<p>(そういう設計にした方がテストとか楽だった。)</p>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name="overview"></a><a href="#overview" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Overview</h2>
+<p><img src="https://raw.githubusercontent.com/sassembla/Autoya/master/doc/images/Overview.png" alt="図"></p>
+<p>+++</p>
+<p>実装されている機能へはAutoya.からアクセス可。<br>
+IDE上でAutoya.以降に補完候補が出てこない場合、<br>
+その機能はAutoyaにはおそらく存在しない。</p>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name="autoya-mod"></a><a href="#autoya-mod" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Autoya -&gt; Modの実例</h2>
+<p>Autoyaを経由すると、複数のModを組み合わせた<br>
+挙動が簡単に利用できる。</p>
+<p>例として認証ありHttp通信の構成を挙げる。<br>
+この機能はAuth機能とConnections Modの連携で<br>
+実装されている。</p>
+<p>+++</p>
+<p>![図](<a href="https://raw.githubusercontent.com/sassembla/Autoya/master/doc/images/Authentication">https://raw.githubusercontent.com/sassembla/Autoya/master/doc/images/Authentication</a> Bypass.png)</p>
+<p>+++</p>
+<p>Autoyaを介した通信は、認証系の機構を経由して<br>
+authenticatedな変換が行われ、<br>
+サーバへとHttpリクエストを行う。</p>
+<p>+++</p>
+<p>レスポンスに関しても、認証系の機構を経由して<br>
+validationなどが行われ、tokenなどの処理と<br>
+平行してApp側へのレスポンスを提供している。</p>
+<hr>
+<h2><a class="anchor" aria-hidden="true" name="mod-setting"></a><a href="#mod-setting" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>各ModのSettingについて</h2>
+<p>Autoyaの設定ファイルは、<br>
+Autoya/Settingsフォルダに纏められている。</p>
+<p>主に各ModをAutoya経由で使用するための設定が<br>
+初期値としてセットされている。</p>
+</span></div></article></div><div class="docs-prevnext"></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/test-site/" class="nav-home"><img src="/test-site/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/test-site/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>

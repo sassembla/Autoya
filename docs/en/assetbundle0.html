@@ -1,0 +1,247 @@
+<html lang="en"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>AssetBundle management and use. · Autoya</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta property="og:title" content="AssetBundle management and use. · Autoya"/><meta property="og:type" content="website"/><meta property="og:url" content="https://facebook.github.io途中/test-site/index.html"/><meta property="og:description" content="Autoyaでは、AssetBundleの生成から、使用、更新、分割管理までをサポートしている。"/><link rel="shortcut icon" href="/test-site/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://facebook.github.io途中/blog/atom.xml" title="Autoya Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://facebook.github.io途中/blog/feed.xml" title="Autoya Blog RSS Feed"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/test-site/css/main.css"/></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/test-site/"><img class="logo" src="/test-site/img/Autoya.svg"/><h2 class="headerTitle">Autoya</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li><a href="/test-site/docs/en/install0.html" target="_self">Docs</a></li><li><a href="/test-site/docs/en/api_auth0.html" target="_self">API</a></li><li><a href="/test-site/blog" target="_self">Blog</a></li><li><a href="https://github.com/sassembla/autoya" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Documents</span></h2></div><div class="navGroups"><div class="navGroup navGroupActive"><h3>Installation</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/install0.html">Installation</a></li></ul></div><div class="navGroup navGroupActive"><h3>Overview</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overview0.html">Overview</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overridepoints0.html">Override Points</a></li></ul></div><div class="navGroup navGroupActive"><h3>Documents</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/auth0.html">Authentication</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/manifest0.html">Manifest</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/persistence0.html">Persist</a></li><li class="navListItem navListItemActive"><a class="navItem navItemActive" href="/test-site/docs/en/assetbundle0.html">AssetBundle</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/connection0.html">Connection</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/maintenance0.html">Maintenance</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/purchase0.html">Purchase</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/notification0.html">Notification</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/information0.html">Information</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/settings0.html">Settings</a></li></ul></div><div class="navGroup navGroupActive"><h3>Resource Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_generate0.html">Resource Generate</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_deploy0.html">Resource Deploy</a></li></ul></div><div class="navGroup navGroupActive"><h3>App Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_app_version0.html">Update App Version</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_resource_version0.html">Update Resources</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/turn_on_maintenance0.html">Turn on Maintenance</a></li></ul></div></div></section></div><script>
+          var toggler = document.getElementById('navToggler');
+          var nav = document.getElementById('docsNav');
+          toggler.onclick = function() {
+            nav.classList.toggle('docsSliderActive');
+          };
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1>AssetBundle management and use.</h1></header><article><div><span><p>Autoyaでは、AssetBundleの生成から、使用、更新、分割管理までをサポートしている。</p>
+<h2><a class="anchor" aria-hidden="true" name="supported"></a><a href="#supported" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Supported</h2>
+<ul>
+<li>AssetBundle(AB)のロード/使用</li>
+<li>ABをAssetBundleList(リスト)単位で運用、更新</li>
+<li>AB、リストの生成</li>
+<li>複数のリストの生成と使用</li>
+<li>使用予定のABをまとめて事前に取得</li>
+<li>ABの更新</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>機構の前提</h2>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>機構の状態設定について</h3>
+<p>AB関連の機構には独立した状態設定がある。</p>
+<ul>
+<li>ABList未取得状態</li>
+<li>ABList取得済み状態</li>
+</ul>
+<p>端末内に最低一つのAssetBundleListを保持すると、自動的に取得済み状態に変化する。<br>
+ABList取得済み状態では、ABからAssetを取り出したりABをPreloadすることができる。</p>
+<p>もしAppでAssetBundleを使うのが確定している場合、App起動時の適当なタイミングで <em>AssetBundle_DownloadAssetBundleListsIfNeed</em> メソッドを実行すると、Appに必要なリストを自動的に取得してくる。</p>
+<p>URLを独自に指定して手動でリストを取得するには、
+<em>AssetBundle_DownloadAssetBundleListFromUrlManually</em> が使える。</p>
+<p>どちらにせよ、取得するリストについて、<a href="#settings-for-assetbundlelist">リストの設定</a>がなされている必要がある。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リスト取得のフロー</h2>
+<p>AssetBundle_DownloadAssetBundleListsIfNeed 関数では、図の様なフローを通過する。</p>
+<p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_list.png" alt="図1"></p>
+<p>複数のOverridePointsを経由するため、取得したデータの扱いを変更したい場合はOverridePointsの各関数を編集するとよい。</p>
+<p>AssetBundle機構の状態については、 <em>bool AssetBundle_IsAssetBundleFeatureReady</em> メソッドで確認することが可能になっている。</p>
+<h3><a class="anchor" aria-hidden="true" name="settings-for-assetbundlelist"></a><a href="#settings-for-assetbundlelist" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リストの設定について(settings for AssetBundleList)</h3>
+<p>リストの名前、バージョン、ダウンロードURLの情報がRuntimeManifestにあらかじめ記載されている必要がある。</p>
+<p>サンプルAppでは、RuntimeManifestに[main_assets, sub_assets]という2つのAssetBundleListを保持していて、<em>AssetBundle_DownloadAssetBundleListsIfNeed</em> メソッド実行時、自動的に各リストを記述されているURLから取得する。</p>
+<pre><code class="hljs css csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">RuntimeManifestObject</span>(<span class="hljs-params"></span>)
+</span>{
+    resourceInfos = <span class="hljs-keyword">new</span> AssetBundleListInfo[]{
+       <span class="hljs-keyword">new</span> AssetBundleListInfo
+       {
+           listIdentity = <span class="hljs-string">"main_assets"</span>,
+           listVersion = <span class="hljs-string">"1.0.0"</span>,
+           listDownloadUrl = <span class="hljs-string">"https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"</span>
+       },
+       <span class="hljs-keyword">new</span> AssetBundleListInfo
+       {
+           listIdentity = <span class="hljs-string">"sub_assets"</span>,
+           listVersion = <span class="hljs-string">"1.0.0"</span>,
+           listDownloadUrl = <span class="hljs-string">"https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"</span>
+       }
+   };
+}
+</code></pre>
+<p>現状のAutoyaでは、事前にRuntimeManifestにリストの情報が入っていないと、そのリストを取得したりアップデートしたりといったことができない。
+これは今後のバージョンで改善される可能性がある。</p>
+<h2><a class="anchor" aria-hidden="true" name="assetbundle-asset"></a><a href="#assetbundle-asset" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>AssetBundleからAssetのロード/使用</h2>
+<p>Asset名とそのAssetの型をもとに、ABからAssetを取得する。</p>
+<pre><code class="hljs css csharp">Autoya.AssetBundle_LoadAsset&lt;GameObject&gt;(
+    assetName,
+    (name, obj) =&gt;
+    {
+        <span class="hljs-comment">// 展開成功、objはGameObject型</span>
+    },
+    (name, err, reason, autoyaStatus) =&gt;
+    {
+        <span class="hljs-comment">// 失敗</span>
+    }
+);
+</code></pre>
+<p>どのAssetBundleにどのAssetが含まれているかなどの情報はAssetBundleListが保持しているため、それらの情報を気にする必要がない。</p>
+<h3><a class="anchor" aria-hidden="true" name="on-demand-download"></a><a href="#on-demand-download" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>on demand download</h3>
+<p>特定のABに含まれるAssetをリクエストした際、そのABがダウンロード前であれば、ABをDLした後でAssetを展開する。</p>
+<p>あるAssetを使う際、Assetを含むABがDL済みでなければ、DL後に展開される。(依存の解決)</p>
+<pre><code class="hljs">Asset in AB[not Cached] -&gt; ABをDL -&gt; Asset展開
+</code></pre>
+<p>一度DLされたABは端末にキャッシュされる。</p>
+<p>Assetを含んでいるABがすでにキャッシュ済みな場合、DL処理なしで展開される。</p>
+<pre><code class="hljs">Asset in AB[Cached] -&gt; Asset展開
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" name="assetbundle"></a><a href="#assetbundle" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>AssetBundleはどこからダウンロードされるのか</h3>
+<p>使用したいAssetを含んだABがまだキャッシュされていない場合、この機構は特定のパスを使ってAssetBundleのDLを開始、完了次第Assetの取り出しを行う。</p>
+<p>AssetBundleのDLを行う際、<strong>OverridePoints/OnAssetBundleDownloadUrlRequired</strong> メソッドを通る。
+<img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_load.png" alt="LoadAssetBundle"></p>
+<pre><code class="hljs css csharp"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">string</span> <span class="hljs-title">OnAssetBundleDownloadUrlRequired</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> listIdentity</span>)
+</span>{
+    <span class="hljs-keyword">var</span> targetListInfo = Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Where(info =&gt; info.listIdentity == listIdentity).FirstOrDefault();
+    <span class="hljs-keyword">if</span> (targetListInfo == <span class="hljs-literal">null</span>)
+    {
+        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> Exception(<span class="hljs-string">"failed to detect bundle info from runtime manifest. requested listIdentity:"</span> + listIdentity + <span class="hljs-string">" is not contained in runtime manifest."</span>);
+    }
+
+    <span class="hljs-keyword">var</span> url = targetListInfo.listDownloadUrl + <span class="hljs-string">"/"</span> + targetListInfo.listIdentity + <span class="hljs-string">"/"</span> + AssetBundlesSettings.PLATFORM_STR + <span class="hljs-string">"/"</span> + targetListInfo.listVersion + <span class="hljs-string">"/"</span>;
+    <span class="hljs-keyword">return</span> url;
+}
+</code></pre>
+<p>デフォルトではこのメソッド内で、AssetBundleをDownloadする際のurlを決定している。</p>
+<ul>
+<li>そのAssetBundleが含まれているAssetBundleListのidentityをキーに、RuntimeManifestからAssetBundleListの情報を取得</li>
+<li>listDownloadUrlをbasePathとして扱い、</li>
+<li>listIdentityを追加</li>
+<li>platform文字列を追加</li>
+<li>リストのバージョン値を追加し、urlは完成となる。</li>
+</ul>
+<p>最終的にここで生成されたURLは次のようなものになる。</p>
+<pre><code class="hljs">return &quot;そのABが所属しているAssetBundleListのダウンロード用basePath/プラットフォーム文字列/リストバージョン値/&quot;;
+</code></pre>
+<p>リストとそのリストに含まれるAssetBundleファイルを同じフォルダに入れた状態でCDNへとアップする、というのをサンプル版の前提としているため、変更するためにはこの関数で返すパス情報を変えればよい。</p>
+<p>(この部分はちょっと切り分けがうまくいっていないので、AssetBundleのファイル名までを足させる方向に変わるかもしれない。)</p>
+<h3><a class="anchor" aria-hidden="true" name="assetbundle"></a><a href="#assetbundle" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>AssetBundleの状態について</h3>
+<p>各ABは、機構の内部で3段階の状態を持っている。</p>
+<pre><code class="hljs">NotCached -&gt; OnStorage &lt;-&gt; OnMemory(AssetBundleLoaded)
+</code></pre>
+<ul>
+<li>NotCached: 端末にABがない</li>
+<li>OnStorate: ABキャッシュがあるが未展開</li>
+<li>OnMemory: ABキャッシュがメモリに展開済み</li>
+</ul>
+<p>Assetを取得する際、含有するABの状態が変化し、OnMemoryになったABからAssetが生成される。</p>
+<p>機構内部のABの状態を気にする必要はないが、知っておくとメモリ状態を把握することが可能。</p>
+<p>なおメモリ上に展開したABは、 <em>AssetBundle_UnloadOnMemoryAssetBundles</em> などのAPIで手動で解放する。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リストの内容とその生成について</h2>
+<p>リスト(AssetBundleList)はjson形式のファイルで、AutoyaではAssetBundleList型として実装されている。</p>
+<p><a href="https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundleList.cs#L1">AssetBundleList type</a></p>
+<p>内容は次の通り。</p>
+<pre><code class="hljs">list
+    └ identity // identity of this list. 
+    └ target // human readable target platform name.
+    └ version // human readable version desc.
+    └ assetBundles // assetBundleInfo[]
+        └ assetBundleInfo
+            └ bundleName // bundle name.
+            └ assetNames // contained asset names. e,g, &quot;Assets/Somewhere/texture.png&quot;
+            └ dependsBundleNames // the bundle names which this assetBundle depends on.
+            └ crc // crc parameter. used for crc check.
+            └ hash // hash parameter. used for exchange same asset from old one to new one.
+            └ size // size of uncompressed AssetBundle.
+</code></pre>
+<p>Autoyaでは、このリストをApp内に保持、必要に応じて更新することで、AssetBundleとそれに含まれるAssetを簡単に扱うことができるようになっている。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リストのアップデート</h3>
+<p>サーバ主導でAppが使うべきリストを更新することができる。<br>
+<a href="/test-site/docs/en/update_resource_version0.html">Update Resource version</a> を参照。</p>
+<p>リストとリソースの生成については、<a href="/test-site/docs/en/resource_generate0.html">リソースの生成</a>を参照。</p>
+<h2><a class="anchor" aria-hidden="true" name="ab"></a><a href="#ab" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>ABを複数のリストに分ける</h2>
+<p>Autoyaでは複数のリストに分けてのAssetBundleの生成と管理、更新をサポートしている。<br>
+<a href="/test-site/docs/en/update_resource_version0.html">Update Resource version</a> を参照。</p>
+<h2><a class="anchor" aria-hidden="true" name="preload-assetbundle"></a><a href="#preload-assetbundle" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>preload AssetBundle</h2>
+<p>複数のABを一括でDL、キャッシュする機構。この機構でDLしたABはメモリに展開されず、キャッシュされるのみになる。
+主にon demandでAssetをDLさせたくない、Asset使用前に部分的にDLを済ませたい、という場合に便利。</p>
+<p>さらに並列DLが可能になっており、複数のABをできるだけ高速にDLすることができる。</p>
+<p>取得済みであっても、[リストが更新 + 含まれているABにも更新有り]という状態のABを最新版へと更新する効果もある。
+なお、キャッシュ済みかつ更新がないABは当然変化しない。</p>
+<p>preload機能では、DLしたいABの情報をPreloadList型のインスタンスで渡してロードを実行する。</p>
+<p>次のような<a href="https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/AssetBundle/AssetBundlePreloader.cs#L21">PreloadList</a>型のデータから複数のABを纏めてDLする機能を提供する。</p>
+<pre><code class="hljs">preloadList
+    └ name // human readable name of list.
+    └ bundleNames // string[]
+        └ bundleName // preload target bundle name.
+</code></pre>
+<p>この型をパラメータ入りでnewして、App内でPreload機構を使用する。<br>
+例えばsamplePreloadListという名前のPreloadListを作成、preloadTargetBundleName1という名前のABをPreloadしたい場合、
+次のようなコードを書くと叶う。</p>
+<pre><code class="hljs css csharp"><span class="hljs-keyword">var</span> newPreloadList = <span class="hljs-keyword">new</span> PreloadList(<span class="hljs-string">"samplePreloadList"</span>, <span class="hljs-keyword">new</span> <span class="hljs-keyword">string</span>[<span class="hljs-string">"preloadTargetBundleName1"</span>]);
+
+Autoya.AssetBundle_PreloadByList(
+    newPreloadList,
+    (willLoadBundleNames, proceed, cancel) =&gt;
+    {
+        proceed();
+    },
+    progress =&gt;
+    {
+        Debug.Log(<span class="hljs-string">"progress:"</span> + progress);
+    },
+    () =&gt;
+    {
+        Debug.Log(<span class="hljs-string">"preloading all listed assetBundles is finished."</span>);
+    },
+    (code, reason, autoyaStatus) =&gt;
+    {
+        Debug.LogError(<span class="hljs-string">"preload failed. code:"</span> + code + <span class="hljs-string">" reason:"</span> + reason);
+    },
+    (downloadFailedAssetBundleName, code, reason, autoyaStatus) =&gt;
+    {
+        Debug.LogError(<span class="hljs-string">"failed to preload assetBundle:"</span> + downloadFailedAssetBundleName + <span class="hljs-string">". code:"</span> + code + <span class="hljs-string">" reason:"</span> + reason);
+    },
+    <span class="hljs-number">10</span> <span class="hljs-comment">// 10 parallel download! you can set more than 0.</span>
+);
+</code></pre>
+<p>HTTPを介してサーバ側からPreload Listを取得、適宜必要なABをpreloadさせる運用も可能。</p>
+<pre><code class="hljs css csharp">Autoya.AssetBundle_Preload(
+    <span class="hljs-string">"https://somewhere/preloadlist.json"</span>,
+    (willLoadBundleNames, proceed, cancel) =&gt;
+    {
+        <span class="hljs-keyword">var</span> totalWeight = Autoya.AssetBundle_GetAssetBundlesWeight(willLoadBundleNames);
+        Debug.Log(<span class="hljs-string">"start downloading bundles. total weight:"</span> + totalWeight);
+
+        proceed();
+    },
+    progress =&gt;
+    {
+        Debug.Log(<span class="hljs-string">"progress:"</span> + progress);
+    },
+    () =&gt;
+    {
+        Debug.Log(<span class="hljs-string">"preloading 1 listed assetBundles is finished."</span>);
+    },
+    (code, reason, autoyaStatus) =&gt;
+    {
+        Debug.LogError(<span class="hljs-string">"preload failed. code:"</span> + code + <span class="hljs-string">" reason:"</span> + reason);
+    },
+    (downloadFailedAssetBundleName, code, reason, autoyaStatus) =&gt;
+    {
+        Debug.LogError(<span class="hljs-string">"failed to preload assetBundle:"</span> + downloadFailedAssetBundleName + <span class="hljs-string">". code:"</span> + code + <span class="hljs-string">" reason:"</span> + reason);
+    },
+    <span class="hljs-number">10</span> <span class="hljs-comment">// 10 parallel download! you can set more than 0.</span>
+);
+</code></pre>
+<p>このスタイルは特に強力で、例えば特定の画面に遷移する際に実行すると、<br>
+「その画面以降で使うAssetとしてどんなものをDLしておくべきか」を常にサーバに問い合わせることができる様になる。</p>
+<p>これにより、「近い未来に使用するAssetを事前にダウンロードさせる」ということが可能になる。</p>
+<h3><a class="anchor" aria-hidden="true" name="preload-api-onbeforepreload"></a><a href="#preload-api-onbeforepreload" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Preload系のAPIの第二引数 onBeforePreload引数について</h3>
+<p>この引数には、[PreloadListの取得に成功し、Preloadする内容が完全に判明した段階で、Preload処理を継続するかキャンセルするか]
+という判断を盛り込むことができる。</p>
+<pre><code class="hljs css csharp">Autoya.AssetBundle_Preload(
+    <span class="hljs-string">"https://somewhere/preloadlist.json"</span>,
+    (willLoadBundleNames, proceed, cancel) =&gt;
+    {
+        <span class="hljs-keyword">var</span> totalWeight = Autoya.AssetBundle_GetAssetBundlesWeight(willLoadBundleNames);
+        Debug.Log(<span class="hljs-string">"start downloading bundles. total weight:"</span> + totalWeight);
+
+        proceed();
+    },...
+</code></pre>
+<p>Preloadを継続する場合はproceed関数を実行、中断する場合はcancel関数を実行する。
+これからDLするABの名前一覧が取得できているので、これからDLするABの総重量をDL前に計算し、例えばプレイヤーに提示することができる。</p>
+<p>「このくらいの容量のデータをDLします、よろしいですか？」とか表示して、yesであればproceed関数を実行する。非同期で継続実行が可能になっている。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>内部フロー</h3>
+<p>次の図の様なフローを通過する。</p>
+<p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_preload.png" alt="seq"></p>
+<p><strong>OverridePoints/OnAssetBundlePreloadListGetRequest</strong> 関数が着火される。この関数上でリクエストヘッダのパラメータを調整することができる。</p>
+<ul>
+<li>実際に総重量を取得するメソッドはAPIを見てね<a href="/test-site/docs/en/api_assetbundle0.html">AssetBundles</a></li>
+<li>設定ファイルの話</li>
+</ul>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="persistence0.html">← Persist files</a><a class="docs-next button" href="connection0.html">HTTP/UDP connection feature →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/test-site/" class="nav-home"><img src="/test-site/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/test-site/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>

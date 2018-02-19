@@ -1,0 +1,83 @@
+<html lang="en"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Easy way to generate AssetBundle · Autoya</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta property="og:title" content="Easy way to generate AssetBundle · Autoya"/><meta property="og:type" content="website"/><meta property="og:url" content="https://facebook.github.io途中/test-site/index.html"/><meta property="og:description" content="AssetGraphと連携してAssetBundleとAssetBundleListを作る方法を紹介する。"/><link rel="shortcut icon" href="/test-site/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://facebook.github.io途中/blog/atom.xml" title="Autoya Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://facebook.github.io途中/blog/feed.xml" title="Autoya Blog RSS Feed"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/test-site/css/main.css"/></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/test-site/"><img class="logo" src="/test-site/img/Autoya.svg"/><h2 class="headerTitle">Autoya</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li><a href="/test-site/docs/en/install0.html" target="_self">Docs</a></li><li><a href="/test-site/docs/en/api_auth0.html" target="_self">API</a></li><li><a href="/test-site/blog" target="_self">Blog</a></li><li><a href="https://github.com/sassembla/autoya" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Resource Management</span></h2></div><div class="navGroups"><div class="navGroup navGroupActive"><h3>Installation</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/install0.html">Installation</a></li></ul></div><div class="navGroup navGroupActive"><h3>Overview</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overview0.html">Overview</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overridepoints0.html">Override Points</a></li></ul></div><div class="navGroup navGroupActive"><h3>Documents</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/auth0.html">Authentication</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/manifest0.html">Manifest</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/persistence0.html">Persist</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/assetbundle0.html">AssetBundle</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/connection0.html">Connection</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/maintenance0.html">Maintenance</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/purchase0.html">Purchase</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/notification0.html">Notification</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/information0.html">Information</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/settings0.html">Settings</a></li></ul></div><div class="navGroup navGroupActive"><h3>Resource Management</h3><ul><li class="navListItem navListItemActive"><a class="navItem navItemActive" href="/test-site/docs/en/resource_generate0.html">Resource Generate</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_deploy0.html">Resource Deploy</a></li></ul></div><div class="navGroup navGroupActive"><h3>App Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_app_version0.html">Update App Version</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_resource_version0.html">Update Resources</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/turn_on_maintenance0.html">Turn on Maintenance</a></li></ul></div></div></section></div><script>
+          var toggler = document.getElementById('navToggler');
+          var nav = document.getElementById('docsNav');
+          toggler.onclick = function() {
+            nav.classList.toggle('docsSliderActive');
+          };
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1>Easy way to generate AssetBundle</h1></header><article><div><span><p>AssetGraphと連携してAssetBundleとAssetBundleListを作る方法を紹介する。
+現状だとUnitypackage+AssetGraphってのがあるんで、それを展開すると再現できるのだけれど、
+いかんせん大変分かりにくい。</p>
+<ol>
+<li>AutoyaのAssetGraphのPostProcessingスクリプトがあるのを確認する</li>
+<li>プロジェクトフォルダにAssetBundleの出力先フォルダを作り、グラフのExporterノードに出力先フォルダを指定する。</li>
+</ol>
+<p>ここでは <em>AssetBundles</em> みたいなフォルダを作ったとする。</p>
+<pre><code class="hljs">PROJECT_FOLDER/
+    AssetBundles/
+    Assets/
+    ....
+</code></pre>
+<ol start="3">
+<li>AssetGraphのグラフを生成する</li>
+<li>出力先フォルダの中に、グラフ名.jsonファイルを作成(この部分をグラフに入れ込みたいがまだ無理)</li>
+<li>グラフ名.jsonに、identity(グラフ名)、version(バージョン値)をjson形式で手で書く</li>
+</ol>
+<pre><code class="hljs css json">{
+    <span class="hljs-attr">"identity"</span>: <span class="hljs-string">"グラフ名"</span>,
+    <span class="hljs-attr">"version"</span>: <span class="hljs-string">"1.0.0"</span>
+}
+</code></pre>
+<p>出力先フォルダにこのjsonを置いてあるとこんな感じに見えるはず。</p>
+<pre><code class="hljs">PROJECT_FOLDER/
+    AssetBundles/
+        グラフ名.json &lt;- new!
+    ....
+</code></pre>
+<p>(これらの行程は手でやるとミスりそうなので今後のアップデートでなんらかGUIを提供するつもり。)</p>
+<ol start="6">
+<li>この状態でAssetGraphを動かすと、次のような階層にAssetBundleと管理用のリストファイルが作成される。</li>
+</ol>
+<pre><code class="hljs">PROJECT_FOLDER/
+    AssetBundles/
+        グラフ名/
+            対応プラットフォーム/
+                1.0.0/
+                    グラフ名<span class="hljs-string">.json</span><span class="hljs-params">(これはAssetBundleListと呼ばれる形式のファイル)</span>
+                    AssetBundle x N
+
+        グラフ名<span class="hljs-string">.json</span>
+    
+</code></pre>
+<p>ここで、対応プラットフォームの下の1.0.0は、グラフ名.jsonに指定したバージョン値になっている。</p>
+<ol start="7">
+<li>別の対応プラットフォームをビルドすると対応プラットフォームぶんだけフォルダが増える。</li>
+<li>新規にリソースを追加して配布する = リソースのバージョンをあげてビルドする、という関係性になっていて、新規バージョンをビルドする場合、AssetBundles フォルダ直下のグラフ名.jsonのバージョン値を上げてからビルドする。</li>
+</ol>
+<pre><code class="hljs">PROJECT_FOLDER/
+    AssetBundles/
+        グラフ名/
+        グラフ名<span class="hljs-selector-class">.json</span> &lt;- これをいじる
+    
+</code></pre>
+<pre><code class="hljs css json">{
+    <span class="hljs-attr">"identity"</span>: <span class="hljs-string">"グラフ名"</span>,
+    <span class="hljs-attr">"version"</span>: <span class="hljs-string">"1.0.1"</span> &lt;- updated!
+}
+</code></pre>
+<ol start="8">
+<li>この状態でビルドを行うと、次のようなフォルダ階層ができる。</li>
+</ol>
+<pre><code class="hljs">PROJECT_FOLDER/
+    AssetBundles/
+        グラフ名/
+            対応プラットフォーム/
+                <span class="hljs-number">1.0</span><span class="hljs-number">.0</span>/
+                <span class="hljs-number">1.0</span><span class="hljs-number">.1</span>/
+                    グラフ名.json &lt;- バージョンが<span class="hljs-number">1.0</span><span class="hljs-number">.1</span>になったAssetBundleList
+                    AssetBundle x N &lt;- どこか内容が追加されたり変わったAssetBundle
+
+        グラフ名.json
+    
+</code></pre>
+<p>こうして作成したリソースのデプロイに関しては<a href="/test-site/docs/en/resource_deploy0.html">デプロイのページ</a>を参照。</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="settings0.html">← Setting files of Autoya</a><a class="docs-next button" href="resource_deploy0.html">Deploy AssetBundles to CDN →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/test-site/" class="nav-home"><img src="/test-site/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/test-site/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>

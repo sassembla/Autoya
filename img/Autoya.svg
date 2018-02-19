@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="146px" height="164px" viewBox="0 0 146 164" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 48.2 (47327) - http://www.bohemiancoding.com/sketch -->
+    <title>Autoya</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="53.4009933%" y1="100%" x2="53.4009933%" y2="0%" id="linearGradient-1">
+            <stop stop-color="#E35957" offset="0%"></stop>
+            <stop stop-color="#CD201F" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="98.7324617%" id="linearGradient-2">
+            <stop stop-color="#E64645" offset="0%"></stop>
+            <stop stop-color="#CD201F" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="50%" x2="56.1855521%" y2="50%" id="linearGradient-3">
+            <stop stop-color="#E84341" offset="0%"></stop>
+            <stop stop-color="#CD201F" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M102.926425,85 L102.926425,65.0023703 L73.3516914,35.0895002 L43.7769576,65.0023703 L43.7769576,159.0751 L5,159.0751 L5,56.7867239 L53.6696043,7.44801766 L56,5 L56.0844234,5 L90.7033827,5 L93.0337784,7.44801766 L141.703383,56.7867239 L141.703383,159.0751 L102.926425,159.0751 L102.926425,120 L43.7999878,120 L43.7999878,85 L102.926425,85 Z" id="Combined-Shape" stroke="#FFFFFF" stroke-width="8" fill="url(#linearGradient-1)"></path>
+        <polygon id="Path" fill="url(#linearGradient-1)" transform="translate(50.892427, 82.037550) scale(-1, 1) translate(-50.892427, -82.037550) " points="11.0814705 5 5 11.3884203 58.0078956 65.0023703 58.0078956 159.0751 96.7848532 159.0751 96.7848532 56.7867239 45.7004298 5"></polygon>
+        <polygon id="Path" fill="url(#linearGradient-2)" points="56 5 49.9185295 11.3884203 102.926425 65.0023703 102.926425 159.0751 141.703383 159.0751 141.703383 56.7867239 90.6189593 5"></polygon>
+        <polygon id="Path-2" fill="url(#linearGradient-3)" points="43.7999878 85 43.7999878 120 103.276151 120 141.168187 85"></polygon>
+    </g>
+</svg>

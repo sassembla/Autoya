@@ -1,0 +1,112 @@
+<html lang="en"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Update resources without App-Update · Autoya</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta property="og:title" content="Update resources without App-Update · Autoya"/><meta property="og:type" content="website"/><meta property="og:url" content="https://facebook.github.io途中/test-site/index.html"/><meta property="og:description" content="Autoyaでは、App本体のストアでのアップデートに頼らず、たとえリソースの使用中であってもリソースの更新を行うことができる。"/><link rel="shortcut icon" href="/test-site/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://facebook.github.io途中/blog/atom.xml" title="Autoya Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://facebook.github.io途中/blog/feed.xml" title="Autoya Blog RSS Feed"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/test-site/css/main.css"/></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/test-site/"><img class="logo" src="/test-site/img/Autoya.svg"/><h2 class="headerTitle">Autoya</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li><a href="/test-site/docs/en/install0.html" target="_self">Docs</a></li><li><a href="/test-site/docs/en/api_auth0.html" target="_self">API</a></li><li><a href="/test-site/blog" target="_self">Blog</a></li><li><a href="https://github.com/sassembla/autoya" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>App Management</span></h2></div><div class="navGroups"><div class="navGroup navGroupActive"><h3>Installation</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/install0.html">Installation</a></li></ul></div><div class="navGroup navGroupActive"><h3>Overview</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overview0.html">Overview</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overridepoints0.html">Override Points</a></li></ul></div><div class="navGroup navGroupActive"><h3>Documents</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/auth0.html">Authentication</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/manifest0.html">Manifest</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/persistence0.html">Persist</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/assetbundle0.html">AssetBundle</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/connection0.html">Connection</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/maintenance0.html">Maintenance</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/purchase0.html">Purchase</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/notification0.html">Notification</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/information0.html">Information</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/settings0.html">Settings</a></li></ul></div><div class="navGroup navGroupActive"><h3>Resource Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_generate0.html">Resource Generate</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_deploy0.html">Resource Deploy</a></li></ul></div><div class="navGroup navGroupActive"><h3>App Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_app_version0.html">Update App Version</a></li><li class="navListItem navListItemActive"><a class="navItem navItemActive" href="/test-site/docs/en/update_resource_version0.html">Update Resources</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/turn_on_maintenance0.html">Turn on Maintenance</a></li></ul></div></div></section></div><script>
+          var toggler = document.getElementById('navToggler');
+          var nav = document.getElementById('docsNav');
+          toggler.onclick = function() {
+            nav.classList.toggle('docsSliderActive');
+          };
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1>Update resources without App-Update</h1></header><article><div><span><p>Autoyaでは、App本体のストアでのアップデートに頼らず、たとえリソースの使用中であってもリソースの更新を行うことができる。
+また、複数のリストを同時に運用することが可能。</p>
+<h4><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>用語:リスト</h4>
+<p>AssetGraphで生成したAssetBundleList。 現在のAppで使用する可能性のある全てのAssetBundleの情報が記載されている。
+フォーマットなどの詳細は<a href="/test-site/docs/en/assetbundle0.html">AssetBundle</a>を参照。生成は<a href="/test-site/docs/en/resource_generate0.html">生成</a>を参照。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>クライアント側のリソース更新までの行程</h2>
+<p>Autoyaでは、リソース(AssetBundle)の管理の主導権はすべてサーバ側が握っており、任意のタイミングで特定のリソースを使わせることができる。<br>
+そのために、次のような前提を満たしている。</p>
+<ul>
+<li>クライアント側では、扱えるリスト名の一覧情報がRuntimeManifestで管理されている。</li>
+<li>CDNに、クライアント側のOS、与えるリストのバージョンに対応するAssetBundleがアップされている(参考:<a href="/test-site/docs/en/resource_generate0.html">生成</a>, <a href="/test-site/docs/en/resource_deploy0.html">デプロイ</a>)。</li>
+<li>クライアント側からの任意のHTTPリクエストには、現在保持しているリスト名とそのバージョン値が記載されている。</li>
+<li>サーバはそれらが不服であれば、HTTPのレスポンスヘッダーにリソース更新用の特定値(<em>resversion=value</em>)を入れ、クライアントのリソースの更新を促すことができる。</li>
+<li>特定値は常に入っていなくてもOKだし、入っていてもOK(必要な時だけつけるのを推奨)</li>
+</ul>
+<p>レスポンスヘッダーに値が含まれている場合、次のようなフローが着火する。</p>
+<p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_update.png" alt="img"></p>
+<p>いくつかのOverridePointsを通過し、このフローを最後まで通過すると、リストはサーバが指定したものへと更新された状態になる。</p>
+<h4><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>!注意!</h4>
+<p><strong>リストの更新後、現在キャッシュされているABは、次回Load/Preload時にリストの内容を反映した最新のものになる。</strong></p>
+<p>あくまでもリストが更新されただけなので、現在メモリ上に展開されているABは影響を受けない。</p>
+<p>なので、</p>
+<ol>
+<li>リストの更新</li>
+<li>これから使用するAssetに応じてPreloadで最新版のAssetBundleをロードしておく</li>
+<li>Asset使用時に最新版を動的にDL -&gt; キャッシュしてキャッシュ後のABからAssetをロード</li>
+</ol>
+<p>などのような行程を踏むことになる。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リソース更新用の特定値</h2>
+<p>特定値は、あらゆるAppからのリクエストに対してのレスポンスヘッダーに、<strong>resversion=value</strong> のような書き方で指定できる。
+この <strong>resversion=value</strong> に、更新したいリストのidentityと、更新先のバージョン値を記述する。</p>
+<p>キーは AuthSettings.cs/AUTH_RESPONSEHEADER_RESVERSION から変更可能。</p>
+<pre><code class="hljs">    public const string AUTH_RESPONSEHEADER_RESVERSION = &quot;resversion&quot;;
+</code></pre>
+<p>valueのフォーマットはサーバ側で自由に設定でき、OverridePointsの関数 <strong>GetListIdentityAndNewVersionDescriptions</strong> で調整可能。</p>
+<pre><code class="hljs css csharp"><span class="hljs-function"><span class="hljs-keyword">private</span> KeyValuePair&lt;<span class="hljs-keyword">string</span>, <span class="hljs-keyword">string</span>&gt;[] <span class="hljs-title">GetListIdentityAndNewVersionDescriptions</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> source</span>)
+</span>{
+    <span class="hljs-keyword">var</span> listInfosStrs = source.Split(<span class="hljs-string">','</span>);
+
+    <span class="hljs-keyword">var</span> identityAndNewVersionPairs = <span class="hljs-keyword">new</span> KeyValuePair&lt;<span class="hljs-keyword">string</span>, <span class="hljs-keyword">string</span>&gt;[listInfosStrs.Length];
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; listInfosStrs.Length; i++)
+    {
+        <span class="hljs-keyword">var</span> listInfosStr = listInfosStrs[i];
+        <span class="hljs-keyword">var</span> identityAndVersion = listInfosStr.Split(<span class="hljs-string">':'</span>);
+        identityAndNewVersionPairs[i] = <span class="hljs-keyword">new</span> KeyValuePair&lt;<span class="hljs-keyword">string</span>, <span class="hljs-keyword">string</span>&gt;(identityAndVersion[<span class="hljs-number">0</span>], identityAndVersion[<span class="hljs-number">1</span>]);
+    }
+
+    <span class="hljs-keyword">return</span> identityAndNewVersionPairs;
+}
+</code></pre>
+<p>サンプルでは、<em>リスト名1:バージョン値1,リスト名2:バージョン値2,,,</em> などのように、カンマ区切りで情報が来ることを想定している。</p>
+<p>例えばサーバ側は <em>resversion=リスト名1:バージョン値1,リスト名2:バージョン値2,,,</em> などの値をレスポンスヘッダーにつければ、Appが保持しているリスト名1のリストのバージョンをバージョン値1に、リスト名2のバージョンをバージョン値2に変更できる。</p>
+<p>この部分のフォーマットは上記の関数の内容を書き換えることで編集でき、最終的にどんなフォーマットであっても、KeyValuePair&lt;string, string&gt;型で{リスト名, バージョン値}  のペアをリスト分だけ生成して返せればよい構造になっている。</p>
+<h2><a class="anchor" aria-hidden="true" name="ab"></a><a href="#ab" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>現在オンメモリで使用しているABがある状態でのリスト更新について</h2>
+<p>Autoyaでは、リストの更新が発生した瞬間、App側で現在リソースを使用中であっても、安全にリソースの変更を行うことを補助する仕組みが入っている。</p>
+<p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_update.png" alt="img"></p>
+<p>2段階のOverridePointsのメソッド呼び出しがあり、</p>
+<p><strong>OverridePoints/OnRequestNewAssetBundleList</strong> メソッドにて、リストのダウンロードURLの生成とダウンロード自体の可否を指定できる。</p>
+<pre><code class="hljs css csharp"><span class="hljs-keyword">private</span> Func&lt;<span class="hljs-keyword">string</span>, <span class="hljs-keyword">string</span>, <span class="hljs-keyword">string</span>, ShouldRequestOrNot&gt; OnRequestNewAssetBundleList = (<span class="hljs-keyword">string</span> basePath, <span class="hljs-keyword">string</span> receivedNewAssetBundleIdentity, <span class="hljs-keyword">string</span> rceivedNewAssetBundleListVersion) =&gt;
+{
+    <span class="hljs-keyword">var</span> url = basePath + receivedNewAssetBundleIdentity + <span class="hljs-string">"/"</span> + rceivedNewAssetBundleListVersion + <span class="hljs-string">"/"</span> + receivedNewAssetBundleIdentity + <span class="hljs-string">".json"</span>;
+    <span class="hljs-keyword">return</span> ShouldRequestOrNot.Yes(url);
+    <span class="hljs-comment">// return ShouldRequestOrNot.No();</span>
+};
+</code></pre>
+<p>ここで、<em>basePath</em> パラメータは、RuntimeManifestに含まれているurl値になる。現在のAutoyaでは、リストとABの取得URLはそのベースパスをRuntimeManifestに含まれている値から変更することはできない。</p>
+<p><strong>OverridePoints/ShouldUpdateToNewAssetBundleList</strong> メソッドにて、CurrentUsingBundleCondition パラメータに次のどれかの値が含まれた状態で実行される。</p>
+<pre><code class="hljs css csharp"><span class="hljs-keyword">private</span> Func&lt;CurrentUsingBundleCondition, <span class="hljs-keyword">bool</span>&gt; ShouldUpdateToNewAssetBundleList = (CurrentUsingBundleCondition condition) =&gt;
+{
+    <span class="hljs-comment">/*
+        according to your app's state &amp; value of condition,
+        please select true(update assetBundleList) or false(cancel update assetBundleList now).
+
+        e,g, 
+            when your app's state is under battle, and you determine that no need to change asset now,
+            should 
+                retrun false. 
+            list update will be postponed.
+
+
+            otherwise when your app's state is good state to update assets,
+            should 
+                retrun true
+            for update assetBundleList.
+            app's assetBundleList will be updated to the latest and ready for load/download latest assetBundles.
+            using "Preload" feature on the beginning of app's state will help updating latest assets.
+     */</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+};
+
+</code></pre>
+<p>サンプルでは一切の状況を判断せずtrueを返しているが、<em>CurrentUsingBundleCondition</em> パラメータには次のどれかが入り、状況に応じてリストを更新するかどうか判断するチャンスがある。</p>
+<pre><code class="hljs">UsingAssetsAreChanged
+// これから適応しようとしているリストに、現在使用している(オンメモリな)AssetBundleの最新版の情報が含まれている
+
+NoUsingAssetsChanged,
+// これから適応しようとしているリストには、現在使用している(オンメモリな)AssetBundleの更新は含まれていない
+
+AlreadyUpdated
+// すでに最新版のリストを取得してある(よって何もする必要がない)
+</code></pre>
+<p>クライアント開発者は、これらの情報と現在のAppの遷移状態を元に、リストの更新を許せるかどうかを判断し、挙動を制御することが可能になっている。</p>
+<ul>
+<li>リクエストのurlに対して細かい調整をしないといけないかも？ リクエスト時のクエリとか そのへんはどこで編集するといいのかな。あれか、クエリを付けられるように拡張するか。</li>
+</ul>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="update_app_version0.html">← Force update application</a><a class="docs-next button" href="turn_on_maintenance0.html">Turn on Maintenance mode from Server →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/test-site/" class="nav-home"><img src="/test-site/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/test-site/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>

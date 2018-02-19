@@ -1,0 +1,557 @@
+<html lang="en"><head><meta charset="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Purchase control feature · Autoya</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta property="og:title" content="Purchase control feature · Autoya"/><meta property="og:type" content="website"/><meta property="og:url" content="https://facebook.github.io途中/test-site/index.html"/><meta property="og:description" content="AutoyaのサポートするPurcahseには、RemoteとLocalの2種がある。"/><link rel="shortcut icon" href="/test-site/img/favicon.png"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://facebook.github.io途中/blog/atom.xml" title="Autoya Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://facebook.github.io途中/blog/feed.xml" title="Autoya Blog RSS Feed"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><link rel="stylesheet" href="/test-site/css/main.css"/></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/test-site/"><img class="logo" src="/test-site/img/Autoya.svg"/><h2 class="headerTitle">Autoya</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li><a href="/test-site/docs/en/install0.html" target="_self">Docs</a></li><li><a href="/test-site/docs/en/api_auth0.html" target="_self">API</a></li><li><a href="/test-site/blog" target="_self">Blog</a></li><li><a href="https://github.com/sassembla/autoya" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="container docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><i></i></div><h2><i>›</i><span>Documents</span></h2></div><div class="navGroups"><div class="navGroup navGroupActive"><h3>Installation</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/install0.html">Installation</a></li></ul></div><div class="navGroup navGroupActive"><h3>Overview</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overview0.html">Overview</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/overridepoints0.html">Override Points</a></li></ul></div><div class="navGroup navGroupActive"><h3>Documents</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/auth0.html">Authentication</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/manifest0.html">Manifest</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/persistence0.html">Persist</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/assetbundle0.html">AssetBundle</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/connection0.html">Connection</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/maintenance0.html">Maintenance</a></li><li class="navListItem navListItemActive"><a class="navItem navItemActive" href="/test-site/docs/en/purchase0.html">Purchase</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/notification0.html">Notification</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/information0.html">Information</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/settings0.html">Settings</a></li></ul></div><div class="navGroup navGroupActive"><h3>Resource Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_generate0.html">Resource Generate</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/resource_deploy0.html">Resource Deploy</a></li></ul></div><div class="navGroup navGroupActive"><h3>App Management</h3><ul><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_app_version0.html">Update App Version</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/update_resource_version0.html">Update Resources</a></li><li class="navListItem"><a class="navItem" href="/test-site/docs/en/turn_on_maintenance0.html">Turn on Maintenance</a></li></ul></div></div></section></div><script>
+          var toggler = document.getElementById('navToggler');
+          var nav = document.getElementById('docsNav');
+          toggler.onclick = function() {
+            nav.classList.toggle('docsSliderActive');
+          };
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1>Purchase control feature</h1></header><article><div><span><p>AutoyaのサポートするPurcahseには、RemoteとLocalの2種がある。</p>
+<ul>
+<li>サーバ有り Remote Purchase</li>
+<li>サーバなし Local Purchase</li>
+</ul>
+<p>サーバあり版は認証とかがっつり絡んでいる。デフォルトの状態だとダミーサーバで動かせる。</p>
+<p>サーバなしのやつは端末単体で動かせる。</p>
+<p>どちらも、動くサンプルが<a href="https://github.com/sassembla/Autoya/tree/master/Assets/AutoyaSample/3_Purchase">ここ</a>にあるんで、Autoyaを落としてPurchase.unityシーンを動かしてみるといいと思う。</p>
+<p>ちなみにLocalPurchaseは通信がないのでAutoya経由ではなくモジュールを自前で使うことになる。Autoyaでサポートすべき範囲が狭い。</p>
+<h1><a class="anchor" aria-hidden="true" name="remote-purchase"></a><a href="#remote-purchase" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>remote purchase</h1>
+<p>UnityIAPの機構を使った課金処理。</p>
+<p>ゲームサーバと通信し、プレイヤーごとのきめ細かい課金処理を実装できる。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>メリット</h2>
+<ul>
+<li>誰が何持ってるか管理可能</li>
+<li>この人にはこれ売ろができる</li>
+<li>アプデ無しでアイテムの追加</li>
+<li>お問い合わせに対応しやすい</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>デメリット</h2>
+<ul>
+<li>管理が面倒</li>
+<li>ハックされないわけではない</li>
+<li>つまりお問い合わせが来る</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>準備と動作のフロー</h2>
+<p>まずはクライアント側のみ。</p>
+<ol>
+<li>各プラットフォームにアイテムをセット</li>
+<li>PurchaseSettings.csのURL調整</li>
+<li>アイテムを売る画面を作る</li>
+<li>Autoya経由で使う</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" name="1-pf"></a><a href="#1-pf" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1.各PFにアイテムをセット</h2>
+<p>指定するアイテム名についてはPF識別子(iOSとかAndroidとか)をつけとくと管理が楽になる。</p>
+<h2><a class="anchor" aria-hidden="true" name="2purchasesettingscs-url"></a><a href="#2purchasesettingscs-url" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2.PurchaseSettings.csのURL調整</h2>
+<p>設定ファイル上で、課金機構に関するURLを調整できる。</p>
+<p><strong>PurchaseSettings.cs</strong></p>
+<pre><code class="hljs css C#"><span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_URL_READY = <span class="hljs-string">"https://httpbin.org/get"</span>;
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_CONNECTIONID_READY_PREFIX = <span class="hljs-string">"purchase_ready_"</span>;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_URL_TICKET = <span class="hljs-string">"https://httpbin.org/post"</span>;
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_CONNECTIONID_TICKET_PREFIX = <span class="hljs-string">"purchase_start_"</span>;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_URL_PURCHASE = <span class="hljs-string">"https://httpbin.org/post"</span>;
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_CONNECTIONID_PURCHASE_PREFIX = <span class="hljs-string">"purchase_succeeded_"</span>;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_URL_PAID = <span class="hljs-string">"https://httpbin.org/post"</span>;
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_CONNECTIONID_PAID_PREFIX = <span class="hljs-string">"purchase_paid_"</span>;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_URL_CANCEL = <span class="hljs-string">"https://httpbin.org/post"</span>;
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">const</span> <span class="hljs-built_in">string</span> PURCHASE_CONNECTIONID_CANCEL_PREFIX = <span class="hljs-string">"purchase_cancelled_"</span>;
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" name="3"></a><a href="#3" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>3.アイテムを売る画面を作る</h2>
+<p>開発者の方がんばってください。</p>
+<h2><a class="anchor" aria-hidden="true" name="4autoya"></a><a href="#4autoya" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>4.Autoya経由で使う</h2>
+<p>次の3段階がある。</p>
+<ul>
+<li>購入機構準備待ち</li>
+<li>購入</li>
+<li>購入後処理</li>
+</ul>
+<p>(C/S全体のフローは後述)</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>購入機構準備待ち</h3>
+<pre><code class="hljs css C#">IEnumerator Start () {
+    <span class="hljs-keyword">while</span> (!Autoya.Purchase_IsReady()) {
+        <span class="hljs-keyword">Debug</span>.<span class="hljs-built_in">Log</span>(<span class="hljs-string">"log:"</span> + Autoya.Auth_IsAuthenticated());
+        <span class="hljs-keyword">Debug</span>.<span class="hljs-built_in">Log</span>(<span class="hljs-string">"puc:"</span> + Autoya.Purchase_IsReady());
+        yield <span class="hljs-keyword">return</span> <span class="hljs-built_in">null</span>;
+    }
+</code></pre>
+<p>Autoya.Purchase_IsReady()がtrueを返せば、準備完了。</p>
+<p>初期化、起動時購入可能アイテムの取得処理は、Autoyaのほうで完備されている。
+内部的には図のようなフローを経ている。</p>
+<p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/purchase_ready.png" alt="図1"></p>
+<p>初期化に失敗した場合、<strong>bool Purchase_NeedAttemptReadyPurchase()</strong> 関数を実行することでストア処理の起動をする必要があるかどうか判断することができる。</p>
+<p>結果 trueであれば、<strong>Purcahse_AttemptReadyPurchase</strong> 関数をApp側が実行する必要がある。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>購入</h3>
+<p>準備完了後、クライアント中のどこでも、次のコードで購入処理を実行できる。<br>
+ちなみに同時に一件しか購入処理を実行できない。</p>
+<pre><code class="hljs css C#">Autoya.Purchase(
+    purchaseId, <span class="hljs-comment">// 好きなidを振れる</span>
+    <span class="hljs-string">"100_gold_coins"</span>, <span class="hljs-comment">// 購入対象のプロダクト名をセット</span>
+    pId =&gt; {<span class="hljs-comment">// アイテム付与後のコールバック</span>
+        <span class="hljs-keyword">Debug</span>.<span class="hljs-built_in">Log</span>(<span class="hljs-string">"succeeded to purchase. id:"</span> + pId);
+    }, 
+    (pId, err, reason, autoyaStatus) =&gt; {<span class="hljs-comment">// 失敗後のコールバック</span>
+        <span class="hljs-keyword">if</span> (autoyaStatus.isAuthFailed) {
+            <span class="hljs-keyword">Debug</span>.LogError(<span class="hljs-string">"failed to auth."</span>);
+            <span class="hljs-keyword">return</span>;
+        } 
+        <span class="hljs-keyword">if</span> (autoyaStatus.inMaintenance) {
+            <span class="hljs-keyword">Debug</span>.LogError(<span class="hljs-string">"failed, service is under maintenance."</span>);
+            <span class="hljs-keyword">return</span>;
+        }
+        <span class="hljs-keyword">Debug</span>.LogError(<span class="hljs-string">"failed to purchase, id:"</span> + pId + <span class="hljs-string">" err:"</span> + err + <span class="hljs-string">" reason:"</span> + reason);
+    }
+);
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>アイテム付与後のコールバック</h3>
+<p>アイテム付与後のコールバック内で、次のことをするのを想定している。</p>
+<ul>
+<li>サーバに、このプレイヤーの最新のアイテム所持情報問い合わせ</li>
+<li>終わったらローディングを停める とか想定</li>
+</ul>
+<p>要はプレイヤーへと購入後の情報を見えるようにしようという処理を書く必要がある。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>失敗後のコールバック</h3>
+<p>課金が失敗した時に呼ばれる。プレイヤーに理由を表示したりすると良い。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>内部フロー</h3>
+<p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/purchase.png" alt="seq"></p>
+<p><strong>OverridePoints/OnTicketResponse</strong> を通過する。</p>
+<h2><a class="anchor" aria-hidden="true" name="c-s"></a><a href="#c-s" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>クライアント(C)/サーバ(S)のやりとり全体のフロー</h2>
+<p>ここまでで、クライアント側だけ見た場合の課金処理の扱いは完了する。
+ここからAutoyaが前提としているサーバ側のフローを含めた行程について解説する。</p>
+<p>クライアント、サーバ合わせて、次の様な12段階の処理が存在する。</p>
+<pre><code class="hljs"><span class="hljs-bullet">1. </span>購入機構初期化+リクエスト(クライアント)
+<span class="hljs-bullet">2. </span>☆購入機構準備待ち(クライアント)
+<span class="hljs-bullet">3. </span>購入可能アイテム一覧配布(サーバ)
+<span class="hljs-bullet">4. </span>☆購入(クライアント)
+<span class="hljs-bullet">5. </span>購入チケットリクエスト(クライアント)
+<span class="hljs-bullet">6. </span>購入チケット記録(サーバ)
+<span class="hljs-bullet">7. </span>購入チケットレスポンス(サーバ)
+<span class="hljs-bullet">8. </span>購入確認リクエスト(クライアント)
+<span class="hljs-bullet">9. </span>購入確認処理(サーバ)
+<span class="hljs-bullet">10. </span>購入確認レスポンス(サーバ)
+<span class="hljs-bullet">11. </span>購入後事前処理(クライアント)
+<span class="hljs-bullet">12. </span>☆購入後処理(クライアント)
+</code></pre>
+<p><img src="https://raw.githubusercontent.com/sassembla/Autoya/doc/doc/images/api/RemotePurchase.png" alt="seq"></p>
+<h2><a class="anchor" aria-hidden="true" name="1"></a><a href="#1" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1. 購入機構初期化+リクエスト(クライアント)</h2>
+<p>クライアントが起動すると、課金機構の初期化には「どんな商品があるか」プラットフォームと確認する必要があるため、サーバに「このプレイヤーに提示するアイテム一覧くれ」というリクエストが行く。</p>
+<p>ここでアイテム情報はApp全体で扱う全てを出す必要がなく、例えばプレイヤーごとにセール品を出す、など、調整したアイテム一覧をサーバが発行できると柔軟性が出る。</p>
+<h2><a class="anchor" aria-hidden="true" name="2-c"></a><a href="#2-c" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2. ☆購入機構準備待ち(C)</h2>
+<p>クライアントは準備完了まで待つ。</p>
+<h2><a class="anchor" aria-hidden="true" name="3"></a><a href="#3" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>3. 購入可能アイテム一覧配布(サーバ)</h2>
+<p>サーバはリクエストを受け取ってアイテム一覧を返す。</p>
+<p>クライアントは一覧を使って課金機構を初期化。準備完了となる。</p>
+<p>サーバが返すべき購入可能アイテム一覧は<br>
+<a href="https://github.com/sassembla/Autoya/blob/master/Assets/Autoya/Purchase/PurchaseRouter.cs#L36">ProductInfos</a>型</p>
+<p>json例</p>
+<pre><code class="hljs css json">{
+    <span class="hljs-attr">"productInfos"</span>: [{
+        <span class="hljs-attr">"productId"</span>: <span class="hljs-string">"100_gold_coins"</span>,
+        <span class="hljs-attr">"platformProductId"</span>: <span class="hljs-string">"100_gold_coins_iOS"</span>,
+        <span class="hljs-attr">"isAvailableToThisPlayer"</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">"info"</span>: <span class="hljs-string">"one hundled of coins."</span>
+    }, {
+        <span class="hljs-attr">"productId"</span>: <span class="hljs-string">"1000_gold_coins"</span>,
+        <span class="hljs-attr">"platformProductId"</span>: <span class="hljs-string">"1000_gold_coins_iOS"</span>,
+        <span class="hljs-attr">"isAvailableToThisPlayer"</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">"info"</span>: <span class="hljs-string">"one ton of coins."</span>
+    }]
+}
+</code></pre>
+<p>OverridePoint.csを書き換えて、サーバから受け取ったアイテムを使うように変更。</p>
+<p><a href="https://github.com/sassembla/Autoya/blob/7e69c19da3af364b03ff2a49dcc1d3f512af17b5/Assets/Autoya/Backyard/OverridePoints.cs#L204">書き換えてね</a></p>
+<h2><a class="anchor" aria-hidden="true" name="4"></a><a href="#4" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>4. ☆購入(クライアント)</h2>
+<p>買いたいものを指定して、購入処理を開始。</p>
+<p>どんな商品が購入可能かは、</p>
+<pre><code class="hljs css C#"><span class="hljs-attribute">var products</span> = Autoya.Purchase_ProductInfos();
+</code></pre>
+<p>で取得できる。</p>
+<p>購入時の商品のidは、</p>
+<pre><code class="hljs css C#"><span class="hljs-built_in">string</span> <span class="hljs-built_in">product</span>.productId
+</code></pre>
+<p>を使う。</p>
+<h2><a class="anchor" aria-hidden="true" name="5-c"></a><a href="#5-c" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>5. 購入チケットリクエスト(C)</h2>
+<p>購入情報をサーバに生成してもらうため、リクエストを送る。</p>
+<h2><a class="anchor" aria-hidden="true" name="6"></a><a href="#6" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>6. 購入チケット記録(サーバ)</h2>
+<p>サーバはリクエストを受け取り、購入チケットを生成。購入を記録開始。</p>
+<h2><a class="anchor" aria-hidden="true" name="7-s"></a><a href="#7-s" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>7. 購入チケットレスポンス(S)</h2>
+<p>プレイヤーに購入を許可する場合はレスポンスコード200とチケットを返す。</p>
+<p>それ以外ならエラーを返す。クライアント側は200以外を失敗とみなす。</p>
+<p>チケットの要素は、</p>
+<ul>
+<li>GUID</li>
+<li>productId</li>
+<li>日時</li>
+<li>もちろんuserId</li>
+<li>状態(new, cancelled, done)</li>
+</ul>
+<p>など。</p>
+<p>クライアントに返すチケットの情報はGUIDだけでOK。</p>
+<p>どんな何を買おうとしてるか、ここでサーバでしっかり保存しておくと、プレイヤーの意図確認をサーバに残せてよい感じになる。</p>
+<p>クライアント側は、200とチケットを受け取ったら処理継続、それ以外ならFailハンドラで停まる。</p>
+<ol start="7">
+<li>購入チケットレスポンス(サーバ)</li>
+</ol>
+<p>と</p>
+<ol start="8">
+<li>購入確認リクエスト(クライアント)</li>
+</ol>
+<p>には隙間があって、</p>
+<p>ここでプラットフォームの「買う? Y/N」画面が出る。</p>
+<p>買うなら継続、買わないなら中止。</p>
+<p>図にはないけれど、購入キャンセルの場合、キャンセルの通信がサーバへと飛び、処理はFailで中止される。</p>
+<h2><a class="anchor" aria-hidden="true" name="8-c"></a><a href="#8-c" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>8. 購入確認リクエスト(C)</h2>
+<p>購入処理が終わったので、チケットとレシートをサーバへと送る。</p>
+<h2><a class="anchor" aria-hidden="true" name="9"></a><a href="#9" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>9. 購入確認処理(サーバ)</h2>
+<p>チケットは本物か？ 記録と照合。レシートは本物か？ PFに問い合わせたり。本物だとして過去に重複したものはないか？<br>
+<a href="http://sassembla.github.io/Public/2016:06:03%2018-10-20/2016:06:03%2018-10-20.html">まとめてある</a></p>
+<p>etc.</p>
+<p>Androidの場合は、レシートにpayloadを入れてあるため、それを使った確認も可能。</p>
+<h2><a class="anchor" aria-hidden="true" name="10"></a><a href="#10" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>10. 購入確認レスポンス(サーバ)</h2>
+<p>チェックがOKだったら、200を返す。それ以外ならそれ以外を。</p>
+<h2><a class="anchor" aria-hidden="true" name="11-c"></a><a href="#11-c" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>11. 購入後事前処理(C)</h2>
+<p>200が来た場合は、PFに問い合わせて権利の解決を行う。</p>
+<p>それ以外の場合は、独自に動作を書く。</p>
+<p>ここはサーバ側チェックによって色々実装を変えるべき場所で、200以外で来た場合このコードならこう、とかを書く必要がある。</p>
+<h2><a class="anchor" aria-hidden="true" name="12"></a><a href="#12" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>12. ☆購入後処理(クライアント)</h2>
+<p>というわけでここまでで一切の契約処理は完了した状態で、コールバックが呼ばれる。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>イレギュラーケースについて</h2>
+<p>大量のイレギュラーケースがありえる。</p>
+<p>なんたって通信が多い上に、状態を保持している地点が3箇所も存在する。</p>
+<p>しかもクライアントはまあ落ちる。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>クライアントが落ちると？</h2>
+<p>大きく3つ、落ちパターンがある。</p>
+<ol>
+<li>PFとの契約が発生する前に落ちるか、</li>
+<li>PFとの契約が発生した後解決前に落ちるか、</li>
+<li>PFとの契約が解決した後に落ちるか。</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" name="1"></a><a href="#1" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1. 契約発生前</h2>
+<p>チケットが無駄になるだけで済む。サーバは気にせず、クライアントが来たら新しいチケットを生成してあげるといい。</p>
+<h2><a class="anchor" aria-hidden="true" name="3"></a><a href="#3" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>3. 契約解決後</h2>
+<p>さきに3を紹介。</p>
+<p>こちらは、すでに契約解決がなされているので問題ない。</p>
+<p>むしろなぜ落ちてしまったのかが気になる。</p>
+<h2><a class="anchor" aria-hidden="true" name="2"></a><a href="#2" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2. 契約発生後解決前</h2>
+<p>問題のところ。ここで落ちるパターンは2つある。</p>
+<ol>
+<li>アイテム配布前</li>
+<li>アイテム配布後</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" name="2-1"></a><a href="#2-1" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2-1 アイテム配布前</h2>
+<p>9の前、8の最中に落ちたらどうなるか。</p>
+<p>購入は完了していて契約が残っていて、アプリが落ちた、という状態になっている。ここでいう記録は、プラットフォーム側(端末 + プラットフォームのサーバ)に残っている。</p>
+<p>ストアを初期化する時、未完了の契約がPFから現れ、クライアントからサーバへと送付される。</p>
+<p><img src="https://raw.githubusercontent.com/sassembla/Autoya/doc/doc/images/api/RemotePurchase2.png" alt="seq2"></p>
+<p>通常のケースとの違いとしては、</p>
+<ul>
+<li>そもそもURLが違う</li>
+<li>チケットが送られてこない</li>
+</ul>
+<p>あたり。</p>
+<p>チケットは送られてこないので、レシートの検証だけして200を返せばいい、、のか？</p>
+<p>とりあえず次を見てみよう。</p>
+<h2><a class="anchor" aria-hidden="true" name="2-2"></a><a href="#2-2" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2-2 アイテム配布後</h2>
+<p>10のあと、11完了までに落ちたらどうなるか。</p>
+<p>アイテム配布後、契約が残った状態、になる。</p>
+<p>ストアを初期化する時、未完了の契約がPFから現れて、クライアントからサーバへと送付される。</p>
+<p><img src="https://raw.githubusercontent.com/sassembla/Autoya/doc/doc/images/api/RemotePurchase3.png" alt="seq3"></p>
+<p>通常のケースとの違いとしては、</p>
+<ul>
+<li>そもそもURLが違う</li>
+<li>チケットが送られてこない</li>
+</ul>
+<p>あたり。そして、</p>
+<p>2-1との違いが本当に一箇所だけあり、もうアイテムは付与されている(赤字)。</p>
+<p>というわけで、200を返すが、別にアイテムをさらに付与はしない、という感じになる。</p>
+<p>2-1,2-2のケースは、同じルートで状況の異なる課金処理が発生することを意味している。</p>
+<p>2-1はまだアイテム配布してない。2-2はもう配布が済んでる。</p>
+<p>差はどこで見るか。</p>
+<ol>
+<li>未完了Tiketの有無</li>
+<li>レシート検証時色々チェック</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" name="1-tiket"></a><a href="#1-tiket" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1. 未完了Tiketの有無</h2>
+<p>プレイヤーについて、未済のチケットがない場合、おかしい。購入意図を発揮するシーケンスを飛ばして購入処理が進むはずはない。</p>
+<p>or</p>
+<p>チケットとレシート内容が違う場合、おかしい。</p>
+<p>などで対応。</p>
+<h2><a class="anchor" aria-hidden="true" name="2"></a><a href="#2" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2. レシート検証時色々チェック</h2>
+<p>チケットまで偽造して来る場合、<br>
+<a href="http://sassembla.github.io/Public/2016:06:03%2018-10-20/2016:06:03%2018-10-20.html">まとめてある</a></p>
+<p>ちなみにこの2-1, 2-2の課金ルートは不正にも使われやすい。</p>
+<p>怪しいプレイヤーはマークされることが多い。</p>
+<h2><a class="anchor" aria-hidden="true" name="about-local-purchase"></a><a href="#about-local-purchase" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>about local purchase</h2>
+<p>UnityIAPの機構を使った課金処理。</p>
+<p>ゲームサーバと一切通信せずに課金処理を実装できる。(もちろんプラットフォームとは通信する。)</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>メリット</h2>
+<ul>
+<li>サーバがいらない</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>デメリット</h2>
+<ul>
+<li>アップデートでしか商品内容を更新できない</li>
+<li>ハックされ放題</li>
+<li>お問い合わせの不確実性が増す</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>準備と動作のフロー</h2>
+<ol>
+<li>各プラットフォームにアイテムをセット</li>
+<li>エディタでRVObfuscatorに情報をセット</li>
+<li>商品情報をPurchaseSettings.csに記述</li>
+<li>アイテムを売る画面を作る</li>
+<li>LocalPurchaseRouterをnewして使う</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" name="1-pf"></a><a href="#1-pf" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1.各PFにアイテムをセット</h2>
+<p>指定するアイテム名についてはPF識別子(iOSとかAndroidとか)をつけとくと管理が楽。</p>
+<p>具体例は3.あたりを。</p>
+<h2><a class="anchor" aria-hidden="true" name="2rvobf"></a><a href="#2rvobf" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2.RVObfに情報をセット</h2>
+<p><a href="https://docs.unity3d.com/Manual/UnityIAPValidatingReceipts.html">Unity Documentに情報があるので</a></p>
+<p>この工程でローカル検証用の暗号化コードが生成される。</p>
+<h2><a class="anchor" aria-hidden="true" name="3-p-cs"></a><a href="#3-p-cs" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>3.商品情報をP~.csに記述</h2>
+<p><strong>PurchaseSettings.cs</strong>  <br>
+ここに書いたアイテムだけが売買される。</p>
+<pre><code class="hljs css C#"><span class="hljs-comment">/*
+    immutable purchasable item infos.
+*/</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> readonly ProductInfos IMMUTABLE_PURCHASE_ITEM_INFOS = <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfos</span> {
+    productInfos = <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>[] {
+        <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>(<span class="hljs-string">"100_gold_coins"</span>, <span class="hljs-string">"100_gold_coins_iOS"</span>, <span class="hljs-literal">true</span>, <span class="hljs-string">"one hundled of coins."</span>),
+        <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>(<span class="hljs-string">"1000_gold_coins"</span>, <span class="hljs-string">"1000_gold_coins_iOS"</span>, <span class="hljs-literal">true</span>, <span class="hljs-string">"one ton of coins."</span>),
+        <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>(<span class="hljs-string">"10000_gold_coins"</span>, <span class="hljs-string">"10000_gold_coins_iOS"</span>, <span class="hljs-literal">false</span>, <span class="hljs-string">"ten tons of coins."</span>),<span class="hljs-comment">// this product setting is example of not allow to buy for this player, disable to buy but need to be displayed.</span>
+    }
+};
+</code></pre>
+<p>iOS/Androidの両方で出す場合：</p>
+<pre><code class="hljs css C#"><span class="hljs-comment">/*
+    immutable purchasable item infos.
+*/</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> readonly ProductInfos IMMUTABLE_PURCHASE_ITEM_INFOS = <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfos</span> {
+    productInfos = <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>[] {
+<span class="hljs-meta">#<span class="hljs-meta-keyword">if</span> UNITY_IOS</span>
+        <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>(<span class="hljs-string">"100_gold_coins"</span>, <span class="hljs-string">"100_gold_coins_iOS"</span>, <span class="hljs-literal">true</span>, <span class="hljs-string">"one hundled of coins."</span>),
+<span class="hljs-meta">#elif UNITY_ANDROID</span>
+        <span class="hljs-keyword">new</span> <span class="hljs-type">ProductInfo</span>(<span class="hljs-string">"100_gold_coins"</span>, <span class="hljs-string">"100_gold_coins_Android"</span>, <span class="hljs-literal">true</span>, <span class="hljs-string">"one hundled of coins."</span>),
+<span class="hljs-meta">#endif</span>
+
+</code></pre>
+<p>などをやっておくと楽に対応できる。</p>
+<h2><a class="anchor" aria-hidden="true" name="4"></a><a href="#4" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>4.アイテムを売る画面を作る</h2>
+<p>開発者さん頑張ってください。</p>
+<h2><a class="anchor" aria-hidden="true" name="5-new"></a><a href="#5-new" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>5. 購買機構をnewして使う</h2>
+<p>ここからコードの話になる。</p>
+<p>実際のゲーム中での購買処理は、</p>
+<ul>
+<li>LocalPurchaseRouterの初期化</li>
+<li>購入</li>
+<li>商品の提供</li>
+</ul>
+<p>の3段階に分かれる。</p>
+<h2><a class="anchor" aria-hidden="true" name="localpurchaserouter"></a><a href="#localpurchaserouter" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>LocalPurchaseRouter初期化</h2>
+<pre><code class="hljs css C#">localPurchaseRouter = <span class="hljs-keyword">new</span> LocalPurchaseRouter(
+    PurchaseSettings.IMMUTABLE_PURCHASE_ITEM_INFOS.productInfos,
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        Debug.Log(<span class="hljs-string">"ready purchase."</span>);
+    }, 
+    <span class="hljs-function">(<span class="hljs-params">err, reason</span>) =&gt;</span> {
+        Debug.LogError(<span class="hljs-string">"failed to ready purchase. error:"</span> + err + <span class="hljs-string">" reason:"</span> + reason);
+    }, 
+    <span class="hljs-function"><span class="hljs-params">alreadyPurchasedProductId</span> =&gt;</span> {
+        <span class="hljs-comment">/*
+            this action will be called when 
+                the IAP feature found non-completed purchase record
+                    &amp;&amp;
+                the validate result of that is OK.
+
+            need to deploy product to user.
+         */</span>
+        
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    }
+);
+</code></pre>
+<p>解説していく。</p>
+<pre><code class="hljs css C#">localPurchaseRouter = <span class="hljs-keyword">new</span> LocalPurchaseRouter(<span class="hljs-comment">// アプリケーションの起動時にインスタンスを生成</span>
+    PurchaseSettings.IMMUTABLE_PURCHASE_ITEM_INFOS.productInfos, <span class="hljs-comment">// 設定ファイルに書かれているプロダクトをプラットフォームに</span>
+    () =&gt; {<span class="hljs-comment">// 購入準備が完了</span>
+        Debug.Log(<span class="hljs-string">"ready purchase."</span>);
+    }, 
+    <span class="hljs-function">(<span class="hljs-params">err, reason</span>) =&gt;</span> {<span class="hljs-comment">// 準備エラーが発生</span>
+        Debug.LogError(<span class="hljs-string">"failed to ready purchase. error:"</span> + err + <span class="hljs-string">" reason:"</span> + reason);
+    }, 
+    <span class="hljs-function"><span class="hljs-params">alreadyPurchasedProductId</span> =&gt;</span> {
+        <span class="hljs-comment">/*
+            this action will be called when 
+                the IAP feature found non-completed purchase record
+                    &amp;&amp;
+                the validate result of that is OK.
+
+            need to deploy product to user.
+         */</span>
+        
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    }
+);
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>準備エラー</h3>
+<p>まあ理由はさまざま</p>
+<p>errに種類、reasonに理由が入るので、アイテムを購入したければこうするといいよ、みたいな旨を書こう。</p>
+<p>解決せずに再度インスタンスを初期化すれば全く同じフローが発生する。</p>
+<pre><code class="hljs css C#">localPurchaseRouter = <span class="hljs-keyword">new</span> LocalPurchaseRouter(
+    PurchaseSettings.IMMUTABLE_PURCHASE_ITEM_INFOS.productInfos,
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        Debug.Log(<span class="hljs-string">"ready purchase."</span>);
+    }, 
+    <span class="hljs-function">(<span class="hljs-params">err, reason</span>) =&gt;</span> {
+        Debug.LogError(<span class="hljs-string">"failed to ready purchase. error:"</span> + err + <span class="hljs-string">" reason:"</span> + reason);
+    }, 
+    <span class="hljs-function"><span class="hljs-params">alreadyPurchasedProductId</span> =&gt;</span> {<span class="hljs-comment">// このブロックは、特殊な状況下で実行される。</span>
+        <span class="hljs-comment">/*
+            this action will be called when 
+                the IAP feature found non-completed purchase record
+                    &amp;&amp;
+                the validate result of that is OK.
+
+            need to deploy product to user.
+         */</span>
+        
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    }
+);
+</code></pre>
+<p>第四引数のハンドラについては、後述する。</p>
+<p>インスタンスを作成して一つ目のハンドラが着火すれば、このインスタンスからアイテムの購入が可能になる。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>購入</h2>
+<p>買いたいものを指定して、購入処理を開始。</p>
+<p>どんな商品が購入可能かは、</p>
+<pre><code class="hljs css C#"><span class="hljs-attribute">var products</span> = localPurchaseRouter.ProductInfos();
+</code></pre>
+<p>で取得できる。</p>
+<p>次のようなコードで購入処理ができる。</p>
+<pre><code class="hljs css C#">localPurchaseRouter.PurchaseAsync(<span class="hljs-comment">// PurchaseAsyncで購入開始</span>
+    purchaseId, <span class="hljs-comment">// 購入ごとにIDをセットすることが可能</span>
+    <span class="hljs-string">"100_gold_coins"</span>, <span class="hljs-comment">// 購入したい商品のプロダクトID文字列</span>
+    purchasedId =&gt; {<span class="hljs-comment">// 購入完了のハンドラ</span>
+        <span class="hljs-keyword">Debug</span>.<span class="hljs-built_in">Log</span>(<span class="hljs-string">"purchase succeeded, purchasedId:"</span> + purchasedId + <span class="hljs-string">" purchased item id:"</span> + <span class="hljs-string">"100_gold_coins"</span>);
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    }, 
+    (purchasedId, <span class="hljs-built_in">error</span>, reason) =&gt; {<span class="hljs-comment">// 購入失敗のハンドラ</span>
+        <span class="hljs-keyword">Debug</span>.LogError(<span class="hljs-string">"failed to purchase Id:"</span> + purchasedId + <span class="hljs-string">" failed, error:"</span> + <span class="hljs-built_in">error</span> + <span class="hljs-string">" reason:"</span> + reason);
+    }
+);
+</code></pre>
+<p>第2引数には買う商品のproductIdを入れる。</p>
+<p>ここでは<strong>100_gold_coins</strong>を買う。ちゃんと設定にあるもの以外は設定できない。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>購入完了のハンドラが着火した場合</h3>
+<p>プレイヤーへとこのアイテムの付与を行おう。例えばアイテムの所持数を増やして表示、とか。purchasedIdには第一引数に入れたのが来る。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>購入失敗した場合</h3>
+<p>プレイヤーに何かを伝えるチャンス。すでに購入処理はキャンセルされている。</p>
+<p>これで購買処理の話は終わり。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>購入失敗について</h2>
+<pre><code class="hljs css C#">    alreadyPurchasedProductId =&gt; {
+        <span class="hljs-comment">/*
+            this action will be called when 
+                the IAP feature found non-completed purchase record
+                    &amp;&amp;
+                the validate result of that is OK.
+
+            need to deploy product to user.
+         */</span>
+        
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    }
+</code></pre>
+<p>インスタンス初期化の第4引数の解説をする。
+このハンドラが着火するケースはかなり厄介で、Purchase処理中にAppが落ちた後、再度起動した際に着火する。</p>
+<ul>
+<li>Q.購入処理中にアプリが落ちたらどうなるの</li>
+<li>A.購入処理が彷徨う。</li>
+</ul>
+<p>どう彷徨うかは、どのタイミングで落ちたかによる。</p>
+<p>内部的には次のようなフェーズがある。</p>
+<ol>
+<li>購入前</li>
+<li>購入後</li>
+<li>アイテム付与後</li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" name="1"></a><a href="#1" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>1.購入前</h2>
+<p>プレイヤーに、OS提供の「購入しますか」が現れる前 or 現れている状態。</p>
+<p>ここでアプリが落ちても平気。課金は始まってない。</p>
+<p>プレイヤーがyesって押すと、PFとの通信後、<strong>2.購入後</strong>に遷移する。</p>
+<h2><a class="anchor" aria-hidden="true" name="2"></a><a href="#2" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>2.購入後</h2>
+<p>購入が終わり、プレイヤーに価値 = お金の対価を渡す必要がある地点。</p>
+<p>ここで</p>
+<pre><code class="hljs css C#">localPurchaseRouter.PurchaseAsync(
+    purchaseId, 
+    <span class="hljs-string">"100_gold_coins"</span>, 
+    purchasedId =&gt; {<span class="hljs-comment">// アイテム配布完了</span>
+        <span class="hljs-keyword">Debug</span>.<span class="hljs-built_in">Log</span>(<span class="hljs-string">"purchase succeeded, purchasedId:"</span> + purchasedId + <span class="hljs-string">" purchased item id:"</span> + <span class="hljs-string">"100_gold_coins"</span>);
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    },
+</code></pre>
+<p>アイテム配布完了時の関数が呼ばれる。</p>
+<p>この部分でプレイヤーにお金の価値を渡したのち、<strong>3.アイテム付与後</strong> に遷移する。</p>
+<p>ここで対価付与前にアプリが落ちると、<strong>お金は払ったんだけど対価をもらってない</strong> 状態になる。</p>
+<p>つまり<strong>権利が行使されないまま彷徨う。</strong></p>
+<p>で、再度アプリを起動すると、</p>
+<pre><code class="hljs css C#">localPurchaseRouter = <span class="hljs-keyword">new</span> LocalPurchaseRouter(
+    PurchaseSettings.IMMUTABLE_PURCHASE_ITEM_INFOS.productInfos,
+    <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+        Debug.Log(<span class="hljs-string">"ready purchase."</span>);
+    }, 
+    <span class="hljs-function">(<span class="hljs-params">err, reason</span>) =&gt;</span> {
+        Debug.LogError(<span class="hljs-string">"failed to ready purchase. error:"</span> + err + <span class="hljs-string">" reason:"</span> + reason);
+    }, 
+    <span class="hljs-function"><span class="hljs-params">alreadyPurchasedProductId</span> =&gt;</span> {<span class="hljs-comment">// ここが着火する</span>
+        <span class="hljs-comment">/*
+            this action will be called when 
+                the IAP feature found non-completed purchase record
+                    &amp;&amp;
+                the validate result of that is OK.
+
+            need to deploy product to user.
+         */</span>
+        
+        <span class="hljs-comment">// deploy purchased product to user here.</span>
+    }
+);
+</code></pre>
+<p>第四引数のハンドラに、<strong>未処理の課金済みの情報</strong> が来る。</p>
+<p>PurchaseAsyncで単に購入がfailしたのなら来ない。</p>
+<p>successしててかつ付与が終わらずにいると、来る。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>来たらどうする？</h2>
+<p>課金済んでるんで、アイテムを配布。</p>
+<p>このハンドラが呼ばれるということは、<strong>いろんなチェックが済んでいる</strong>のでアイテムを付与して問題ないことを指す。</p>
+<p>いろいろなチェックについては次項を参照。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>いろいろなチェック</h2>
+<h4><a class="anchor" aria-hidden="true" name="local-purchase"></a><a href="#local-purchase" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>local purchaseのデメリット</h4>
+<ul>
+<li>アップデートでしか商品内容を更新できない</li>
+<li><strong>ハックされ放題++</strong></li>
+</ul>
+<p>課金処理は改ざんのメッカで、根本的には諦めと諦めさせの話になる。</p>
+<p>よくある手口</p>
+<ul>
+<li>通信レスポンスを偽造</li>
+<li>セーブデータを弄ってry</li>
+<li>アプリを解析してメモリに直に足す</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" name="mate"></a><a href="#mate" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>通信はMATE攻撃できちゃう</h2>
+<p>サーバもいないし自由。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>セーブデータに関して</h2>
+<p>暗号化して嫌がらせ。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>でもアプリを解析</h2>
+<p>いかんともしがたい。頑張って耐タンパー。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>どれが課金関連？</h2>
+<p>全部関連する。</p>
+<p>一応防ごうというレベルでいうと、MATEで通信いじった時にレシートを偽造されても、そのデータを受け付けない、みたいなところまではいける。</p>
+<h2><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>特に防ぐといいこと</h2>
+<p>同一レシート問題</p>
+<ul>
+<li>処理時、処理したレシートを記録</li>
+<li>過去の記録と照合して蹴る</li>
+<li>OKであれば追記</li>
+</ul>
+<p>今回の課金機構には、内部で「同一レシートが来たかどうかチェックする機能が入る場所」が開けてある。</p>
+<p>カスタマイズして備えてください。</p>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="maintenance0.html">← Maintenance switch &amp; workflow</a><a class="docs-next button" href="notification0.html">Notification service in Autoya →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/test-site/" class="nav-home"><img src="/test-site/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/test-site/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>
