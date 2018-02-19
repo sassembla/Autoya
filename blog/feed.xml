@@ -2,21 +2,21 @@
 <rss version="2.0">
     <channel>
         <title>Autoya Blog</title>
-        <link>https://facebook.github.io途中/test-site/blog</link>
+        <link>https://sassembla.github.io/Autoya/blog</link>
         <description>The best place to stay up-to-date with the latest Autoya news and events.</description>
         <lastBuildDate>Mon, 19 Feb 2018 06:00:00 GMT</lastBuildDate>
         <docs>http://blogs.law.harvard.edu/tech/rss</docs>
         <generator>Feed for Node.js</generator>
         <image>
             <title>Autoya Blog</title>
-            <url>https://facebook.github.io途中/test-site/img/Autoya.svg</url>
-            <link>https://facebook.github.io途中/test-site/blog</link>
+            <url>https://sassembla.github.io/Autoya/img/Autoya.svg</url>
+            <link>https://sassembla.github.io/Autoya/blog</link>
         </image>
         <copyright>Copyright © 2018 sassembla</copyright>
         <item>
             <title><![CDATA[New Document]]></title>
-            <link>https://facebook.github.io途中/test-site/blog/2018/02/19/blog-post.html</link>
-            <guid>https://facebook.github.io途中/test-site/blog/2018/02/19/blog-post.html</guid>
+            <link>https://sassembla.github.io/Autoya/blog/2018/02/19/blog-post.html</link>
+            <guid>https://sassembla.github.io/Autoya/blog/2018/02/19/blog-post.html</guid>
             <pubDate>Mon, 19 Feb 2018 06:00:00 GMT</pubDate>
             <description><![CDATA[<p>というわけでドキュメントをDocusaurusに移行することにした。</p>
 ]]></description>

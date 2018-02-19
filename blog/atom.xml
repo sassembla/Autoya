@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://facebook.github.io途中/test-site/blog</id>
+    <id>https://sassembla.github.io/Autoya/blog</id>
     <title>Autoya Blog</title>
     <updated>2018-02-19T06:00:00Z</updated>
     <generator>Feed for Node.js</generator>
-    <link rel="alternate" href="https://facebook.github.io途中/test-site/blog"/>
+    <link rel="alternate" href="https://sassembla.github.io/Autoya/blog"/>
     <subtitle>The best place to stay up-to-date with the latest Autoya news and events.</subtitle>
-    <logo>https://facebook.github.io途中/test-site/img/Autoya.svg</logo>
+    <logo>https://sassembla.github.io/Autoya/img/Autoya.svg</logo>
     <rights>Copyright © 2018 sassembla</rights>
     <entry>
         <title type="html"><![CDATA[New Document]]></title>
-        <id>https://facebook.github.io途中/test-site/blog/2018/02/19/blog-post.html</id>
-        <link href="https://facebook.github.io途中/test-site/blog/2018/02/19/blog-post.html">
+        <id>https://sassembla.github.io/Autoya/blog/2018/02/19/blog-post.html</id>
+        <link href="https://sassembla.github.io/Autoya/blog/2018/02/19/blog-post.html">
         </link>
         <updated>2018-02-19T06:00:00Z</updated>
         <summary type="html"><![CDATA[<p>というわけでドキュメントをDocusaurusに移行することにした。</p>
