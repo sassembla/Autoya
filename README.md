@@ -1,6 +1,6 @@
 # Autoya
 
-![loading](https://github.com/sassembla/Autoya/blob/master/doc/images/scr.png?raw=true)
+![loading](https://github.com/sassembla/Autoya/blob/master/doc/images/scr.svg)
 
 small, thin framework for Unity.  
 which contains essential game features.
