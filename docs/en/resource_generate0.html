@@ -8,10 +8,10 @@
 <p>現状だと<a href="https://github.com/sassembla/Autoya/releases">Autoya.AssetGraph.unitypackage</a>というAutoyaとAssetGraphを合わせて配布しているunitypackageがあるんで、それを展開すると再現できるのだけれど、
 いかんせん大変分かりにくい。</p>
 <ol>
-<li>AutoyaのAssetGraphのPostProcessingスクリプトがあるのを確認する</li>
-<li>プロジェクトフォルダにAssetBundleの出力先フォルダを作り、グラフのExporterノードに出力先フォルダを指定する。</li>
+<li>AutoyaのAssetGraphのPostProcessingスクリプト<a href="https://github.com/sassembla/Autoya/blob/master/Assets/Editor/AssetGraph-1.3-release/UnityEngine.AssetBundleGraph/Generated/Editor/MyPostprocess.cs">MyPostprocess.cs</a>がAssetGraph内にあるのを確認する</li>
+<li>プロジェクトフォルダにAssetBundleの出力先フォルダを作る</li>
 </ol>
-<p>ここでは <em>AssetBundles</em> みたいなフォルダを作ったとする。</p>
+<p>ここでは <strong>AssetBundles</strong> みたいなフォルダを作ったとする。</p>
 <pre><code class="hljs">PROJECT_FOLDER/
     AssetBundles/
     Assets/
@@ -19,6 +19,7 @@
 </code></pre>
 <ol start="3">
 <li>AssetGraphのグラフを生成する</li>
+<li>グラフの終端のExporterノードに、出力先として <strong>AssetBundles</strong> フォルダを指定する。</li>
 <li>出力先フォルダの中に、グラフ名.jsonファイルを作成(この部分をグラフに入れ込みたいがまだ無理)</li>
 <li>グラフ名.jsonに、identity(グラフ名)、version(バージョン値)をjson形式で手で書く</li>
 </ol>
@@ -34,7 +35,7 @@
     ....
 </code></pre>
 <p>(これらの行程は手でやるとミスりそうなので今後のアップデートでなんらかGUIを提供するつもり。)</p>
-<ol start="6">
+<ol start="7">
 <li>この状態でAssetGraphを動かすと、次のような階層にAssetBundleと管理用のリストファイルが作成される。</li>
 </ol>
 <pre><code class="hljs">PROJECT_FOLDER/
@@ -49,7 +50,7 @@
     
 </code></pre>
 <p>ここで、対応プラットフォームの下の1.0.0は、グラフ名.jsonに指定したバージョン値になっている。</p>
-<ol start="7">
+<ol start="8">
 <li>別の対応プラットフォームをビルドすると対応プラットフォームぶんだけフォルダが増える。</li>
 <li>新規にリソースを追加して配布する = リソースのバージョンをあげてビルドする、という関係性になっていて、新規バージョンをビルドする場合、AssetBundles フォルダ直下のグラフ名.jsonのバージョン値を上げてからビルドする。</li>
 </ol>
@@ -64,7 +65,7 @@
     <span class="hljs-attr">"version"</span>: <span class="hljs-string">"1.0.1"</span> &lt;- updated!
 }
 </code></pre>
-<ol start="8">
+<ol start="10">
 <li>この状態でビルドを行うと、次のようなフォルダ階層ができる。</li>
 </ol>
 <pre><code class="hljs">PROJECT_FOLDER/
@@ -79,5 +80,6 @@
         グラフ名.json
     
 </code></pre>
+<p>このように、各バージョンごとに完全に分離された状態でグラフごとのAssetBundleとリストを作成できる。</p>
 <p>こうして作成したリソースのデプロイに関しては<a href="/Autoya/docs/en/resource_deploy0.html">デプロイのページ</a>を参照。</p>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="settings0.html">← Setting files of Autoya</a><a class="docs-next button" href="resource_deploy0.html">Deploy AssetBundles to CDN →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Autoya/" class="nav-home"><img src="/Autoya/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/Autoya/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>
