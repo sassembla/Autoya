@@ -5,7 +5,7 @@ using UnityEngine;
 
 
 /**
-	test for file persist controll.
+	test for jwt token generation & validation.
 */
 
 public class JWTTests : MiyamasuTestRunner

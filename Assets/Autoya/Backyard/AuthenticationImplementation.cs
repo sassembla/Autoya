@@ -890,15 +890,15 @@ namespace AutoyaFramework
                         }
                     }
                 }
+            }
 
-                /*
-                    fire application update request after succeeded.
-                 */
-                if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION))
-                {
-                    var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
-                    OnNewAppRequested(newappVersionOnResponseHeader);
-                }
+            /*
+                fire application update request after succeeded.
+            */
+            if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION))
+            {
+                var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
+                OnNewAppRequested(newappVersionOnResponseHeader);
             }
         }
 
