@@ -7,6 +7,10 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [Unreleased]
 
 
+## [0.8.27] - 2018/02/23
+### Fix
+- no need to check AssetBundle feature state when checking App-update.
+
 ## [0.8.26] - 2018/01/30
 ### Fix
 - AssetBundle download path combination was not valid.
@@ -93,7 +97,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.26...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.27...HEAD
+[0.8.27]: https://github.com/sassembla/autoya/compare/0.8.26...0.8.27
 [0.8.26]: https://github.com/sassembla/autoya/compare/0.8.25...0.8.26
 [0.8.25]: https://github.com/sassembla/autoya/compare/0.8.24...0.8.25
 [0.8.24]: https://github.com/sassembla/autoya/compare/0.8.23...0.8.24
