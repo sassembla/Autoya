@@ -125,7 +125,11 @@ namespace AutoyaFramework.Persistence.Files
 
                 foreach (var filePath in filePaths)
                 {
-                    if (filePath.StartsWith(".")) continue;
+                    var fileName = Path.GetFileName(filePath);
+                    if (fileName.StartsWith("."))
+                    {
+                        continue;
+                    }
                     fileNames.Add(filePath);
                 }
 
