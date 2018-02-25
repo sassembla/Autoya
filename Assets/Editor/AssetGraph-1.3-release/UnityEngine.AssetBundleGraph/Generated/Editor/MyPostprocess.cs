@@ -81,7 +81,7 @@ public class MyPostprocess : IPostprocess
         var listVersion = settingProfile.version;
 
         var rootManifestPath = rootManifestEntry.destination;
-        Debug.Log("rootManifestPath:" + rootManifestPath + " generate list identity:" + listIdentity + " version:" + listVersion);
+        Debug.Log("generating AssetBundleList. rootManifestPath:" + rootManifestPath + " generate list identity:" + listIdentity + " version:" + listVersion);
 
         var targetDirectory = FileController.PathCombine(wholeExportFolderName, exportPlatformStr, listVersion);
 
@@ -112,8 +112,13 @@ public class MyPostprocess : IPostprocess
                     }
 
                     var fileName = Path.GetFileName(currentPath);
+                    if (fileName == listIdentity + ".json")
+                    {
+                        throw new Exception("generated AssetBundle name:" + listIdentity + ".json is overlapped with list name. please change assetBundle name, extension or list identity.");
+                    }
 
-                    var destPath = currentPath.Replace(fileName, Path.Combine(listVersion, fileName));
+                    var dirPath = Path.GetDirectoryName(currentPath);
+                    var destPath = FileController.PathCombine(dirPath, listVersion, fileName);
                     File.Copy(currentPath, destPath);
                 }
             }
