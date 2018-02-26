@@ -108,7 +108,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.27...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.28...HEAD
+[0.8.28]: https://github.com/sassembla/autoya/compare/0.8.27...0.8.28
 [0.8.27]: https://github.com/sassembla/autoya/compare/0.8.26...0.8.27
 [0.8.26]: https://github.com/sassembla/autoya/compare/0.8.25...0.8.26
 [0.8.25]: https://github.com/sassembla/autoya/compare/0.8.24...0.8.25
