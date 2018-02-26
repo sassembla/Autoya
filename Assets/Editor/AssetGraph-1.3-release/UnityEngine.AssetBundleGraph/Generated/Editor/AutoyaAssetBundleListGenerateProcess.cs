@@ -14,7 +14,7 @@ using YamlDotNet.RepresentationModel;
 /**
 Example code for asset bundle build postprocess.
 */
-public class MyPostprocess : IPostprocess
+public class AutoyaAssetBundleListGenerateProcess : IPostprocess
 {
     /* 
 	 * DoPostprocess() is called when build performed.
