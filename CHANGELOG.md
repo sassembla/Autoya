@@ -6,6 +6,17 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.28] - 2018/02/26
+### Fix
+- Generate AssetBundle feature bug: same name AssetBundle and AssetBundleList causes export error.
+- should ignore Persistent filepath starts with ".".
+
+### Feature
+- Persistent file delete manager added. Window > Autoya > Persistence > ...
+
+### Changed
+- AssetGraph postprocess code for Autoya is renamed from "MyPostprocess.cs" to "AutoyaAssetBundleListGenerateProcess.cs".
+
 
 ## [0.8.27] - 2018/02/23
 ### Fix
