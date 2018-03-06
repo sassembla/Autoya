@@ -6,6 +6,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.29] - 2018/03/07
+### Changed
+- default AssetBundle List download path of demoProject is changed.
+
+
 ## [0.8.28] - 2018/02/26
 ### Fix
 - Generate AssetBundle feature bug: same name AssetBundle and AssetBundleList causes export error.
@@ -108,7 +113,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.28...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.29...HEAD
+[0.8.28]: https://github.com/sassembla/autoya/compare/0.8.28...0.8.29
 [0.8.28]: https://github.com/sassembla/autoya/compare/0.8.27...0.8.28
 [0.8.27]: https://github.com/sassembla/autoya/compare/0.8.26...0.8.27
 [0.8.26]: https://github.com/sassembla/autoya/compare/0.8.25...0.8.26
