@@ -43,7 +43,11 @@ namespace AppStoresSupport
 			if (token != null) {
 				request.SetRequestHeader ("Authorization", "Bearer " + token);
 			}
+#if UNITY_2017_2_OR_NEWER
+			request.SendWebRequest ();
+#else
 			request.Send ();
+#endif
 			return request;
 		}
 

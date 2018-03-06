@@ -314,7 +314,10 @@ namespace AppStoresSupport
 			return str.Substring (0, preIndex) + "...";
 		}
 
-		void callApiAsync(String targentStep) {
+		void callApiAsync(String targetStep) {
+			if (targetStep == STEP_GET_CLIENT) {
+				AppStoreOnboardApi.tokenInfo.access_token = null;
+			}
 			if (AppStoreOnboardApi.tokenInfo.access_token == null) {
 				UnityOAuth.GetAuthorizationCodeAsync (AppStoreOnboardApi.oauthClientId, (response) => {
 					if (response.AuthCode != null) {
@@ -324,7 +327,7 @@ namespace AppStoresSupport
 						ReqStruct reqStruct = new ReqStruct ();
 						reqStruct.request = request;
 						reqStruct.resp = tokenInfoResp;
-						reqStruct.targetStep = targentStep;
+						reqStruct.targetStep = targetStep;
 						requestQueue.Enqueue (reqStruct);
 					} else {
 						Debug.Log ("Failed: " + response.Exception.ToString ());
@@ -337,7 +340,7 @@ namespace AppStoresSupport
 				ReqStruct reqStruct = new ReqStruct ();
 				reqStruct.request = request;
 				reqStruct.resp = userIdResp;
-				reqStruct.targetStep = targentStep;
+				reqStruct.targetStep = targetStep;
 				requestQueue.Enqueue (reqStruct);
 			}
 		}
@@ -384,8 +387,16 @@ namespace AppStoresSupport
 
 			if (request != null && request.isDone) {
 				if (request.error != null) {
-					Debug.LogError (request.error);
-					isOperationRunning = false;
+					if (request.responseCode == 404) {
+						Debug.LogError ("Resouce not found.");
+						isOperationRunning = false;
+					} else if (request.responseCode == 403) {
+						Debug.LogError ("Permision denied.");
+						isOperationRunning = false;
+					} else {
+						Debug.LogError (request.error);
+						isOperationRunning = false;
+					}
 				} else {
 					if (request.downloadHandler.text.Contains(AppStoreOnboardApi.tokenExpiredInfo)) {
 						UnityWebRequest newRequest = AppStoreOnboardApi.RefreshToken();
@@ -431,6 +442,10 @@ namespace AppStoresSupport
 							requestQueue.Enqueue (newReqStruct);
 						} else if (resp.GetType () == typeof(OrgRoleResponse)) {
 							resp = JsonUtility.FromJson<OrgRoleResponse> (request.downloadHandler.text);
+							if (resp == null) {
+								Debug.LogError ("Permision denied.");
+								isOperationRunning = false;
+							}
 							List<string> roles = ((OrgRoleResponse)resp).roles;
 							if (roles.Contains ("owner")) {
 								ownerAuthed = true;
