@@ -817,7 +817,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             (basePath, identity, ver) =>
             {
                 var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
-                Debug.Log("url:" + url + " basePath:" + basePath);
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -825,7 +824,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
             condition =>
             {
-                Debug.Log("condition:" + condition);
                 if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
