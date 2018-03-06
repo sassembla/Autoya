@@ -26,7 +26,7 @@ VideoClipImporter:
   sourceAudioSampleRate: 44ac0000
   targetSettings: {}
   output:
-    format: 1
+    format: 0
     settings:
       enableTranscoding: 0
       codec: 0
