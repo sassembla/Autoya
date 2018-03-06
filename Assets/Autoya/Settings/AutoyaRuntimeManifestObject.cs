@@ -28,13 +28,13 @@ namespace AutoyaFramework.AppManifest
                {
                    listIdentity = "main_assets",
                    listVersion = "1.0.0",
-                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
+                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles"
                },
                new AssetBundleListInfo
                {
                    listIdentity = "sub_assets",
                    listVersion = "1.0.0",
-                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/"
+                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles"
                }
            };
         }
