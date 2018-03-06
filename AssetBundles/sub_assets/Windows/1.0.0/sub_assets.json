@@ -1,0 +1,17 @@
+{
+    "identity": "sub_assets",
+    "target": "Windows",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3699353673,
+            "hash": "3c265e49e6c950f75b0e1bd43f0bbee8",
+            "size": 754
+        }
+    ]
+}

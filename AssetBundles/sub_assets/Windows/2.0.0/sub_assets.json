@@ -1,0 +1,27 @@
+{
+    "identity": "sub_assets",
+    "target": "Windows",
+    "version": "2.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "sample",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3699353673,
+            "hash": "3c265e49e6c950f75b0e1bd43f0bbee8",
+            "size": 754
+        },
+        {
+            "bundleName": "sample2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/SubResources/sample2.txt"
+            ],
+            "dependsBundleNames": [],
+            "crc": 4233029219,
+            "hash": "58046a1c139685ad46d2abc7ecb076e1",
+            "size": 755
+        }
+    ]
+}
