@@ -83,7 +83,12 @@ namespace AutoyaFramework.Persistence.Files
             {
                 GUILayout.Label("note:these folders are located at persistentDataPath:");
                 GUILayout.TextField(basePath);
-                GUILayout.Label("the 'Unity' folder contains AssetBundle caches & Purchase record datas.");
+                GUILayout.Label("the 'Unity' folder contains Purchase record datas.");
+                GUILayout.Space(10);
+                GUILayout.Label("Downloaded AssetBundles are located at /Users/USER_NAME/Library/Caches/Unity/ on macOS, ");
+                GUILayout.Label("and, located at Users\\USER_NAME\\AppData\\LocalLow\\Unity\\WebPlayer\\Cache on Windows.");
+                GUILayout.Label("to delete these cache files, use Window > Autoya > Clean Cached AssetBundles.");
+
             }
         }
     }
