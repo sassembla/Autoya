@@ -459,7 +459,7 @@ namespace AutoyaFramework.AssetBundles
                     }
                 }
 
-                var p = request.Send();
+                var p = request.SendWebRequest();
 
                 while (!p.isDone)
                 {
@@ -482,7 +482,7 @@ namespace AutoyaFramework.AssetBundles
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isError)
+                if (request.isNetworkError)
                 {
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;

@@ -50,7 +50,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
 
-        True(Caching.CleanCache());
+        True(Caching.ClearCache());
 
         Autoya.Debug_Manifest_RenewRuntimeManifest();
     }
@@ -94,7 +94,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
 
-        True(Caching.CleanCache());
+        True(Caching.ClearCache());
     }
 
 
@@ -816,7 +816,8 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             (basePath, identity, ver) =>
             {
-                var url = basePath + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
+                var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
+                Debug.Log("url:" + url + " basePath:" + basePath);
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -824,6 +825,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
             condition =>
             {
+                Debug.Log("condition:" + condition);
                 if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
@@ -840,10 +842,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             (conId, data) =>
             {
                 // pass.
+                Debug.Log("succeeded to get list.");
             },
             (conId, code, reason, status) =>
             {
-                Fail();
+                Fail("failed to get v1.0.1 List. code:" + code + " reason:" + reason);
             }
         );
 
@@ -903,7 +906,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             (basePath, identity, ver) =>
             {
-                var url = basePath + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
+                var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -1003,7 +1006,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             (basePath, identity, ver) =>
             {
-                var url = basePath + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
+                var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -1115,7 +1118,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             (basePath, identity, ver) =>
             {
-                var url = basePath + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
+                var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );
@@ -1330,7 +1333,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
             (basePath, identity, ver) =>
             {
-                var url = basePath + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
+                var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + ver + "/" + identity + ".json";
                 return Autoya.ShouldRequestOrNot.Yes(url);
             }
         );

@@ -10,7 +10,7 @@ public class AutoyaEditorTool
     [MenuItem("Window/Autoya/Clean Cached AssetBundles")]
     public static void CleanCache()
     {
-        Caching.CleanCache();
+        Caching.ClearCache();
     }
 
 

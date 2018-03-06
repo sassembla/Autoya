@@ -148,7 +148,7 @@ namespace AutoyaFramework
                 return false;
             }
 
-            return Caching.CleanCache();
+            return Caching.ClearCache();
         }
 
         /*
