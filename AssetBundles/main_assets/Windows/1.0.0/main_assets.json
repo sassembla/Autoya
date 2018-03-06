@@ -1,0 +1,65 @@
+{
+    "identity": "main_assets",
+    "target": "Windows",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "nestedprefab",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename1"
+            ],
+            "crc": 3505563615,
+            "hash": "64e06f3c64cfb7ee2eb9bc51ec1c98dd",
+            "size": 2169
+        },
+        {
+            "bundleName": "texturename",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3838592041,
+            "hash": "769121e013adbd025fd79aca1242a207",
+            "size": 247592
+        },
+        {
+            "bundleName": "texturename1",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 1103008970,
+            "hash": "ad30d86e48f269aa039042d2ac229215",
+            "size": 2421
+        },
+        {
+            "bundleName": "texturename2",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName2.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 1950049525,
+            "hash": "714164f342e506d53ed626ce08c21136",
+            "size": 2421
+        },
+        {
+            "bundleName": "updatabletex",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/updatableTex.prefab"
+            ],
+            "dependsBundleNames": [
+                "texturename"
+            ],
+            "crc": 2415431212,
+            "hash": "d584865539977a1ccb28f861f4ec771e",
+            "size": 2448
+        }
+    ]
+}
