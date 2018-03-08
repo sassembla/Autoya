@@ -146,6 +146,18 @@ namespace AutoyaFramework
             }
         }
 
+        public struct ErrorCodes
+        {
+            public PurchaseRouter.PurchaseError purchaseErrorCode;
+            public int httpErrorCode;
+
+            public ErrorCodes(PurchaseRouter.PurchaseError purchaseErrorCode, int httpErrorCode)
+            {
+                this.purchaseErrorCode = purchaseErrorCode;
+                this.httpErrorCode = httpErrorCode;
+            }
+        }
+
         /**
 			purchase item asynchronously.
 			
@@ -154,7 +166,7 @@ namespace AutoyaFramework
 			Action<string> done: fire when purchase is done in succeessful. string is purchaseId.
 			Action<string, PurchaseRouter.PurchaseError, string> failed: fire when purchase is failed. 1st string is purchaseId.
 		*/
-        public static void Purchase(string purchaseId, string productId, Action<string> done, Action<string, PurchaseRouter.PurchaseError, string, AutoyaStatus> failed)
+        public static void Purchase(string purchaseId, string productId, Action<string> done, Action<string, ErrorCodes, string, AutoyaStatus> failed)
         {
             if (autoya == null)
             {
@@ -186,9 +198,9 @@ namespace AutoyaFramework
 
             purchaseErrorStatus = new AutoyaStatus();
 
-            Action<string, PurchaseRouter.PurchaseError, string> _failed = (p1, p2, p3) =>
+            Action<string, PurchaseRouter.PurchaseError, int, string> _failed = (p1, p2, p3, p4) =>
             {
-                failed(p1, p2, p3, purchaseErrorStatus);
+                failed(p1, new ErrorCodes(p2, p3), p4, purchaseErrorStatus);
             };
 
             autoya.mainthreadDispatcher.Commit(

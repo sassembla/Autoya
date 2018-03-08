@@ -286,6 +286,7 @@ namespace AutoyaFramework
                         // reached to the max retry for boot access.
                         if (bootRetryCount == AuthSettings.AUTH_FIRSTBOOT_MAX_RETRY_COUNT)
                         {
+                            Debug.Log("retry maxで死んでる");
                             authState = AuthState.BootFailed;
                             onBootFailed(failedCode, failedReason);
                             return;

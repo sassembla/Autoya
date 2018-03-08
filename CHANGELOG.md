@@ -6,8 +6,14 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.30]	- 2018/03/08
+### Changed
+- Adopt to Unity 2017.x
+- Purchase failed handler now contains http response code.
+
 ## [0.8.29] - 2018/03/07
 ### Changed
+- last version for Unity 5.x
 - default AssetBundle List download path of demoProject is changed.
 
 
@@ -113,8 +119,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.29...HEAD
-[0.8.28]: https://github.com/sassembla/autoya/compare/0.8.28...0.8.29
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.30...HEAD
+[0.8.30]: https://github.com/sassembla/autoya/compare/0.8.29...0.8.30
+[0.8.29]: https://github.com/sassembla/autoya/compare/0.8.28...0.8.29
 [0.8.28]: https://github.com/sassembla/autoya/compare/0.8.27...0.8.28
 [0.8.27]: https://github.com/sassembla/autoya/compare/0.8.26...0.8.27
 [0.8.26]: https://github.com/sassembla/autoya/compare/0.8.25...0.8.26

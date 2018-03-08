@@ -39,6 +39,12 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
                 authenticated = true;
             }
         );
+        Autoya.Auth_SetOnBootAuthFailed(
+            (code, reason) =>
+            {
+                Debug.LogError("code:" + code + " reason:" + reason);
+            }
+        );
 
         yield return WaitUntil(
             () => authenticated,

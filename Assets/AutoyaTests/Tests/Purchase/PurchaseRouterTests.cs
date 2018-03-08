@@ -160,7 +160,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                 purchaseDone = true;
                 purchaseSucceeded = true;
             },
-            (pId, err, reason) =>
+            (pId, err, code, reason) =>
             {
                 purchaseDone = true;
                 failedReason = reason;
@@ -213,7 +213,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 // never success.
             },
-            (pId, err, reason) =>
+            (pId, err, code, reason) =>
             {
                 purchaseDone = true;
             }
@@ -330,7 +330,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 purchaseDone = true;
             },
-            (pId, err, reason) =>
+            (pId, err, code, reason) =>
             {
                 // never fail.
             }
@@ -422,7 +422,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                 // never success.
                 Fail();
             },
-            (pId, err, reason) =>
+            (pId, err, code, reason) =>
             {
                 purchaseDone = true;
             }

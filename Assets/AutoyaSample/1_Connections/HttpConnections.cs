@@ -12,8 +12,16 @@ public class HttpConnections : MonoBehaviour
     // Use this for initialization
     IEnumerator Start()
     {
+        Autoya.Auth_SetOnBootAuthFailed(
+            (code, reason) =>
+            {
+                Debug.Log("code:" + code + " reason:" + reason);
+            }
+        );
+
         while (!Autoya.Auth_IsAuthenticated())
         {
+            Debug.Log("waiting..");
             yield return null;
         }
 
