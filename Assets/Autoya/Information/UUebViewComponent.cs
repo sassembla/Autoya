@@ -63,9 +63,9 @@ namespace UUebView
             viewObj.name = viewName;
 
             var uuebView = viewObj.AddComponent<UUebViewComponent>();
-            var uuebViewCore = new UUebViewCore(uuebView, requestHeader, httpResponseHandlingDelegate);
+            var uuebViewCore = new UUebViewCore(uuebView, null, requestHeader, httpResponseHandlingDelegate);
             uuebView.SetCore(uuebViewCore);
-            uuebViewCore.LoadHtml(source, viewRect, eventReceiverGameObj);
+            uuebViewCore.LoadHtml(source, viewRect, 0, eventReceiverGameObj);
 
             return viewObj;
         }
@@ -84,7 +84,7 @@ namespace UUebView
             viewObj.name = viewName;
 
             var uuebView = viewObj.AddComponent<UUebViewComponent>();
-            var uuebViewCore = new UUebViewCore(uuebView, requestHeader, httpResponseHandlingDelegate);
+            var uuebViewCore = new UUebViewCore(uuebView, null, requestHeader, httpResponseHandlingDelegate);
             uuebView.SetCore(uuebViewCore);
             uuebViewCore.DownloadHtml(url, viewRect, eventReceiverGameObj);
 

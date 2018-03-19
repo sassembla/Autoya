@@ -10,7 +10,7 @@ namespace UUebView
 {
     public class Antimaterializer
     {
-        // private static string[] defaultTagStrs;
+        private static string[] defaultTagStrs;
 
         private static string[] CollectDefaultTag()
         {
@@ -31,7 +31,7 @@ namespace UUebView
         [MenuItem("Window/UUebView/Generate UUeb Tags From Selection")]
         public static void Antimaterialize()
         {
-            // defaultTagStrs = CollectDefaultTag();
+            defaultTagStrs = CollectDefaultTag();
 
             /*
                 ここでの処理は、ResourcesにUUebTagsを吐き出して、リスト自体をResourcesから取得し、そのリストにはResourcesからdepthAssetを読み込むパスがかいてある、
@@ -108,7 +108,16 @@ namespace UUebView
             {
                 sw.WriteLine(jsonStr);
             }
+
+            // オリジナルのオブジェクト自体をprefabとして別途保存する。
+            if (!Directory.Exists(exportBasePath + "/Editor/"))
+            {
+                Directory.CreateDirectory(exportBasePath + "/Editor/");
+            }
+
+            PrefabUtility.CreatePrefab(exportBasePath + "/Editor/" + viewName + ".prefab", target);
             AssetDatabase.Refresh();
+
             Debug.Log("finished antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath);
         }
 
@@ -278,9 +287,14 @@ namespace UUebView
                             type = TreeType.Container;// not Content_Text.
                             break;
                         }
+                    case "TextMeshProUGUI":
+                        {
+                            type = TreeType.Container;
+                            break;
+                        }
                     default:
                         {
-                            throw new Exception("unsupported second component on content. found component type:" + currentFirstComponent);
+                            throw new Exception("unsupported second component on content. found component type:" + currentFirstComponent.GetType().Name);
                         }
                 }
             }
@@ -290,7 +304,7 @@ namespace UUebView
 
             // このコンポーネントをprefab化する
             {
-                var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + contentName.ToUpper() + ".prefab";
+                var prefabPath = ConstSettings.FULLPATH_INFORMATION_RESOURCE + viewName + "/" + contentName.ToUpper() + ".prefab";
                 var dirPath = Path.GetDirectoryName(prefabPath);
 
                 FileController.CreateDirectoryRecursively(dirPath);
@@ -422,7 +436,7 @@ namespace UUebView
                     prefab名は大文字 になる。
                 */
                 {
-                    var prefabPath = "Assets/InformationResources/Resources/Views/" + viewName + "/" + layerName.ToUpper() + ".prefab";
+                    var prefabPath = ConstSettings.FULLPATH_INFORMATION_RESOURCE + viewName + "/" + layerName.ToUpper() + ".prefab";
                     var dirPath = Path.GetDirectoryName(prefabPath);
 
                     FileController.CreateDirectoryRecursively(dirPath);
