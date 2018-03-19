@@ -1,6 +1,6 @@
 # Autoya
 
-![loading](https://github.com/sassembla/Autoya/blob/master/doc/images/scr.svg)
+![loading](https://raw.githubusercontent.com/sassembla/Autoya/gh-pages/img/Autoya.svg)
 
 small, thin framework for Unity.  
 which contains essential game features.
@@ -13,6 +13,8 @@ which contains essential game features.
 * Purchase/IAP feature
 * Notification(local/remote)
 * Information
+
+see [document](https://sassembla.github.io/Autoya/).
 
 
 ## Motivation
@@ -52,7 +54,7 @@ already implemented.
 ### Notification(local/remote)
 
 iOS: already implemented.  
-Android: in 2017.
+Android: not yet.
 
 ### Information
 already implemented.
@@ -69,10 +71,10 @@ unitypackage is ready!
 2. add Purchase plugin via Unity Services.
 3. done!
 
+
 ## Usage
 all example usage is in Assets/AutoyaSamples folder.
 
-## Document
-[gh-pages](https://sassembla.github.io/Autoya/)
+
 
 
