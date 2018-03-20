@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/2015/12/romver-romantic-versioning/).
 
 ## [Unreleased]
+
+## [0.8.32]	- 2018/03/20
+### Changed
+- Adopted to Unity 2017.3.x.
+
+
 ## [0.8.31]	- 2018/03/20
 ### Changed
 - Update UUebView to 1.0.4
@@ -123,7 +129,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.31...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.32...HEAD
+[0.8.32]: https://github.com/sassembla/autoya/compare/0.8.31...0.8.32
 [0.8.31]: https://github.com/sassembla/autoya/compare/0.8.30...0.8.31
 [0.8.30]: https://github.com/sassembla/autoya/compare/0.8.29...0.8.30
 [0.8.29]: https://github.com/sassembla/autoya/compare/0.8.28...0.8.29
