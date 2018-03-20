@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using AutoyaFramework.Settings.Connection;
 using UnityEngine.Networking;
 
 /**
@@ -28,6 +29,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -80,6 +82,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -131,6 +134,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -182,6 +186,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -234,6 +239,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -286,6 +292,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -337,6 +344,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -388,6 +396,7 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
+                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
