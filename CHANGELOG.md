@@ -6,6 +6,14 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.33]	- 2018/03/22
+### Changed
+- AssetBundle Preload feature method signature is changed.
+
+### Fix
+- AssetBundle Preload feature can be use with LoadAsset without conflict of download.
+
+
 ## [0.8.32]	- 2018/03/20
 ### Changed
 - Adopted to Unity 2017.3.x.
@@ -129,7 +137,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.32...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.33...HEAD
+[0.8.33]: https://github.com/sassembla/autoya/compare/0.8.32...0.8.33
 [0.8.32]: https://github.com/sassembla/autoya/compare/0.8.31...0.8.32
 [0.8.31]: https://github.com/sassembla/autoya/compare/0.8.30...0.8.31
 [0.8.30]: https://github.com/sassembla/autoya/compare/0.8.29...0.8.30
