@@ -48,9 +48,9 @@ namespace AutoyaFramework.AssetBundles
         /*
 			delegate for supply assetBundle get request header geneate func for modules.
 		*/
-        public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
+        public delegate Dictionary<string, string> PreloadListGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
         private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
-        private readonly AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+        private readonly PreloadListGetRequestHeaderDelegate preloadListGetRequestHeaderDelegate;
 
         private Dictionary<string, string> BasicRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader)
         {
@@ -67,15 +67,15 @@ namespace AutoyaFramework.AssetBundles
             failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
 
-        public AssetBundlePreloader(AssetBundleGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
+        public AssetBundlePreloader(PreloadListGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
         {
             if (requestHeader != null)
             {
-                this.assetBundleGetRequestHeaderDelegate = requestHeader;
+                this.preloadListGetRequestHeaderDelegate = requestHeader;
             }
             else
             {
-                this.assetBundleGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
+                this.preloadListGetRequestHeaderDelegate = BasicRequestHeaderDelegate;
             }
 
             if (httpResponseHandlingDelegate != null)
@@ -92,7 +92,7 @@ namespace AutoyaFramework.AssetBundles
 			preload assetBundle from list url.
 		 */
 
-        public IEnumerator Preload(AssetBundleLoader loader, string listUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1, double timeoutSec = 0)
+        public IEnumerator Preload(AssetBundleLoader loader, string listUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, AssetBundleLoadError, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1, double timeoutSec = 0)
         {
             if (0 < maxParallelCount)
             {
@@ -117,7 +117,7 @@ namespace AutoyaFramework.AssetBundles
             }
 
             var connectionId = AssetBundlesSettings.ASSETBUNDLES_PRELOADLIST_PREFIX + Guid.NewGuid().ToString();
-            var reqHeader = assetBundleGetRequestHeaderDelegate(listUrl, new Dictionary<string, string>());
+            var reqHeader = preloadListGetRequestHeaderDelegate(listUrl, new Dictionary<string, string>());
 
             PreloadList list = null;
             Action<string, object> listDonwloadSucceeded = (conId, listData) =>
@@ -169,7 +169,7 @@ namespace AutoyaFramework.AssetBundles
         }
 
 
-        public IEnumerator Preload(AssetBundleLoader loader, PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, int, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1)
+        public IEnumerator Preload(AssetBundleLoader loader, PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, AssetBundleLoadError, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1)
         {
             if (0 < maxParallelCount)
             {
@@ -221,22 +221,18 @@ namespace AutoyaFramework.AssetBundles
             /*
 				assetBundle downloaded actions.
 			 */
-            Action<string, object> bundlePreloadSucceededAct = (conId, obj) =>
+            Action<string> bundlePreloadSucceededAct = (bundleName) =>
             {
-                // unload assetBundle anyway.
-                // downloaded assetBundle is cached on storage.
-                var bundle = obj as AssetBundle;
-                bundle.Unload(true);
-
                 currentDownloadCount++;
+                // Debug.Log("bundleName:" + bundleName);
 
                 var count = ((currentDownloadCount * 100.0) / totalLoadingCoroutinesCount) * 0.01;
                 progress(count);
             };
 
-            Action<string, int, string, AutoyaStatus> bundlePreloadFailedAct = (bundleName, code, reason, autoyaStatus) =>
+            Action<string, AssetBundleLoadError, string, AutoyaStatus> bundlePreloadFailedAct = (bundleName, error, reason, autoyaStatus) =>
             {
-                bundlePreloadFailed(bundleName, code, reason, autoyaStatus);
+                bundlePreloadFailed(bundleName, error, reason, autoyaStatus);
             };
 
             var wholeDownloadableAssetBundleNames = new List<string>();
@@ -248,16 +244,16 @@ namespace AutoyaFramework.AssetBundles
                     continue;
                 }
 
-                // reserve this assetBundle and dependencies as "should be download".
+                // reserve this assetBundle name.
                 wholeDownloadableAssetBundleNames.Add(targetAssetBundleName);
 
+                // add only 1st level dependent AsstBundle Names.
                 var dependentBundleNames = loader.AssetBundleInfoFromBundleName(targetAssetBundleName).dependsBundleNames;
                 wholeDownloadableAssetBundleNames.AddRange(dependentBundleNames);
             }
 
             var shouldDownloadAssetBundleNamesCandidate = wholeDownloadableAssetBundleNames.Distinct().ToArray();
             var shouldDownloadAssetBundleNames = new List<string>();
-
 
             foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNamesCandidate)
             {
@@ -280,10 +276,12 @@ namespace AutoyaFramework.AssetBundles
                 shouldDownloadAssetBundleNames.Add(shouldDownloadAssetBundleName);
             }
 
-
+            // ここまでで、DLする対象のAssetBundleと、そのAssetBundleが依存しているAssetBundleまでが確保できている。
 
             /*
 				ask should continue or not before downloading target assetBundles.
+                estimation is not considered about duplication of download same AssetBundle at same time.
+                this is max case.
 			 */
             var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray(), onBeforePreloading);
             while (shouldContinueCor.MoveNext())
@@ -305,7 +303,6 @@ namespace AutoyaFramework.AssetBundles
             {
                 var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
                 var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
-                var bundleReqHeader = assetBundleGetRequestHeaderDelegate(bundleUrl, new Dictionary<string, string>());
 
                 var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
                 var crc = targetBundleInfo.crc;
@@ -320,20 +317,22 @@ namespace AutoyaFramework.AssetBundles
 
                 var bundlePreloadTimeoutTick = 0;// preloader does not have limit now.
 
-                var cor = loader.DownloadAssetBundle(
+                /*
+                    AssetBundleのダウンロードを行う。
+                    依存取得はoffで、ハンドリングはAssetBundleLoaderのものを使用する。
+                 */
+                var cor = loader.LoadAssetBundleThenNotUse(
                     shouldDownloadAssetBundleName,
-                    bundleLoadConId,
-                    bundleReqHeader,
-                    bundleUrl,
                     crc,
                     hash,
-                    (conId, code, responseHeaders, bundle) =>
+                    false,// not download more dependency.
+                    downloadedBundleName =>
                     {
-                        httpResponseHandlingDelegate(conId, responseHeaders, code, bundle, string.Empty, bundlePreloadSucceededAct, bundlePreloadFailedAct);
+                        bundlePreloadSucceededAct(downloadedBundleName);
                     },
-                    (conId, code, reason, responseHeaders) =>
+                    (downloadedBundleName, error, reason, autoyaStatus) =>
                     {
-                        httpResponseHandlingDelegate(conId, responseHeaders, code, string.Empty, reason, bundlePreloadSucceededAct, bundlePreloadFailedAct);
+                        bundlePreloadFailedAct(downloadedBundleName, error, reason, autoyaStatus);
                     },
                     bundlePreloadTimeoutTick
                 );

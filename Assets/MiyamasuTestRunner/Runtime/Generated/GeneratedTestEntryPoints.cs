@@ -1039,6 +1039,104 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator PreloadAndLoadSameAssetBundle() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "PreloadAndLoadSameAssetBundle");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.PreloadAndLoadSameAssetBundle();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator PreloadAndLoadDependentAssetBundle() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "PreloadAndLoadDependentAssetBundle");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.PreloadAndLoadDependentAssetBundle();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator PreloadAndLoadDependentAssetBundle_Rev() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "PreloadAndLoadDependentAssetBundle_Rev");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.PreloadAndLoadDependentAssetBundle_Rev();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator LoadAndPreloadDependentAssetBundle() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "LoadAndPreloadDependentAssetBundle");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadAndPreloadDependentAssetBundle();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator LoadAndPreloadDependentAssetBundle_Rev() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "LoadAndPreloadDependentAssetBundle_Rev");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadAndPreloadDependentAssetBundle_Rev();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator PreloadAndLoadAllAssetBundle() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "PreloadAndLoadAllAssetBundle");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.PreloadAndLoadAllAssetBundle();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator PreloadAndLoadAllAssetBundle_Rev() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "PreloadAndLoadAllAssetBundle_Rev");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.PreloadAndLoadAllAssetBundle_Rev();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class AssetUpdateTests_Miyamasu {
     [UnityTest] public IEnumerator ReceiveFirstList() {

@@ -50,7 +50,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var listExists = Autoya.AssetBundle_IsAssetBundleFeatureReady();
         True(!listExists, "exists, not intended.");
 
-        True(Caching.ClearCache());
+        True(Caching.ClearCache(), "failed to clean cache.");
 
         Autoya.Debug_Manifest_RenewRuntimeManifest();
     }
@@ -1435,5 +1435,656 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         // リソースリストの復帰。
         Autoya.Debug_Manifest_RenewRuntimeManifest();
+    }
+
+    [MTest]
+    public IEnumerator PreloadAndLoadSameAssetBundle()
+    {
+        /*
+            同じABを同時にLoadAssetとPreloadで読む。
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloaded = false;
+        var loadAssetSucceeded = false;
+
+        /*
+            start loadAsset and preload against same assetBundle.
+         */
+        Autoya.AssetBundle_LoadAsset<GameObject>(
+            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName1.prefab",
+            (name, prefab) =>
+            {
+                loadAssetSucceeded = true;
+            },
+            (name, error, reason, status) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to load Asset. error:" + error + " reason:" + reason);
+            }
+        );
+
+        var preloadList = new PreloadList("test", new string[] { "texturename1" });
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            10
+        );
+
+        yield return WaitUntil(
+            () => preloaded && loadAssetSucceeded,
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
+    }
+
+
+    [MTest]
+    public IEnumerator PreloadAndLoadDependentAssetBundle()
+    {
+        /*
+            あるAssetBundleをロード開始し、そのBundleが依存しているBundleを同時にPreloadで得る。
+            a -> b
+            +
+            preload b
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloaded = false;
+        var loadAssetSucceeded = false;
+
+
+        Autoya.AssetBundle_LoadAsset<GameObject>(
+            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab",
+            (name, prefab) =>
+            {
+                loadAssetSucceeded = true;
+            },
+            (name, error, reason, status) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to load Asset. error:" + error + " reason:" + reason);
+            }
+        );
+
+        var preloadList = new PreloadList("test", new string[] { "texturename" });
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                True(willLoadBundleNames.Length == 1);
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            10
+        );
+
+        yield return WaitUntil(
+            () => preloaded && loadAssetSucceeded,
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
+    }
+
+    [MTest]
+    public IEnumerator PreloadAndLoadDependentAssetBundle_Rev()
+    {
+        /*
+            あるAssetBundleをロード開始し、そのBundleが依存しているBundleを同時にPreloadで得る。
+            a -> b
+            +
+            preload b
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloadListPath = "sample.preloadList.json";
+        // this will become ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + sample.preloadList.json.
+
+        var preloaded = false;
+        var loadAssetSucceeded = false;
+
+        var preloadList = new PreloadList("test", new string[] { "texturename" });
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                True(willLoadBundleNames.Length == 1);
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            10
+        );
+
+
+        Autoya.AssetBundle_LoadAsset<GameObject>(
+            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab",
+            (name, prefab) =>
+            {
+                loadAssetSucceeded = true;
+            },
+            (name, error, reason, status) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to load Asset. error:" + error + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => preloaded && loadAssetSucceeded,
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
+    }
+
+    [MTest]
+    public IEnumerator LoadAndPreloadDependentAssetBundle()
+    {
+        /*
+            あるAssetBundleをPreload開始し、そのBundleが依存しているBundleを同時にLoadAssetで得る。
+            preload a
+            +
+            a -> b
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloaded = false;
+        var loadAssetSucceeded = false;
+
+        Autoya.AssetBundle_LoadAsset<Texture2D>(
+            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
+            (name, tex) =>
+            {
+                loadAssetSucceeded = true;
+            },
+            (name, error, reason, status) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to load Asset. error:" + error + " reason:" + reason);
+            }
+        );
+
+        var preloadList = new PreloadList("testDependentAssetBundle", new string[] { "nestedprefab" });
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                True(willLoadBundleNames.Length == 2);
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            10
+        );
+
+        yield return WaitUntil(
+            () => preloaded && loadAssetSucceeded,
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
+    }
+
+    [MTest]
+    public IEnumerator LoadAndPreloadDependentAssetBundle_Rev()
+    {
+        /*
+            あるAssetBundleをPreload開始し、そのBundleが依存しているBundleを同時にLoadAssetで得る。
+            preload a
+            +
+            a -> b
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloaded = false;
+        var loadAssetSucceeded = false;
+
+        var preloadList = new PreloadList("testDependentAssetBundle", new string[] { "nestedprefab" });
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                True(willLoadBundleNames.Length == 2);
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            10
+        );
+
+        Autoya.AssetBundle_LoadAsset<Texture2D>(
+            "Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/textureName.png",
+            (name, tex) =>
+            {
+                loadAssetSucceeded = true;
+            },
+            (name, error, reason, status) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to load Asset. error:" + error + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => preloaded && loadAssetSucceeded,
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
+    }
+
+    [MTest]
+    public IEnumerator PreloadAndLoadAllAssetBundle()
+    {
+        /*
+            全てのAssetBundleのロード開始し、同時にPreloadも開始する。            
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloaded = false;
+
+        var assetBundleLists = Autoya.AssetBundle_AssetBundleLists();
+        var assetNames = assetBundleLists.SelectMany(list => list.assetBundles).SelectMany(bundleInfo => bundleInfo.assetNames).ToArray();
+
+        var loadAssetSucceeded = new Dictionary<string, bool>();
+
+        foreach (var assetName in assetNames)
+        {
+            loadAssetSucceeded[assetName] = false;
+
+            Autoya.AssetBundle_LoadAsset<UnityEngine.Object>(
+                assetName,
+                (name, obj) =>
+                {
+                    Debug.Log("name:" + name);
+                    loadAssetSucceeded[assetName] = true;
+                },
+                (name, error, reason, status) =>
+                {
+                    Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                    Autoya.AssetBundle_DeleteAllStorageCache();
+                    Fail("failed to load Asset. error:" + error + " reason:" + reason);
+                }
+            );
+        }
+
+        var preloadListTargetBundleNames = assetBundleLists.SelectMany(list => list.assetBundles).Select(bundleInfo => bundleInfo.bundleName).ToArray();
+        var preloadList = new PreloadList("allAssetBundles", preloadListTargetBundleNames);
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                // Debug.Log("willLoadBundleNames:" + string.Join(", ", willLoadBundleNames));
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            100
+        );
+
+        yield return WaitUntil(
+            () =>
+            {
+                var notDone = loadAssetSucceeded.Where((i, c) => !i.Value).Any();
+                if (notDone)
+                {
+                    return false;
+                }
+
+                // loadAssetSucceeded is done.
+
+                return preloaded;
+            },
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
+    }
+
+    [MTest]
+    public IEnumerator PreloadAndLoadAllAssetBundle_Rev()
+    {
+        /*
+            全てのABのPreloadを開始し、全てのAssetBundleのロードも開始する。
+         */
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var preloaded = false;
+
+        var assetBundleLists = Autoya.AssetBundle_AssetBundleLists();
+        var assetNames = assetBundleLists.SelectMany(list => list.assetBundles).SelectMany(bundleInfo => bundleInfo.assetNames).ToArray();
+
+        var loadAssetSucceeded = new Dictionary<string, bool>();
+
+        var preloadListTargetBundleNames = assetBundleLists.SelectMany(list => list.assetBundles).Select(bundleInfo => bundleInfo.bundleName).ToArray();
+        var preloadList = new PreloadList("allAssetBundles", preloadListTargetBundleNames);
+
+        // download preloadList from web then preload described assetBundles.
+        Autoya.AssetBundle_PreloadByList(
+            preloadList,
+            (willLoadBundleNames, proceed, cancel) =>
+            {
+                // Debug.Log("willLoadBundleNames:" + string.Join(", ", willLoadBundleNames));
+                proceed();
+            },
+            progress =>
+            {
+                // Debug.Log("progress:" + progress);
+            },
+            () =>
+            {
+                preloaded = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("preload failed. code:" + code + " reason:" + reason);
+            },
+            (downloadFailedAssetBundleName, code, reason, autoyaStatus) =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                Fail("failed to preload assetBundle:" + downloadFailedAssetBundleName + ". code:" + code + " reason:" + reason);
+            },
+            100
+        );
+
+        foreach (var assetName in assetNames)
+        {
+            loadAssetSucceeded[assetName] = false;
+
+            Autoya.AssetBundle_LoadAsset<UnityEngine.Object>(
+                assetName,
+                (name, obj) =>
+                {
+                    loadAssetSucceeded[assetName] = true;
+                },
+                (name, error, reason, status) =>
+                {
+                    Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                    Autoya.AssetBundle_DeleteAllStorageCache();
+                    Fail("failed to load Asset. error:" + error + " reason:" + reason);
+                }
+            );
+        }
+
+        yield return WaitUntil(
+            () =>
+            {
+                var notDone = loadAssetSucceeded.Where((i, c) => !i.Value).Any();
+                if (notDone)
+                {
+                    return false;
+                }
+
+                // loadAssetSucceeded is done.
+
+                return preloaded;
+            },
+            () =>
+            {
+                Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                Autoya.AssetBundle_DeleteAllStorageCache();
+                throw new TimeoutException("timeout.");
+            }
+        );
     }
 }

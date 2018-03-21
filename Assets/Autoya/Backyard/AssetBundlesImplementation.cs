@@ -750,7 +750,7 @@ namespace AutoyaFramework
                         httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
                     };
 
-                    AssetBundlePreloader.AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>
+                    AssetBundlePreloader.PreloadListGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>
                     {
                         return assetBundlePreloadListGetRequestHeaderDelegate(p1, p2);
                     };
@@ -774,7 +774,7 @@ namespace AutoyaFramework
                 then if execute proceed(), download will be started. 
                 else, execute cancel(), download will be cancelled.
          */
-        public static void AssetBundle_Preload(string preloadListUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
+        public static void AssetBundle_Preload(string preloadListUrl, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, AssetBundleLoadError, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
         {
             var cont = CheckAssetBundlesFeatureCondition(
                 (code, reason) =>
@@ -817,7 +817,7 @@ namespace AutoyaFramework
 
                 else, execute cancel(), download will be cancelled.
          */
-        public static void AssetBundle_PreloadByList(PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, int, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec = 0)
+        public static void AssetBundle_PreloadByList(PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadListDownloadFailed, Action<string, AssetBundleLoadError, string, AutoyaStatus> bundleDownloadFailed, int maxParallelCount, double timeoutSec = 0)
         {
             var cont = CheckAssetBundlesFeatureCondition(
                 (code, reason) =>
