@@ -58,7 +58,16 @@ public class LoadAssetBundle : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        Autoya.AssetBundle_DeleteAllStorageCache();
+        Autoya.AssetBundle_FactoryReset(
+            () =>
+            {
+                Debug.Log("succeeded to factory reset AssetBundles.");
+            },
+            (error, reason) =>
+            {
+                Debug.Log("failed to factory reset AssetBundles. error:" + error + " reason:" + reason);
+            }
+        );
     }
 
 }

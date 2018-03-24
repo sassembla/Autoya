@@ -935,6 +935,36 @@ namespace AutoyaFramework
         }
 
 
+        /**
+            factory reset.
+         */
+        public static void AssetBundle_FactoryReset(Action succeeded, Action<FactoryResetError, string> failed)
+        {
+            Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+            var discarded = Autoya.AssetBundle_DeleteAllStorageCache();
+            if (!discarded)
+            {
+                failed(FactoryResetError.DeleteAllStorageCache_Failed, "failed to delete cached AssetBundles. someone uses AssetBundles outside of Autoya.");
+            }
+            Autoya.AssetBundle_DiscardAssetBundleList(
+                () =>
+                {
+                    succeeded();
+                },
+                (err, reason) =>
+                {
+                    failed(FactoryResetError.DiscardAssetBundleList_Failed, "failed to delete AssetBundleList.");
+                }
+            );
+        }
+
+        public enum FactoryResetError
+        {
+            DeleteAllStorageCache_Failed,
+            DiscardAssetBundleList_Failed,
+
+        }
+
         /*
             debug
          */

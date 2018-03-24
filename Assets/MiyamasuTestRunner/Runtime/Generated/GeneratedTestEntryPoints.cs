@@ -1137,6 +1137,20 @@ public class AssetBundlesImplementationTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator FactoryReset() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "FactoryReset");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.FactoryReset();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class AssetUpdateTests_Miyamasu {
     [UnityTest] public IEnumerator ReceiveFirstList() {
