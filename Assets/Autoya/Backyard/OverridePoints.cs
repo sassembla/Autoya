@@ -346,7 +346,7 @@ namespace AutoyaFramework
         }
 
         /**
-            should return identities of AssetBundleLists in persisted place.
+            should return identities of AssetBundleLists from persisted place.
          */
         private string[] LoadAppUsingAssetBundleListIdentities()
         {
@@ -393,9 +393,16 @@ namespace AutoyaFramework
             receivedNewAssetBundleIdentity is from: response header of some http connection.
             rceivedNewAssetBundleListVersion is from : response header of some http connection.
 		 */
-        private Func<string, string, string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string basePath, string receivedNewAssetBundleIdentity, string rceivedNewAssetBundleListVersion) =>
+        private Func<string, string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string receivedNewAssetBundleListIdentity, string rceivedNewAssetBundleListVersion) =>
         {
-            var url = basePath + receivedNewAssetBundleIdentity + "/" + rceivedNewAssetBundleListVersion + "/" + receivedNewAssetBundleIdentity + ".json";
+            var targetListInfo = Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Where(info => info.listIdentity == receivedNewAssetBundleListIdentity).FirstOrDefault();
+            if (targetListInfo == null)
+            {
+                throw new Exception("failed to detect bundle info from runtime manifest. requested listIdentity:" + receivedNewAssetBundleListIdentity + " is not contained in runtime manifest.");
+            }
+
+            var url = targetListInfo.listDownloadUrl + receivedNewAssetBundleListIdentity + "/" + rceivedNewAssetBundleListVersion + "/" + receivedNewAssetBundleListIdentity + ".json";
+
             return ShouldRequestOrNot.Yes(url);
             // return ShouldRequestOrNot.No();
         };
@@ -500,6 +507,14 @@ namespace AutoyaFramework
         private string OnLoadRuntimeManifest()
         {
             return _autoyaFilePersistence.Load(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME);
+        }
+
+        /**
+            called when runtimeManifest shoudl be restore.
+         */
+        private void OnRestoreRuntimeManifest()
+        {
+            _autoyaFilePersistence.Delete(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME);
         }
     }
 }

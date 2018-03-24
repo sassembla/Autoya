@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using AutoyaFramework;
 using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
@@ -106,14 +107,9 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
 
 
-    private Autoya.ShouldRequestOrNot RequestYes(string basePath, string identity, string newVersion)
+    private Autoya.ShouldRequestOrNot RequestYes(string identity, string newVersion)
     {
-        // ここだな〜〜どうするかな〜〜。自分でリストを取得した時に、そのリストのアップデートを行わせるためのデータをどうやって入れるか。
-        /*
-            自分でリストを取得する
-            リストのバージョンとidentityは手に入るので、それを分解するようなコードからbasePathを出す(これ絶対難しい)
-            or basePathみたいなパラメータをリストに入れるようにする
-         */
+        var basePath = Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Where(resInfo => resInfo.listIdentity == identity).FirstOrDefault().listDownloadUrl;
         var url = basePath + "/" + identity + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + newVersion + "/" + identity + ".json";
         return Autoya.ShouldRequestOrNot.Yes(url);
     }
@@ -181,11 +177,11 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            (basePath, identity, newVersion) =>
+            (identity, newVersion) =>
             {
                 listWillBeDownloaded = true;
                 True(newVersion == "1.0.1");
-                return RequestYes(basePath, identity, newVersion);
+                return RequestYes(identity, newVersion);
             }
         );
 
@@ -253,10 +249,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            (basePath, identity, newVersion) =>
+            (identity, newVersion) =>
             {
                 True(newVersion == "1.0.1");
-                return RequestYes(basePath, identity, newVersion);
+                return RequestYes(identity, newVersion);
             }
         );
 
@@ -322,11 +318,11 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         var listWillBeDownloaded = false;
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            (basePath, identity, newVersion) =>
+            (identity, newVersion) =>
             {
                 listWillBeDownloaded = true;
                 True(newVersion == "1.0.1");
-                return RequestYes(basePath, identity, newVersion);
+                return RequestYes(identity, newVersion);
             }
         );
 
@@ -396,10 +392,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
 
         // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
         Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
-            (basePath, identity, newVersion) =>
+            (identity, newVersion) =>
             {
                 True(newVersion == "1.0.1");
-                return RequestYes(basePath, identity, newVersion);
+                return RequestYes(identity, newVersion);
             }
         );
 

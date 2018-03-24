@@ -872,13 +872,13 @@ namespace AutoyaFramework
                         var newVersion = listItem.Value;
 
                         // compare with runtimeManifest data.
-                        var resourceInfos = _appManifestStore.GetRuntimeManifest().resourceInfos;
-                        foreach (var resourceInfo in resourceInfos)
+                        var listIdentities = LoadAppUsingAssetBundleListIdentities();
+                        foreach (var listIdentity in listIdentities)
                         {
-                            if (resourceInfo.listIdentity == identity)
+                            if (listIdentity == identity)
                             {
                                 // request new version.
-                                var answer = OnRequestNewAssetBundleList(resourceInfo.listDownloadUrl, resourceInfo.listIdentity, newVersion);
+                                var answer = OnRequestNewAssetBundleList(listIdentity, newVersion);
                                 if (answer.doOrNot)
                                 {
                                     // start download new list.

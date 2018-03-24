@@ -974,11 +974,11 @@ namespace AutoyaFramework
             return autoya.assetBundleFeatState;
         }
 
-        public static void Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(Func<string, string, string, ShouldRequestOrNot> debugAct)
+        public static void Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(Func<string, string, ShouldRequestOrNot> debugAct)
         {
-            autoya.OnRequestNewAssetBundleList = (basePath, identity, currentVersion) =>
+            autoya.OnRequestNewAssetBundleList = (identity, currentVersion) =>
             {
-                return debugAct(basePath, identity, currentVersion);
+                return debugAct(identity, currentVersion);
             };
         }
 
