@@ -1223,6 +1223,20 @@ public class AssetUpdateTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator ReceiveUpdatedListThenListWillBeUpdatedThenRestore() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveUpdatedListThenListWillBeUpdatedThenRestore");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveUpdatedListThenListWillBeUpdatedThenRestore();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
 }
 public class AuthenticatedHTTPImplementationTests_Miyamasu {
     [UnityTest] public IEnumerator AutoyaHTTPGet() {

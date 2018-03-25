@@ -125,9 +125,7 @@ namespace AutoyaFramework
             }
 
             // reset runtime manifest resource infos.
-            var currentRuntimeManifest = Autoya.Manifest_LoadRuntimeManifest();
-            currentRuntimeManifest.resourceInfos = new AppManifest.RuntimeManifestObject().resourceInfos;
-            Autoya.Manifest_UpdateRuntimeManifest(currentRuntimeManifest);
+            autoya.OnRestoreRuntimeManifest();
 
             autoya.assetBundleFeatState = AssetBundlesFeatureState.None;
 
@@ -237,7 +235,7 @@ namespace AutoyaFramework
                     (downloadedUrl, newList) =>
                     {
                         // got new list.
-                        OnUpdatingListReceived(newList);
+                        mainthreadDispatcher.Commit(OnUpdatingListReceived(newList));
                     },
                     (code, reason, autoyaStatus) =>
                     {
@@ -249,44 +247,72 @@ namespace AutoyaFramework
             );
         }
 
-        private void OnUpdatingListReceived(AssetBundleList newList)
+        private IEnumerator OnUpdatingListReceived(AssetBundleList newList)
         {
             var assetUsingCondition = GetCurrentAssetBundleUsingCondition(newList);
 
-            if (ShouldUpdateToNewAssetBundleList(assetUsingCondition))
-            {
-                var result = StoreAssetBundleListToStorage(newList);
-                if (result)
+            var proceed = false;
+            var done = false;
+            ShouldUpdateToNewAssetBundleList(
+                assetUsingCondition,
+                () =>
                 {
-                    // update runtime manifest.
-                    {
-                        var newListIdentity = newList.identity;
-                        var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
-                        foreach (var resInfo in runtimeManifest.resourceInfos)
-                        {
-                            if (resInfo.listIdentity == newListIdentity)
-                            {
-                                resInfo.listVersion = newList.version;
-                                break;
-                            }
-                        }
-                        Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
-                    }
-
-                    ReadyLoaderAndPreloader(newList);
-
-                    // finish downloading new assetBundleList.
-                    newListDownloaderState = NewListDownloaderState.Ready;
-                    return;
+                    done = true;
+                    proceed = true;
+                },
+                () =>
+                {
+                    done = true;
+                    proceed = false;
                 }
+            );
 
-                // failed to store new assetBundleList.
-
+            while (!done)
+            {
+                yield return null;
             }
 
-            // finish downloading new assetBundleList.
+            if (!proceed)
+            {
+                yield break;
+            }
+
+            // store AssetBundleList and renew Loader and Preloader.
+
+            var result = StoreAssetBundleListToStorage(newList);
+            if (result)
+            {
+                // update runtime manifest.
+                {
+                    var newListIdentity = newList.identity;
+                    var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+                    foreach (var resInfo in runtimeManifest.resourceInfos)
+                    {
+                        if (resInfo.listIdentity == newListIdentity)
+                        {
+                            resInfo.listVersion = newList.version;
+                            break;
+                        }
+                    }
+                    Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
+                }
+
+                ReadyLoaderAndPreloader(newList);
+
+                // finish downloading new assetBundleList.
+                newListDownloaderState = NewListDownloaderState.Ready;
+                yield break;
+            }
+
+            // failed to store new assetBundleList.
+            var cor = OnNewAssetBundleListStoreFailed("failed to store new AssetBundleList to storage. maybe shortage of storage size.");
+            while (cor.MoveNext())
+            {
+                yield return null;
+            }
+
+            // failed to store AssetBundleList. finish downloading new assetBundleList anyway.
             newListDownloaderState = NewListDownloaderState.Ready;
-            return;
         }
 
         public enum ListDownloadResult
@@ -664,7 +690,7 @@ namespace AutoyaFramework
             );
         }
 
-        public static void AssetBundle_UnloadOnMemoryAssetBundles()
+        public static bool AssetBundle_UnloadOnMemoryAssetBundles()
         {
             var cont = CheckAssetBundlesFeatureCondition(
                 (code, reason) =>
@@ -675,10 +701,11 @@ namespace AutoyaFramework
 
             if (!cont)
             {
-                return;
+                return false;
             }
 
             autoya._assetBundleLoader.UnloadOnMemoryAssetBundles();
+            return true;
         }
 
         public static void AssetBundle_UnloadOnMemoryAssetBundle(string bundleName)
@@ -940,12 +967,20 @@ namespace AutoyaFramework
          */
         public static void AssetBundle_FactoryReset(Action succeeded, Action<FactoryResetError, string> failed)
         {
-            Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+            var unloaded = Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+            if (!unloaded)
+            {
+                failed(FactoryResetError.UnloadAssetBundles_Failed, "failed to unload AssetBundles on memory.");
+                return;
+            }
+
             var discarded = Autoya.AssetBundle_DeleteAllStorageCache();
             if (!discarded)
             {
-                failed(FactoryResetError.DeleteAllStorageCache_Failed, "failed to delete cached AssetBundles. someone uses AssetBundles outside of Autoya.");
+                failed(FactoryResetError.DeleteAllStorageCache_Failed, "failed to delete cached AssetBundles.");
+                return;
             }
+
             Autoya.AssetBundle_DiscardAssetBundleList(
                 () =>
                 {
@@ -960,6 +995,7 @@ namespace AutoyaFramework
 
         public enum FactoryResetError
         {
+            UnloadAssetBundles_Failed,
             DeleteAllStorageCache_Failed,
             DiscardAssetBundleList_Failed,
 
@@ -982,11 +1018,11 @@ namespace AutoyaFramework
             };
         }
 
-        public static void Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(Func<CurrentUsingBundleCondition, bool> debugAct)
+        public static void Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(Action<CurrentUsingBundleCondition, Action, Action> debugAct)
         {
-            autoya.ShouldUpdateToNewAssetBundleList = condition =>
+            autoya.ShouldUpdateToNewAssetBundleList = (condition, proceed, cancel) =>
             {
-                return debugAct(condition);
+                debugAct(condition, proceed, cancel);
             };
         }
 

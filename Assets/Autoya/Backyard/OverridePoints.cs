@@ -426,7 +426,7 @@ namespace AutoyaFramework
                 current loaded && changed(in ignored new list) assets is nothing changed.
                 internal list state will become "pending update assetBundleList" state.
          */
-        private Func<CurrentUsingBundleCondition, bool> ShouldUpdateToNewAssetBundleList = (CurrentUsingBundleCondition condition) =>
+        private Action<CurrentUsingBundleCondition, Action, Action> ShouldUpdateToNewAssetBundleList = (CurrentUsingBundleCondition condition, Action proceed, Action cancel) =>
         {
             /*
                 according to your app's state & value of condition,
@@ -434,20 +434,31 @@ namespace AutoyaFramework
 
                 e,g, 
                     when your app's state is under battle, and you determine that no need to change asset now,
-                    should 
-                        retrun false. 
+                    should execute
+                        cancel(); 
                     list update will be postponed.
 
 
                     otherwise when your app's state is good state to update assets,
-                    should 
-                        retrun true
+                    should execute
+                        proceed();
+
                     for update assetBundleList.
+
                     app's assetBundleList will be updated to the latest and ready for load/download latest assetBundles.
                     using "Preload" feature on the beginning of app's state will help updating latest assets.
              */
-            return true;
+            proceed();
         };
+
+        /**
+            fire when failed to store new AssetBundleList to storage.
+            just show failed reason and what should be do for success next time.
+         */
+        private IEnumerator OnNewAssetBundleListStoreFailed(string reason)
+        {
+            yield break;
+        }
 
         /**
             return request headers for getting AssetBundleList.
@@ -510,11 +521,12 @@ namespace AutoyaFramework
         }
 
         /**
-            called when runtimeManifest shoudl be restore.
+            called when runtimeManifest should be restore.
          */
         private void OnRestoreRuntimeManifest()
         {
             _autoyaFilePersistence.Delete(AppSettings.APP_STORED_RUNTIME_MANIFEST_DOMAIN, AppSettings.APP_STORED_RUNTIME_MANIFEST_FILENAME);
+            _appManifestStore.ReloadFromStorage();
         }
     }
 }

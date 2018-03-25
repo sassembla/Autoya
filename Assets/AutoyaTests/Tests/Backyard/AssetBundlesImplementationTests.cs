@@ -823,13 +823,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
-                return true;
+                proceed();
             }
         );
 
@@ -912,13 +912,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
-                return true;
+                proceed();
             }
         );
 
@@ -1013,13 +1013,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
-                return true;
+                proceed();
             }
         );
 
@@ -1126,13 +1126,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 if (condition == Autoya.CurrentUsingBundleCondition.UsingAssetsAreChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdate = true;
                 }
-                return true;
+                proceed();
             }
         );
 
@@ -1342,13 +1342,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         );
 
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 if (condition == Autoya.CurrentUsingBundleCondition.NoUsingAssetsChanged)
                 {
                     listContainsUsingAssetsAndShouldBeUpdateCount++;
                 }
-                return true;
+                proceed();
             }
         );
 

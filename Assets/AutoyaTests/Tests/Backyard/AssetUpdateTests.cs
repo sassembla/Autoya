@@ -188,10 +188,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // リストの更新判断の関数をセット
         var listWillBeUpdated = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 listWillBeUpdated = true;
-                return true;
+                proceed();
             }
         );
 
@@ -259,10 +259,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // リストの更新判断の関数をセット
         var listWillBeUpdated = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 listWillBeUpdated = true;
-                return true;
+                proceed();
             }
         );
 
@@ -329,10 +329,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // リストの更新判断の関数をセット、ここでは更新を無視する。
         var listWillBeIgnored = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 listWillBeIgnored = true;
-                return false;
+                cancel();
             }
         );
 
@@ -403,10 +403,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // 無視されたリストはpostponedなリストとしてメモリ上に保持される。これによって無駄な取得リクエストを省く。
         var listWillBeIgnored = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 listWillBeIgnored = true;
-                return false;
+                cancel();
             }
         );
 
@@ -436,10 +436,10 @@ public class AssetUpdateTests : MiyamasuTestRunner
         // set to the new list to be updated.
         var listWillBeUpdated = false;
         Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
-            condition =>
+            (condition, proceed, cancel) =>
             {
                 listWillBeUpdated = true;
-                return true;
+                proceed();
             }
         );
 
@@ -462,5 +462,58 @@ public class AssetUpdateTests : MiyamasuTestRunner
         );
 
         True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
+    }
+
+    [MTest]
+    public IEnumerator ReceiveUpdatedListThenListWillBeUpdatedThenRestore()
+    {
+        var defaultDesc = Autoya.Manifest_LoadRuntimeManifest().ToString();
+
+        yield return ReceiveUpdatedListThenListWillBeUpdated();
+
+        // list is updated. RuntieManifest too.
+        var updatedDesc = Autoya.Manifest_LoadRuntimeManifest().ToString();
+        True(defaultDesc != updatedDesc, "defaultDesc:" + defaultDesc + "\nupdatedDesc:" + updatedDesc);
+
+        {
+            var done = false;
+            Autoya.AssetBundle_FactoryReset(
+                () =>
+                {
+                    done = true;
+                },
+                (error, reason) =>
+                {
+                    Fail("err:" + error + " reason:" + reason);
+                }
+            );
+            yield return WaitUntil(
+                () => done,
+                () => { throw new TimeoutException("timeout."); }
+            );
+        }
+
+        var resettedDesc = Autoya.Manifest_LoadRuntimeManifest().ToString();
+        True(resettedDesc == defaultDesc);
+
+        {
+            var done = false;
+            Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
+                abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
+                    status =>
+                    {
+                        done = true;
+                    },
+                    (code, reason, autoyaStatus) =>
+                    {
+                        // do nothing.
+                    }
+                );
+
+            yield return WaitUntil(
+                () => done,
+                () => { throw new TimeoutException("faild to get assetBundleList."); }
+            );
+        }
     }
 }

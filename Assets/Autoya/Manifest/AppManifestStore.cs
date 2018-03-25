@@ -48,16 +48,24 @@ namespace AutoyaFramework.AppManifest
     public class AppManifestStore<RuntimeManifestType, BuildManifestType> where RuntimeManifestType : new() where BuildManifestType : new()
     {
 
-        private readonly RuntimeManifest<RuntimeManifestType> runtimeManifest;
+        private RuntimeManifest<RuntimeManifestType> runtimeManifest;
         private readonly BuildManifest<BuildManifestType> buildManifest;
-
+        private readonly Func<string> loadFunc;
         private readonly Func<string, bool> overwriteFunc;
 
         public AppManifestStore(Func<string, bool> overwriteFunc, Func<string> loadFunc)
         {
             this.buildManifest = new BuildManifest<BuildManifestType>();
 
+            this.loadFunc = loadFunc;
+            this.overwriteFunc = overwriteFunc;
+
             // load or renew runtimeManifest.
+            ReloadFromStorage();
+        }
+
+        public void ReloadFromStorage()
+        {
             RuntimeManifestType runtimeManifestObj;
             {
                 var runtimeManifestObjStr = loadFunc();
@@ -76,7 +84,6 @@ namespace AutoyaFramework.AppManifest
             }
 
             this.runtimeManifest = new RuntimeManifest<RuntimeManifestType>(runtimeManifestObj);
-            this.overwriteFunc = overwriteFunc;
         }
 
         private Dictionary<string, string> buildManifestDict;
