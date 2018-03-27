@@ -20,6 +20,25 @@ namespace AutoyaFramework
             }
         }
 
+        public void Commit(params IEnumerator[] iEnums)
+        {
+            var cor = CombineCoroutines(iEnums);
+            lock (lockObj)
+            {
+                coroutines.Add(cor);
+            }
+        }
+
+        private IEnumerator CombineCoroutines(IEnumerator[] iEnums)
+        {
+            var index = 0;
+            while (index < iEnums.Length)
+            {
+                yield return iEnums[index];
+                index++;
+            }
+        }
+
         private void Update()
         {
             if (0 < coroutines.Count)
@@ -72,6 +91,22 @@ namespace AutoyaFramework
         public void Commit(IEnumerator iEnum)
         {
             readyCoroutines.Add(iEnum);
+        }
+
+        public void Commit(params IEnumerator[] iEnums)
+        {
+            var cor = CombineCoroutines(iEnums);
+            readyCoroutines.Add(cor);
+        }
+
+        private IEnumerator CombineCoroutines(IEnumerator[] iEnums)
+        {
+            var index = 0;
+            while (index < iEnums.Length)
+            {
+                yield return iEnums[index];
+                index++;
+            }
         }
 
         private List<IEnumerator> runningCoroutines = new List<IEnumerator>();

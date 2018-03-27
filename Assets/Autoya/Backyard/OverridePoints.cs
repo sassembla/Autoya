@@ -20,6 +20,13 @@ namespace AutoyaFramework
 
     public partial class Autoya
     {
+        /**
+            you can do something before Autoya boot.
+         */
+        private IEnumerator OnBootApplication()
+        {
+            yield break;
+        }
 
         /*
             maintenance handlers.

@@ -13,7 +13,6 @@ namespace AutoyaFramework
         private static void EntryPoint()
         {
             autoya = new Autoya(Application.persistentDataPath);
-            autoya.InitializeAssetBundleFeature();
         }
 
 
@@ -23,7 +22,6 @@ namespace AutoyaFramework
         public static void TestEntryPoint(string basePath)
         {
             autoya = new Autoya(basePath);
-            autoya.InitializeAssetBundleFeature();
         }
 
         public static bool forceFailFirstBoot = false;

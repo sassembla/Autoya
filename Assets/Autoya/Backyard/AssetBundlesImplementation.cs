@@ -63,7 +63,7 @@ namespace AutoyaFramework
             var runtimeManifestContaindAssetBundleListIdentities = LoadAppUsingAssetBundleListIdentities();
 
 
-            // 取得失敗などでmanifestの内容の方が多いことがあり得る。差を取り出し、Dlが必要な状態かどうか判断する。
+            // 取得失敗などでmanifestの内容の方が多いことがあり得る。差を取り出し、DLが必要な状態かどうか判断する。
             var excepts = runtimeManifestContaindAssetBundleListIdentities.Except(storedListIdentities);
 
             // not all assetBundleList are stored yet.

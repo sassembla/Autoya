@@ -61,12 +61,15 @@ namespace AutoyaFramework
 
             _autoyaHttp = new HTTPConnection();
 
-            InitializeAppManifest();
-
             mainthreadDispatcher.Commit(
+                OnBootApplication(),
                 IsFirstBoot(
                     isFirstBoot =>
                     {
+                        InitializeAppManifest();
+
+                        InitializeAssetBundleFeature();
+
                         /*
                             start authentication.
                         */
