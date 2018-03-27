@@ -976,8 +976,14 @@ namespace AutoyaFramework
                 autoya.onAuthenticated = authenticated;
             }
         }
+
         public static void Auth_SetOnBootAuthFailed(Action<int, string> bootAuthenticationFailed = null)
         {
+            if (autoya._autoyaAuthRouter == null)
+            {
+                return;
+            }
+
             if (autoya._autoyaAuthRouter.IsBootAuthFailed())
             {
                 if (bootAuthenticationFailed != null)
@@ -997,11 +1003,16 @@ namespace AutoyaFramework
 		 */
         public static void Auth_SetOnRefreshAuthFailed(Action<int, string> refreshAuthenticationFailed = null)
         {
+            if (autoya._autoyaAuthRouter == null)
+            {
+                return;
+            }
+
             if (autoya._autoyaAuthRouter.IsTokenRefreshFailed())
             {
                 if (refreshAuthenticationFailed != null)
                 {
-                    refreshAuthenticationFailed(0, "already failed to refresh token. let's show interface.　なぜなのか、は書けそう。");
+                    refreshAuthenticationFailed(0, "already failed to refresh token. let's show interface.");
                 }
             }
 
@@ -1014,19 +1025,30 @@ namespace AutoyaFramework
 
         public static bool Auth_IsAuthenticated()
         {
-            return autoya._autoyaAuthRouter.IsLogon();
+            if (autoya._autoyaAuthRouter != null)
+            {
+                return autoya._autoyaAuthRouter.IsLogon();
+            }
+            return false;
         }
 
         public static bool Auth_AttemptAuthenticationIfNeed()
         {
-            return autoya._autoyaAuthRouter.RetryAuthentication();
+            if (autoya._autoyaAuthRouter != null)
+            {
+                return autoya._autoyaAuthRouter.RetryAuthentication();
+            }
+            return false;
         }
 
         public static void Auth_Logout()
         {
-            if (autoya._autoyaAuthRouter.IsLogon())
+            if (autoya._autoyaAuthRouter != null)
             {
-                autoya._autoyaAuthRouter.Logout();
+                if (autoya._autoyaAuthRouter.IsLogon())
+                {
+                    autoya._autoyaAuthRouter.Logout();
+                }
             }
         }
     }

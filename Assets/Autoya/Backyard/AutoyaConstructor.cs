@@ -63,24 +63,31 @@ namespace AutoyaFramework
 
             InitializeAppManifest();
 
-            var isFirstBoot = IsFirstBoot();
-
-            /*
-                start authentication.
-            */
-            Authenticate(
-                isFirstBoot,
-                () =>
-                {
-                    /*
-                        initialize purchase feature.
-                    */
-                    if (isPlayer)
+            mainthreadDispatcher.Commit(
+                IsFirstBoot(
+                    isFirstBoot =>
                     {
-                        ReloadPurchasability();
+                        /*
+                            start authentication.
+                        */
+                        Authenticate(
+                            isFirstBoot,
+                            () =>
+                            {
+                                /*
+                                    initialize purchase feature.
+                                */
+                                if (isPlayer)
+                                {
+                                    ReloadPurchasability();
+                                }
+                            }
+                        );
                     }
-                }
+                )
             );
+
+
         }
 
         public static void Shutdown()

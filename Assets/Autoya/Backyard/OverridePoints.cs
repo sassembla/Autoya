@@ -13,7 +13,7 @@ using System.Linq;
 using System.IO;
 
 /**
-	modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
+    modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
 */
 namespace AutoyaFramework
 {
@@ -22,12 +22,12 @@ namespace AutoyaFramework
     {
 
         /*
-			maintenance handlers.
-		 */
+            maintenance handlers.
+         */
 
         /**
-			return if server is under maintenance or not.
-		*/
+            return if server is under maintenance or not.
+        */
         private bool IsUnderMaintenance(int httpCode, Dictionary<string, string> responseHeader)
         {
             return httpCode == BackyardSettings.MAINTENANCE_CODE;
@@ -35,28 +35,32 @@ namespace AutoyaFramework
 
 
         /*
-			authentication handlers.
-		 */
+            authentication handlers.
+         */
 
         /**
-			return true if already authenticated, return false if not.
-			you can load your authenticated data (kind of Token) here.
-		*/
-        private bool IsFirstBoot()
+            return true if already authenticated, return false if not.
+            you can load your authenticated data (kind of Token) here.
+        */
+        private IEnumerator IsFirstBoot(Action<bool> result)
         {
             var tokenCandidatePaths = _autoyaFilePersistence.FileNamesInDomain(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
             var isFirstBoot = tokenCandidatePaths.Length == 0;
+
             if (!isFirstBoot)
             {
                 // load saved data and hold it for after use.
-                return false;
+                result(false);
+                yield break;
             }
-            return true;
+
+            result(true);
+            yield break;
         }
 
         /**
-			send authentication data to server at first boot.
-		*/
+            send authentication data to server at first boot.
+        */
         private IEnumerator OnBootAuthRequest(Action<Dictionary<string, string>, string> setHeaderAndDataToRequest)
         {
             // set boot body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
@@ -75,10 +79,10 @@ namespace AutoyaFramework
         }
 
         /**
-			received first boot authentication result.
-			if failed to validate response, call bootAuthFailed(int errorCode, string reason).
-				this bootAuthFailed method raises the notification against Autoya.Auth_SetOnBootAuthFailed() handler.
-		*/
+            received first boot authentication result.
+            if failed to validate response, call bootAuthFailed(int errorCode, string reason).
+                this bootAuthFailed method raises the notification against Autoya.Auth_SetOnBootAuthFailed() handler.
+        */
         private IEnumerator OnBootAuthResponse(Dictionary<string, string> responseHeader, string data, Action<int, string> bootAuthFailed)
         {
             var isValidResponse = true;
@@ -94,17 +98,17 @@ namespace AutoyaFramework
         }
 
         /**
-			check if server response is unauthorized or not.
-		*/
+            check if server response is unauthorized or not.
+        */
         private bool IsUnauthorized(int httpCode, Dictionary<string, string> responseHeader)
         {
             return httpCode == AuthSettings.AUTH_HTTP_CODE_UNAUTHORIZED;
         }
 
         /**
-			received Unauthorized code from server. then, should authenticate again.
-			set header and data for refresh token.
-		*/
+            received Unauthorized code from server. then, should authenticate again.
+            set header and data for refresh token.
+        */
         private IEnumerator OnTokenRefreshRequest(Action<Dictionary<string, string>, string> setHeaderToRequest)
         {
             // set refresh body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
@@ -124,10 +128,10 @@ namespace AutoyaFramework
         }
 
         /**
-			received refreshed token.
-			if failed to validate response, call refreshFailed(int errorCode, string reason).
-				this refreshFailed method raises the notification against Autoya.Auth_SetOnRefreshAuthFailed() handler.
-		*/
+            received refreshed token.
+            if failed to validate response, call refreshFailed(int errorCode, string reason).
+                this refreshFailed method raises the notification against Autoya.Auth_SetOnRefreshAuthFailed() handler.
+        */
         private IEnumerator OnTokenRefreshResponse(Dictionary<string, string> responseHeader, string data, Action<int, string> refreshFailed)
         {
             var isValidResponse = true;
@@ -150,13 +154,13 @@ namespace AutoyaFramework
 
 
         /*
-			authorized http request & response handlers.
-		*/
+            authorized http request & response handlers.
+        */
 
         /**
-			fire when generating http request, via Autoya.Http_X.
-			you can add some kind of authorization parameter to request header.
-		*/
+            fire when generating http request, via Autoya.Http_X.
+            you can add some kind of authorization parameter to request header.
+        */
         private Dictionary<string, string> OnHttpRequest(string method, string url, Dictionary<string, string> requestHeader, string data)
         {
             var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
@@ -166,18 +170,18 @@ namespace AutoyaFramework
         }
 
         /**
-			fire when received http response from server, via Autoya.Http_X.
-			you can verify response data & header parameter.
+            fire when received http response from server, via Autoya.Http_X.
+            you can verify response data & header parameter.
 
-			accepted http code is 200 ~ 299. and these code is already fixed.
+            accepted http code is 200 ~ 299. and these code is already fixed.
 
-			if everything looks good, return true.
-				although need to set reason(will not be used.)
-				then "succeeded" action of Autoya.Http_X will be raised.
+            if everything looks good, return true.
+                although need to set reason(will not be used.)
+                then "succeeded" action of Autoya.Http_X will be raised.
 
-			else, set reason.
-				then "failed" action of Autoya.Http_X will be raised with code 200 ~ 299 with the reason which you set.
-		*/
+            else, set reason.
+                then "failed" action of Autoya.Http_X will be raised with code 200 ~ 299 with the reason which you set.
+        */
 
         // string version.
         private bool OnValidateHttpResponse(string method, string url, Dictionary<string, string> responseHeader, string data, out string reason)
@@ -216,54 +220,54 @@ namespace AutoyaFramework
 
 
         /*
-			purchase feature handlers.
-		*/
+            purchase feature handlers.
+        */
 
         /**
-			fire when the server returns product datas for this app.
-			these datas should return platform-specific data.
+            fire when the server returns product datas for this app.
+            these datas should return platform-specific data.
 
-			e,g, if player is iOS, should return iOS item data.
-		*/
+            e,g, if player is iOS, should return iOS item data.
+        */
         private ProductInfo[] OnLoadProductsResponse(string responseData)
         {
             /*
-				get ProductInfo[] data from this responseData.
-				server should return ProductInfos data type.
+                get ProductInfo[] data from this responseData.
+                server should return ProductInfos data type.
 
-				consider convert response data to productInfo[].
-				e.g.
-					string responseData -> JsonUtility.FromJson<ProductInfos>(responseData) -> productInfos.
+                consider convert response data to productInfo[].
+                e.g.
+                    string responseData -> JsonUtility.FromJson<ProductInfos>(responseData) -> productInfos.
 
 
-				below is reading products data from settings for example.
-				responseData is ignored.
-			*/
+                below is reading products data from settings for example.
+                responseData is ignored.
+            */
             var productInfos = PurchaseSettings.IMMUTABLE_PURCHASE_ITEM_INFOS;
             return productInfos.productInfos;
         }
 
         /**
-			purchase feature is succeeded to load.
-		*/
+            purchase feature is succeeded to load.
+        */
         private void OnPurchaseReady()
         {
             // do something if need.
         }
 
         /**
-			called when failed to ready the purchase feature.
-			
-			offline, server returned error, or failed to ready IAPFeature.
+            called when failed to ready the purchase feature.
+            
+            offline, server returned error, or failed to ready IAPFeature.
 
-			e,g, show dialog to player. for example "reloading purchase feature... please wait a moment" or other message of error.
-				this err parameter includes "player can not available purchase feature".
+            e,g, show dialog to player. for example "reloading purchase feature... please wait a moment" or other message of error.
+                this err parameter includes "player can not available purchase feature".
 
-				see Purchase.PurchaseRouter.PurchaseReadyError enum.
+                see Purchase.PurchaseRouter.PurchaseReadyError enum.
 
-			then, you can retry with Purchase_AttemptReady() method.
-			when success, OnPurchaseReady will be called.
-		*/
+            then, you can retry with Purchase_AttemptReady() method.
+            when success, OnPurchaseReady will be called.
+        */
         private IEnumerator OnPurchaseReadyFailed(Purchase.PurchaseRouter.PurchaseReadyError err, int code, string reason, AutoyaStatus status)
         {
             // do something if need. 
@@ -271,10 +275,10 @@ namespace AutoyaFramework
         }
 
         /**
-			called when received ticket data for purchasing product via Autoya.Purchase.
-			you can modify received ticket data string to desired data.
-			returned string will be send to the server for item-deploy information of this purchase.
-		*/
+            called when received ticket data for purchasing product via Autoya.Purchase.
+            you can modify received ticket data string to desired data.
+            returned string will be send to the server for item-deploy information of this purchase.
+        */
         private string OnTicketResponse(string ticketData)
         {
             // modify if need.
@@ -282,13 +286,13 @@ namespace AutoyaFramework
         }
 
         /**
-			called when uncompleted purchase is done in background.
+            called when uncompleted purchase is done in background.
 
-			you can handle the completion of failed purchase in this method.
+            you can handle the completion of failed purchase in this method.
 
-			server received "paid" information and returned response code 200,
-			after that, framework complete uncompleted purchase then fire this method.
-		 */
+            server received "paid" information and returned response code 200,
+            after that, framework complete uncompleted purchase then fire this method.
+         */
         private void onPaidPurchaseDoneInBackground(string backgroundPurchasedProductId)
         {
             // server deployed some products for this player. update player's parameter if need.
@@ -297,8 +301,8 @@ namespace AutoyaFramework
 
 
         /*
-			AssetBundles handlers.
-		*/
+            AssetBundles handlers.
+        */
 
         // assetBundleList store controls.
         private AssetBundleList[] LoadAssetBundleListsFromStorage()
@@ -384,7 +388,7 @@ namespace AutoyaFramework
         }
 
         /**
-			return yes & url: start downloading new assetBundleList from url.
+            return yes & url: start downloading new assetBundleList from url.
             return no: cancel downloading new assetBundleList.
 
             fire when you received new assetBundleList version parameter from authenticated http response's response header.
@@ -392,7 +396,7 @@ namespace AutoyaFramework
             basepath is from: runtimeManifest. see AutoyaRuntimeManifestObject.cs.
             receivedNewAssetBundleIdentity is from: response header of some http connection.
             rceivedNewAssetBundleListVersion is from : response header of some http connection.
-		 */
+         */
         private Func<string, string, ShouldRequestOrNot> OnRequestNewAssetBundleList = (string receivedNewAssetBundleListIdentity, string rceivedNewAssetBundleListVersion) =>
         {
             var targetListInfo = Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Where(info => info.listIdentity == receivedNewAssetBundleListIdentity).FirstOrDefault();

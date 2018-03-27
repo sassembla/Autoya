@@ -32,6 +32,11 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
 
         Autoya.TestEntryPoint(dataPath);
 
+        while (!Autoya.Auth_IsAuthenticated())
+        {
+            yield return false;
+        }
+
         var authenticated = false;
         Autoya.Auth_SetOnAuthenticated(
             () =>
