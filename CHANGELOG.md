@@ -6,7 +6,24 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
-## [0.8.33]	- 2018/03/22
+## [0.8.41]	- 2018/04/02
+### Changed
+- OverridePoints/IsFirstBoot method signature is changed to async.
+
+### Feature
+- added OverridePoints/OnBootApplication method for run some code before Autoya starts authenticate feature.
+
+- OverridePoints/OnRestoreRuntimeManifest method is added. this method will be executed when start restoring runtimeManifest.
+
+- OverridePoints/OnNewAssetBundleListStoreFailed method is added. this method will be executed when failed to store new-downloaded AssetBundleList to device. 
+
+
+- AssetBundle_FactoryReset feature is added. this method is pretty good for delete all cached AssetBundles and downloaded AssetBundleList. after this method, the state of the AssetBundle feature is set to "newly installed".
+
+### Fix
+- fixed bug for Purchase_AttemptReadyPurcase.
+
+## [0.8.40]	- 2018/03/22
 ### Changed
 - AssetBundle Preload feature method signature is changed.
 
@@ -137,8 +154,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.33...HEAD
-[0.8.33]: https://github.com/sassembla/autoya/compare/0.8.32...0.8.33
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.41...HEAD
+[0.8.41]: https://github.com/sassembla/autoya/compare/0.8.40...0.8.41
+[0.8.40]: https://github.com/sassembla/autoya/compare/0.8.32...0.8.40
 [0.8.32]: https://github.com/sassembla/autoya/compare/0.8.31...0.8.32
 [0.8.31]: https://github.com/sassembla/autoya/compare/0.8.30...0.8.31
 [0.8.30]: https://github.com/sassembla/autoya/compare/0.8.29...0.8.30
