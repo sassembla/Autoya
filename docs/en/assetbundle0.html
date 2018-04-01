@@ -32,9 +32,9 @@ ABList取得済み状態では、ABからAssetを取り出したりABをPreload�
 <p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_list.png" alt="図1"></p>
 <p>複数のOverridePointsを経由するため、取得したデータの扱いを変更したい場合はOverridePointsの各関数を編集するとよい。</p>
 <p>AssetBundle機構の状態については、 <em>bool AssetBundle_IsAssetBundleFeatureReady</em> メソッドで確認することが可能になっている。</p>
-<h3><a class="anchor" aria-hidden="true" name="settings-for-assetbundlelist"></a><a href="#settings-for-assetbundlelist" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リストの設定について(settings for AssetBundleList)</h3>
-<p>リストの名前、バージョン、ダウンロードURLの情報がRuntimeManifestにあらかじめ記載されている必要がある。</p>
-<p>サンプルAppでは、RuntimeManifestに[main_assets, sub_assets]という2つのAssetBundleListを保持していて、<em>AssetBundle_DownloadAssetBundleListsIfNeed</em> メソッド実行時、自動的に各リストを記述されているURLから取得する。</p>
+<h3><a class="anchor" aria-hidden="true" name=""></a><a href="#" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>リストの設定について</h3>
+<p>起動してAssetBundle機構を使う(= <em>AssetBundle_DownloadAssetBundleListsIfNeed</em> メソッドを実行する)タイミングで、もしリストが端末内になければ所得しに行く。</p>
+<p>サンプルAppでは、RuntimeManifest(AutoyaRuntimeManifestObject.cs)に[main_assets, sub_assets]という2つのAssetBundleListを保持していて、これらの情報を元にリストを取得するurlを、OverridePoints.csの <em>string OnAssetBundleListDownloadUrlRequired(string listIdentity)</em> 関数で生成する、という形になっている。</p>
 <pre><code class="hljs css csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">RuntimeManifestObject</span>(<span class="hljs-params"></span>)
 </span>{
     resourceInfos = <span class="hljs-keyword">new</span> AssetBundleListInfo[]{
@@ -53,7 +53,7 @@ ABList取得済み状態では、ABからAssetを取り出したりABをPreload�
    };
 }
 </code></pre>
-<p>現状のAutoyaでは、事前にRuntimeManifestにリストの情報が入っていないと、そのリストを取得したりアップデートしたりといったことができない。
+<p>現状のAutoyaでは、事前にRuntimeManifestにリストのIdentityなどの情報が入っていないと、そのリストを取得したりアップデートしたりといったことができない。
 これは今後のバージョンで改善される可能性がある。</p>
 <h2><a class="anchor" aria-hidden="true" name="assetbundle-asset"></a><a href="#assetbundle-asset" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>AssetBundleからAssetのロード/使用</h2>
 <p>Asset名とそのAssetの型をもとに、ABからAssetを取得する。</p>
@@ -110,7 +110,7 @@ ABList取得済み状態では、ABからAssetを取り出したりABをPreload�
 <p>(この部分はちょっと切り分けがうまくいっていないので、AssetBundleのファイル名までを足させる方向に変わるかもしれない。)</p>
 <h3><a class="anchor" aria-hidden="true" name="assetbundle"></a><a href="#assetbundle" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>AssetBundleの状態について</h3>
 <p>各ABは、機構の内部で3段階の状態を持っている。</p>
-<pre><code class="hljs">NotCached -&gt; OnStorage &lt;-&gt; OnMemory(AssetBundleLoaded)
+<pre><code class="hljs">NotCached &lt;-&gt; OnStorage &lt;-&gt; OnMemory(AssetBundleLoaded)
 </code></pre>
 <ul>
 <li>NotCached: 端末にABがない</li>
@@ -242,7 +242,12 @@ Preloadを継続する場合はproceed関数を実行、中断する場合はcan
 <p><img src="https://github.com/sassembla/Autoya/raw/doc/doc/images/api/assetbundle_preload.png" alt="seq"></p>
 <p><strong>OverridePoints/OnAssetBundlePreloadListGetRequest</strong> 関数が着火される。この関数上でリクエストヘッダのパラメータを調整することができる。</p>
 <ul>
-<li>実際に総重量を取得するメソッドはAPIを見てね<a href="/Autoya/docs/en/api_assetbundle0.html">AssetBundles</a></li>
+<li>実際に総重量を取得するメソッドはAPIを見てね <a href="/Autoya/docs/en/api_assetbundle0.html">AssetBundles</a></li>
 <li>設定ファイルの話</li>
 </ul>
+<h2><a class="anchor" aria-hidden="true" name="factory-reset"></a><a href="#factory-reset" aria-hidden="true" class="hash-link" ><svg aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Factory Reset</h2>
+<p>AssetBundle系のファクトリーリセットとして、ABやリストを削除してインストール状態時への復帰を行うメソッドがある。 <em>AssetBundle_FactoryReset(Action succeeded, Action&lt;&gt; failed)</em></p>
+<p>このメソッドが成功すると、AppのAssetBundleはすべてUnloadされ、キャッシュから削除される。また、AssetBundleListもAppのインストール時の状態に戻る。</p>
+<p>そのため、AssetBundleListの再取得、最新のリストの再取得を行わせることができる。
+なにかしらABの配信に失敗した時に、プレイヤーが自発的に実行できるようにしておくといいかもしれない。</p>
 </span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="persistence0.html">← Persist files</a><a class="docs-next button" href="connection0.html">HTTP/UDP connection feature →</a></div></div></div></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/Autoya/" class="nav-home"><img src="/Autoya/img/Autoya.svg" alt="Autoya" width="66" height="58"/></a><div><h5>Information</h5><a href="/Autoya/blog">Blog</a><a href="https://github.com/sassembla/autoya">GitHub</a><a class="github-button" href="https://github.com/sassembla/autoya" data-icon="octicon-star" data-count-href="/sassembla/autoya/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><section class="copyright">Copyright © 2018 sassembla</section></footer></div></body></html>
