@@ -13,6 +13,12 @@ public class PreloadAssetBundle2 : MonoBehaviour
     IEnumerator Start()
     {
 
+        // need to wait finish authentication.
+        while (!Autoya.Auth_IsAuthenticated())
+        {
+            yield return null;
+        }
+
         /*
 			this is sample of "preload assetBundles feature".
 
