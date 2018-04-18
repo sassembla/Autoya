@@ -74,7 +74,12 @@ public class AuthImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator DeleteAllUserData()
     {
-        Autoya.Auth_Logout();
+        var logouted = false;
+        Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
+        yield return WaitUntil(
+            () => logouted,
+            () => { throw new TimeoutException(""); }
+        );
 
         var authenticated = Autoya.Auth_IsAuthenticated();
         True(!authenticated, "not deleted.");
@@ -92,7 +97,13 @@ public class AuthImplementationTests : MiyamasuTestRunner
     {
         Autoya.forceFailFirstBoot = true;
 
-        Autoya.Auth_Logout();
+        var logouted = false;
+        Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
+        yield return WaitUntil(
+            () => logouted,
+            () => { throw new TimeoutException(""); }
+        );
+
 
         var bootAuthFailHandled = false;
         Autoya.Auth_SetOnBootAuthFailed(
@@ -118,7 +129,13 @@ public class AuthImplementationTests : MiyamasuTestRunner
     {
         Autoya.forceFailFirstBoot = true;
 
-        Autoya.Auth_Logout();
+        var logouted = false;
+        Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
+        yield return WaitUntil(
+            () => logouted,
+            () => { throw new TimeoutException(""); }
+        );
+
 
         var bootAuthFailHandled = false;
         Autoya.Auth_SetOnBootAuthFailed(
@@ -149,7 +166,13 @@ public class AuthImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator HandleLogoutThenAuthenticationAttemptSucceeded()
     {
-        Autoya.Auth_Logout();
+        var logouted = false;
+        Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
+        yield return WaitUntil(
+            () => logouted,
+            () => { throw new TimeoutException(""); }
+        );
+
 
         Autoya.Auth_AttemptAuthenticationIfNeed();
 
@@ -163,7 +186,13 @@ public class AuthImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator IntentionalLogout()
     {
-        Autoya.Auth_Logout();
+        var logouted = false;
+        Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
+        yield return WaitUntil(
+            () => logouted,
+            () => { throw new TimeoutException(""); }
+        );
+
 
         var loggedIn = Autoya.Auth_IsAuthenticated();
         True(!loggedIn, "state does not match.");

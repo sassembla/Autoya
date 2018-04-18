@@ -421,9 +421,15 @@ namespace AutoyaFramework
             /**
 				logout.
 			*/
-            public void Logout()
+            public void Logout(Action succeeded, Action<string> failed)
             {
-                authState = AuthState.Logout;
+                Action onLogoutSucceeded = () =>
+                {
+                    authState = AuthState.Logout;
+                    succeeded();
+                };
+
+                Autoya.Mainthread_Commit(autoya.OnLogout(onLogoutSucceeded, failed));
             }
 
             /**
@@ -1041,14 +1047,22 @@ namespace AutoyaFramework
             return false;
         }
 
-        public static void Auth_Logout()
+        public static void Auth_Logout(Action succeeded, Action<string> failed)
         {
             if (autoya._autoyaAuthRouter != null)
             {
                 if (autoya._autoyaAuthRouter.IsLogon())
                 {
-                    autoya._autoyaAuthRouter.Logout();
+                    autoya._autoyaAuthRouter.Logout(succeeded, failed);
                 }
+                else
+                {
+                    failed("not logged in yet.");
+                }
+            }
+            else
+            {
+                failed("Autoya is not ready. maybe OverrideoPoints/OnBootApplication, IsFirstBoot, OnBootAuthRequest or OnBootAuthResponse is not finished yet.");
             }
         }
     }

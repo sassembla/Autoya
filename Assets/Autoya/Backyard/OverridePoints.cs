@@ -158,6 +158,20 @@ namespace AutoyaFramework
             yield break;
         }
 
+        private IEnumerator OnLogout(Action succeeded, Action<string> failed)
+        {
+            var result = Autoya.Persist_Delete(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
+            if (result)
+            {
+                succeeded();
+            }
+            else
+            {
+                failed("failed to delete token.");
+            }
+
+            yield break;
+        }
 
 
         /*
