@@ -261,7 +261,7 @@ namespace AutoyaFramework.AssetBundles
         {
             if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName))
             {
-                loadFailed(assetName, AssetBundleLoadError.NotContained, string.Empty, new AutoyaStatus());
+                loadFailed(assetName, AssetBundleLoadError.NotContained, "searching asset name:" + assetName + " is not contained by any AssetBundles in all AssetBundleList.", new AutoyaStatus());
                 yield break;
             }
 
