@@ -13,6 +13,12 @@ public class LoadResourcesSample : MonoBehaviour
 
     void Start()
     {
+        /*
+            Both AssetBundleLoadAsset method and Resources_LoadAsset method has same signature.
+            you can replace load-source from Resources to AssetBundle easily.
+
+            basically this method is async.
+         */
         Autoya.Resources_LoadAsset<Sprite>(
             "SampleResource/shisyamo",
             (assetName, sprite) =>
