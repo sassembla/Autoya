@@ -4,18 +4,22 @@ using AutoyaFramework;
 using AutoyaFramework.AssetBundles;
 using UnityEngine;
 
+/*
+    Resources feature support for Autoya.
+    Resources_LoadAsset<T> method signature is equivalent to AssetBundle_LoadAsset<T> feature. easy to swap.
+ */
 namespace AutoyaFramework
 {
     public partial class Autoya
     {
-        public static void Resources_LoadAsset<T>(string assetPath, Action<string, T> succeeded, Action<string, AssetBundleLoadError, string, object> failed) where T : UnityEngine.Object
+        public static void Resources_LoadAsset<T>(string assetPath, Action<string, T> succeeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> failed) where T : UnityEngine.Object
         {
             var resRequest = Resources.LoadAsync<T>(assetPath);
             var cor = RequestCoroutine(assetPath, resRequest, succeeded, failed);
             Autoya.Mainthread_Commit(cor);
         }
 
-        private static IEnumerator RequestCoroutine<T>(string assetName, ResourceRequest req, Action<string, T> succeeded, Action<string, AssetBundleLoadError, string, object> loadFailed) where T : UnityEngine.Object
+        private static IEnumerator RequestCoroutine<T>(string assetName, ResourceRequest req, Action<string, T> succeeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object
         {
             while (!req.isDone)
             {
