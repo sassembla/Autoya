@@ -1,3 +1,4 @@
+#if !Update_PurchaseLib
 using System;
 using System.Collections;
 using AutoyaFramework;
@@ -9,7 +10,6 @@ using UnityEngine;
 */
 public class LocalPurchase : MonoBehaviour
 {
-
     private LocalPurchaseRouter localPurchaseRouter;
 
     void Start()
@@ -78,3 +78,4 @@ public class LocalPurchase : MonoBehaviour
     }
 
 }
+#endif

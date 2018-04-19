@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if !Update_PurchaseLib
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.Security;
-
+using UnityEngine.Purchasing.Extension;
 
 /**
 	purchase feature of Autoya.
@@ -497,3 +497,4 @@ namespace AutoyaFramework.Purchase
         }
     }
 }
+#endif

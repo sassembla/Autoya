@@ -200,7 +200,9 @@ namespace AutoyaFramework.Purchase
             /*
 				set store kind by platform.
 			*/
-#if UNITY_EDITOR
+#if Update_PurchaseLib            
+            this.storeKind = "dummy";
+#elif UNITY_EDITOR
             this.storeKind = AppleAppStore.Name;
 #elif UNITY_IOS
 				this.storeKind = AppleAppStore.Name;
@@ -311,7 +313,7 @@ namespace AutoyaFramework.Purchase
         private void ReadyIAPFeature(ProductInfo[] productInfos)
         {
             routerState = RouterState.LoadingStore;
-
+#if !Update_PurchaseLib
             var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
             foreach (var productInfo in productInfos)
@@ -334,6 +336,7 @@ namespace AutoyaFramework.Purchase
             }
 
             UnityPurchasing.Initialize(this, builder);
+#endif
         }
         private IStoreController controller;
         // private IExtensionProvider extensions;

@@ -1,3 +1,7 @@
+## [1.18.0] - 2018-03-27
+### Added
+- Unity IAP E-Commerce - [Closed Beta] Supports new "managed store" functionality. Contact <iapsupport@unity3d.com> to learn more.
+
 ## [1.17.0] - 2018-02-21
 ### Added
 - Unity IAP Promo - [Beta] Supports new Unity Ads feature to advertise IAPs inside advert placements.

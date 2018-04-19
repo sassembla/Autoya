@@ -24,7 +24,7 @@ namespace UnityEngine.Purchasing
                     }
                 }
 
-#if UNITY_2017_2_OR_LATER
+#if UNITY_2017_2_OR_NEWER
 
                 var payoutDefinitions = new List<PayoutDefinition>();
                 foreach (var payout in product.Payouts) {
