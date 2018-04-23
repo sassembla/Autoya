@@ -282,25 +282,15 @@ namespace AutoyaFramework
             var result = StoreAssetBundleListToStorage(newList);
             if (result)
             {
-                // update runtime manifest.
-                {
-                    var newListIdentity = newList.identity;
-                    var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
-                    foreach (var resInfo in runtimeManifest.resourceInfos)
-                    {
-                        if (resInfo.listIdentity == newListIdentity)
-                        {
-                            resInfo.listVersion = newList.version;
-                            break;
-                        }
-                    }
-                    Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
-                }
+                // update AssetBundleList version.
+                OnUpdateToNewAssetBundleList(newList.identity, newList.version);
 
                 ReadyLoaderAndPreloader(newList);
 
                 // finish downloading new assetBundleList.
                 newListDownloaderState = NewListDownloaderState.Ready;
+
+                OnAssetBundleListUpdated();
                 yield break;
             }
 
@@ -379,7 +369,7 @@ namespace AutoyaFramework
 				assetBundleFeatState is None.
                 load assetBundleList info from runtimeManifest.
 			 */
-            var listUrls = Manifest_LoadRuntimeManifest().resourceInfos.Select(info => autoya.OnAssetBundleListDownloadUrlRequired(info.listIdentity) + info.listIdentity + ".json").ToArray();
+            var listUrls = autoya.OnAssetBundleListUrlsRequired();
             autoya.Internal_AssetBundle_DownloadAssetBundleListFromUrl(listUrls, downloadSucceeded, downloadFailed, timeoutSec);
         }
 
@@ -395,28 +385,16 @@ namespace AutoyaFramework
             var downloadedListIdentities = new List<string>();
             Action<string, AssetBundleList> succeeded = (url, newList) =>
             {
-                /**
+                /*
                     リストの保存に失敗した場合、全ての処理が失敗した扱いになる。
                  */
                 var result = StoreAssetBundleListToStorage(newList);
                 if (result)
                 {
                     // update runtime manifest. set "resVersion" to downloaded version.
-                    {
-                        var newListIdentity = newList.identity;
-                        var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+                    // update AssetBundleList version.
+                    OnUpdateToNewAssetBundleList(newList.identity, newList.version);
 
-                        foreach (var resInfo in runtimeManifest.resourceInfos)
-                        {
-                            if (resInfo.listIdentity == newListIdentity)
-                            {
-                                resInfo.listVersion = newList.version;
-                                break;
-                            }
-                        }
-
-                        Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
-                    }
                     try
                     {
                         // update list in loader.

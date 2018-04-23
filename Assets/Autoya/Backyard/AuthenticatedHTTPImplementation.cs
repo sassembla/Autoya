@@ -16,11 +16,11 @@ namespace AutoyaFramework
 
         private void AddFrameworkHeaderParam(Dictionary<string, string> additionalRequestHeaders)
         {
-            additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_APPVERSION] = Autoya.Manifest_GetBuildManifest().appVerion;
+            additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_APPVERSION] = OnAppVersionRequired();
 
             if (autoya.assetBundleFeatState == AssetBundlesFeatureState.Ready)
             {
-                additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = Autoya.Manifest_ResourceVersionDescription();
+                additionalRequestHeaders[AuthSettings.AUTH_REQUESTHEADER_RESVERSION] = OnResourceVersionRequired();
             }
         }
 

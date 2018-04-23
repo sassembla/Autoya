@@ -15,7 +15,7 @@ public class LoadResourcesSample : MonoBehaviour
     {
         /*
             Both AssetBundleLoadAsset method and Resources_LoadAsset method has same signature.
-            you can replace load-source from Resources to AssetBundle easily.
+            you can replace the load-source of assets from Resources to AssetBundle easily.
 
             basically this method is async.
          */

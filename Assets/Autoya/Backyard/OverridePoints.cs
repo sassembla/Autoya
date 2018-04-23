@@ -241,6 +241,23 @@ namespace AutoyaFramework
 
 
         /*
+            app version and resource version handlers.
+         */
+
+        private string OnAppVersionRequired()
+        {
+            return Autoya.Manifest_GetBuildManifest().appVerion;
+        }
+
+        private string OnResourceVersionRequired()
+        {
+            var manifest = Autoya.Manifest_LoadRuntimeManifest();
+            return string.Join(",", manifest.resourceInfos.Select(info => info.listIdentity + ":" + info.listVersion).ToArray());
+        }
+
+
+
+        /*
             purchase feature handlers.
         */
 
@@ -409,6 +426,8 @@ namespace AutoyaFramework
         }
 
         /**
+            fire when the server returned new AssetBundleList version via responseHeader.
+
             return yes & url: start downloading new assetBundleList from url.
             return no: cancel downloading new assetBundleList.
 
@@ -433,7 +452,7 @@ namespace AutoyaFramework
         };
 
         /**
-            fire when you received new assetBundleList. 
+            fire when you received new assetBundleList.
 
             condition 
                 the condition parameter tells you "current using assets are changed in the new AssetBundleList or not."
@@ -477,12 +496,42 @@ namespace AutoyaFramework
         };
 
         /**
+            fire when update stored AssetBundleList version parameter from old to new version.
+         */
+        private void OnUpdateToNewAssetBundleList(string updatedAssetBundleListIdentity, string newVersion)
+        {
+            var runtimeManifest = Autoya.Manifest_LoadRuntimeManifest();
+            foreach (var resInfo in runtimeManifest.resourceInfos)
+            {
+                if (resInfo.listIdentity == updatedAssetBundleListIdentity)
+                {
+                    resInfo.listVersion = newVersion;
+                    break;
+                }
+            }
+            Autoya.Manifest_UpdateRuntimeManifest(runtimeManifest);
+        }
+
+        /**
+            fire when AssetBundleList update is finished.
+         */
+        private void OnAssetBundleListUpdated()
+        {
+            // do something. e,g, Preload updated AssetBundles from updated AssetBundleList.
+        }
+
+        /**
             fire when failed to store new AssetBundleList to storage.
             just show failed reason and what should be do for success next time.
          */
         private IEnumerator OnNewAssetBundleListStoreFailed(string reason)
         {
             yield break;
+        }
+
+        private string[] OnAssetBundleListUrlsRequired()
+        {
+            return Autoya.Manifest_LoadRuntimeManifest().resourceInfos.Select(info => autoya.OnAssetBundleListDownloadUrlRequired(info.listIdentity) + info.listIdentity + ".json").ToArray();
         }
 
         /**
