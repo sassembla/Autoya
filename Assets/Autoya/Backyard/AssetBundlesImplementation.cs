@@ -290,7 +290,25 @@ namespace AutoyaFramework
                 // finish downloading new assetBundleList.
                 newListDownloaderState = NewListDownloaderState.Ready;
 
-                OnAssetBundleListUpdated();
+                /*
+                    start postprocess.
+                 */
+                var condition = GetCurrentAssetBundleUsingCondition(newList);
+                var postProcessReady = false;
+
+                OnAssetBundleListUpdated(
+                    condition,
+                    () =>
+                    {
+                        postProcessReady = true;
+                    }
+                );
+
+                while (!postProcessReady)
+                {
+                    yield return null;
+                }
+
                 yield break;
             }
 
@@ -1001,6 +1019,14 @@ namespace AutoyaFramework
             autoya.ShouldUpdateToNewAssetBundleList = (condition, proceed, cancel) =>
             {
                 debugAct(condition, proceed, cancel);
+            };
+        }
+
+        public static void Debug_SetOnOverridePoint_OnAssetBundleListUpdated(Action<CurrentUsingBundleCondition, Action> debugAct)
+        {
+            autoya.OnAssetBundleListUpdated = (condition, ready) =>
+            {
+                debugAct(condition, ready);
             };
         }
 

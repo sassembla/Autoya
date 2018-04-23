@@ -1195,6 +1195,20 @@ public class AssetUpdateTests_Miyamasu {
         
         yield return instance.Teardown();
     }
+    [UnityTest] public IEnumerator ReceiveUpdatedListThenOnAssetBundleListUpdatedFired() {
+        var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveUpdatedListThenOnAssetBundleListUpdatedFired");
+        var instance = new AssetUpdateTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ReceiveUpdatedListThenOnAssetBundleListUpdatedFired();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
     [UnityTest] public IEnumerator ReceiveUpdatedListThenIgnore() {
         var rec = new Miyamasu.Recorder("AssetUpdateTests", "ReceiveUpdatedListThenIgnore");
         var instance = new AssetUpdateTests();

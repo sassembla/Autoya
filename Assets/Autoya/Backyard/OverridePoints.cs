@@ -513,12 +513,15 @@ namespace AutoyaFramework
         }
 
         /**
-            fire when AssetBundleList update is finished.
+            fire when AssetBundleList is updated to the new received one.
+            you can get AssetBundle condition and need to fire ready() when you finish after doing post process.
          */
-        private void OnAssetBundleListUpdated()
+        private Action<CurrentUsingBundleCondition, Action> OnAssetBundleListUpdated = (condition, ready) =>
         {
             // do something. e,g, Preload updated AssetBundles from updated AssetBundleList.
-        }
+            // finally, fire ready() for progress.
+            ready();
+        };
 
         /**
             fire when failed to store new AssetBundleList to storage.

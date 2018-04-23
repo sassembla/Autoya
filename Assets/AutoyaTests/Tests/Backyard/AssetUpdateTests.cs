@@ -291,6 +291,81 @@ public class AssetUpdateTests : MiyamasuTestRunner
     }
 
     [MTest]
+    public IEnumerator ReceiveUpdatedListThenOnAssetBundleListUpdatedFired()
+    {
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListFromUrlManually(
+            abListPath + "main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json",
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, autoyaStatus) =>
+            {
+                // do nothing.
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        // リスト1.0.0が保持されている。
+        // 通信のレスポンスヘッダーに特定の値が含まれていることで、listの更新リクエストを送り出す機構を着火する。
+
+
+        // 新しいリストの取得判断の関数をセット(レスポンスを捕まえられるはず)
+        Autoya.Debug_SetOverridePoint_ShouldRequestNewAssetBundleList(
+            (identity, newVersion) =>
+            {
+                True(newVersion == "1.0.1");
+                return RequestYes(identity, newVersion);
+            }
+        );
+
+        // リストの更新判断の関数をセット
+        var isListUpdated = false;
+        Autoya.Debug_SetOverridePoint_ShouldUpdateToNewAssetBundleList(
+            (condition, proceed, cancel) =>
+            {
+                proceed();
+            }
+        );
+
+        Autoya.Debug_SetOnOverridePoint_OnAssetBundleListUpdated(
+            (newVersion, ready) =>
+            {
+                ready();
+                isListUpdated = true;
+            }
+        );
+
+
+        Autoya.Http_Get(
+            "https://httpbin.org/response-headers?" + resversionDesc + "=main_assets:1.0.1",
+            (conId, data) =>
+            {
+                // pass.
+            },
+            (conId, code, reason, status) =>
+            {
+                Fail();
+            }
+        );
+
+        yield return WaitUntil(
+            () => isListUpdated,
+            () => { throw new TimeoutException("too late."); }
+        );
+
+        // list is updated.
+        True(Autoya.AssetBundle_AssetBundleLists()[0].version == "1.0.1");
+
+        True(Autoya.Debug_AssetBundle_FeatureState() == Autoya.AssetBundlesFeatureState.Ready);
+    }
+
+    [MTest]
     public IEnumerator ReceiveUpdatedListThenIgnore()
     {
         var done = false;
