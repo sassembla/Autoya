@@ -111,6 +111,12 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
                         continue;
                     }
 
+                    // skip manifest file.
+                    if (currentPath.EndsWith(".manifest"))
+                    {
+                        continue;
+                    }
+
                     var fileName = Path.GetFileName(currentPath);
                     if (fileName == listIdentity + ".json")
                     {
