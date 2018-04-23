@@ -6,6 +6,22 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.42]	- 2018/04/23
+### Changed
+- Generate AssetBundles via AssetGraph now export AssetBundles + AssetBundleList only.  not export .manifest files.
+- update IAP library version to 1.8.x
+- change: Auth_Logout method signature changed for async.
+- Logout method is changed from sync to async. callbacks are added.
+
+### Feature
+- OverridePoints/OnAppVersionRequired and OnResourceVersionRequired are added for HTTP request.
+- OverridePoints/OnUpdateToNewAssetBundleList and OnAssetBundleListUpdated are added for AssetBundleList handling.
+- ResourcesController feature is added.
+
+### Fix
+- AssetBundle samples are fixed.
+
+
 ## [0.8.41]	- 2018/04/02
 ### Changed
 - OverridePoints/IsFirstBoot method signature is changed to async.
@@ -154,7 +170,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Removed
 - Something.
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.41...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.42...HEAD
+[0.8.42]: https://github.com/sassembla/autoya/compare/0.8.41...0.8.42
 [0.8.41]: https://github.com/sassembla/autoya/compare/0.8.40...0.8.41
 [0.8.40]: https://github.com/sassembla/autoya/compare/0.8.32...0.8.40
 [0.8.32]: https://github.com/sassembla/autoya/compare/0.8.31...0.8.32
