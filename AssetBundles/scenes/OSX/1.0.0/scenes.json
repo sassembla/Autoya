@@ -1,0 +1,17 @@
+{
+    "identity": "scenes",
+    "target": "OSX",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "bundle_0",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/bundledScene.unity"
+            ],
+            "dependsBundleNames": [],
+            "crc": 3165417255,
+            "hash": "f18a17f8f04d5b5f5cc9b9d89fb03e8c",
+            "size": 199630
+        }
+    ]
+}
