@@ -374,17 +374,19 @@ namespace AutoyaFramework.Purchase
         private bool ValidateReceipt(PurchaseEventArgs e)
         {
 #if UNITY_ANDROID || UNITY_IOS
-                var validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.identifier);
+            var validator = new UnityEngine.Purchasing.Security.CrossPlatformValidator(UnityEngine.Purchasing.Security.GooglePlayTangle.Data(), UnityEngine.Purchasing.Security.AppleTangle.Data(), Application.identifier);
 
-                try {
-                    validator.Validate(e.purchasedProduct.receipt);
+            try
+            {
+                validator.Validate(e.purchasedProduct.receipt);
 
-                    // if no exception, it's ok.
+                // if no exception, it's ok.
 
-					// {do more check here.}
+                // {do more check here.}
 
-                    return true;
-                } catch (IAPSecurityException) {}
+                return true;
+            }
+            catch (UnityEngine.Purchasing.Security.IAPSecurityException) { }
 #else
             Debug.LogWarning("this local purchase feature is enable only for iOS/Android. in other platform, validation result is always false. please change platform to iOS/Android then set both AppleTangle & GooglePlayTangle in Editor. see https://docs.unity3d.com/Manual/UnityIAPValidatingReceipts.html");
 #endif

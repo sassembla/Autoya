@@ -6,6 +6,7 @@ using System.Text;
 using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 namespace AutoyaFramework.AssetBundles
 {
@@ -280,7 +281,6 @@ namespace AutoyaFramework.AssetBundles
 
             var crc = assetBundleInfo.crc;
             var hash = Hash128.Parse(assetBundleInfo.hash);
-
             var coroutine = LoadAssetBundleOnMemory(
                 bundleName,
                 assetName,
@@ -1112,6 +1112,330 @@ namespace AutoyaFramework.AssetBundles
             var url = GetAssetBundleDownloadUrl(bundleName);
             var hash = Hash128.Parse(candidateAssetBundle.hash);
             return Caching.IsVersionCached(url, hash);
+        }
+
+
+        /**
+			load specific type Scene from AssetBundle.
+			dependency of AssetBundle will be solved automatically.
+
+			note:
+				this timeoutSec param is enabled only for downloading AssetBundle from web.
+		*/
+        public IEnumerator LoadScene(
+            string assetName,
+            LoadSceneMode mode,
+            Action<string> loadSucceeded,
+            Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed,
+            bool async = true,
+            double timeoutSec = 0)
+        {
+            if (!assetNamesAndAssetBundleNamesDict.ContainsKey(assetName))
+            {
+                loadFailed(assetName, AssetBundleLoadError.NotContained, "searching asset name:" + assetName + " is not contained by any AssetBundles in all AssetBundleList.", new AutoyaStatus());
+                yield break;
+            }
+
+            var timeoutTick = (DateTime.UtcNow + TimeSpan.FromSeconds(timeoutSec)).Ticks;
+            if (timeoutSec == 0) timeoutTick = 0;
+
+            var bundleName = assetNamesAndAssetBundleNamesDict[assetName];
+            var assetBundleInfo = bundleListStorage.AssetBundleInfoFromBundleName(bundleName);
+
+            if (AssetBundleInfo.IsEmpty(assetBundleInfo))
+            {
+                // no assetBundleInfo found.
+                loadFailed(assetName, AssetBundleLoadError.NoAssetBundleFoundInList, "no assetBundle found:" + bundleName + " in list.", new AutoyaStatus());
+                yield break;
+            }
+
+            var crc = assetBundleInfo.crc;
+            var hash = Hash128.Parse(assetBundleInfo.hash);
+
+            var coroutine = LoadSceneAssetBundleOnMemory(
+                bundleName,
+                assetName,
+                mode,
+                crc,
+                hash,
+                loadSucceeded,
+                loadFailed,
+                async,
+                timeoutTick,
+                false,
+                new List<string>()
+            );
+
+            while (coroutine.MoveNext())
+            {
+                yield return null;
+            }
+        }
+
+        /**
+			load scene assetBundle on memory.
+		*/
+        private IEnumerator LoadSceneAssetBundleOnMemory(
+            string bundleName,
+            string sceneAssetName,
+            LoadSceneMode mode,
+            uint crc,
+            Hash128 hash,
+            Action<string> loadSucceeded,
+            Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed,
+            bool async = true,
+            long timeoutTick = 0,
+            bool isDependency = false,
+            List<string> loadingDependentBundleNames = null
+        )
+        {
+            while (!Caching.ready)
+            {
+                yield return null;
+            }
+
+            var assetBundleInfo = bundleListStorage.AssetBundleInfoFromBundleName(bundleName);
+
+
+            if (AssetBundleInfo.IsEmpty(assetBundleInfo))
+            {
+                // no assetBundleInfo found.
+                loadFailed(sceneAssetName, AssetBundleLoadError.NoAssetBundleFoundInList, "no assetBundle found:" + bundleName + " in list.", new AutoyaStatus());
+                yield break;
+            }
+
+            var dependentBundleNames = assetBundleInfo.dependsBundleNames;
+
+            var dependentBundleLoadErrors = new List<DependentBundleError>();
+
+            /*
+				resolve dependencies.
+			*/
+            {
+                if (dependentBundleNames.Any())
+                {
+                    var coroutines = new Dictionary<string, IEnumerator>();
+
+                    foreach (var dependentBundleName in dependentBundleNames)
+                    {
+                        if (loadingDependentBundleNames != null)
+                        {
+                            if (loadingDependentBundleNames.Contains(dependentBundleName))
+                            {
+                                continue;
+                            }
+                        }
+
+                        // skip if assetBundle is already loaded on memory.
+                        if (onMemoryCache.ContainsKey(dependentBundleName) && onMemoryCache[dependentBundleName] != null)
+                        {
+                            continue;
+                        }
+
+                        var dependedBundleInfo = bundleListStorage.AssetBundleInfoFromBundleName(dependentBundleName);
+                        if (AssetBundleInfo.IsEmpty(dependedBundleInfo))
+                        {
+                            // skip empty info.
+                            continue;
+                        }
+
+                        var dependentBundleCrc = dependedBundleInfo.crc;
+                        var dependentBundleHash = Hash128.Parse(dependedBundleInfo.hash);
+
+                        // set UnityEngine.Object for request. this asset will never use directory.
+                        var loadCoroutine = LoadAssetBundleOnMemory<UnityEngine.Object>(
+                            dependentBundleName,
+                            string.Empty,// bundleName not required.
+                            dependentBundleCrc,
+                            dependentBundleHash,
+                            (depBundleName, depObj) =>
+                            {
+                                // do nothing. this bundle is currently on memory.
+                            },
+                            (depBundleName, depErr, depReason, autoyaStatus) =>
+                            {
+                                // collect error for this dependent bundle loading.
+                                dependentBundleLoadErrors.Add(new DependentBundleError(depBundleName, depErr, depReason, autoyaStatus));
+                            },
+                            timeoutTick,
+                            true, // this loading is for resolve dependency of root asset. no need to return any instances.
+                            loadingDependentBundleNames
+                        );
+
+                        if (loadingDependentBundleNames != null)
+                        {
+                            loadingDependentBundleNames.Add(dependentBundleName);
+                        }
+                        coroutines[dependentBundleName] = loadCoroutine;
+                    }
+
+                    if (coroutines.Count != 0)
+                    {
+                        while (true)
+                        {
+                            if (!coroutines.Where(c => c.Value != null).Any())
+                            {
+                                // load done.
+                                break;
+                            }
+
+                            for (var i = 0; i < coroutines.Count; i++)
+                            {
+                                var loadingAssetBundleName = coroutines.Keys.ToArray()[i];
+                                var coroutine = coroutines[loadingAssetBundleName];
+                                if (coroutine == null) continue;
+
+                                if (!coroutine.MoveNext())
+                                {
+                                    coroutines[loadingAssetBundleName] = null;
+                                }
+                            }
+                            yield return null;
+                        }
+
+                        // all dependencies are loaded on memory.
+                    }
+                }
+            }
+
+            var url = GetAssetBundleDownloadUrl(bundleName);
+
+            // check now loading or not. if same bundle is already under loading, wait it here.
+            if (loadingAssetBundleNames.Contains(bundleName))
+            {
+                while (loadingAssetBundleNames.Contains(bundleName))
+                {
+                    yield return null;
+                }
+
+                // check downloaded bundle is correctly cached or not.
+                var isCached = Caching.IsVersionCached(url, hash);
+                if (!isCached)
+                {
+                    loadFailed(sceneAssetName, AssetBundleLoadError.DownloadFailed, "caching failed.", new AutoyaStatus());
+                    yield break;
+                }
+            }
+
+            // assetBundle is already allocated on memory.
+            if (onMemoryCache.ContainsKey(bundleName))
+            {
+                var isCached = Caching.IsVersionCached(url, hash);
+
+                if (isCached)
+                {
+                    // if current target is dependency, dependent assetBundle is already on memory. and no need to load it.
+                    if (isDependency)
+                    {
+                        yield break;
+                    }
+
+                    // load scene.
+                    if (async)
+                    {
+                        var asyncOp = SceneManager.LoadSceneAsync(sceneAssetName, mode);
+                        while (!asyncOp.isDone)
+                        {
+                            yield return null;
+                        }
+                    }
+                    else
+                    {
+                        SceneManager.LoadScene(sceneAssetName, mode);
+                    }
+
+                    loadSucceeded(sceneAssetName);
+
+                    // loading asset from on memory cache is done.
+                    yield break;
+                }
+
+                // assetBundle is cached on memory but it's not target hashed bundle. need to download other one.
+                // var oldOnMemoryAssetBundle = onMemoryCache[bundleName];
+
+                // remove from on memory cache.
+                UnloadOnMemoryAssetBundle(bundleName);
+            }
+
+            /*
+				assetBundle is..
+					not yet cached (or) already cached.
+					not allocated on memory.
+
+				assetBundle is not on memory yet. start downloading.
+			*/
+
+            // binded block.
+            using (var loadingConstraint = new AssetBundleLoadingConstraint(bundleName, loadingAssetBundleNames))
+            {
+                /*
+					download bundle or load donwloaded bundle from cache.
+					load to memory.
+				*/
+                {
+                    var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(bundleName, sceneAssetName, url, crc, hash, loadFailed, timeoutTick);
+                    while (downloadCoroutine.MoveNext())
+                    {
+                        yield return null;
+                    }
+
+                    if (!onMemoryCache.ContainsKey(bundleName))
+                    {
+                        // error is already fired in above.
+                        yield break;
+                    }
+
+                    if (!isDependency)
+                    {
+
+                        /*
+							break if dependent bundle has load error.
+						*/
+                        if (dependentBundleLoadErrors.Any())
+                        {
+                            var loadErrorBundleMessages = new StringBuilder();
+                            loadErrorBundleMessages.Append("failed to load/download dependent bundle:");
+                            foreach (var dependentBundleLoadError in dependentBundleLoadErrors)
+                            {
+                                loadErrorBundleMessages.Append("bundleName:");
+                                loadErrorBundleMessages.Append(dependentBundleLoadError.bundleName);
+                                loadErrorBundleMessages.Append(" error:");
+                                loadErrorBundleMessages.Append(dependentBundleLoadError.err);
+                                loadErrorBundleMessages.Append(" reason:");
+                                loadErrorBundleMessages.Append(dependentBundleLoadError.reason);
+                                loadErrorBundleMessages.Append(" autoyaStatus:");
+                                loadErrorBundleMessages.Append("  inMaintenance:" + dependentBundleLoadError.status.inMaintenance);
+                                loadErrorBundleMessages.Append("  isAuthFailed:" + dependentBundleLoadError.status.isAuthFailed);
+                            }
+                            loadFailed(sceneAssetName, AssetBundleLoadError.FailedToLoadDependentBundles, loadErrorBundleMessages.ToString(), new AutoyaStatus());
+
+                            yield break;
+                        }
+
+                        /*
+							load scene from on memory AssetBundle.
+						*/
+                        if (async)
+                        {
+                            var asyncOp = SceneManager.LoadSceneAsync(sceneAssetName, mode);
+                            while (!asyncOp.isDone)
+                            {
+                                yield return null;
+                            }
+                        }
+                        else
+                        {
+                            SceneManager.LoadScene(sceneAssetName, mode);
+                            Debug.Log("load完了");
+
+                            var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneAssetName));
+                            Debug.Log("ロード完了直後のcor:" + cor);
+                        }
+
+                        loadSucceeded(sceneAssetName);
+                    }
+                }
+            }
         }
 
         /**

@@ -1,0 +1,17 @@
+{
+    "identity": "scenes",
+    "target": "Android",
+    "version": "1.0.0",
+    "assetBundles": [
+        {
+            "bundleName": "bundle_0",
+            "assetNames": [
+                "Assets/AutoyaTests/RuntimeData/bundledScene.unity"
+            ],
+            "dependsBundleNames": [],
+            "crc": 996201424,
+            "hash": "86d331b96b4f9808f1f1359f5f3cbec1",
+            "size": 156132
+        }
+    ]
+}

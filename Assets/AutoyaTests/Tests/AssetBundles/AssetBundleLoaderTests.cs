@@ -8,6 +8,7 @@ using AutoyaFramework.Connections.HTTP;
 using AutoyaFramework.Settings.AssetBundles;
 using Miyamasu;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /**
 	tests for Autoya AssetBundle Read from cache.
@@ -15,8 +16,12 @@ using UnityEngine;
 public class AssetBundleLoaderTests : MiyamasuTestRunner
 {
 
-    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/1.0.0/main_assets.json";
-    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/";
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/1.0.0/main_assets.json";
+    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/";
+
+    private string sceneListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/scenes/OSX/1.0.0/scenes.json";
+    private string sceneAbDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/scenes/OSX/";
+
 
     /*
 		・リスト取得/更新API 最初のリスト取得 -> リストのデータを保存
@@ -36,7 +41,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     [MSetup]
     public IEnumerator Setup()
     {
-        var listCor = LoadListFromWeb();
+        var listCor = LoadListFromWeb(abListPath);
 
         yield return listCor;
         bundleList = listCor.Current as AssetBundleList;
@@ -52,17 +57,16 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         }
     }
 
-    public IEnumerator LoadListFromWeb()
+    public IEnumerator LoadListFromWeb(string listDownloadPath)
     {
         var downloaded = false;
         var downloader = new HTTPConnection();
 
         AssetBundleList listObj = null;
-
         yield return downloader.Get(
             "loadListFromWeb",
             null,
-            abListPath,
+            listDownloadPath,
             (conId, code, respHeaders, data) =>
             {
                 downloaded = true;
@@ -507,7 +511,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
             }
         }
 
-        loader = new AssetBundleLoader(identity => abDlPath + "1.0.0/");// バージョン値が入ってるのでそのうち失敗する。
+        loader = new AssetBundleLoader(identity => abDlPath + "1.0.0/");
         loader.UpdateAssetBundleList(bundleList);
 
         // intentional fail.
@@ -534,7 +538,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
         }
 
         // refresh list.
-        var listCor = LoadListFromWeb();
+        var listCor = LoadListFromWeb(abListPath);
 
         yield return listCor;
         bundleList = listCor.Current as AssetBundleList;
@@ -828,6 +832,51 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
     {
         // 同じbundleをDL中に、最初にDL開始したassetがDL失敗になった際の処理。
         yield break;
+    }
+
+    [MTest]
+    public IEnumerator LoadSceneFromAssetBundle()
+    {
+        var listCor = LoadListFromWeb(sceneListPath);
+
+        yield return listCor;
+        bundleList = listCor.Current as AssetBundleList;
+
+        loader = new AssetBundleLoader(identity => sceneAbDlPath + "1.0.0/");
+        loader.UpdateAssetBundleList(bundleList);
+
+        var cleaned = loader.CleanCachedAssetBundles();
+
+        if (!cleaned)
+        {
+            Fail("clean cache failed.");
+        }
+
+        var done = false;
+        var sceneName = string.Empty;
+
+        // シーンをロードする。
+        yield return loader.LoadScene(
+            "Assets/AutoyaTests/RuntimeData/bundledScene.unity",
+            LoadSceneMode.Additive,
+            loadedSceneName =>
+            {
+                sceneName = loadedSceneName;
+                done = true;
+            },
+            (loadFailedSceneName, error, reason, status) =>
+            {
+                Fail("failed to load scene, loadFailedSceneName:" + loadFailedSceneName + " error:" + error + " reason:" + reason);
+            }
+        );
+
+        True(done);
+
+        var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneName));
+        while (!cor.isDone)
+        {
+            yield return null;
+        }
     }
 
     // [MTest] public IEnumerator UnloadOnMemoryAssetBundle () {

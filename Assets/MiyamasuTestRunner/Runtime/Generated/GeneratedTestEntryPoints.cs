@@ -466,6 +466,25 @@ public class AssetBundleLoaderTests_Miyamasu {
             throw;
         }
     }
+    [UnityTest] public IEnumerator LoadSceneFromAssetBundle() {
+        var rec = new Miyamasu.Recorder("AssetBundleLoaderTests", "LoadSceneFromAssetBundle");
+        var instance = new AssetBundleLoaderTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadSceneFromAssetBundle();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
 }
 public class AssetBundlePreloaderTests_Miyamasu {
     [UnityTest] public IEnumerator GetPreloadList() {
@@ -1132,6 +1151,76 @@ public class AssetBundlesImplementationTests_Miyamasu {
         yield return instance.Setup();
         
         yield return instance.PreloadAndLoadAllAssetBundle_Rev();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator LoadSceneAdditive() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "LoadSceneAdditive");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadSceneAdditive();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator LoadSceneAdditiveSync() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "LoadSceneAdditiveSync");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadSceneAdditiveSync();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator LoadSceneSingle() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "LoadSceneSingle");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadSceneSingle();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator LoadSceneSingleSync() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "LoadSceneSingleSync");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.LoadSceneSingleSync();
+        rec.MarkAsPassed();
+
+        
+        yield return instance.Teardown();
+    }
+    [UnityTest] public IEnumerator PreloadScene() {
+        var rec = new Miyamasu.Recorder("AssetBundlesImplementationTests", "PreloadScene");
+        var instance = new AssetBundlesImplementationTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.PreloadScene();
         rec.MarkAsPassed();
 
         

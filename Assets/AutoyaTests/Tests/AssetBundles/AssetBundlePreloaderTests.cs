@@ -15,9 +15,11 @@ using UnityEngine;
 */
 public class AssetBundlePreloaderTests : MiyamasuTestRunner
 {
-    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/main_assets/OSX/";
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/1.0.0/main_assets.json";
 
-    private string preloadListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/preload/";
+    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/";
+
+    private string preloadListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/preload/";
 
     private AssetBundlePreloader assetBundlePreloader;
 
@@ -29,7 +31,7 @@ public class AssetBundlePreloaderTests : MiyamasuTestRunner
         assetBundlePreloader = new AssetBundlePreloader();
 
         var loaderTestObj = new AssetBundleLoaderTests();
-        var listCor = loaderTestObj.LoadListFromWeb();
+        var listCor = loaderTestObj.LoadListFromWeb(abListPath);
         yield return listCor;
 
         var assetBundleList = listCor.Current as AssetBundleList;

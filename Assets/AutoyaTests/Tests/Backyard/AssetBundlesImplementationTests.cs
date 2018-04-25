@@ -8,10 +8,12 @@ using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AssetBundlesImplementationTests : MiyamasuTestRunner
 {
-    private string abListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/";
+
+    private string abListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/";
 
     [MSetup]
     public IEnumerator Setup()
@@ -205,7 +207,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
     public IEnumerator GetAssetBundleBeforeGetAssetBundleListBecomeFailed()
     {
         var loaderTest = new AssetBundleLoaderTests();
-        var cor = loaderTest.LoadListFromWeb();
+        var cor = loaderTest.LoadListFromWeb(abListDlPath + "main_assets" + "/" + AssetBundlesSettings.PLATFORM_STR + "/" + "1.0.0" + "/" + "main_assets.json");
         yield return cor;
 
         var list = cor.Current as AssetBundleList;
@@ -1390,7 +1392,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             },
             (code, reason, autoyaStatus) =>
             {
-                // do nothing.
+                Fail("code:" + code + " reason:" + reason);
             }
         );
 
@@ -1642,9 +1644,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             () => done,
             () => { throw new TimeoutException("faild to get assetBundleList."); }
         );
-
-        var preloadListPath = "sample.preloadList.json";
-        // this will become ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST + sample.preloadList.json.
 
         var preloaded = false;
         var loadAssetSucceeded = false;
@@ -1909,11 +1908,17 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         var assetBundleLists = Autoya.AssetBundle_AssetBundleLists();
         var assetNames = assetBundleLists.SelectMany(list => list.assetBundles).SelectMany(bundleInfo => bundleInfo.assetNames).ToArray();
-
         var loadAssetSucceeded = new Dictionary<string, bool>();
 
         foreach (var assetName in assetNames)
         {
+            // ignore unity scene.
+            if (assetName.EndsWith(".unity"))
+            {
+                loadAssetSucceeded[assetName] = true;
+                continue;
+            }
+
             loadAssetSucceeded[assetName] = false;
 
             Autoya.AssetBundle_LoadAsset<UnityEngine.Object>(
@@ -2054,6 +2059,13 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
 
         foreach (var assetName in assetNames)
         {
+            // ignore unity scene.
+            if (assetName.EndsWith(".unity"))
+            {
+                loadAssetSucceeded[assetName] = true;
+                continue;
+            }
+
             loadAssetSucceeded[assetName] = false;
 
             Autoya.AssetBundle_LoadAsset<UnityEngine.Object>(
@@ -2091,6 +2103,221 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 throw new TimeoutException("timeout.");
             }
         );
+    }
+
+    [MTest]
+    public IEnumerator LoadSceneAdditive()
+    {
+        var done = false;
+        Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+            status =>
+            {
+                done = true;
+            },
+            (code, reason, asutoyaStatus) =>
+            {
+                Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("faild to get assetBundleList."); }
+        );
+
+        var loadSceneDone = false;
+        var sceneName = string.Empty;
+
+        Autoya.AssetBundle_LoadScene(
+            "Assets/AutoyaTests/RuntimeData/bundledScene.unity",
+            LoadSceneMode.Additive,
+            loadedSceneName =>
+            {
+                loadSceneDone = true;
+                sceneName = loadedSceneName;
+            },
+            (loadFailedSceneName, error, reason, status) =>
+            {
+                Fail("failed to load scene:" + loadFailedSceneName + " from AB, error:" + error + " reason:" + reason);
+            }
+        );
+
+        yield return WaitUntil(
+            () => loadSceneDone,
+            () => { throw new TimeoutException("failed to load scene."); }
+        );
+
+        var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneName));
+        while (!cor.isDone)
+        {
+            yield return null;
+        }
+    }
+
+    [MTest]
+    public IEnumerator LoadSceneAdditiveSync()
+    {
+        Debug.LogWarning("unable to test by UnityTest's bug.");
+        yield break;
+        // var done = false;
+        // Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+        //     status =>
+        //     {
+        //         done = true;
+        //     },
+        //     (code, reason, asutoyaStatus) =>
+        //     {
+        //         Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+        //     }
+        // );
+
+        // yield return WaitUntil(
+        //     () => done,
+        //     () => { throw new TimeoutException("faild to get assetBundleList."); }
+        // );
+
+        // var loadSceneDone = false;
+        // var sceneName = string.Empty;
+
+        // Autoya.AssetBundle_LoadScene(
+        //     "Assets/AutoyaTests/RuntimeData/bundledScene.unity",
+        //     LoadSceneMode.Additive,
+        //     loadedSceneName =>
+        //     {
+        //         loadSceneDone = true;
+        //         sceneName = loadedSceneName;
+        //     },
+        //     (loadFailedSceneName, error, reason, status) =>
+        //     {
+        //         Fail("failed to load scene:" + loadFailedSceneName + " from AB, error:" + error + " reason:" + reason);
+        //     },
+        //     false
+        // );
+
+        // yield return WaitUntil(
+        //     () => loadSceneDone,
+        //     () => { throw new TimeoutException("failed to load scene."); }
+        // );
+        // var scene = SceneManager.GetSceneByPath(sceneName);
+        // Debug.Log("scene:" + scene.name + " path:" + scene.path);
+
+        // var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneName));
+        // Debug.Log("cor:" + cor);
+        // while (!cor.isDone)
+        // {
+        //     yield return null;
+        // }
+    }
+
+    [MTest]
+    public IEnumerator LoadSceneSingle()
+    {
+        Debug.LogWarning("unable to test by UnityTest's spec.");
+        yield break;
+        // var done = false;
+        // Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+        //     status =>
+        //     {
+        //         done = true;
+        //     },
+        //     (code, reason, asutoyaStatus) =>
+        //     {
+        //         Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+        //     }
+        // );
+
+        // yield return WaitUntil(
+        //     () => done,
+        //     () => { throw new TimeoutException("faild to get assetBundleList."); }
+        // );
+
+        // var loadSceneDone = false;
+        // var sceneName = string.Empty;
+
+        // Autoya.AssetBundle_LoadScene(
+        //     "Assets/AutoyaTests/RuntimeData/bundledScene.unity",
+        //     LoadSceneMode.Single,
+        //     loadedSceneName =>
+        //     {
+        //         loadSceneDone = true;
+        //         sceneName = loadedSceneName;
+        //     },
+        //     (loadFailedSceneName, error, reason, status) =>
+        //     {
+        //         Fail("failed to load scene:" + loadFailedSceneName + " from AB, error:" + error + " reason:" + reason);
+        //     }
+        // );
+
+        // yield return WaitUntil(
+        //     () => loadSceneDone,
+        //     () => { throw new TimeoutException("failed to load scene."); }
+        // );
+
+        // var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneName));
+        // while (!cor.isDone)
+        // {
+        //     yield return null;
+        // }
+    }
+
+    [MTest]
+
+    public IEnumerator LoadSceneSingleSync()
+    {
+        Debug.LogWarning("unable to test by UnityTest's bug.");
+        yield break;
+        // var done = false;
+        // Autoya.AssetBundle_DownloadAssetBundleListsIfNeed(
+        //     status =>
+        //     {
+        //         done = true;
+        //     },
+        //     (code, reason, asutoyaStatus) =>
+        //     {
+        //         Fail("UpdateListWithOnMemoryAssets failed, code:" + code + " reason:" + reason);
+        //     }
+        // );
+
+        // yield return WaitUntil(
+        //     () => done,
+        //     () => { throw new TimeoutException("faild to get assetBundleList."); }
+        // );
+
+        // var loadSceneDone = false;
+        // var sceneName = string.Empty;
+
+        // Autoya.AssetBundle_LoadScene(
+        //     "Assets/AutoyaTests/RuntimeData/bundledScene.unity",
+        //     LoadSceneMode.Single,
+        //     loadedSceneName =>
+        //     {
+        //         loadSceneDone = true;
+        //         sceneName = loadedSceneName;
+        //     },
+        //     (loadFailedSceneName, error, reason, status) =>
+        //     {
+        //         Fail("failed to load scene:" + loadFailedSceneName + " from AB, error:" + error + " reason:" + reason);
+        //     },
+        //     false
+        // );
+
+        // yield return WaitUntil(
+        //     () => loadSceneDone,
+        //     () => { throw new TimeoutException("failed to load scene."); }
+        // );
+
+        // var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneName));
+        // while (!cor.isDone)
+        // {
+        //     yield return null;
+        // }
+    }
+
+    [MTest]
+    public IEnumerator PreloadScene()
+    {
+        Debug.LogWarning("not yet implemented: PreloadScene");
+        yield break;
     }
 
     [MTest]

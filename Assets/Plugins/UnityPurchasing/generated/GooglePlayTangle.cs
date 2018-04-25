@@ -1,4 +1,4 @@
-#if UNITY_ANDROID || UNITY_IPHONE || UNITY_STANDALONE_OSX || UNITY_TVOS
+#if UNITY_ANDROID || UNITY_IOS || UNITY_STANDALONE_OSX || UNITY_TVOS
 // WARNING: Do not modify! Generated file.
 
 namespace UnityEngine.Purchasing.Security

@@ -35,6 +35,12 @@ namespace AutoyaFramework.AppManifest
                    listIdentity = "sub_assets",
                    listVersion = "1.0.0",
                    listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles"
+               },
+               new AssetBundleListInfo
+               {
+                    listIdentity = "scenes",
+                   listVersion = "1.0.0",
+                   listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles"
                }
            };
         }

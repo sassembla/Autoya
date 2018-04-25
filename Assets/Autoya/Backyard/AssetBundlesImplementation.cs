@@ -5,6 +5,7 @@ using System.Linq;
 using AutoyaFramework.AssetBundles;
 using AutoyaFramework.Settings.AssetBundles;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AutoyaFramework
 {
@@ -683,6 +684,56 @@ namespace AutoyaFramework
 
             autoya.mainthreadDispatcher.Commit(
                 autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)
+            );
+        }
+
+
+        public static void AssetBundle_LoadScene(
+            string assetName,
+            LoadSceneMode mode,
+            Action<string> loadSucceeded,
+            Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed,
+            bool async = true
+        )
+        {
+            var cont = CheckAssetBundlesFeatureCondition(
+                (code, reason) =>
+                {
+                    switch (code)
+                    {
+                        case AssetBundlesError.AutoyaNotReady:
+                            {
+                                loadFailed(assetName, AssetBundleLoadError.DownloadFailed, "code:" + code + " reason:" + reason, new AutoyaStatus());
+                                break;
+                            }
+                        case AssetBundlesError.ListLoading:
+                        case AssetBundlesError.NeedToDownloadAssetBundleList:
+                            {
+                                loadFailed(assetName, AssetBundleLoadError.AssetBundleListIsNotReady, "code:" + code + " reason:" + reason, new AutoyaStatus());
+                                break;
+                            }
+                        default:
+                            {
+                                loadFailed(assetName, AssetBundleLoadError.Undefined, "code:" + code + " reason:" + reason, new AutoyaStatus());
+                                break;
+                            }
+                    }
+                }
+            );
+
+            if (!cont)
+            {
+                return;
+            }
+
+            autoya.mainthreadDispatcher.Commit(
+                autoya._assetBundleLoader.LoadScene(
+                    assetName,
+                    mode,
+                    loadSucceeded,
+                    loadFailed,
+                    async
+                )
             );
         }
 
