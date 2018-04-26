@@ -1910,16 +1910,32 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
         var assetNames = assetBundleLists.SelectMany(list => list.assetBundles).SelectMany(bundleInfo => bundleInfo.assetNames).ToArray();
         var loadAssetSucceeded = new Dictionary<string, bool>();
 
+        var sceneReleaseCors = new List<AsyncOperation>();
+
         foreach (var assetName in assetNames)
         {
+            loadAssetSucceeded[assetName] = false;
+
             // ignore unity scene.
             if (assetName.EndsWith(".unity"))
             {
-                loadAssetSucceeded[assetName] = true;
+                Autoya.AssetBundle_LoadScene(
+                    assetName,
+                    LoadSceneMode.Additive,
+                    name =>
+                    {
+                        loadAssetSucceeded[assetName] = true;
+                        sceneReleaseCors.Add(SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(name)));
+                    },
+                    (name, error, reason, status) =>
+                    {
+                        Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                        Autoya.AssetBundle_DeleteAllStorageCache();
+                        Fail("failed to load scene. error:" + error + " reason:" + reason);
+                    }
+                );
                 continue;
             }
-
-            loadAssetSucceeded[assetName] = false;
 
             Autoya.AssetBundle_LoadAsset<UnityEngine.Object>(
                 assetName,
@@ -1991,6 +2007,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 throw new TimeoutException("timeout.");
             }
         );
+
+        yield return WaitUntil(
+            () => !sceneReleaseCors.Where(op => !op.isDone).Any(),
+            () => { throw new TimeoutException("failed to unload all loaded scene."); }
+        );
     }
 
     [MTest]
@@ -2057,16 +2078,32 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             100
         );
 
+        var sceneReleaseCors = new List<AsyncOperation>();
+
         foreach (var assetName in assetNames)
         {
+            loadAssetSucceeded[assetName] = false;
+
             // ignore unity scene.
             if (assetName.EndsWith(".unity"))
             {
-                loadAssetSucceeded[assetName] = true;
+                Autoya.AssetBundle_LoadScene(
+                    assetName,
+                    LoadSceneMode.Additive,
+                    name =>
+                    {
+                        loadAssetSucceeded[assetName] = true;
+                        sceneReleaseCors.Add(SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(name)));
+                    },
+                    (name, error, reason, status) =>
+                    {
+                        Autoya.AssetBundle_UnloadOnMemoryAssetBundles();
+                        Autoya.AssetBundle_DeleteAllStorageCache();
+                        Fail("failed to load scene. error:" + error + " reason:" + reason);
+                    }
+                );
                 continue;
             }
-
-            loadAssetSucceeded[assetName] = false;
 
             Autoya.AssetBundle_LoadAsset<UnityEngine.Object>(
                 assetName,
@@ -2102,6 +2139,11 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 Autoya.AssetBundle_DeleteAllStorageCache();
                 throw new TimeoutException("timeout.");
             }
+        );
+
+        yield return WaitUntil(
+            () => !sceneReleaseCors.Where(op => !op.isDone).Any(),
+            () => { throw new TimeoutException("failed to unload all loaded scene."); }
         );
     }
 
