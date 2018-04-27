@@ -640,6 +640,164 @@ namespace AutoyaFramework
         }
 
 
+        // request & response by bytes[]
+        public static string Http_Post(
+            string url,
+            byte[] data,
+            Action<string, byte[]> succeeded,
+            Action<string, int, string, AutoyaStatus> failed,
+            Dictionary<string, string> additionalHeader = null,
+            double timeoutSec = BackyardSettings.HTTP_TIMEOUT_SEC,
+            string userConnectionId = null
+        )
+        {
+            Uri myUri = new Uri(url);
+            var ip = System.Net.Dns.GetHostAddresses(myUri.Host)[0];
+            Debug.Log("ip:" + ip);
+
+            var connectionId = Guid.NewGuid().ToString();
+
+            if (!string.IsNullOrEmpty(userConnectionId))
+            {
+                connectionId = userConnectionId;
+            }
+
+
+            if (autoya == null)
+            {
+                var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
+                autoya.mainthreadDispatcher.Commit(cor);
+                return connectionId;
+            }
+            if (!Autoya.Auth_IsAuthenticated())
+            {
+                var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
+                autoya.mainthreadDispatcher.Commit(cor);
+
+                return connectionId;
+            }
+
+            if (additionalHeader == null)
+            {
+                additionalHeader = new Dictionary<string, string>();
+            }
+
+            autoya.AddFrameworkHeaderParam(additionalHeader);
+
+            var headers = autoya.httpRequestHeaderDelegate("POST", url, additionalHeader, data);
+
+            autoya.mainthreadDispatcher.Commit(
+                autoya._autoyaHttp.Post(
+                    connectionId,
+                    headers,
+                    url,
+                    data,
+                    (string conId, int code, Dictionary<string, string> responseHeader, byte[] resultData) =>
+                    {
+                        autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
+                            (_conId, _data) =>
+                            {
+                                var byteData = _data as byte[];
+                                var message = string.Empty;
+                                var validated = autoya.OnValidateHttpResponse("POST", url, responseHeader, byteData, out message);
+                                if (!validated)
+                                {
+                                    failed(connectionId, code, message, new AutoyaStatus(false, false, true));
+                                    return;
+                                }
+
+                                succeeded(_conId, byteData);
+                            },
+                            failed
+                        );
+                    },
+                    (conId, code, reason, responseHeader) =>
+                    {
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                    },
+                    timeoutSec
+                )
+            );
+
+            return connectionId;
+        }
+
+        public static string Http_Put(
+            string url,
+            byte[] data,
+            Action<string, byte[]> succeeded,
+            Action<string, int, string, AutoyaStatus> failed,
+            Dictionary<string, string> additionalHeader = null,
+            double timeoutSec = BackyardSettings.HTTP_TIMEOUT_SEC,
+            string userConnectionId = null
+        )
+        {
+            var connectionId = Guid.NewGuid().ToString();
+
+            if (!string.IsNullOrEmpty(userConnectionId))
+            {
+                connectionId = userConnectionId;
+            }
+
+
+            if (autoya == null)
+            {
+                var cor = new ConnectionErrorInstance(connectionId, "Autoya is null.", new AutoyaStatus(), failed).Coroutine();
+                autoya.mainthreadDispatcher.Commit(cor);
+                return connectionId;
+            }
+            if (!Autoya.Auth_IsAuthenticated())
+            {
+                var cor = new ConnectionErrorInstance(connectionId, "not authenticated.", new AutoyaStatus(false, true), failed).Coroutine();
+                autoya.mainthreadDispatcher.Commit(cor);
+
+                return connectionId;
+            }
+
+            if (additionalHeader == null)
+            {
+                additionalHeader = new Dictionary<string, string>();
+            }
+
+            autoya.AddFrameworkHeaderParam(additionalHeader);
+
+            var headers = autoya.httpRequestHeaderDelegate("PUT", url, additionalHeader, data);
+
+            autoya.mainthreadDispatcher.Commit(
+                autoya._autoyaHttp.Put(
+                    connectionId,
+                    headers,
+                    url,
+                    data,
+                    (string conId, int code, Dictionary<string, string> responseHeader, string resultData) =>
+                    {
+                        autoya.HttpResponseHandling(conId, responseHeader, code, resultData, string.Empty,
+                            (_conId, _data) =>
+                            {
+                                var byteData = _data as byte[];
+                                var reason = string.Empty;
+                                var validated = autoya.OnValidateHttpResponse("PUT", url, responseHeader, byteData, out reason);
+                                if (!validated)
+                                {
+                                    failed(connectionId, code, reason, new AutoyaStatus());
+                                    return;
+                                }
+
+                                succeeded(_conId, byteData);
+                            },
+                            failed
+                        );
+                    },
+                    (conId, code, reason, responseHeader) =>
+                    {
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                    },
+                    timeoutSec
+                )
+            );
+
+            return connectionId;
+        }
 
         private class ConnectionErrorInstance
         {

@@ -18,7 +18,7 @@ namespace AutoyaFramework
         /*
 			delegate for supply http request header generate func for modules.
 		*/
-        public delegate Dictionary<string, string> HttpRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, string data);
+        public delegate Dictionary<string, string> HttpRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, object data);
 
         /*
 			delegate for handle http response for modules.

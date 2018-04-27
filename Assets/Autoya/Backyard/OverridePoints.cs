@@ -182,7 +182,7 @@ namespace AutoyaFramework
             fire when generating http request, via Autoya.Http_X.
             you can add some kind of authorization parameter to request header.
         */
-        private Dictionary<string, string> OnHttpRequest(string method, string url, Dictionary<string, string> requestHeader, string data)
+        private Dictionary<string, string> OnHttpRequest(string method, string url, Dictionary<string, string> requestHeader, object data)
         {
             var accessToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
             requestHeader["Authorization"] = Base64.FromString(accessToken);
