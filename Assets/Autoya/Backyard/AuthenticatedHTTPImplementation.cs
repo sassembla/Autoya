@@ -259,7 +259,6 @@ namespace AutoyaFramework
 
         public static string Http_Delete(
             string url,
-            string data,
             Action<string, string> succeeded,
             Action<string, int, string, AutoyaStatus> failed,
             Dictionary<string, string> additionalHeader = null,
@@ -296,7 +295,7 @@ namespace AutoyaFramework
 
             autoya.AddFrameworkHeaderParam(additionalHeader);
 
-            var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, data);
+            var headers = autoya.httpRequestHeaderDelegate("DELETE", url, additionalHeader, string.Empty);
 
             autoya.mainthreadDispatcher.Commit(
                 autoya._autoyaHttp.Delete(
