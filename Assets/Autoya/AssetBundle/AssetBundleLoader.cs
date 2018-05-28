@@ -938,7 +938,7 @@ namespace AutoyaFramework.AssetBundles
                 alreadyStorageCached = true;
             }
 
-            using (var request = UnityWebRequest.GetAssetBundle(url, hash, crc))
+            using (var request = UnityWebRequestAssetBundle.GetAssetBundle(url, hash, crc))
             {
                 if (requestHeader != null)
                 {

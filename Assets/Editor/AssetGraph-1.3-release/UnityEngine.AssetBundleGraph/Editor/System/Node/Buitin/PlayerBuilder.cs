@@ -312,7 +312,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             var errorMsg = BuildPipeline.BuildPlayer(levels, locationPathName, target, opt);
 #endif
-            if (!string.IsNullOrEmpty(errorMsg))
+            if (!string.IsNullOrEmpty(errorMsg.ToString()))
             {
                 throw new NodeException(node.Name + ":Player build failed:" + errorMsg, node.Id);
             }
