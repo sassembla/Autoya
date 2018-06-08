@@ -16,11 +16,11 @@ using UnityEngine.SceneManagement;
 public class AssetBundleLoaderTests : MiyamasuTestRunner
 {
 
-    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/1.0.0/main_assets.json";
-    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/";
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json";
+    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/";
 
-    private string sceneListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/scenes/OSX/1.0.0/scenes.json";
-    private string sceneAbDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/scenes/OSX/";
+    private string sceneListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/scenes/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/scenes.json";
+    private string sceneAbDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/scenes/" + AssetBundlesSettings.PLATFORM_STR + "/";
 
 
     /*
@@ -33,7 +33,7 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
 		このテストはプレイモード時のみ、きちんと動く。
 		LoadAssetAsyncがプレイ中でないとisDoneにならないのが原因。
 			http://answers.unity3d.com/questions/1215257/proc-assetbundleloadassetasync-thread-in-editor.html
-		
+
 	*/
 
     private AssetBundleLoader loader;
@@ -572,10 +572,6 @@ public class AssetBundleLoaderTests : MiyamasuTestRunner
 
             True(tex != null, "tex is null.");
         }
-
-        // delete 
-        var path = "/Users/passepied/Library/Caches/Unity/Temp";
-        Directory.Delete(path, true);
     }
 
     [MTest]

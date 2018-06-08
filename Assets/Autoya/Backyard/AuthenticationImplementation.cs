@@ -792,6 +792,11 @@ namespace AutoyaFramework
                 return;
             }
 
+            if (forceSetHttpCodeAsUnauthorized)
+            {
+                httpCode = AuthSettings.AUTH_HTTP_CODE_UNAUTHORIZED;
+            }
+
             /*
 				handle Autoya internal error.
 			*/

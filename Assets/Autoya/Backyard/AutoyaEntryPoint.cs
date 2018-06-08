@@ -28,6 +28,7 @@ namespace AutoyaFramework
         public static bool forceFailTokenRefresh = false;
         public static bool forceFailAuthentication = false;
         public static bool forceFailHttp = false;
+        public static bool forceSetHttpCodeAsUnauthorized = false;
         public static bool forceMaintenance = false;
 
         public static void ResetAllForceSetting()
@@ -36,6 +37,7 @@ namespace AutoyaFramework
             forceFailTokenRefresh = false;
             forceFailAuthentication = false;
             forceFailHttp = false;
+            forceSetHttpCodeAsUnauthorized = false;
             forceMaintenance = false;
         }
     }

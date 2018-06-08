@@ -1990,6 +1990,12 @@ public class ManifestTests_Miyamasu {
         rec.MarkAsPassed();
 
         
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
     }
     [UnityTest] public IEnumerator UpdateRuntimeManifest() {
         var rec = new Miyamasu.Recorder("ManifestTests", "UpdateRuntimeManifest");
@@ -2008,6 +2014,12 @@ public class ManifestTests_Miyamasu {
         rec.MarkAsPassed();
 
         
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
     }
 }
 public class FilePersistImplementationTests_Miyamasu {

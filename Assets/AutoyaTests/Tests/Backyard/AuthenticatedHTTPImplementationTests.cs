@@ -10,7 +10,7 @@ using UnityEngine;
 /**
 	tests for Autoya Authenticated HTTP.
 	Autoya strongly handle these server-related errors which comes from game-server.
-	
+
 	these test codes are depends on online env + "https://httpbin.org".
 */
 public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
@@ -26,6 +26,8 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
     [MSetup]
     public IEnumerator Setup()
     {
+        Autoya.ResetAllForceSetting();
+
         var dataPath = Application.persistentDataPath;
         var fwPath = Path.Combine(dataPath, AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN);
         DeleteAllData(fwPath);
@@ -62,6 +64,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
     [MTeardown]
     public IEnumerator Teardown()
     {
+        Autoya.ResetAllForceSetting();
         Autoya.Shutdown();
         while (GameObject.Find("AutoyaMainthreadDispatcher") != null)
         {
@@ -145,21 +148,23 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator AutoyaHTTPGetFailWithUnauth()
     {
+        Autoya.forceSetHttpCodeAsUnauthorized = true;
         var unauthorized = false;
 
         /*
 			dummy server returns 401 forcibly.
 		*/
+
         Autoya.Http_Get(
             "https://httpbin.org/status/401",
             (conId, resultData) =>
             {
-                // do nothing.
-                Debug.Log("Http_Get a resultData:" + resultData);
+                Fail("never succeed.");
             },
             (conId, code, reason, autoyaStatus) =>
             {
                 unauthorized = autoyaStatus.isAuthFailed;
+                Autoya.forceSetHttpCodeAsUnauthorized = false;
             }
         );
 
@@ -294,6 +299,7 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator AutoyaHTTPPostFailWithUnauth()
     {
+        Autoya.forceSetHttpCodeAsUnauthorized = true;
         var unauthorized = false;
 
         /*
@@ -304,11 +310,12 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
             "dummy_data",
             (conId, resultData) =>
             {
-                // do nothing.
+                Fail();
             },
             (conId, code, reason, autoyaStatus) =>
             {
                 unauthorized = autoyaStatus.isAuthFailed;
+                Autoya.forceSetHttpCodeAsUnauthorized = false;
             }
         );
 

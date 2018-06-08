@@ -17,6 +17,7 @@ public class PurchaseImplementationTests : MiyamasuTestRunner
         {
             Directory.Delete(path, true);
         }
+        Debug.Log("after delete, Directory.Exists(path):" + Directory.Exists(path));
     }
 
     [MSetup]
@@ -77,8 +78,7 @@ public class PurchaseImplementationTests : MiyamasuTestRunner
             },
             (pId, err, reason, autoyaStatus) =>
             {
-                done = true;
-                succeeded = false;
+                Fail("err:" + err + " reason:" + reason);
             }
         );
 
@@ -162,6 +162,9 @@ public class PurchaseImplementationTests : MiyamasuTestRunner
             () => { throw new TimeoutException("failed to fail."); },
             10
         );
+
+        Autoya.forceFailAuthentication = false;
+        Debug.Log("AuthFailedInPurchase 終了");
     }
 
     [MTest]

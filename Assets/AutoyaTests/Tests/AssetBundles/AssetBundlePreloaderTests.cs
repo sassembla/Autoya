@@ -15,9 +15,9 @@ using UnityEngine;
 */
 public class AssetBundlePreloaderTests : MiyamasuTestRunner
 {
-    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/1.0.0/main_assets.json";
+    private string abListPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/1.0.0/main_assets.json";
 
-    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/OSX/";
+    private string abDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/main_assets/" + AssetBundlesSettings.PLATFORM_STR + "/";
 
     private string preloadListDlPath = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles/preload/";
 

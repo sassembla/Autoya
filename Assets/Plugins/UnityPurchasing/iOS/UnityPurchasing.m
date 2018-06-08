@@ -20,8 +20,8 @@ void UnityPurchasingLog(NSString *format, ...) {
     va_start(args, format);
     NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
     va_end(args);
-    
-    NSLog(@"UnityIAP:%@", message);
+
+    NSLog(@"UnityIAP: %@", message);
 }
 
 
@@ -166,7 +166,7 @@ int delayInSeconds = 2;
     if ([finishedTransactions containsObject:transactionId]) {
         [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
         UnityPurchasingLog(@"DuplicateTransaction error with product %@ and transactionId %@", transaction.payment.productIdentifier, transactionId);
-        [self onPurchaseFailed:transaction.payment.productIdentifier reason:@"DuplicateTransaction"];
+        [self onPurchaseFailed:transaction.payment.productIdentifier reason:@"DuplicateTransaction" errorCode:@"" errorDescription:@"Duplicate transaction occurred"];
         return; // EARLY RETURN
     }
 
@@ -187,7 +187,7 @@ int delayInSeconds = 2;
         [pendingTransactions removeObjectForKey:transactionIdentifier];
         [finishedTransactions addObject:transactionIdentifier];
     } else {
-        UnityPurchasingLog(@"Transaction %@ not found!", transactionIdentifier);
+        UnityPurchasingLog(@"Transaction %@ not pending, nothing to finish here", transactionIdentifier);
     }
 }
 
@@ -248,11 +248,11 @@ int delayInSeconds = 2;
             [[SKPaymentQueue defaultQueue] addPayment:payment];
         } else {
             UnityPurchasingLog(@"PurchaseProduct: IAP Disabled");
-            [self onPurchaseFailed:productDef.storeSpecificId reason:@"PurchasingUnavailable"];
+            [self onPurchaseFailed:productDef.storeSpecificId reason:@"PurchasingUnavailable" errorCode:@"SKErrorPaymentNotAllowed" errorDescription:@"User is not authorized to make payments"];
         }
 
     } else {
-        [self onPurchaseFailed:productDef.storeSpecificId reason:@"ItemUnavailable"];
+        [self onPurchaseFailed:productDef.storeSpecificId reason:@"ItemUnavailable" errorCode:@"" errorDescription:@"Unity IAP could not find requested product"];
     }
 }
 
@@ -349,10 +349,12 @@ int delayInSeconds = 2;
     request = nil;
 }
 
-- (void)onPurchaseFailed:(NSString*) productId reason:(NSString*)reason {
+- (void)onPurchaseFailed:(NSString*) productId reason:(NSString*)reason errorCode:(NSString*)errorCode errorDescription:(NSString*)errorDescription {
     NSMutableDictionary* dic = [[NSMutableDictionary alloc] init];
     [dic setObject:productId forKey:@"productId"];
     [dic setObject:reason forKey:@"reason"];
+    [dic setObject:errorCode forKey:@"storeSpecificErrorCode"];
+    [dic setObject:errorDescription forKey:@"message"];
 
     NSData* data = [NSJSONSerialization dataWithJSONObject:dic options:0 error:nil];
     NSString* result = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -411,7 +413,12 @@ int delayInSeconds = 2;
                 UnityPurchasingLog(@"PurchaseFailed: %@", errorCode);
 
                 NSString* reason = [self purchaseErrorCodeToReason:transaction.error.code];
-                [self onPurchaseFailed:transaction.payment.productIdentifier reason:reason];
+                NSString* errorCodeString = [UnityPurchasing storeKitErrorCodeNames][@(transaction.error.code)];
+                if (errorCodeString == nil) {
+                    errorCodeString = @"SKErrorUnknown";
+                }
+                NSString* errorDescription = [NSString stringWithFormat:@"APPLE_%@", transaction.error.localizedDescription];
+                [self onPurchaseFailed:transaction.payment.productIdentifier reason:reason errorCode:errorCodeString errorDescription:errorDescription];
 
                 // Finished transactions should be removed from the payment queue.
                 [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
@@ -566,6 +573,54 @@ int delayInSeconds = 2;
             [metadata setObject:currencyCode forKey:@"isoCurrencyCode"];
         }
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 || __TV_OS_VERSION_MAX_ALLOWED >= 110000 || __MAC_OS_X_VERSION_MAX_ALLOWED >= 101300
+        if ((@available(iOS 11_2, macOS 10_13_2, tvOS 11_2, *)) && (nil != [product introductoryPrice]))  {
+            [metadata setObject:[[product introductoryPrice] price] forKey:@"introductoryPrice"];
+            if (nil != [[product introductoryPrice] priceLocale]) {
+                NSString *currencyCode = [[[product introductoryPrice] priceLocale] objectForKey:NSLocaleCurrencyCode];
+                [metadata setObject:currencyCode forKey:@"introductoryPriceLocale"];
+            } else {
+                [metadata setObject:@"" forKey:@"introductoryPriceLocale"];
+            }
+            if (nil != [[product introductoryPrice] numberOfPeriods]) {
+                NSNumber *numberOfPeriods = [NSNumber numberWithInt:[[product introductoryPrice] numberOfPeriods]];
+                [metadata setObject:numberOfPeriods forKey:@"introductoryPriceNumberOfPeriods"];
+            } else {
+                [metadata setObject:@"" forKey:@"introductoryPriceNumberOfPeriods"];
+            }
+            if (nil != [[product introductoryPrice] subscriptionPeriod]) {
+                if (nil != [[[product introductoryPrice] subscriptionPeriod] numberOfUnits]) {
+                    NSNumber *numberOfUnits = [NSNumber numberWithInt:[[[product introductoryPrice] subscriptionPeriod] numberOfUnits]];
+                    [metadata setObject:numberOfUnits forKey:@"numberOfUnits"];
+                } else {
+                    [metadata setObject:@"" forKey:@"numberOfUnits"];
+                }
+                if (nil != [[[product introductoryPrice] subscriptionPeriod] unit]) {
+                    NSNumber *unit = [NSNumber numberWithInt:[[[product introductoryPrice] subscriptionPeriod] unit]];
+                    [metadata setObject:unit forKey:@"unit"];
+                } else {
+                    [metadata setObject:@"" forKey:@"unit"];
+                }
+            } else {
+                [metadata setObject:@"" forKey:@"numberOfUnits"];
+                [metadata setObject:@"" forKey:@"unit"];
+            }
+        } else {
+            [metadata setObject:@"" forKey:@"introductoryPrice"];
+            [metadata setObject:@"" forKey:@"introductoryPriceLocale"];
+            [metadata setObject:@"" forKey:@"introductoryPriceNumberOfPeriods"];
+            [metadata setObject:@"" forKey:@"numberOfUnits"];
+            [metadata setObject:@"" forKey:@"unit"];
+        }
+#else
+        [metadata setObject:@"" forKey:@"introductoryPrice"];
+        [metadata setObject:@"" forKey:@"introductoryPriceLocale"];
+        [metadata setObject:@"" forKey:@"introductoryPriceNumberOfPeriods"];
+        [metadata setObject:@"" forKey:@"numberOfUnits"];
+        [metadata setObject:@"" forKey:@"unit"];
+#endif
+
+
         NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
         [numberFormatter setFormatterBehavior:NSNumberFormatterBehavior10_4];
         [numberFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
@@ -603,6 +658,26 @@ int delayInSeconds = 2;
     NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
     return [[dict objectForKey:@"products"] copy];
+}
+
+// Note: this will need to be updated if Apple ever adds more StoreKit error codes.
++ (NSDictionary<NSNumber *, NSString *> *)storeKitErrorCodeNames
+{
+    return @{
+             @(SKErrorUnknown) : @"SKErrorUnknown",
+             @(SKErrorClientInvalid) : @"SKErrorClientInvalid",
+             @(SKErrorPaymentCancelled) : @"SKErrorPaymentCancelled",
+             @(SKErrorPaymentInvalid) : @"SKErrorPaymentInvalid",
+             @(SKErrorPaymentNotAllowed) : @"SKErrorPaymentNotAllowed",
+#if !MAC_APPSTORE
+             @(SKErrorStoreProductNotAvailable) : @"SKErrorStoreProductNotAvailable",
+             @(SKErrorCloudServicePermissionDenied) : @"SKErrorCloudServicePermissionDenied",
+             @(SKErrorCloudServiceNetworkConnectionFailed) : @"SKErrorCloudServiceNetworkConnectionFailed",
+#endif
+#if !MAC_APPSTORE && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 103000 || __TV_OS_VERSION_MAX_ALLOWED >= 103000)
+             @(SKErrorCloudServiceRevoked) : @"SKErrorCloudServiceRevoked",
+#endif
+             };
 }
 
 #pragma mark - Internal Methods & Events

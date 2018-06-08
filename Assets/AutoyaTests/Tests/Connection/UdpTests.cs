@@ -39,20 +39,26 @@ public class UdpTests : MiyamasuTestRunner
     {
         var received = false;
         var port = 8888;
+        try
+        {
+            udpReceiver = new UdpReceiver(
+                IP.LocalIPAddressSync(),
+                port,
+                bytes =>
+                {
+                    True(bytes.Length == 4);
+                    received = true;
+                }
+            );
 
-        udpReceiver = new UdpReceiver(
-            IP.LocalIPAddressSync(),
-            port,
-            bytes =>
-            {
-                True(bytes.Length == 4);
-                received = true;
-            }
-        );
-
-        // send udp data.
-        udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        udpSender.Send(new byte[] { 1, 2, 3, 4 });
+            // send udp data.
+            udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
+            udpSender.Send(new byte[] { 1, 2, 3, 4 });
+        }
+        catch (Exception e)
+        {
+            Fail(e.ToString());
+        }
 
         yield return WaitUntil(
             () => received,
@@ -66,21 +72,27 @@ public class UdpTests : MiyamasuTestRunner
         var count = 2;
         var receivedCount = 0;
         var port = 8888;
+        try
+        {
+            udpReceiver = new UdpReceiver(
+                IP.LocalIPAddressSync(),
+                port,
+                bytes =>
+                {
+                    True(bytes.Length == 4);
+                    receivedCount++;
+                }
+            );
 
-        udpReceiver = new UdpReceiver(
-            IP.LocalIPAddressSync(),
-            port,
-            bytes =>
-            {
-                True(bytes.Length == 4);
-                receivedCount++;
-            }
-        );
-
-        // send udp data.
-        udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        udpSender.Send(new byte[] { 1, 2, 3, 4 });
-        udpSender.Send(new byte[] { 1, 2, 3, 4 });
+            // send udp data.
+            udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
+            udpSender.Send(new byte[] { 1, 2, 3, 4 });
+            udpSender.Send(new byte[] { 1, 2, 3, 4 });
+        }
+        catch (Exception e)
+        {
+            Fail(e.ToString());
+        }
 
         yield return WaitUntil(
             () => count == receivedCount,
@@ -94,22 +106,28 @@ public class UdpTests : MiyamasuTestRunner
         var count = 1000;
         var receivedCount = 0;
         var port = 8888;
-
-        udpReceiver = new UdpReceiver(
-            IP.LocalIPAddressSync(),
-            port,
-            bytes =>
-            {
-                True(bytes.Length == 4);
-                receivedCount++;
-            }
-        );
-
-        // send udp data.
-        udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        for (var i = 0; i < count; i++)
+        try
         {
-            udpSender.Send(new byte[] { 1, 2, 3, 4 });
+            udpReceiver = new UdpReceiver(
+                IP.LocalIPAddressSync(),
+                port,
+                bytes =>
+                {
+                    True(bytes.Length == 4);
+                    receivedCount++;
+                }
+            );
+
+            // send udp data.
+            udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
+            for (var i = 0; i < count; i++)
+            {
+                udpSender.Send(new byte[] { 1, 2, 3, 4 });
+            }
+        }
+        catch (Exception e)
+        {
+            Fail(e.ToString());
         }
 
         yield return WaitUntil(
@@ -124,54 +142,60 @@ public class UdpTests : MiyamasuTestRunner
         var count = 1000;
         var receivedCount = 0;
         var port = 8888;
-
-        var data = new byte[100];
-        for (var i = 0; i < data.Length; i++)
+        try
         {
-            data[i] = (byte)UnityEngine.Random.Range(byte.MinValue, byte.MaxValue);
-        }
-
-        // validate by hash. checking send data == received data or not.
-        var md5 = MD5.Create();
-        var origin = md5.ComputeHash(data);
-        var hashLen = origin.Length;
-
-        // add hash data to head of new data.
-        var newData = new byte[data.Length + hashLen];
-        for (var i = 0; i < newData.Length; i++)
-        {
-            if (i < hashLen)
+            var data = new byte[100];
+            for (var i = 0; i < data.Length; i++)
             {
-                newData[i] = origin[i];
+                data[i] = (byte)UnityEngine.Random.Range(byte.MinValue, byte.MaxValue);
             }
-            else
-            {
-                newData[i] = data[i - hashLen];
-            }
-        }
 
-        udpReceiver = new UdpReceiver(
-            IP.LocalIPAddressSync(),
-            port,
-            bytes =>
-            {
-                True(bytes.Length == newData.Length);
+            // validate by hash. checking send data == received data or not.
+            var md5 = MD5.Create();
+            var origin = md5.ComputeHash(data);
+            var hashLen = origin.Length;
 
-                var hash = md5.ComputeHash(bytes, hashLen, bytes.Length - hashLen);
-                for (var i = 0; i < hash.Length; i++)
+            // add hash data to head of new data.
+            var newData = new byte[data.Length + hashLen];
+            for (var i = 0; i < newData.Length; i++)
+            {
+                if (i < hashLen)
                 {
-                    True(hash[i] == bytes[i]);
+                    newData[i] = origin[i];
                 }
-
-                receivedCount++;
+                else
+                {
+                    newData[i] = data[i - hashLen];
+                }
             }
-        );
 
-        // send udp data.
-        udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
-        for (var i = 0; i < count; i++)
+            udpReceiver = new UdpReceiver(
+                IP.LocalIPAddressSync(),
+                port,
+                bytes =>
+                {
+                    True(bytes.Length == newData.Length);
+
+                    var hash = md5.ComputeHash(bytes, hashLen, bytes.Length - hashLen);
+                    for (var i = 0; i < hash.Length; i++)
+                    {
+                        True(hash[i] == bytes[i]);
+                    }
+
+                    receivedCount++;
+                }
+            );
+
+            // send udp data.
+            udpSender = new UdpSender(IP.LocalIPAddressSync(), port);
+            for (var i = 0; i < count; i++)
+            {
+                udpSender.Send(newData);
+            }
+        }
+        catch (Exception e)
         {
-            udpSender.Send(newData);
+            Fail(e.ToString());
         }
 
         yield return WaitUntil(

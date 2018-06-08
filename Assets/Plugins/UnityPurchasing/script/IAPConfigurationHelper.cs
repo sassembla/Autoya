@@ -11,7 +11,7 @@ namespace UnityEngine.Purchasing
         /// Populate a ConfigurationBuilder with products from a ProductCatalog
         public static void PopulateConfigurationBuilder(ref ConfigurationBuilder builder, ProductCatalog catalog)
         {
-            foreach (var product in catalog.allProducts)
+            foreach (var product in catalog.allValidProducts)
             {
                 IDs ids = null;
 

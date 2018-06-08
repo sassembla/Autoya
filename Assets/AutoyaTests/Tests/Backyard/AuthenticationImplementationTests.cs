@@ -202,6 +202,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator HandleTokenRefreshFailed()
     {
+        Autoya.forceSetHttpCodeAsUnauthorized = true;
         Autoya.forceFailTokenRefresh = true;
 
         var tokenRefreshFailed = false;
@@ -221,7 +222,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
             },
             (conId, code, reason, autoyaStatus) =>
             {
-                // do nothing.
+                Autoya.forceSetHttpCodeAsUnauthorized = false;
             }
         );
 
@@ -237,6 +238,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator HandleTokenRefreshFailedThenAttemptAuthentication()
     {
+        Autoya.forceSetHttpCodeAsUnauthorized = true;
         Autoya.forceFailTokenRefresh = true;
 
         var tokenRefreshFailed = false;
@@ -256,7 +258,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
             },
             (conId, code, reason, autoyaStatus) =>
             {
-                // do nothing.
+                Autoya.forceSetHttpCodeAsUnauthorized = false;
             }
         );
 
