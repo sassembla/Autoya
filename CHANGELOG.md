@@ -6,6 +6,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.43]	- 2018/06/08
+### Changed
+- update IAP library version to 1.9.x
+
+
 ## [0.8.42]	- 2018/04/23
 ### Changed
 - Generate AssetBundles via AssetGraph now export AssetBundles + AssetBundleList only.  not export .manifest files.
