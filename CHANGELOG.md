@@ -9,6 +9,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [0.8.43]	- 2018/06/08
 ### Changed
 - update IAP library version to 1.9.x
+- update AssetGraph to 1.4
+- update Unity to 2018.1.0f2
 
 
 ## [0.8.42]	- 2018/04/23
