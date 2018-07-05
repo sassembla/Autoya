@@ -313,6 +313,23 @@ namespace AutoyaFramework
         }
 
         /**
+            called after purchase started.
+            choosedProductId is player choosed product id.
+            this method's result will be send(http POST) to your server.
+
+            you can modify request parameter to the expected request data format here.
+
+            request url is defined at PurchaseSettings.cs/PURCHASE_URL_TICKET.
+         */
+        private string OnTicketRequest(string choosedProductId)
+        {
+            // by default, choosedProductId will be send as raw string.
+            // when you change this like "{"productId":choosedProductId}", Tikcet request will be contains json representation.
+            // please modify here if you need.
+            return choosedProductId;
+        }
+
+        /**
             called when received ticket data for purchasing product via Autoya.Purchase.
             you can modify received ticket data string to desired data.
             returned string will be send to the server for item-deploy information of this purchase.

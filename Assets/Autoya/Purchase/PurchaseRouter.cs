@@ -61,6 +61,7 @@ namespace AutoyaFramework.Purchase
         private readonly HttpRequestHeaderDelegate httpRequestHeaderDelegate;
         private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
+        private readonly Func<string, string> onTicketRequest;
 
         [Serializable]
         public struct PurchaseFailed
@@ -185,6 +186,7 @@ namespace AutoyaFramework.Purchase
         public PurchaseRouter(
             Action<IEnumerator> executor,
             Func<string, ProductInfo[]> onLoadProducts,
+            Func<string, string> onTicketRequest,
             Func<string, string> onTicketResponse,
             Action onPurchaseReady,
             Action<PurchaseReadyError, int, string> onPurchaseReadyFailed,
@@ -230,6 +232,7 @@ namespace AutoyaFramework.Purchase
                 this.httpResponseHandlingDelegate = BasicResponseHandlingDelegate;
             }
 
+            this.onTicketRequest = onTicketRequest;
             this.onTicketResponse = onTicketResponse;
             this.onPurchaseCompletedInBackground = onPurchaseCompletedInBackground;
 
@@ -474,7 +477,7 @@ namespace AutoyaFramework.Purchase
 				start getting ticket for purchase.
 			 */
             var ticketUrl = PurchaseSettings.PURCHASE_URL_TICKET;
-            var data = productId;
+            var data = onTicketRequest(productId);
 
             routerState = RouterState.GettingTransaction;
 

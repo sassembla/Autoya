@@ -2250,6 +2250,25 @@ public class PurchaseRouterTests_Miyamasu {
             throw;
         }
     }
+    [UnityTest] public IEnumerator ChangePurhcaseSuceededRequest() {
+        var rec = new Miyamasu.Recorder("PurchaseRouterTests", "ChangePurhcaseSuceededRequest");
+        var instance = new PurchaseRouterTests();
+        instance.rec = rec;
+
+        
+        yield return instance.Setup();
+        
+        yield return instance.ChangePurhcaseSuceededRequest();
+        rec.MarkAsPassed();
+
+        
+        try {
+            instance.Teardown();
+        } catch (Exception e) {
+            rec.TeardownFailed(e);
+            throw;
+        }
+    }
 }
 public class JWTTests_Miyamasu {
     [UnityTest] public IEnumerator Read() {

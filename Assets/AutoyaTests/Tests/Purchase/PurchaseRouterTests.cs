@@ -84,6 +84,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
+            givenProductId => givenProductId,
             ticketData => ticketData,
             () => { },
             (err, code, reason) => { }
@@ -191,6 +192,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
+            givenProductId => givenProductId,
             ticketData => ticketData,
             () => { },
             (err, code, reason) => { },
@@ -272,6 +274,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
+            givenProductId => givenProductId,
             ticketData => ticketData,
             () => { },
             (err, code, reason) => { },
@@ -307,6 +310,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
+            givenProductId => givenProductId,
             ticketData => ticketData,
             () => { },
             (err, code, reason) => { },
@@ -397,6 +401,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
+            givenProductId => givenProductId,
             ticketData => Guid.NewGuid().ToString(),
             () => { },
             (err, code, reason) => { },
@@ -467,6 +472,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
+            givenProductId => givenProductId,
             ticketData => Guid.NewGuid().ToString(),
             () =>
             {
@@ -492,5 +498,80 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             () => { throw new TimeoutException("timeout."); },
             10
         );
+    }
+
+    [Serializable]
+    public class SampleTicletJsonData
+    {
+        [SerializeField] public string productId;
+        [SerializeField] public string dateTime;
+
+        public SampleTicletJsonData(string productId, string dateTime)
+        {
+            this.productId = productId;
+            this.dateTime = dateTime;
+        }
+    }
+
+    [MTest]
+    public IEnumerator ChangePurhcaseSuceededRequest()
+    {
+        var dateTimeStr = DateTime.Now.ToLongDateString();
+
+        Func<string, string> onTicletRequestFunc = givenProductId =>
+        {
+            var data = new SampleTicletJsonData(givenProductId, dateTimeStr);
+            var jsonStr = JsonUtility.ToJson(data);
+            return jsonStr;
+        };
+
+        router = new PurchaseRouter(
+           iEnum =>
+           {
+               runner.StartCoroutine(iEnum);
+           },
+           productData =>
+           {
+               // dummy response.
+               return new ProductInfo[] {
+                    new ProductInfo("100_gold_coins", "100_gold_coins_iOS", true, "one hundled of coins."),
+                    new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
+               };
+           },
+           onTicletRequestFunc,// ここがリクエストに乗っかるので、ticketDataの値でassertを書けばいい。
+           ticketData =>
+           {
+               True(ticketData.Contains(dateTimeStr));
+               return ticketData;
+           },
+           () => { },
+           (err, code, reason) => { },
+           backgroundPurchasedProductId => { },
+           null,
+           DummyResponsehandlingDelegate
+       );
+
+        yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
+
+        var purchaseId = "dummy purchase Id";
+        var productId = "100_gold_coins";
+
+        var cor = router.PurchaseAsync(
+            purchaseId,
+            productId,
+            pId =>
+            {
+                // do nothing.
+            },
+            (pId, err, code, reason) =>
+            {
+                // do nothing.
+            }
+        );
+
+        while (cor.MoveNext())
+        {
+            yield return null;
+        }
     }
 }
