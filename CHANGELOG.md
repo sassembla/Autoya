@@ -6,6 +6,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.44]	- 2018/07/06
+### Changed
+- added new OverridePoint for purchase ticket request format changer.
+
+
 ## [0.8.43]	- 2018/06/08
 ### Changed
 - update IAP library version to 1.9.x
