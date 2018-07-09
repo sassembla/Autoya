@@ -45,7 +45,7 @@ namespace UUebView
                 {
                     if (target.transform.parent.GetComponent<Canvas>() == null)
                     {
-                        Debug.Log("skipped antimaterialize:" + target + " because it is not located under Canvas attached GameObject. let's select object under Canvas.");
+                        Debug.LogWarning("skipped antimaterialize:" + target + " because it is not located under Canvas attached GameObject. let's select object under Canvas.");
                         continue;
                     }
 
@@ -53,9 +53,41 @@ namespace UUebView
                 }
             }
         }
+        private static List<string> GetChildNames(GameObject parent, List<string> names = null)
+        {
+            if (names == null)
+            {
+                names = new List<string>();
+            }
 
+            names.Add(parent.name);
+
+            for (var i = 0; i < parent.transform.childCount; i++)
+            {
+                var child = parent.transform.GetChild(i);
+                GetChildNames(child.gameObject, names);
+            }
+
+            return names;
+        }
         private static void Antimaterialize(GameObject target)
         {
+            Debug.Log("start tag-generation check.");
+
+            var childNames = GetChildNames(target);
+
+            // 名前の重複チェック
+            var overlappedNameList = childNames.GroupBy(n => n).Where(c => 1 < c.Count()).ToList();
+            if (0 < overlappedNameList.Count)
+            {
+                Debug.LogError("two or multiple gameobject has same name. please set unique name for converting gameobject to HTML tag.");
+                foreach (var name in overlappedNameList)
+                {
+                    Debug.LogError("gameobject name:" + name + " is defined multiple times. please change for each object name to unique.");
+                }
+                return;
+            }
+
             var viewName = target.name;
             var exportBasePath = ConstSettings.FULLPATH_INFORMATION_RESOURCE + viewName;
             Debug.Log("start antimaterialize:" + viewName + ". view name is:" + target + " export file path:" + exportBasePath);
@@ -315,6 +347,10 @@ namespace UUebView
             }
         }
 
+        /**
+            レイヤーの作成を行う。
+            内部のものが置ける情報をボックスとして定義し、情報を保持する。
+         */
         private static void ModifyLayerInstance(string viewName, GameObject currentLayerInstance, List<LayerInfoOnEditor> currentLayers, float parentWidth, float parentHeight)
         {
             // このインスタンスのポジションを0,0 leftTopAnchor、左上pivotにする。
@@ -370,13 +406,16 @@ namespace UUebView
                 }
             }
 
-            using (new GameObjectDeleteUsing(copiedChildList.ToArray()))
+            // copiedChildListをy順にソートする。
+            var sortedCopiedChildList = copiedChildList.OrderByDescending(go => go.GetComponent<RectTransform>().anchoredPosition.y).ToList();
+
+            using (new GameObjectDeleteUsing(sortedCopiedChildList.ToArray()))
             {
                 /*
-                    box情報を生成
+                    layer内のオブジェクトからbox情報を生成
                 */
                 {
-                    foreach (var boxObject in copiedChildList)
+                    foreach (var boxObject in sortedCopiedChildList)
                     {
                         var boxRectTrans = boxObject.GetComponent<RectTransform>();
 
@@ -392,7 +431,8 @@ namespace UUebView
                 }
 
                 /*
-                    layer内のboxの削除(レイアウトの動的な伸張、変更を実行時に動的に行ないたいため、jsonにして吐き出す。実態がないほうがいい)
+                    layer内のオブジェクトの削除
+                    (レイアウトの動的な伸張、変更を実行時に動的に行ないたいため、jsonにして吐き出す。実態がないほうがいい)
                 */
                 {
                     var list = new List<GameObject>();
@@ -411,7 +451,7 @@ namespace UUebView
 
 
                 /*
-                    このレイヤーのunboxed時のサイズと、内包しているboxの情報を追加
+                    このレイヤーのunboxed時のサイズと、内包しているboxの情報を追加する。
                 */
                 {
                     var newChildConstraint = childrenConstraintDict
@@ -449,7 +489,7 @@ namespace UUebView
                 /*
                     取り出しておいたchildに対して再帰
                 */
-                foreach (var disposableChild in copiedChildList)
+                foreach (var disposableChild in sortedCopiedChildList)
                 {
                     ModifyLayerInstance(viewName, disposableChild, currentLayers, calculatedWidth, calculatedHeight);
                 }
