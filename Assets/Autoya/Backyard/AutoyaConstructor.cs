@@ -5,6 +5,7 @@ using AutoyaFramework.Settings.Auth;
 using AutoyaFramework.Purchase;
 using System;
 using AutoyaFramework.Settings.App;
+using AutoyaFramework.Notification;
 
 /**
     constructor implementation of Autoya.
@@ -43,12 +44,12 @@ namespace AutoyaFramework
                 if (go == null)
                 {
                     go = new GameObject("AutoyaMainthreadDispatcher");
-                    this.mainthreadDispatcher = go.AddComponent<AutoyaMainThreadDispatcher>();
+                    this.mainthreadDispatcher = go.AddComponent<AutoyaMainthreadDispatcher>();
                     GameObject.DontDestroyOnLoad(go);
                 }
                 else
                 {
-                    this.mainthreadDispatcher = go.GetComponent<AutoyaMainThreadDispatcher>();
+                    this.mainthreadDispatcher = go.GetComponent<AutoyaMainthreadDispatcher>();
                 }
             }
             else
@@ -58,7 +59,7 @@ namespace AutoyaFramework
             }
 
             _autoyaFilePersistence = new FilePersistence(basePath);
-
+            _notification = new Notifications(AutoyaMainthreadDispatcher.AddNativeObserver);
             _autoyaHttp = new HTTPConnection();
 
             mainthreadDispatcher.Commit(

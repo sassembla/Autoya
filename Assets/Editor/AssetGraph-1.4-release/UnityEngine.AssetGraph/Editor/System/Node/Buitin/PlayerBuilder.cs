@@ -143,7 +143,7 @@ namespace UnityEngine.AssetGraph
                         );
                         if (newBuildLocation.StartsWith(Application.dataPath))
                         {
-                            throw new NodeException("You can not build player inside Assets directory.", 
+                            throw new NodeException("You can not build player inside Assets directory.",
                                 "Select build location outside Assets directory.",
                                 node.Data);
                         }
@@ -298,7 +298,7 @@ namespace UnityEngine.AssetGraph
                 }
             }
 
-            BuildPlayerOptions opt;
+            BuildPlayerOptions opt = new BuildPlayerOptions();
             opt.options = (BuildOptions)m_buildOptions[target];
             opt.locationPathName = m_buildLocations[target] + "/" + m_playerName[target];
             opt.assetBundleManifestPath = manifestPath;
@@ -309,18 +309,19 @@ namespace UnityEngine.AssetGraph
             var report = BuildPipeline.BuildPlayer(opt);
             var summary = report.summary;
 
-            switch(summary.result) {
-            case BuildResult.Failed:
-                throw new NodeException(
-                    string.Format("Player build failed. ({0} errors)", summary.totalErrors), 
-                    summary.ToString(), node);
-            case BuildResult.Cancelled:
-                LogUtility.Logger.Log(LogUtility.kTag, "Player build cancelled.");
-                break;
-            case BuildResult.Unknown:
-                throw new NodeException(
-                    string.Format("Player build ended with Unknown state."), 
-                    summary.ToString(), node);
+            switch (summary.result)
+            {
+                case BuildResult.Failed:
+                    throw new NodeException(
+                        string.Format("Player build failed. ({0} errors)", summary.totalErrors),
+                        summary.ToString(), node);
+                case BuildResult.Cancelled:
+                    LogUtility.Logger.Log(LogUtility.kTag, "Player build cancelled.");
+                    break;
+                case BuildResult.Unknown:
+                    throw new NodeException(
+                        string.Format("Player build ended with Unknown state."),
+                        summary.ToString(), node);
             }
 #else
             var errorMsg = BuildPipeline.BuildPlayer(opt);

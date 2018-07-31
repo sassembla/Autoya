@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,7 +8,7 @@ using UnityEngine;
 */
 namespace AutoyaFramework
 {
-    public class AutoyaMainThreadDispatcher : MonoBehaviour, ICoroutineUpdater
+    public class AutoyaMainthreadDispatcher : MonoBehaviour, ICoroutineUpdater
     {
         private List<IEnumerator> coroutines = new List<IEnumerator>();
         private object lockObj = new object();
@@ -39,6 +40,31 @@ namespace AutoyaFramework
             }
         }
 
+        private static Dictionary<string, Action<string>> nativeObserver = new Dictionary<string, Action<string>>();
+
+        public static void AddNativeObserver(string key, Action<string> act)
+        {
+            // set event action.
+            nativeObserver[key] = act;
+        }
+
+        // call from native plugin with special header string. e,g, URLScheme:<parameters>
+        public void OnNativeEvent(string param)
+        {
+            var firstCoronIndex = param.IndexOf(":");
+            if (firstCoronIndex == -1)
+            {
+                return;
+            }
+
+            var key = param.Substring(0, firstCoronIndex);
+            var val = param.Substring(firstCoronIndex + 1);
+            if (nativeObserver.ContainsKey(key))
+            {
+                nativeObserver[key](val);
+            }
+        }
+
         private void Update()
         {
             if (0 < coroutines.Count)
@@ -59,8 +85,8 @@ namespace AutoyaFramework
         }
 
         /**
-			automatically destory this gameObject.
-		*/
+            automatically destory this gameObject.
+        */
         private void OnApplicationQuit()
         {
             Destroy(gameObject);
@@ -73,8 +99,8 @@ namespace AutoyaFramework
     }
 
     /**
-		Update() runner class for Editor.
-	*/
+        Update() runner class for Editor.
+*/
     public class EditorUpdator : ICoroutineUpdater
     {
         private List<IEnumerator> readyCoroutines = new List<IEnumerator>();
@@ -106,6 +132,22 @@ namespace AutoyaFramework
             {
                 yield return iEnums[index];
                 index++;
+            }
+        }
+
+        private static Dictionary<string, Action<string>> nativeObserver = new Dictionary<string, Action<string>>();
+        public static void AddNativeObserver(string key, Action<string> act)
+        {
+            nativeObserver[key] = act;
+        }
+
+        public static void OnNativeEvent(string param)
+        {
+            var keyAndValue = param.Split(new char[':'], 1);
+            var key = keyAndValue[0];
+            if (nativeObserver.ContainsKey(key))
+            {
+                nativeObserver[key](keyAndValue[1]);
             }
         }
 
@@ -153,8 +195,8 @@ namespace AutoyaFramework
     public partial class Autoya
     {
         /*
-			public api.
-		*/
+            public api.
+        */
         public static void Mainthread_Commit(IEnumerator iEnum)
         {
             autoya.mainthreadDispatcher.Commit(iEnum);

@@ -2022,6 +2022,44 @@ public class ManifestTests_Miyamasu {
         }
     }
 }
+public class NotificationTest_Miyamasu {
+    [UnityTest] public IEnumerator GetStoredURLSchemeOnBoot() {
+        var rec = new Miyamasu.Recorder("NotificationTest", "GetStoredURLSchemeOnBoot");
+        var instance = new NotificationTest();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        instance.GetStoredURLSchemeOnBoot(); yield return null;
+        rec.MarkAsPassed();
+
+        
+    }
+    [UnityTest] public IEnumerator GetStoredURLSchemeAfterBooted() {
+        var rec = new Miyamasu.Recorder("NotificationTest", "GetStoredURLSchemeAfterBooted");
+        var instance = new NotificationTest();
+        instance.rec = rec;
+
+        
+        try {
+            instance.Setup();
+        } catch (Exception e) {
+            rec.SetupFailed(e);
+            throw;
+        }
+        
+        instance.GetStoredURLSchemeAfterBooted(); yield return null;
+        rec.MarkAsPassed();
+
+        
+    }
+}
 public class FilePersistImplementationTests_Miyamasu {
     [UnityTest] public IEnumerator Update() {
         var rec = new Miyamasu.Recorder("FilePersistImplementationTests", "Update");
