@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
 
 /**
 	features for control data storage.
@@ -47,9 +50,9 @@ namespace AutoyaFramework.Persistence.Files
                 {
 
 #if UNITY_IOS
-					{
-						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-					}
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
 #endif
 
                     var filePath = Path.Combine(domainPath, fileName);
@@ -61,6 +64,68 @@ namespace AutoyaFramework.Persistence.Files
                 }
             }
             return false;
+        }
+
+        public bool Append(string domain, string fileName, byte[] data, Action onAppended, Action<string> onAppendFailed)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+
+                var filePath = Path.Combine(domainPath, fileName);
+                ProcessWrite(filePath, data, onAppended, onAppendFailed);
+                return true;
+            }
+            else
+            {// no directory = domain exists.
+                var created = Directory.CreateDirectory(domainPath);
+
+                if (created.Exists)
+                {
+
+#if UNITY_IOS
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
+#endif
+
+                    var filePath = Path.Combine(domainPath, fileName);
+                    ProcessWrite(filePath, data, onAppended, onAppendFailed);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static Task ProcessWrite(string path, byte[] data, Action onAppended, Action<string> onAppendFailed)
+        {
+            return WriteTextAsync(path, data, onAppended, onAppendFailed);
+        }
+
+        static async Task WriteTextAsync(string filePath, byte[] data, Action onAppended, Action<string> onAppendFailed)
+        {
+            using (
+                var sourceStream = new FileStream(
+                    filePath,
+                    FileMode.Append,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 4096,
+                    useAsync: true
+                )
+            )
+            {
+                try
+                {
+                    await sourceStream.WriteAsync(data, 0, data.Length);
+                    Debug.Log("吐き出し完了した");
+                    onAppended();
+                }
+                catch (Exception e)
+                {
+                    onAppendFailed(e.Message);
+                }
+            };
         }
 
 
@@ -85,9 +150,9 @@ namespace AutoyaFramework.Persistence.Files
                 if (created.Exists)
                 {
 #if UNITY_IOS
-					{
-						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-					}
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
 #endif
 
                     var filePath = Path.Combine(domainPath, fileName);
@@ -159,6 +224,58 @@ namespace AutoyaFramework.Persistence.Files
             return string.Empty;
         }
 
+        public void Load(string domain, string fileName, Action<byte[]> onLoaded, Action<string> onLoadFailed)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                Debug.Log("filePath:" + filePath);
+                if (File.Exists(filePath))
+                {
+                    ProcessRead(filePath, onLoaded, onLoadFailed);
+                    return;
+                }
+
+                onLoadFailed("file not found.");
+                return;
+            }
+
+            onLoadFailed("domain not found.");
+        }
+
+        static Task ProcessRead(string path, Action<byte[]> onLoaded, Action<string> onLoadFailed)
+        {
+            return WriteTextAsync(path, onLoaded, onLoadFailed);
+        }
+
+        static async Task WriteTextAsync(string filePath, Action<byte[]> onLoaded, Action<string> onLoadFailed)
+        {
+            using (
+                var sourceStream = new FileStream(
+                    filePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.None,
+                    bufferSize: 4096,
+                    useAsync: true
+                )
+            )
+            {
+                try
+                {
+                    var buffer = new byte[sourceStream.Length];// これキッツくない？
+                    await sourceStream.ReadAsync(buffer, 0, buffer.Length);
+                    onLoaded(buffer);
+                }
+                catch (Exception e)
+                {
+                    onLoadFailed(e.Message);
+                }
+            };
+        }
+
+
         /**
 			delete domain/fileName if exists. then return true.
 			else return false.
@@ -218,9 +335,9 @@ namespace AutoyaFramework.Persistence.Files
                 {
 
 #if UNITY_IOS
-					{
-						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-					}
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
 #endif
 
                     var filePath = Path.Combine(domainPath, fileName);
@@ -232,6 +349,20 @@ namespace AutoyaFramework.Persistence.Files
                 }
             }
             result(false);
+        }
+
+        public bool Persist_IsExist(string domain, string fileName)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                if (File.Exists(filePath))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         // public void UpdateAsync (string domain, string fileName, string data, Action<bool> result) {

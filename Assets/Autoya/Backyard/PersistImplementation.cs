@@ -1,3 +1,4 @@
+using System;
 using AutoyaFramework.Persistence.Files;
 using UnityEngine;
 
@@ -36,9 +37,25 @@ namespace AutoyaFramework
             return autoya._autoyaFilePersistence.Append(domain, filePath, data);
         }
 
+        public static bool Persist_Append(string domain, string filePath, byte[] data, Action onAppended, Action<string> onAppendFailed)
+        {
+            var isEnough = false;
+            if (isEnough)
+            {// estimate size over
+                Debug.LogError("Persist_Update save size overed.");
+                return false;
+            }
+            return autoya._autoyaFilePersistence.Append(domain, filePath, data, onAppended, onAppendFailed);
+        }
+
         public static string Persist_Load(string domain, string filePath)
         {
             return autoya._autoyaFilePersistence.Load(domain, filePath);
+        }
+
+        public static void Persist_Load(string domain, string filePath, Action<byte[]> onLoaded, Action<string> onLoadFailed)
+        {
+            autoya._autoyaFilePersistence.Load(domain, filePath, onLoaded, onLoadFailed);
         }
 
         public static bool Persist_Delete(string domain, string filePath)
@@ -54,6 +71,11 @@ namespace AutoyaFramework
         public static string[] Persist_FileNamesInDomain(string domain)
         {
             return autoya._autoyaFilePersistence.FileNamesInDomain(domain);
+        }
+
+        public static bool Persist_IsExist(string domain, string filePath)
+        {
+            return autoya._autoyaFilePersistence.Persist_IsExist(domain, filePath);
         }
     }
 }
