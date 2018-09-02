@@ -516,7 +516,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator ChangePurhcaseSuceededRequest()
     {
-        var dateTimeStr = DateTime.Now.ToLongDateString();
+        var dateTimeStr = DateTime.Now.Ticks.ToString();
 
         Func<string, string> onTicletRequestFunc = givenProductId =>
         {
