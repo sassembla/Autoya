@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using AutoyaFramework.Settings.AssetBundles;
+using System.Collections.Specialized;
 
 
 /*
@@ -866,16 +867,22 @@ namespace AutoyaFramework
 			*/
             succeeded(connectionId, data);
 
+
+            var insencitiveKV = new NameValueCollection();
+            foreach (var item in responseHeader)
+            {
+                insencitiveKV[item.Key] = item.Value;
+            }
+
             /*
 				fire assetBundleList-request check after succeeded.
 			*/
             if (assetBundleFeatState == AssetBundlesFeatureState.Ready)
             {
-                if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION))
+                var versionDescription = insencitiveKV[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
+                if (!string.IsNullOrEmpty(versionDescription))
                 {
-                    var newListVersionsOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
-
-                    var listIdentitiesAndNewVersionDescriptions = GetListIdentityAndNewVersionDescriptions(newListVersionsOnResponseHeader);
+                    var listIdentitiesAndNewVersionDescriptions = GetListIdentityAndNewVersionDescriptions(versionDescription);
 
                     foreach (var listItem in listIdentitiesAndNewVersionDescriptions)
                     {
@@ -906,10 +913,10 @@ namespace AutoyaFramework
             /*
                 fire application update request after succeeded.
             */
-            if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_APPVERSION))
+            var appUpdateDescription = insencitiveKV[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
+            if (!string.IsNullOrEmpty(appUpdateDescription))
             {
-                var newappVersionOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
-                OnNewAppRequested(newappVersionOnResponseHeader);
+                OnNewAppRequested(appUpdateDescription);
             }
         }
 
