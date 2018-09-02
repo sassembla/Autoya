@@ -101,8 +101,11 @@ namespace AutoyaFramework
             private static void OnCompile(string buildMessage = null)
             {
                 AppManifestStore<RuntimeManifestObject, BuildManifestObject>.UpdateBuildManifest(
-                    current =>
+                    (current, buildTimeLatest) =>
                     {
+                        // update build version.
+                        current.appVerion = buildTimeLatest.appVerion;
+
                         // countup build count.
                         var buildNoStr = current.buildNo;
                         if (string.IsNullOrEmpty(buildNoStr))

@@ -151,11 +151,11 @@ namespace AutoyaFramework.AppManifest
             }
         }
 
-        public static void UpdateBuildManifest(Func<BuildManifestType, BuildManifestType> update)
+        public static void UpdateBuildManifest(Func<BuildManifestType, BuildManifestType, BuildManifestType> update)
         {
             var current = LoadBuildManifest();
-
-            var updated = update(current);
+            var source = new BuildManifestType();
+            var updated = update(current, source);
 
             // overwrite resource file.
             var targetPath = AppManifestStoreSettings.BUILDMANIFEST_PATH;
