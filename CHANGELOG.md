@@ -6,6 +6,13 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+
+## [0.8.46]	- 2018/09/03
+### Fixed
+- authenticated http response header is now adopted to rfc7230.
+- build manifest's appVersion was fixed to show user defined appVersion correctly.
+
+
 ## [0.8.45]	- 2018/08/01
 ### Feature
 - URL Scheme for iOS supported in Notification feature.
@@ -188,7 +195,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.45...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.46...HEAD
+[0.8.46]: https://github.com/sassembla/autoya/compare/0.8.45...0.8.46
 [0.8.45]: https://github.com/sassembla/autoya/compare/0.8.44...0.8.45
 [0.8.44]: https://github.com/sassembla/autoya/compare/0.8.43...0.8.44
 [0.8.43]: https://github.com/sassembla/autoya/compare/0.8.42...0.8.43
