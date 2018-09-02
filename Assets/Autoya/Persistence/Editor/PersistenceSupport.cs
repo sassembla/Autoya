@@ -10,8 +10,16 @@ using UnityEngine;
 */
 namespace AutoyaFramework.Persistence.Files
 {
+
     public class PersistenceSupport
     {
+        [MenuItem("Window/Autoya/Clean Cached AssetBundles")]
+        public static void CleanCache()
+        {
+            Caching.ClearCache();
+        }
+
+
         [MenuItem("Window/Autoya/Persistence/Delete Stored Persistent Folders")]
         public static void DeleteFiles()
         {
@@ -42,12 +50,25 @@ namespace AutoyaFramework.Persistence.Files
             this.basePath = Application.persistentDataPath;
         }
 
+
+        private bool deleteAll;
         void OnGUI()
         {
             GUILayout.Label("Select folder(s) to delete.");
 
+            var before = deleteAll;
+            var delAll = GUILayout.Toggle(deleteAll, "DELETE ALL");
+            deleteAll = delAll;
+
+            GUILayout.Space(10);
+
             for (var i = 0; i < buttons.Length; i++)
             {
+                if (before != deleteAll)
+                {
+                    buttons[i] = deleteAll;
+                }
+
                 using (new GUILayout.VerticalScope())
                 {
                     using (new GUILayout.HorizontalScope())

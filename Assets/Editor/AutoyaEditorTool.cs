@@ -7,13 +7,6 @@ using System.IO;
 [InitializeOnLoad]
 public class AutoyaEditorTool
 {
-    [MenuItem("Window/Autoya/Clean Cached AssetBundles")]
-    public static void CleanCache()
-    {
-        Caching.ClearCache();
-    }
-
-
     [MenuItem("Window/Autoya/Update UnityPackage")]
     public static void UnityPackage()
     {
