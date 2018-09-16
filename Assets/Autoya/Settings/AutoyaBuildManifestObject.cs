@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace AutoyaFramework.AppManifest
@@ -14,7 +14,7 @@ namespace AutoyaFramework.AppManifest
     [Serializable]
     public class BuildManifestObject
     {
-        [SerializeField] public string appVerion = "1.0.0";
+        [SerializeField] public string appVersion = "1.0.0";
         [SerializeField] public string buildNo;
         [SerializeField] public string buildMessage;
         [SerializeField] public string buildDate;
