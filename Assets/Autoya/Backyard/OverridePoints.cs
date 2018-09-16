@@ -246,7 +246,7 @@ namespace AutoyaFramework
 
         private string OnAppVersionRequired()
         {
-            return Autoya.Manifest_GetBuildManifest().appVerion;
+            return Autoya.Manifest_GetBuildManifest().appVersion;
         }
 
         private string OnResourceVersionRequired()
