@@ -104,7 +104,7 @@ namespace AutoyaFramework
                     (current, buildTimeLatest) =>
                     {
                         // update build version.
-                        current.appVerion = buildTimeLatest.appVerion;
+                        current.appVersion = buildTimeLatest.appVersion;
 
                         // countup build count.
                         var buildNoStr = current.buildNo;
