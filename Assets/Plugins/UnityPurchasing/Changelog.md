@@ -1,3 +1,31 @@
+## []1.20.1] - 2018-10-5
+### Added
+- Added a callback function that allows developers to check the state of the upgrade/downgrade process of subscriptions on GooglePlay.
+
+### Fixed
+- Google Daydream - Correctly Displays IAP Prompt in 3d VR version instead of native 2D. 
+- Fixed issue where IAP catalog prevented deletion of Price under Google Configuration.
+- Amazon Store - Fixed bug where Amazon store could not correctly parse currencies for certain countries.
+- MacOS - Fixed bug that causes non-consumables to auto-restore on MacOS apps after re-install, instead of requiring the the Restore button to be clicked.
+- Updated Android Response Code to return correct message whenever an activity is cancelled.
+- Fixed Mono CIL linker error causing initialization failure in Unity 5.3 
+- Fixed inefficient Apple Receipt Parser that was slowing down when a large number of transactions were parsed on auto-restore.
+
+## [1.20.0] - 2018-06-29
+### Added
+- API for developers to check SkuDetails for all GooglePlay store products, including those that have not been purchased.
+- Error Code Support for Amazon.
+- Support upgrade/downgrade Subscription Tiers for GooglePlayStore.
+- Support Subscription status check (valid/invalid) for Amazon Store. 
+
+### Changed
+- Location of Product Catalog from Assets/Plugins/UnityPurchasing/Resources folder to Assets/Resources.
+- Amazon Receipt with enriched product details and receipt details.
+
+### Fixed
+- Issue where Unknown products (including non-consumables) were consumed during initialization. 
+- ArgumentException where currency was set to null string when purchase was made.
+
 ## [1.19.0] - 2018-04-17
 ### Added
 - For GooglePlay store, `developerPayload` has been encoded to base64 string and formatted to a JSON string with two other information of the product. When extract `developerPayload` from the product receipt, firstly decode the json string and get the `developerPayload` field base64 string, secondly decode the base64 string to the original `developerPayload`.
