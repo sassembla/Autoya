@@ -223,29 +223,82 @@ namespace AutoyaFramework
             Downloading,
         }
 
-#pragma warning disable 414
         private NewListDownloaderState newListDownloaderState = NewListDownloaderState.Ready;
-#pragma warning restore 414
 
-        private void DownloadNewAssetBundleList(string url)
+        private void DownloadNewAssetBundleList(string[] urls)
         {
-            newListDownloaderState = NewListDownloaderState.Downloading;
-            mainthreadDispatcher.Commit(
-                autoya._assetBundleListDownloader.DownloadAssetBundleList(
-                    url,
-                    (downloadedUrl, newList) =>
-                    {
-                        // got new list.
-                        mainthreadDispatcher.Commit(OnUpdatingListReceived(newList));
-                    },
-                    (code, reason, autoyaStatus) =>
-                    {
-                        // failed to get new list.
-                        // Debug.Log("failed to download new AssetBundleList from url:" + url + " code:" + code + " reason:" + reason);
-                        newListDownloaderState = NewListDownloaderState.Ready;
-                    }
-                )
+            if (urls.Length == 0)
+            {
+                return;
+            }
+
+            var allUpdateCoroutine = RunAllUpdateCoroutine(urls);
+            mainthreadDispatcher.Commit(allUpdateCoroutine);
+        }
+
+        private IEnumerator CustomEndCor(string url)
+        {
+            IEnumerator updateListCor = null;
+
+            var cor = autoya._assetBundleListDownloader.DownloadAssetBundleList(
+                url,
+                (downloadedUrl, newList) =>
+                {
+                    // got new list.
+                    updateListCor = OnUpdatingListReceived(newList);
+                },
+                (code, reason, autoyaStatus) =>
+                {
+                    // failed to get new list.
+                    // Debug.Log("failed to download new AssetBundleList from url:" + url + " code:" + code + " reason:" + reason);
+                }
             );
+
+            while (cor.MoveNext())
+            {
+                yield return null;
+            }
+
+            if (updateListCor == null)
+            {
+                yield break;
+            }
+
+            while (updateListCor.MoveNext())
+            {
+                yield return null;
+            }
+
+            // done.
+        }
+
+        private IEnumerator RunAllUpdateCoroutine(string[] urls)
+        {
+            if (newListDownloaderState == NewListDownloaderState.Downloading)
+            {
+                yield break;
+            }
+
+            newListDownloaderState = NewListDownloaderState.Downloading;
+
+            var cors = new List<IEnumerator>();
+            foreach (var url in urls)
+            {
+                var customCor = CustomEndCor(url);
+                cors.Add(customCor);
+            }
+
+            var allDone = false;
+            while (!allDone)
+            {
+                foreach (var cor in cors)
+                {
+                    allDone = !cor.MoveNext();
+                }
+                yield return null;
+            }
+
+            newListDownloaderState = NewListDownloaderState.Ready;
         }
 
         private IEnumerator OnUpdatingListReceived(AssetBundleList newList)
@@ -254,6 +307,7 @@ namespace AutoyaFramework
 
             var proceed = false;
             var done = false;
+
             ShouldUpdateToNewAssetBundleList(
                 assetUsingCondition,
                 () =>
@@ -285,11 +339,7 @@ namespace AutoyaFramework
             {
                 // update AssetBundleList version.
                 OnUpdateToNewAssetBundleList(newList.identity, newList.version);
-
                 ReadyLoaderAndPreloader(newList);
-
-                // finish downloading new assetBundleList.
-                newListDownloaderState = NewListDownloaderState.Ready;
 
                 /*
                     start postprocess.
@@ -320,8 +370,7 @@ namespace AutoyaFramework
                 yield return null;
             }
 
-            // failed to store AssetBundleList. finish downloading new assetBundleList anyway.
-            newListDownloaderState = NewListDownloaderState.Ready;
+            // failed. fin.
         }
 
         public enum ListDownloadResult

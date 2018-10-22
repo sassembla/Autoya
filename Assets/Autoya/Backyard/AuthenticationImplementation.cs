@@ -879,11 +879,13 @@ namespace AutoyaFramework
 			*/
             if (assetBundleFeatState == AssetBundlesFeatureState.Ready)
             {
-                var versionDescription = insencitiveKV[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
-                if (!string.IsNullOrEmpty(versionDescription))
+                if (responseHeader.ContainsKey(AuthSettings.AUTH_RESPONSEHEADER_RESVERSION))
                 {
-                    var listIdentitiesAndNewVersionDescriptions = GetListIdentityAndNewVersionDescriptions(versionDescription);
+                    var newListVersionsOnResponseHeader = responseHeader[AuthSettings.AUTH_RESPONSEHEADER_RESVERSION];
 
+                    var listIdentitiesAndNewVersionDescriptions = GetListIdentityAndNewVersionDescriptions(newListVersionsOnResponseHeader);
+
+                    var urls = new List<string>();
                     foreach (var listItem in listIdentitiesAndNewVersionDescriptions)
                     {
                         var identity = listItem.Key;
@@ -901,12 +903,14 @@ namespace AutoyaFramework
                                 {
                                     // start download new list.
                                     var listUrl = answer.url;
-                                    DownloadNewAssetBundleList(listUrl);
+                                    urls.Add(listUrl);
                                 }
                                 break;
                             }
                         }
                     }
+
+                    DownloadNewAssetBundleList(urls.ToArray());
                 }
             }
 
@@ -1063,7 +1067,7 @@ namespace AutoyaFramework
         {
             if (autoya._autoyaAuthRouter != null)
             {
-                if (autoya._autoyaAuthRouter.IsLogon())
+                if (autoya._autoyaAuthRouter.IsLogon() || autoya._autoyaAuthRouter.IsTokenRefreshFailed())
                 {
                     autoya._autoyaAuthRouter.Logout(succeeded, failed);
                 }
