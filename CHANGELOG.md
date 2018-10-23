@@ -11,6 +11,7 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ### Changed
 - the implemtation of getting local ip is changed.
 - adopted to .NET framework 4.6.
+- AssetBundleList update feature is updated for getting multiple new AssetBundleLists at once.
 
 
 ## [0.8.46]	- 2018/09/03
