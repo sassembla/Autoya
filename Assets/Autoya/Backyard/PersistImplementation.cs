@@ -1,3 +1,4 @@
+using System;
 using AutoyaFramework.Persistence.Files;
 using UnityEngine;
 
@@ -54,6 +55,53 @@ namespace AutoyaFramework
         public static string[] Persist_FileNamesInDomain(string domain)
         {
             return autoya._autoyaFilePersistence.FileNamesInDomain(domain);
+        }
+
+
+
+        /*
+            async series
+         */
+
+        public static void Persist_Update(string domain, string filePath, string data, Action onSucceeded, Action<string> onFailed)
+        {
+            var isEnough = false;
+            if (isEnough)
+            {// estimate size over
+                Debug.LogError("Persist_Update save size overed.");
+                onFailed("no empty space.");
+                return;
+            }
+
+            autoya._autoyaFilePersistence.Update(domain, filePath, data, onSucceeded, onFailed);
+        }
+
+        public static void Persist_Append(string domain, string filePath, string data, Action onSucceeded, Action<string> onFailed)
+        {
+            var isEnough = false;
+            if (isEnough)
+            {// estimate size over
+                Debug.LogError("Persist_Update save size overed.");
+                onFailed("no empty space.");
+                return;
+            }
+
+            autoya._autoyaFilePersistence.Append(domain, filePath, data, onSucceeded, onFailed);
+        }
+
+        public static void Persist_Load(string domain, string filePath, Action<string> onSucceeded, Action<string> onFailed)
+        {
+            autoya._autoyaFilePersistence.Load(domain, filePath, onSucceeded, onFailed);
+        }
+
+        public static void Persist_Delete(string domain, string filePath, Action onSucceeded, Action<string> onFailed)
+        {
+            autoya._autoyaFilePersistence.Delete(domain, filePath, onSucceeded, onFailed);
+        }
+
+        public static void Persist_DeleteByDomain(string domain, Action onSucceeded, Action<string> onFailed)
+        {
+            autoya._autoyaFilePersistence.DeleteByDomain(domain, onSucceeded, onFailed);
         }
     }
 }

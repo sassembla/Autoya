@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
 
 /**
 	features for control data storage.
@@ -47,9 +50,9 @@ namespace AutoyaFramework.Persistence.Files
                 {
 
 #if UNITY_IOS
-					{
-						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-					}
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
 #endif
 
                     var filePath = Path.Combine(domainPath, fileName);
@@ -85,9 +88,9 @@ namespace AutoyaFramework.Persistence.Files
                 if (created.Exists)
                 {
 #if UNITY_IOS
-					{
-						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-					}
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
 #endif
 
                     var filePath = Path.Combine(domainPath, fileName);
@@ -192,23 +195,23 @@ namespace AutoyaFramework.Persistence.Files
             return false;
         }
 
+
+
         /*
 			async series.
 		*/
 
-        public void AppendAsync(string domain, string fileName, string data, Action<bool> result)
+        /**
+            append data to end of domain/fileName file.
+        */
+        public void Append(string domain, string fileName, string data, Action onSuceeded, Action<string> onFailed)
         {
             var domainPath = Path.Combine(basePath, domain);
             if (Directory.Exists(domainPath))
             {
-
                 var filePath = Path.Combine(domainPath, fileName);
-                using (var sw = new StreamWriter(filePath, false))
-                {
-                    sw.WriteLine(data);
-                }
-
-                result(true);
+                ProcessAppend(filePath, data, onSuceeded, onFailed);
+                return;
             }
             else
             {// no directory = domain exists.
@@ -218,90 +221,235 @@ namespace AutoyaFramework.Persistence.Files
                 {
 
 #if UNITY_IOS
-					{
-						UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-					}
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
 #endif
 
                     var filePath = Path.Combine(domainPath, fileName);
-                    using (var sw = new StreamWriter(filePath, false))
-                    {
-                        sw.WriteLine(data);
-                    }
-                    result(true);
+                    ProcessAppend(filePath, data, onSuceeded, onFailed);
+                    return;
                 }
             }
-            result(false);
         }
 
-        // public void UpdateAsync (string domain, string fileName, string data, Action<bool> result) {
-        // 	var domainPath = Path.Combine(basePath, domain);
-        // 	if (Directory.Exists(domainPath)) {
+        private Task ProcessAppend(string path, string data, Action onSuceeded, Action<string> onFailed)
+        {
+            return FileManuipulateTask(FileMode.Append, FileAccess.Write, path, data, onSuceeded, onFailed);
+        }
 
-        // 		var filePath = Path.Combine(domainPath, fileName);
-        // 		using (var sw = new StreamWriter(filePath, false))	{
-        // 			sw.WriteLine(data);
-        // 		}
+        private async Task FileManuipulateTask(FileMode mode, FileAccess access, string filePath, string data, Action onSuceeded, Action<string> onFailed)
+        {
+            var message = string.Empty;
+            using (
+                var sourceStream = new FileStream(
+                    filePath,
+                    mode,
+                    access,
+                    FileShare.None,
+                    4096,
+                    true
+                )
+            )
+            {
+                try
+                {
+                    var dataBytes = Encoding.UTF8.GetBytes(data);
+                    await sourceStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                }
+                catch (Exception e)
+                {
+                    message = e.Message;
+                    return;
+                }
+            };
 
-        // 		result(true);
-        // 	} else {// no directory = domain exists.
-        // 		var created = Directory.CreateDirectory(domainPath);
+            if (string.IsNullOrEmpty(message))
+            {
+                onSuceeded();
+                return;
+            }
 
-        // 		if (created.Exists) {
+            onFailed(message);
+        }
 
-        // 			#if UNITY_IOS
-        // 			{
-        //                 UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
-        // 			}
-        // 			#endif
 
-        // 			var filePath = Path.Combine(domainPath, fileName);
-        // 			using (var sw = new StreamWriter(filePath, false))	{
-        // 				sw.WriteLine(data);
-        // 			}
-        // 			result(true);
-        // 		} 
-        // 	}
-        // 	result(false);
-        // }
 
-        // public void LoadAsync (string domain, string fileName, Action<string> resultData) {
-        // 	var domainPath = Path.Combine(basePath, domain);
-        // 	if (Directory.Exists(domainPath)) {
-        // 		var filePath = Path.Combine(domainPath, fileName);
-        // 		if (File.Exists(filePath)) {
-        // 			using (var sr = new StreamReader(filePath))	{
-        // 				resultData(sr.ReadLine());
-        // 			}
-        // 		}
-        // 	}
-        // 	resultData(string.Empty);
-        // }
+        /**
+			update data of domain/fileName file.
+		*/
+        public void Update(string domain, string fileName, string data, Action onSuceeded, Action<string> onFailed)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                ProcessUpdate(filePath, data, onSuceeded, onFailed);
+                return;
+            }
+            else
+            {// no directory = domain exists.
+                var created = Directory.CreateDirectory(domainPath);
+                if (created.Exists)
+                {
+#if UNITY_IOS
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
+#endif
 
-        // public void DeleteAsync (string domain, string fileName, Action<bool> result) {
-        // 	var domainPath = Path.Combine(basePath, domain);
-        // 	if (Directory.Exists(domainPath)) {
-        // 		var filePath = Path.Combine(domainPath, fileName);
-        // 		if (File.Exists(filePath)) {
-        // 			File.Delete(filePath);
-        // 			result(true);
-        // 		}
-        // 	}
-        // 	result(false);
-        // }
+                    var filePath = Path.Combine(domainPath, fileName);
+                    ProcessUpdate(filePath, data, onSuceeded, onFailed);
+                    return;
+                }
+            }
+        }
 
-        // public void DeleteByDomainAsync (string domain, Action<bool> result) {
-        // 	var domainPath = Path.Combine(basePath, domain);
-        // 	if (Directory.Exists(domainPath)) {
-        // 		Directory.Delete(domainPath, true);
-        // 		result(true);
-        // 	}
-        // 	result(false);
-        // }
+        private Task ProcessUpdate(string path, string data, Action onSuceeded, Action<string> onFailed)
+        {
+            return FileManuipulateTask(FileMode.CreateNew, FileAccess.Write, path, data, onSuceeded, onFailed);
+        }
+
+        /**
+			load data from domain/fileName if file is exists.
+			else return empty.
+		*/
+        public void Load(string domain, string fileName, Action<string> onSuceeded, Action<string> onFailed)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                if (File.Exists(filePath))
+                {
+                    ProcessLoad(filePath, onSuceeded, onFailed);
+                    return;
+                }
+            }
+
+            onFailed("file not found:" + basePath);
+        }
+
+        private Task ProcessLoad(string path, Action<string> onSuceeded, Action<string> onFailed)
+        {
+            return FileReadTask(FileMode.Open, FileAccess.Read, path, onSuceeded, onFailed);
+        }
+
+        private async Task FileReadTask(FileMode mode, FileAccess access, string filePath, Action<string> onSuceeded, Action<string> onFailed)
+        {
+            var buffer = new byte[0];
+            var message = string.Empty;
+            using (
+                var sourceStream = new FileStream(
+                    filePath,
+                    mode,
+                    access,
+                    FileShare.None,
+                    4096,
+                    true
+                )
+            )
+            {
+                try
+                {
+                    buffer = new byte[sourceStream.Length];
+                    await sourceStream.ReadAsync(buffer, 0, buffer.Length);
+                }
+                catch (Exception e)
+                {
+                    message = e.Message;
+                    return;
+                }
+            };
+
+            if (string.IsNullOrEmpty(message))
+            {
+                onSuceeded(Encoding.UTF8.GetString(buffer));
+                return;
+            }
+
+            onFailed(message);
+        }
+
+        /**
+			delete domain/fileName if exists. then return true.
+			else return false.
+		*/
+        public void Delete(string domain, string fileName, Action onSuceeded, Action<string> onFailed)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                ProcessDeleteFile(filePath, onSuceeded, onFailed);
+                return;
+            }
+
+            onFailed("file not found:" + basePath);
+        }
+
+        /**
+			delete all files in domain/.
+		*/
+        public void DeleteByDomain(string domain, Action onSuceeded, Action<string> onFailed)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                ProcessDeleteDirectory(domainPath, onSuceeded, onFailed);
+                return;
+            }
+
+            onFailed("file not found:" + basePath);
+        }
+
+
+        private Task ProcessDeleteFile(string path, Action onSuceeded, Action<string> onFailed)
+        {
+            return FileDeleteTask(path, onSuceeded, onFailed);
+        }
+
+        private Task ProcessDeleteDirectory(string path, Action onSuceeded, Action<string> onFailed)
+        {
+            return DirectoryDeleteTask(path, onSuceeded, onFailed);
+        }
+
+        private async Task FileDeleteTask(string filePath, Action onSuceeded, Action<string> onFailed)
+        {
+            await Task.Factory.StartNew(
+                path =>
+                {
+                    try
+                    {
+                        File.Delete((string)path);
+                        onSuceeded();
+                    }
+                    catch (Exception e)
+                    {
+                        onFailed(e.Message);
+                    }
+                },
+                filePath
+            );
+        }
+        private async Task DirectoryDeleteTask(string filePath, Action onSuceeded, Action<string> onFailed)
+        {
+            await Task.Factory.StartNew(
+                path =>
+                {
+                    try
+                    {
+                        Directory.Delete((string)path, true);
+                        onSuceeded();
+                    }
+                    catch (Exception e)
+                    {
+                        onFailed(e.Message);
+                    }
+                },
+                filePath
+            );
+        }
+
     }
 }
-
-
-/*
-    iOS-Keychain Persistence is under consideration.
-*/

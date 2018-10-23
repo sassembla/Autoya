@@ -153,4 +153,166 @@ public class FilePersistImplementationTests : MiyamasuTestRunner
 		async series.
 	*/
 
+    [MTest]
+    public IEnumerator UpdateAsync()
+    {
+        var data = "new data " + Guid.NewGuid().ToString();
+        var succeeded = false;
+
+        Autoya.Persist_Update(
+            AutoyaFilePersistTestsFileDomain,
+            AutoyaFilePersistTestsFileName,
+            data,
+            () =>
+            {
+                succeeded = true;
+            },
+            reason => { }
+        );
+
+        yield return WaitUntil(
+            () => succeeded,
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator AppendAsync()
+    {
+        var data = "new data " + Guid.NewGuid().ToString();
+        Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+
+        var loadedData = string.Empty;
+
+        var appendData = "append data " + Guid.NewGuid().ToString();
+        Autoya.Persist_Append(
+            AutoyaFilePersistTestsFileDomain,
+            AutoyaFilePersistTestsFileName,
+            appendData,
+            () =>
+            {
+                loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+            },
+            reason => { }
+        );
+
+        yield return WaitUntil(
+            () => loadedData == data + appendData,
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator LoadAsync()
+    {
+        var data = "new data " + Guid.NewGuid().ToString();
+        var loadedData = string.Empty;
+
+        Autoya.Persist_Update(
+            AutoyaFilePersistTestsFileDomain,
+            AutoyaFilePersistTestsFileName,
+            data,
+            () =>
+            {
+                loadedData = Autoya.Persist_Load(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+            },
+            reason => { }
+        );
+
+        yield return WaitUntil(
+            () => loadedData == data,
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator LoadFailAsync()
+    {
+        var loadedData = string.Empty;
+
+        Autoya.Persist_Load(
+            AutoyaFilePersistTestsFileDomain,
+            AutoyaFilePersistTestsFileName,
+            data =>
+            {
+                loadedData = data;
+            },
+            reason => { }
+        );
+
+        yield return WaitUntil(
+            () => string.IsNullOrEmpty(loadedData),
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator DeleteAsync()
+    {
+        var data = "new data " + Guid.NewGuid().ToString();
+
+        Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+
+        var deleted = false;
+
+        Autoya.Persist_Delete(
+            AutoyaFilePersistTestsFileDomain,
+            AutoyaFilePersistTestsFileName,
+            () =>
+            {
+                deleted = true;
+            },
+            reason => { }
+        );
+
+        yield return WaitUntil(
+            () => deleted,
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator DeleteByDomainAsync()
+    {
+        var data = "new data " + Guid.NewGuid().ToString();
+
+        Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "1", data);
+        Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "2", data);
+        Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName + "3", data);
+
+        var deleted = false;
+        Autoya.Persist_DeleteByDomain(
+            AutoyaFilePersistTestsFileDomain,
+            () =>
+            {
+                deleted = true;
+            },
+            reason => { }
+        );
+
+        yield return WaitUntil(
+            () => deleted,
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator DeleteNonExistAsync()
+    {
+        var deleteFailed = false;
+        Autoya.Persist_Delete(
+            AutoyaFilePersistTestsFileDomain,
+            AutoyaFilePersistTestsFileName,
+            () => { },
+            reason =>
+            {
+                deleteFailed = true;
+            }
+        );
+
+        yield return WaitUntil(
+            () => deleteFailed,
+            () => { throw new TimeoutException("too late."); }
+        );
+    }
 }
