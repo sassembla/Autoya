@@ -7,6 +7,12 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [Unreleased]
 
 
+## [0.8.47]	- 2018/10/23
+### Changed
+- the implemtation of getting local ip is changed.
+- adopted to .NET framework 4.6.
+
+
 ## [0.8.46]	- 2018/09/03
 ### Fixed
 - authenticated http response header is now adopted to rfc7230.
