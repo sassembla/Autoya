@@ -6,6 +6,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.8.48]	- 2018/10/25
+### Feature
+- URL Caching feature added. download Unity assets from web and persist it.
 
 ## [0.8.47]	- 2018/10/23
 ### Changed
@@ -202,7 +205,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.46...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.48...HEAD
+[0.8.47]: https://github.com/sassembla/autoya/compare/0.8.46...0.8.47
 [0.8.46]: https://github.com/sassembla/autoya/compare/0.8.45...0.8.46
 [0.8.45]: https://github.com/sassembla/autoya/compare/0.8.44...0.8.45
 [0.8.44]: https://github.com/sassembla/autoya/compare/0.8.43...0.8.44
