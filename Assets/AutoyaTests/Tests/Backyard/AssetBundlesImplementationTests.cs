@@ -843,7 +843,6 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             (conId, data) =>
             {
                 // pass.
-                Debug.Log("succeeded to get list.");
             },
             (conId, code, reason, status) =>
             {
