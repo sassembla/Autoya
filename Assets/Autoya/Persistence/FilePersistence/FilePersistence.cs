@@ -13,7 +13,8 @@ namespace AutoyaFramework.Persistence.Files
 {
     public class FilePersistence
     {
-        private readonly string basePath;
+        public readonly string basePath;
+
 
         public FilePersistence(string basePathSource)
         {
@@ -24,6 +25,19 @@ namespace AutoyaFramework.Persistence.Files
 			sync series.
 			run on Unity's MainThread.
 		*/
+        public bool IsExist(string domain, string fileName)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                if (File.Exists(filePath))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /**
 			append data to end of domain/fileName file.
@@ -66,6 +80,44 @@ namespace AutoyaFramework.Persistence.Files
             return false;
         }
 
+        public bool Append(string domain, string fileName, byte[] data)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+
+                var filePath = Path.Combine(domainPath, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Append))
+                {
+                    stream.Write(data, 0, data.Length);
+                }
+
+                return true;
+            }
+            else
+            {// no directory = domain exists.
+                var created = Directory.CreateDirectory(domainPath);
+
+                if (created.Exists)
+                {
+
+#if UNITY_IOS
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
+#endif
+
+                    var filePath = Path.Combine(domainPath, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Append))
+                    {
+                        stream.Write(data, 0, data.Length);
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
 
         /**
 			update data of domain/fileName file.
@@ -97,6 +149,41 @@ namespace AutoyaFramework.Persistence.Files
                     using (var sw = new StreamWriter(filePath, false))
                     {
                         sw.Write(data);
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool Update(string domain, string fileName, byte[] data)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+            if (Directory.Exists(domainPath))
+            {
+                var filePath = Path.Combine(domainPath, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    stream.Write(data, 0, data.Length);
+                }
+                return true;
+            }
+            else
+            {// no directory = domain exists.
+                var created = Directory.CreateDirectory(domainPath);
+                if (created.Exists)
+                {
+#if UNITY_IOS
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(domainPath);
+                    }
+#endif
+
+                    var filePath = Path.Combine(domainPath, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        stream.Write(data, 0, data.Length);
                     }
 
                     return true;
@@ -147,19 +234,28 @@ namespace AutoyaFramework.Persistence.Files
 		*/
         public string Load(string domain, string fileName)
         {
+            return Encoding.UTF8.GetString(LoadAsBytes(domain, fileName));
+        }
+
+        public byte[] LoadAsBytes(string domain, string fileName)
+        {
             var domainPath = Path.Combine(basePath, domain);
             if (Directory.Exists(domainPath))
             {
                 var filePath = Path.Combine(domainPath, fileName);
                 if (File.Exists(filePath))
                 {
-                    using (var sr = new StreamReader(filePath))
+                    var result = new byte[0];
+                    using (var stream = new FileStream(filePath, FileMode.Open))
                     {
-                        return sr.ReadToEnd();
+                        result = new byte[stream.Length];
+                        stream.Read(result, 0, result.Length);
                     }
+                    return result;
                 }
             }
-            return string.Empty;
+
+            return new byte[0];
         }
 
         /**
@@ -204,7 +300,7 @@ namespace AutoyaFramework.Persistence.Files
         /**
             append data to end of domain/fileName file.
         */
-        public void Append(string domain, string fileName, string data, Action onSuceeded, Action<string> onFailed)
+        public void Append(string domain, string fileName, byte[] data, Action onSuceeded, Action<string> onFailed)
         {
             var domainPath = Path.Combine(basePath, domain);
             if (Directory.Exists(domainPath))
@@ -233,12 +329,12 @@ namespace AutoyaFramework.Persistence.Files
             }
         }
 
-        private Task ProcessAppend(string path, string data, Action onSuceeded, Action<string> onFailed)
+        private Task ProcessAppend(string path, byte[] data, Action onSuceeded, Action<string> onFailed)
         {
             return FileManuipulateTask(FileMode.Append, FileAccess.Write, path, data, onSuceeded, onFailed);
         }
 
-        private async Task FileManuipulateTask(FileMode mode, FileAccess access, string filePath, string data, Action onSuceeded, Action<string> onFailed)
+        private async Task FileManuipulateTask(FileMode mode, FileAccess access, string filePath, byte[] data, Action onSuceeded, Action<string> onFailed)
         {
             var message = string.Empty;
             using (
@@ -254,8 +350,7 @@ namespace AutoyaFramework.Persistence.Files
             {
                 try
                 {
-                    var dataBytes = Encoding.UTF8.GetBytes(data);
-                    await sourceStream.WriteAsync(dataBytes, 0, dataBytes.Length);
+                    await sourceStream.WriteAsync(data, 0, data.Length);
                 }
                 catch (Exception e)
                 {
@@ -278,7 +373,7 @@ namespace AutoyaFramework.Persistence.Files
         /**
 			update data of domain/fileName file.
 		*/
-        public void Update(string domain, string fileName, string data, Action onSuceeded, Action<string> onFailed)
+        public void Update(string domain, string fileName, byte[] data, Action onSuceeded, Action<string> onFailed)
         {
             var domainPath = Path.Combine(basePath, domain);
             if (Directory.Exists(domainPath))
@@ -305,7 +400,7 @@ namespace AutoyaFramework.Persistence.Files
             }
         }
 
-        private Task ProcessUpdate(string path, string data, Action onSuceeded, Action<string> onFailed)
+        private Task ProcessUpdate(string path, byte[] data, Action onSuceeded, Action<string> onFailed)
         {
             return FileManuipulateTask(FileMode.CreateNew, FileAccess.Write, path, data, onSuceeded, onFailed);
         }
@@ -314,7 +409,7 @@ namespace AutoyaFramework.Persistence.Files
 			load data from domain/fileName if file is exists.
 			else return empty.
 		*/
-        public void Load(string domain, string fileName, Action<string> onSuceeded, Action<string> onFailed)
+        public void Load(string domain, string fileName, Action<byte[]> onSuceeded, Action<string> onFailed)
         {
             var domainPath = Path.Combine(basePath, domain);
             if (Directory.Exists(domainPath))
@@ -330,12 +425,12 @@ namespace AutoyaFramework.Persistence.Files
             onFailed("file not found:" + basePath);
         }
 
-        private Task ProcessLoad(string path, Action<string> onSuceeded, Action<string> onFailed)
+        private Task ProcessLoad(string path, Action<byte[]> onSuceeded, Action<string> onFailed)
         {
             return FileReadTask(FileMode.Open, FileAccess.Read, path, onSuceeded, onFailed);
         }
 
-        private async Task FileReadTask(FileMode mode, FileAccess access, string filePath, Action<string> onSuceeded, Action<string> onFailed)
+        private async Task FileReadTask(FileMode mode, FileAccess access, string filePath, Action<byte[]> onSuceeded, Action<string> onFailed)
         {
             var buffer = new byte[0];
             var message = string.Empty;
@@ -364,7 +459,7 @@ namespace AutoyaFramework.Persistence.Files
 
             if (string.IsNullOrEmpty(message))
             {
-                onSuceeded(Encoding.UTF8.GetString(buffer));
+                onSuceeded(buffer);
                 return;
             }
 
@@ -385,7 +480,7 @@ namespace AutoyaFramework.Persistence.Files
                 return;
             }
 
-            onFailed("file not found:" + basePath);
+            onFailed("domain not found:" + basePath);
         }
 
         /**
@@ -400,7 +495,7 @@ namespace AutoyaFramework.Persistence.Files
                 return;
             }
 
-            onFailed("file not found:" + basePath);
+            onFailed("domain not found:" + basePath);
         }
 
 

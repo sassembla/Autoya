@@ -34,12 +34,35 @@ public class FilePersistImplementationTests : MiyamasuTestRunner
             },
             () => { throw new TimeoutException("timeout."); }
         );
+
+        // delete all.
         Autoya.Persist_DeleteByDomain(AutoyaFilePersistTestsFileDomain);
     }
 
     /*
 		sync series.
 	*/
+
+    [MTest]
+    public IEnumerable IsNeverExists()
+    {
+        var result = Autoya.Persist_IsExist(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+        True(!result, "should not be exist.");
+        yield break;
+    }
+
+    [MTest]
+    public IEnumerable IsMustBeExist()
+    {
+        var data = "new data " + Guid.NewGuid().ToString();
+        Autoya.Persist_Update(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName, data);
+
+        var result = Autoya.Persist_IsExist(AutoyaFilePersistTestsFileDomain, AutoyaFilePersistTestsFileName);
+        True(!result, "should not be exist.");
+        yield break;
+    }
+
+
     [MTest]
     public IEnumerator Update()
     {

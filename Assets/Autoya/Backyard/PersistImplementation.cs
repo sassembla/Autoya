@@ -1,5 +1,7 @@
 using System;
+using System.Text;
 using AutoyaFramework.Persistence.Files;
+using AutoyaFramework.Persistence.URLCaching;
 using UnityEngine;
 
 namespace AutoyaFramework
@@ -10,10 +12,16 @@ namespace AutoyaFramework
 			persistence.
 				privides  sync/async persistent operation.
 
-				File persistence
+				File persistence and URLCaching.
 		*/
 
         private FilePersistence _autoyaFilePersistence;
+        private URLCache _autoyaURLCache;
+
+        public static bool Persist_IsExist(string domain, string filePath)
+        {
+            return autoya._autoyaFilePersistence.IsExist(domain, filePath);
+        }
 
         public static bool Persist_Update(string domain, string filePath, string data)
         {
@@ -65,6 +73,11 @@ namespace AutoyaFramework
 
         public static void Persist_Update(string domain, string filePath, string data, Action onSucceeded, Action<string> onFailed)
         {
+            Persist_Update(domain, filePath, Encoding.UTF8.GetBytes(data), onSucceeded, onFailed);
+        }
+
+        public static void Persist_Update(string domain, string filePath, byte[] data, Action onSucceeded, Action<string> onFailed)
+        {
             var isEnough = false;
             if (isEnough)
             {// estimate size over
@@ -77,6 +90,11 @@ namespace AutoyaFramework
         }
 
         public static void Persist_Append(string domain, string filePath, string data, Action onSucceeded, Action<string> onFailed)
+        {
+            Persist_Append(domain, filePath, Encoding.UTF8.GetBytes(data), onSucceeded, onFailed);
+        }
+
+        public static void Persist_Append(string domain, string filePath, byte[] data, Action onSucceeded, Action<string> onFailed)
         {
             var isEnough = false;
             if (isEnough)
@@ -91,6 +109,11 @@ namespace AutoyaFramework
 
         public static void Persist_Load(string domain, string filePath, Action<string> onSucceeded, Action<string> onFailed)
         {
+            Persist_Load(domain, filePath, bytes => { onSucceeded(Encoding.UTF8.GetString(bytes)); }, onFailed);
+        }
+
+        public static void Persist_Load(string domain, string filePath, Action<byte[]> onSucceeded, Action<string> onFailed)
+        {
             autoya._autoyaFilePersistence.Load(domain, filePath, onSucceeded, onFailed);
         }
 
@@ -102,6 +125,44 @@ namespace AutoyaFramework
         public static void Persist_DeleteByDomain(string domain, Action onSucceeded, Action<string> onFailed)
         {
             autoya._autoyaFilePersistence.DeleteByDomain(domain, onSucceeded, onFailed);
+        }
+
+        /*
+            caching series
+         */
+
+        public static void Persist_URLCaching_Load<T>(string domain, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed) where T : UnityEngine.Object
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence, autoya.OnHttpRequest);
+            }
+
+            var cor = autoya._autoyaURLCache.LoadFromURLAs<T>(domain, url, bytesToTConverter, onLoaded, onLoadFailed);
+            autoya.mainthreadDispatcher.Commit(cor);
+        }
+
+        public static void Persist_URLCaching_Purge(string domain, string url)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence, autoya.OnHttpRequest);
+            }
+
+            var urlBase = new Uri(url);
+            var urlWithoutHash = urlBase.Authority + urlBase.LocalPath;
+
+            autoya._autoyaURLCache.PurgeCache(domain, urlWithoutHash);
+        }
+
+        public static void Persist_URLCaching_PurgeByDomain(string domain)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence, autoya.OnHttpRequest);
+            }
+
+            autoya._autoyaURLCache.ClearCaching(domain);
         }
     }
 }
