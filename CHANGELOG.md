@@ -6,9 +6,13 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
-## [0.8.48]	- 2018/10/25
+## [0.9.0] - 2018/10/31
 ### Feature
 - URL Caching feature added. download Unity assets from web and persist it.
+
+### Changed
+- tUnity IAP is updated to 1.20.1.
+
 
 ## [0.8.47]	- 2018/10/23
 ### Changed
@@ -205,7 +209,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.8.48...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.0...HEAD
+[0.9.0]: https://github.com/sassembla/autoya/compare/0.8.47...0.9.0
 [0.8.47]: https://github.com/sassembla/autoya/compare/0.8.46...0.8.47
 [0.8.46]: https://github.com/sassembla/autoya/compare/0.8.45...0.8.46
 [0.8.45]: https://github.com/sassembla/autoya/compare/0.8.44...0.8.45
