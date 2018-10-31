@@ -28,10 +28,11 @@ public class UdpTests : MiyamasuTestRunner
     }
 
     [MTeardown]
-    public void Teardown()
+    public IEnumerator Teardown()
     {
         udpReceiver.Close();
         udpSender.Close();
+        yield return new WaitForSeconds(1);
     }
 
     [MTest]
@@ -57,7 +58,7 @@ public class UdpTests : MiyamasuTestRunner
         }
         catch (Exception e)
         {
-            Fail(e.ToString());
+            Fail("fail, " + e.ToString());
         }
 
         yield return WaitUntil(
@@ -91,7 +92,7 @@ public class UdpTests : MiyamasuTestRunner
         }
         catch (Exception e)
         {
-            Fail(e.ToString());
+            Fail("fail, " + e.ToString());
         }
 
         yield return WaitUntil(
@@ -103,7 +104,7 @@ public class UdpTests : MiyamasuTestRunner
     [MTest]
     public IEnumerator SetReceiverThenSendManyTimes()
     {
-        var count = 1000;
+        var count = 10;
         var receivedCount = 0;
         var port = 8888;
         try
@@ -127,19 +128,19 @@ public class UdpTests : MiyamasuTestRunner
         }
         catch (Exception e)
         {
-            Fail(e.ToString());
+            Fail("fail, " + e.ToString());
         }
 
         yield return WaitUntil(
             () => count == receivedCount,
-            () => { throw new TimeoutException("failed."); }
+            () => { throw new TimeoutException("failed. receivedCount:" + receivedCount); }
         );
     }
 
     [MTest]
     public IEnumerator SetReceiverThenSendManyTimesWithValidation()
     {
-        var count = 1000;
+        var count = 10;
         var receivedCount = 0;
         var port = 8888;
         try
@@ -203,6 +204,4 @@ public class UdpTests : MiyamasuTestRunner
             () => { throw new TimeoutException("failed. receivedCount:" + receivedCount); }
         );
     }
-
-
 }

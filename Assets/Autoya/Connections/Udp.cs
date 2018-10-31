@@ -58,20 +58,30 @@ namespace AutoyaFramework.Connections.Udp
             udp.BeginReceive(
                 ar =>
                 {
-                    var receivedBytes = udp.EndReceive(ar, ref endpoint);
-                    if (receivedBytes.Length == 0)
+                    try
                     {
-                        throw new Exception("receivedBytes is 0.");
-                    }
+                        lock (lockObj)
+                        {
+                            if (!closed)
+                            {
+                                var receivedBytes = udp.EndReceive(ar, ref endpoint);
+                                if (receivedBytes.Length == 0)
+                                {
+                                    throw new Exception("receivedBytes is 0.");
+                                }
 
-                    if (receiver != null)
-                    {
-                        receiver(receivedBytes);
-                    }
+                                if (receiver != null)
+                                {
+                                    receiver(receivedBytes);
+                                }
 
-                    if (!closed)
+                                ContinueReceive(receiver, endpoint);
+                            }
+                        }
+                    }
+                    catch (Exception e)
                     {
-                        ContinueReceive(receiver, endpoint);
+                        Debug.Log("rec e:" + e);
                     }
                 },
                 lockObj
@@ -80,13 +90,18 @@ namespace AutoyaFramework.Connections.Udp
 
         public void Close()
         {
-            if (closed)
+            lock (lockObj)
             {
-                return;
+                if (closed)
+                {
+                    return;
+                }
+
+                closed = true;
             }
 
-            closed = true;
             udp.Close();
+            udp.Dispose();
         }
     }
 
@@ -141,13 +156,19 @@ namespace AutoyaFramework.Connections.Udp
 
         public void Close()
         {
-            if (closed)
+            lock (lockObj)
             {
-                return;
+                if (closed)
+                {
+                    return;
+                }
+
+                closed = true;
             }
 
-            closed = true;
             udp.Close();
+            udp.Dispose();
+
         }
     }
 }
