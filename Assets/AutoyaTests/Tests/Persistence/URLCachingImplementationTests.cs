@@ -306,13 +306,14 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
             },
             (code, reason) =>
             {
-                Fail();
+                Fail("reason:" + reason);
             }
         );
 
         yield return WaitUntil(
             () => loaded,
-            () => { throw new TimeoutException("timeout."); }
+            () => { throw new TimeoutException("timeout."); },
+            10
         );
 
         Autoya.Persist_URLCaching_PurgeByDomain(AutoyaURLCachingTestsFileDomain);
@@ -337,13 +338,14 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
             },
             (code, reason) =>
             {
-                Fail();
+                Fail("reason:" + reason);
             }
         );
 
         yield return WaitUntil(
            () => loadedAgain,
-           () => { throw new TimeoutException("timeout."); }
+           () => { throw new TimeoutException("timeout."); },
+           10
        );
     }
 
