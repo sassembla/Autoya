@@ -44,12 +44,6 @@ namespace AutoyaFramework.Persistence.URLCaching
 
         public void PurgeCache(string storePath, string urlWithoutHash)
         {
-            // nothing to purge.
-            if (pathObjectCache.Count == 0)
-            {
-                return;
-            }
-
             var deleteTargetPath = Path.Combine(storePath, GenerateFolderAndFilePath(urlWithoutHash, string.Empty, storePath).url);
 
             var filePaths = filePersist.FileNamesInDomain(deleteTargetPath);
@@ -58,21 +52,17 @@ namespace AutoyaFramework.Persistence.URLCaching
                 // remove from hard cache.
                 filePersist.DeleteByDomain(deleteTargetPath);
 
-                var fileName = Path.GetFileName(filePaths[0]);
-
                 // remove from on memory cache.
-                pathObjectCache.Remove(Path.Combine(deleteTargetPath, fileName));
+                var filePath = Path.Combine(deleteTargetPath, Path.GetFileName(filePaths[0]));
+                if (pathObjectCache.ContainsKey(filePath))
+                {
+                    pathObjectCache.Remove(filePath);
+                }
             }
         }
 
         public void ClearCaching(string storePath)
         {
-            // nothing to purge.
-            if (pathObjectCache.Count == 0)
-            {
-                return;
-            }
-
             filePersist.DeleteByDomain(storePath);
             pathObjectCache = new Dictionary<string, UnityEngine.Object>();
         }
@@ -211,6 +201,10 @@ namespace AutoyaFramework.Persistence.URLCaching
                 }
 
                 request.downloadHandler = new DownloadHandlerFile(fileSavePath);
+
+                // 失敗時に中途半端なファイルを消す
+                ((DownloadHandlerFile)request.downloadHandler).removeFileOnAbort = true;
+
                 request.timeout = 5;
 
                 var p = request.SendWebRequest();
