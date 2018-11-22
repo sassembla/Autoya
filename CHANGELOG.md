@@ -9,7 +9,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [0.9.2] - 2018/11/22
 
 ### Changed
-- 
+- in IAP, the tiketId parameter is added when player received Paid receipt and on memory record is exists. this will help the Paid feature.
+
+- URL Caching API is changed. hard coded request header is deleted and new RequestHeader parameter is added for each URLCaching request.
+
+- AssetBundle hash checking on Unity Editor is failed in some case. not reproducible in actual devices. this change supports it on Unity Editor.
 
 
 ## [0.9.1] - 2018/11/19
