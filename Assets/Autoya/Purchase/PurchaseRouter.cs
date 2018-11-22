@@ -162,6 +162,8 @@ namespace AutoyaFramework.Purchase
             failed(connectionId, httpCode, errorReason);
         }
 
+        private Dictionary<string, string> onMemoryFailedLog = new Dictionary<string, string>();
+
         private readonly string storeId;
         public string StoreId()
         {
@@ -558,18 +560,11 @@ namespace AutoyaFramework.Purchase
         [Serializable]
         private struct Ticket
         {
-#pragma warning disable 414
             [SerializeField] private string ticketId;
             [SerializeField] private string data;
-#pragma warning restore 414
             public Ticket(string ticketId, string data)
             {
                 this.ticketId = ticketId;
-                this.data = data;
-            }
-            public Ticket(string data)
-            {
-                this.ticketId = string.Empty;
                 this.data = data;
             }
         }
@@ -727,8 +722,19 @@ namespace AutoyaFramework.Purchase
 
         private void SendPaid(PurchaseEventArgs e)
         {
+            var ticketId = string.Empty;
+
+            // set ticketId if failed ticketId is allocated with same transaction id.
+            if (onMemoryFailedLog.ContainsKey(e.purchasedProduct.transactionID))
+            {
+                ticketId = onMemoryFailedLog[e.purchasedProduct.transactionID];
+
+                // exhaust.
+                onMemoryFailedLog.Remove(e.purchasedProduct.transactionID);
+            }
+
             var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
-            var dataStr = JsonUtility.ToJson(new Ticket(e.purchasedProduct.receipt));
+            var dataStr = JsonUtility.ToJson(new Ticket(ticketId, e.purchasedProduct.receipt));
 
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PAID_PREFIX + Guid.NewGuid().ToString();
 
@@ -869,6 +875,9 @@ namespace AutoyaFramework.Purchase
             var purchaseCancelledUrl = PurchaseSettings.PURCHASE_URL_CANCEL;
             var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, reason));
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
+
+            // set failed ticketId to log. this will be used if Paid is occured.
+            onMemoryFailedLog[i.transactionID] = callbacks.ticketId;
 
             var cor = HttpPost(
                 connectionId,
