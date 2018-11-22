@@ -462,7 +462,10 @@ namespace AutoyaFramework.AssetBundles
             {
                 var isCached = Caching.IsVersionCached(url, hash);
 
-                if (isCached)
+                // on UnityEditor, IsVersionCached resurns not valid result when on memory asset is updated by hash.
+                var isNotSameHashCached = hashCache.ContainsKey(bundleName) && hashCache[bundleName] != hash;
+
+                if (isCached && !isNotSameHashCached)
                 {
                     // if current target is dependency, dependent assetBundle is already on memory. and no need to load it.
                     if (isDependency)
@@ -709,7 +712,10 @@ namespace AutoyaFramework.AssetBundles
             {
                 var isCached = Caching.IsVersionCached(url, hash);
 
-                if (isCached)
+                // on UnityEditor, IsVersionCached resurns not valid result when on memory asset is updated by hash.
+                var isNotSameHashCached = hashCache.ContainsKey(bundleName) && hashCache[bundleName] != hash;
+
+                if (isCached && !isNotSameHashCached)
                 {
                     // downloading asset to storage cache is done.
                     loadSucceeded(bundleName);
@@ -869,8 +875,12 @@ namespace AutoyaFramework.AssetBundles
 
             Action<string, object> succeeded = (conId, downloadedAssetBundle) =>
             {
-                // set loaded assetBundle to on-memory cache.
-                onMemoryCache[bundleName] = (AssetBundle)downloadedAssetBundle;
+                if (!onMemoryCache.ContainsKey(bundleName))
+                {
+                    // set loaded assetBundle to on-memory cache.
+                    onMemoryCache[bundleName] = (AssetBundle)downloadedAssetBundle;
+                    hashCache[bundleName] = hash;
+                }
             };
 
             Action<string, int, string, AutoyaStatus> downloadFailed = (conId, code, reason, autoyaStatus) =>
@@ -1022,6 +1032,10 @@ namespace AutoyaFramework.AssetBundles
             core dictionary of on memory cache.
          */
         private readonly Dictionary<string, AssetBundle> onMemoryCache;
+
+        // hash cache dictionary for delete if IsVersionCached is failed.
+        private Dictionary<string, Hash128> hashCache = new Dictionary<string, Hash128>();
+
         private IEnumerator LoadOnMemoryAssetAsync<T>(string bundleName, string assetName, Action<string, T> loadSucceeded, Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed) where T : UnityEngine.Object
         {
             var assetBundle = onMemoryCache[bundleName];
