@@ -454,7 +454,11 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
 
         yield return WaitUntil(
             () => failedCount == 10,
-            () => { throw new TimeoutException("timeout."); }
+            () =>
+            {
+                throw new TimeoutException("timeout.");
+            },
+            10
         );
     }
 }
