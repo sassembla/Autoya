@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Persistence.URLCaching;
@@ -131,14 +132,14 @@ namespace AutoyaFramework
             caching series
          */
 
-        public static void Persist_URLCaching_Load<T>(string domain, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed) where T : UnityEngine.Object
+        public static void Persist_URLCaching_Load<T>(string domain, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
         {
             if (autoya._autoyaURLCache == null)
             {
-                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence, autoya.OnHttpRequest);
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
             }
 
-            var cor = autoya._autoyaURLCache.LoadFromURLAs<T>(domain, url, bytesToTConverter, onLoaded, onLoadFailed);
+            var cor = autoya._autoyaURLCache.LoadFromURLAs<T>(domain, url, bytesToTConverter, onLoaded, onLoadFailed, requestHeader);
             autoya.mainthreadDispatcher.Commit(cor);
         }
 
@@ -146,7 +147,7 @@ namespace AutoyaFramework
         {
             if (autoya._autoyaURLCache == null)
             {
-                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence, autoya.OnHttpRequest);
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
             }
 
             var urlBase = new Uri(url);
@@ -159,7 +160,7 @@ namespace AutoyaFramework
         {
             if (autoya._autoyaURLCache == null)
             {
-                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence, autoya.OnHttpRequest);
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
             }
 
             autoya._autoyaURLCache.ClearCaching(domain);

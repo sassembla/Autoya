@@ -13,26 +13,11 @@ namespace AutoyaFramework.Persistence.URLCaching
 {
     public class URLCache
     {
-        public delegate Dictionary<string, string> HttpRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, string data);
-        private readonly HttpRequestHeaderDelegate httpRequestHeaderDelegate;
-        private Dictionary<string, string> BasicRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, string data)
-        {
-            return requestHeader;
-        }
-
         private readonly FilePersistence filePersist;
 
-        public URLCache(FilePersistence fp, HttpRequestHeaderDelegate httpRequestHeaderDelegate = null)
+        public URLCache(FilePersistence fp)
         {
             this.filePersist = fp;
-            if (httpRequestHeaderDelegate != null)
-            {
-                this.httpRequestHeaderDelegate = httpRequestHeaderDelegate;
-            }
-            else
-            {
-                this.httpRequestHeaderDelegate = BasicRequestHeaderDelegate;
-            }
         }
 
         const string CONST_VALUE = "_";
@@ -94,7 +79,7 @@ namespace AutoyaFramework.Persistence.URLCaching
         /**
             T型と、保存してあるファイルのdomain、ファイルのDL元url、urlの差分更新のためのハッシュ値、byte列からT型を生成する式を渡すと、T型を返してくる。
          */
-        public IEnumerator LoadFromURLAs<T>(string storePath, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed) where T : UnityEngine.Object
+        public IEnumerator LoadFromURLAs<T>(string storePath, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
         {
             var urlBase = new Uri(url);
             var urlWithoutHash = urlBase.Authority + urlBase.LocalPath;
@@ -193,17 +178,24 @@ namespace AutoyaFramework.Persistence.URLCaching
             // ダウンロードを行う。
             using (var request = UnityWebRequest.Get(url))
             {
+                filePersist.CreateDirectory(Path.Combine(filePersist.basePath, folderPath));
                 var fileSavePath = Path.Combine(filePersist.basePath, folderPath, targetFileName);
-                var requestHeader = httpRequestHeaderDelegate("GET", url, new Dictionary<string, string>(), null);
+
+                if (requestHeader == null)
+                {
+                    requestHeader = new Dictionary<string, string>();
+                }
+
                 foreach (var item in requestHeader)
                 {
                     request.SetRequestHeader(item.Key, item.Value);
                 }
 
-                request.downloadHandler = new DownloadHandlerFile(fileSavePath);
+                var handler = new DownloadHandlerFile(fileSavePath);
 
                 // 失敗時に中途半端なファイルを消す
-                ((DownloadHandlerFile)request.downloadHandler).removeFileOnAbort = true;
+                handler.removeFileOnAbort = true;
+                request.downloadHandler = handler;
 
                 request.timeout = 5;
 
@@ -215,6 +207,7 @@ namespace AutoyaFramework.Persistence.URLCaching
                 }
 
                 var responseCode = (int)request.responseCode;
+
                 if (request.isNetworkError)
                 {
                     filePersist.Delete(folderPath, targetFileName);

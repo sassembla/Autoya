@@ -6,6 +6,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.2] - 2018/11/22
+
+### Changed
+- 
+
 
 ## [0.9.1] - 2018/11/19
 ### Feature

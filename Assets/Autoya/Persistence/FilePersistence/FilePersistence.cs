@@ -39,6 +39,30 @@ namespace AutoyaFramework.Persistence.Files
             return false;
         }
 
+        public bool CreateDirectory(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                return true;
+            }
+            else
+            {// no directory = domain exists.
+                var created = Directory.CreateDirectory(path);
+
+                if (created.Exists)
+                {
+
+#if UNITY_IOS
+                    {
+                        UnityEngine.iOS.Device.SetNoBackupFlag(path);
+                    }
+#endif
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /**
 			append data to end of domain/fileName file.
 		*/
