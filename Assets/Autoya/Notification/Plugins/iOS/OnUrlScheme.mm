@@ -57,7 +57,6 @@ static OnUrlScheme *_instance = nil;
     NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString* documentsDirectory = [paths objectAtIndex:0];
     NSString* filePath = [documentsDirectory stringByAppendingPathComponent:@"URLSchemeFile"];
-    NSLog(@"here comes. %@", filePath);
     NSError* error;
     [completeString writeToFile:filePath
                      atomically:NO
