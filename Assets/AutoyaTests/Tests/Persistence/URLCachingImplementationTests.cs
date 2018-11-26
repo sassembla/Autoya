@@ -461,5 +461,109 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
             10
         );
     }
+
+    [MTest]
+    public IEnumerator CachingWithKey()
+    {
+        var key = "myKey?a=b";
+        var loaded = false;
+        var imagePath = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg/400px-2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg?a=b";
+
+        Autoya.Persist_URLCaching_Load(
+               AutoyaURLCachingTestsFileDomain,
+               key,
+               imagePath,
+               bytes =>
+               {
+                   // return sprite from bytes.
+                   var tex = new Texture2D(1, 1);
+                   tex.LoadImage(bytes);
+                   var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                   return newSprite;
+               },
+               cached =>
+               {
+                   loaded = true;
+               },
+               (code, reason) =>
+               {
+                   Fail();
+               }
+           );
+
+
+        yield return WaitUntil(
+            () => loaded,
+            () => { throw new TimeoutException("timeout."); }
+        );
+    }
+
+    [MTest]
+    public IEnumerator CachingWithKeyOtherURL()
+    {
+        var key = "myKey?a=b";
+        {
+            var loaded = false;
+            var imagePath = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg/400px-2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg?a=b";
+
+            Autoya.Persist_URLCaching_Load(
+                AutoyaURLCachingTestsFileDomain,
+                key,
+                imagePath,
+                bytes =>
+                {
+                    // return sprite from bytes.
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(bytes);
+                    var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                    return newSprite;
+                },
+                cached =>
+                {
+                    loaded = true;
+                },
+                (code, reason) =>
+                {
+                    Fail();
+                }
+            );
+
+            yield return WaitUntil(
+                () => loaded,
+                () => { throw new TimeoutException("timeout."); }
+            );
+        }
+        {
+            var loaded = false;
+            var imagePath = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg/400px-2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg?a=c";
+
+            Autoya.Persist_URLCaching_Load(
+                AutoyaURLCachingTestsFileDomain,
+                key,
+                imagePath,
+                bytes =>
+                {
+                    // return sprite from bytes.
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(bytes);
+                    var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                    return newSprite;
+                },
+                cached =>
+                {
+                    loaded = true;
+                },
+                (code, reason) =>
+                {
+
+                }
+            );
+
+            yield return WaitUntil(
+                () => loaded,
+                () => { throw new TimeoutException("timeout."); }
+            );
+        }
+    }
 }
 

@@ -85,8 +85,40 @@ namespace AutoyaFramework.Persistence.URLCaching
             var urlWithoutHash = urlBase.Authority + urlBase.LocalPath;
             var hash = Convert.ToBase64String(Encoding.UTF8.GetBytes(urlBase.Query));
 
+            var cor = Load<T>(url, urlWithoutHash, hash, storePath, bytesToTConverter, onLoaded, onLoadFailed, requestHeader);
+
+            while (cor.MoveNext())
+            {
+                yield return null;
+            }
+        }
+
+        public IEnumerator LoadFromURLAs<T>(string storePath, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
+        {
+            // urlでない場合、urlとして扱うためのパラメータを足す。
+            if (!key.StartsWith("https://"))
+            {
+                key = "https://" + key;
+            }
+
+            var keyBase = new Uri(key);
+
+            var keyWithoutHash = keyBase.Authority + keyBase.LocalPath;
+            var hash = Convert.ToBase64String(Encoding.UTF8.GetBytes(keyBase.Query));
+
+            var cor = Load<T>(url, keyWithoutHash, hash, storePath, bytesToTConverter, onLoaded, onLoadFailed, requestHeader);
+
+            while (cor.MoveNext())
+            {
+                yield return null;
+            }
+        }
+
+        private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
+        {
+
             // ファイルパス、ファイル名を生成する
-            var targetFolderNameAndHash = GenerateFolderAndFilePath(urlWithoutHash, hash, storePath);
+            var targetFolderNameAndHash = GenerateFolderAndFilePath(pathWithoutHash, hash, storePath);
             var targetFolderName = targetFolderNameAndHash.url;
             var targetFileName = targetFolderNameAndHash.url + "_" + targetFolderNameAndHash.hash;
 
@@ -263,6 +295,5 @@ namespace AutoyaFramework.Persistence.URLCaching
                 }
             );
         }
-
     }
 }

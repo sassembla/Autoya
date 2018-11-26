@@ -132,6 +132,17 @@ namespace AutoyaFramework
             caching series
          */
 
+        public static void Persist_URLCaching_Load<T>(string domain, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+
+            var cor = autoya._autoyaURLCache.LoadFromURLAs<T>(domain, key, url, bytesToTConverter, onLoaded, onLoadFailed, requestHeader);
+            autoya.mainthreadDispatcher.Commit(cor);
+        }
+
         public static void Persist_URLCaching_Load<T>(string domain, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
         {
             if (autoya._autoyaURLCache == null)
