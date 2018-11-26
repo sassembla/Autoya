@@ -6,6 +6,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.3] - 2018/11/26
+### Feature
+- on URLCaching, Caching data with specific key and URL is enabled. this is useful when url of same data is changing by the time.
+
+
 ## [0.9.2] - 2018/11/22
 
 ### Changed
@@ -224,7 +229,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.2...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.3...HEAD
+[0.9.3]: https://github.com/sassembla/autoya/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/sassembla/autoya/compare/0.9.1...0.9.2
 [0.9.1]: https://github.com/sassembla/autoya/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/sassembla/autoya/compare/0.8.47...0.9.0
