@@ -388,16 +388,28 @@ namespace AutoyaFramework
             NotCointainedInRuntimeManifestOrOther
         }
 
+        public struct ListDownloadErrorAndCode
+        {
+            public readonly ListDownloadError error;
+            public readonly int code;
+
+            public ListDownloadErrorAndCode(ListDownloadError error, int code)
+            {
+                this.error = error;
+                this.code = code;
+            }
+        }
+
 
         /**
 			Download assetBundleList if need.
             using the url which supplied from OverridePoints.
 		 */
-        public static void AssetBundle_DownloadAssetBundleListsIfNeed(Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
+        public static void AssetBundle_DownloadAssetBundleListsIfNeed(Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadErrorAndCode, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
         {
             if (autoya == null)
             {
-                downloadFailed(ListDownloadError.AutoyaNotReady, "Autoya not ready.", new AutoyaStatus());
+                downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.AutoyaNotReady, 0), "Autoya not ready.", new AutoyaStatus());
                 return;
             }
 
@@ -413,7 +425,7 @@ namespace AutoyaFramework
                 case AssetBundlesFeatureState.ListDownoading:
                     {
                         // already loading.
-                        downloadFailed(ListDownloadError.AlreadyDownloading, "already downloading.", new AutoyaStatus());
+                        downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.AlreadyDownloading, 0), "already downloading.", new AutoyaStatus());
                         return;
                     }
                 case AssetBundlesFeatureState.Ready:
@@ -428,7 +440,7 @@ namespace AutoyaFramework
                     }
                 default:
                     {
-                        downloadFailed(ListDownloadError.FailedToDownload, "unexpected state:" + autoya.assetBundleFeatState, new AutoyaStatus());
+                        downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.FailedToDownload, 0), "unexpected state:" + autoya.assetBundleFeatState, new AutoyaStatus());
                         return;
                     }
             }
@@ -442,7 +454,7 @@ namespace AutoyaFramework
         }
 
 
-        private void Internal_AssetBundle_DownloadAssetBundleListFromUrl(string[] listUrls, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
+        private void Internal_AssetBundle_DownloadAssetBundleListFromUrl(string[] listUrls, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadErrorAndCode, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
         {
             assetBundleFeatState = AssetBundlesFeatureState.ListDownoading;
 
@@ -471,7 +483,7 @@ namespace AutoyaFramework
                     catch (Exception e)
                     {
                         assetBundleFeatState = AssetBundlesFeatureState.Ready;
-                        downloadFailed(ListDownloadError.NotCointainedInRuntimeManifestOrOther, e.ToString(), new AutoyaStatus());
+                        downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.NotCointainedInRuntimeManifestOrOther, 0), e.ToString(), new AutoyaStatus());
                         return;
                     }
 
@@ -492,7 +504,7 @@ namespace AutoyaFramework
                         return;
                     }
                     isDownloadFailed = true;
-                    downloadFailed(ListDownloadError.FailedToStoreDownloadedAssetBundleList, "failed to store assetBundleList info to device. downloaded list identity:" + newList.identity, new AutoyaStatus());
+                    downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.FailedToStoreDownloadedAssetBundleList, 0), "failed to store assetBundleList info to device. downloaded list identity:" + newList.identity, new AutoyaStatus());
                 }
 
             };
@@ -513,7 +525,7 @@ namespace AutoyaFramework
                     isDownloadFailed = true;
 
                     assetBundleFeatState = AssetBundlesFeatureState.None;
-                    downloadFailed(ListDownloadError.FailedToDownload, "code:" + code + " reason:" + reason + " url:" + listUrl, autoyaStatus);
+                    downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.FailedToDownload, code), reason + " url:" + listUrl, autoyaStatus);
                 };
 
                 // parallel.
@@ -1031,14 +1043,14 @@ namespace AutoyaFramework
         /**
             download AssetBundleList from url manually.
          */
-        public static void AssetBundle_DownloadAssetBundleListFromUrlManually(string listUrl, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadError, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
+        public static void AssetBundle_DownloadAssetBundleListFromUrlManually(string listUrl, Action<ListDownloadResult> downloadSucceeded, Action<ListDownloadErrorAndCode, string, AutoyaStatus> downloadFailed, double timeoutSec = AssetBundlesSettings.TIMEOUT_SEC)
         {
             switch (autoya.assetBundleFeatState)
             {
                 case AssetBundlesFeatureState.ListDownoading:
                     {
                         // already loading another AssetBundleList.
-                        downloadFailed(ListDownloadError.AlreadyDownloading, "already downloading another AssetBundleList. please wait finish downloading.", new AutoyaStatus());
+                        downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.AlreadyDownloading, 0), "already downloading another AssetBundleList. please wait finish downloading.", new AutoyaStatus());
                         return;
                     }
                 case AssetBundlesFeatureState.Ready:
@@ -1049,7 +1061,7 @@ namespace AutoyaFramework
                     }
                 default:
                     {
-                        downloadFailed(ListDownloadError.FailedToDownload, "unexpected state:" + autoya.assetBundleFeatState, new AutoyaStatus());
+                        downloadFailed(new ListDownloadErrorAndCode(ListDownloadError.FailedToDownload, 0), "unexpected state:" + autoya.assetBundleFeatState, new AutoyaStatus());
                         return;
                     }
             }

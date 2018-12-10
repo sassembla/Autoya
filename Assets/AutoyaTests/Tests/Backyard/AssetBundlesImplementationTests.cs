@@ -165,7 +165,7 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
                 },
                 (err, reason, autoyaStatus) =>
                 {
-                    True(err == Autoya.ListDownloadError.FailedToDownload, "err does not match.");
+                    True(err.error == Autoya.ListDownloadError.FailedToDownload, "err does not match.");
                     done = true;
                 }
             );
