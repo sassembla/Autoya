@@ -16,10 +16,217 @@ Example code for asset bundle build postprocess.
 */
 public class AutoyaAssetBundleListGenerateProcess : IPostprocess
 {
+
+    [MenuItem("Window/Autoya/Open AssetBundleVersionEditor")]
+    public static void EditVersionJsonForEdit()
+    {
+        EditVersionJson(string.Empty);
+    }
+
+    private static string EditVersionJson(string graphName)
+    {
+        // popupを開く。
+        // ファイルが存在しない場合、ファイルを作成
+        // ファイルはAssetBundleListの作成に使用される。
+        // Autoyaが入っているフォルダを見つける必要がある。
+        var autoyaAssetGraphIntegrationInstalledPath = GetTargetFolderPath("Autoya.AssetGraphIntegration", "Assets");
+        if (string.IsNullOrEmpty(autoyaAssetGraphIntegrationInstalledPath))
+        {
+            Debug.LogError("Autoya.AssetGraphIntegration folder not found.");
+            return string.Empty;
+        }
+
+        var targetPath = Path.Combine(autoyaAssetGraphIntegrationInstalledPath, "ListVersionSettings");
+
+        if (!Directory.Exists(targetPath))
+        {
+            Directory.CreateDirectory(targetPath);
+        }
+
+        var settingFilePaths = Directory.GetFiles(targetPath).ToList();
+
+
+        var generatedFilePath = string.Empty;
+
+        // graph名の指定がある場合、内部からの呼び出しなので、ファイルがなければ作成する。
+        if (!string.IsNullOrEmpty(graphName))
+        {
+            var settingFileNames = settingFilePaths.Select(s => Path.GetFileNameWithoutExtension(s));
+            if (settingFileNames.Contains(graphName))
+            {
+                var filePath = Path.Combine(targetPath, graphName + ".json");
+                return filePath;
+            }
+            else
+            {
+                var targetListVersionSettingPath = Path.Combine(targetPath, graphName + ".json");
+
+                var defaultVersionJson = new ListProfile();
+                defaultVersionJson.identity = graphName;
+                defaultVersionJson.version = "0";
+                var jsonStr = JsonUtility.ToJson(defaultVersionJson);
+
+                using (var sw = new StreamWriter(targetListVersionSettingPath, false))
+                {
+                    sw.WriteLine(jsonStr);
+                }
+                AssetDatabase.Refresh();
+
+                return targetListVersionSettingPath;
+            }
+        }
+
+        var saveActions = new List<VersionSettingAndSaveAction>();
+        var allFilePaths = Directory.GetFiles(targetPath).Where(p => !p.EndsWith(".meta")).ToArray();
+        foreach (var filePath in allFilePaths)
+        {
+            var contents = string.Empty;
+            using (var sr = new StreamReader(filePath))
+            {
+                contents = sr.ReadToEnd();
+            }
+
+            var listVersinSetting = JsonUtility.FromJson<ListProfile>(contents);
+
+            Action<string> saveAct = newVersion =>
+            {
+                if (newVersion != listVersinSetting.version)
+                {
+                    listVersinSetting.version = newVersion;
+                    var jsonStr = JsonUtility.ToJson(listVersinSetting);
+                    using (var sw = new StreamWriter(filePath, false))
+                    {
+                        sw.WriteLine(jsonStr);
+                    }
+
+                    AssetDatabase.Refresh();
+                }
+            };
+
+            var isNew = filePath == generatedFilePath;
+            var versionSettingAndSaveAction = new VersionSettingAndSaveAction(listVersinSetting.identity, listVersinSetting.version, saveAct);
+            saveActions.Add(versionSettingAndSaveAction);
+        }
+
+        // ポップアップを開く
+        var window = EditorWindow.GetWindow<AssetBundleListVersionSettingsEditWindow>(typeof(AssetBundleListVersionSettingsEditWindow));
+        window.Init(saveActions);
+        window.titleContent = new GUIContent("ABListVersion Editor");
+
+        return string.Empty;
+    }
+
+    public struct VersionSettingAndSaveAction
+    {
+        public readonly string listIdentity;
+        public readonly string listVersion;
+        public Action<string> saveAction;
+
+        public VersionSettingAndSaveAction(string listIdentity, string listVersion, Action<string> saveAction)
+        {
+            this.listIdentity = listIdentity;
+            this.listVersion = listVersion;
+            this.saveAction = saveAction;
+        }
+    }
+
+    public class AssetBundleListVersionSettingsEditWindow : EditorWindow
+    {
+        private List<VersionSettingAndSaveAction> data;
+        private string[] defaultVersions;
+        public void Init(List<VersionSettingAndSaveAction> data)
+        {
+            this.data = data;
+            this.defaultVersions = data.Select(d => d.listVersion).ToArray();
+        }
+
+
+        void OnGUI()
+        {
+            GUILayout.Label("Set ListVersion and update if need.");
+
+            GUILayout.Space(5);
+            try
+            {
+                for (var i = 0; i < data.Count; i++)
+                {
+                    var versionSettingAndAct = data[i];
+                    using (new GUILayout.VerticalScope())
+                    {
+                        using (new GUILayout.HorizontalScope())
+                        {
+                            GUILayout.Label("identity:");
+                            GUILayout.Label(versionSettingAndAct.listIdentity);
+                            GUILayout.Label("version:");
+
+                            var updated = GUILayout.TextField(defaultVersions[i]);
+                            defaultVersions[i] = updated;
+
+                            if (GUILayout.Button("Update"))
+                            {
+                                versionSettingAndAct.saveAction(defaultVersions[i]);
+                            }
+                        }
+                        GUILayout.Space(5);
+                    }
+                }
+
+                GUILayout.Space(10);
+
+                if (GUILayout.Button("Close"))
+                {
+                    this.Close();
+                }
+            }
+            catch
+            {
+                GameObject.DestroyImmediate(this);
+            }
+        }
+
+    }
+
+    private static string GetTargetFolderPath(string targetFolderName, string findStartPath)
+    {
+        var childDirectoryPaths = Directory.GetDirectories(findStartPath);
+
+        return Recursive(targetFolderName, childDirectoryPaths);
+    }
+
+    private static string Recursive(string targetFolderName, string[] paths)
+    {
+        foreach (var dirPath in paths)
+        {
+            // チェックを行う
+            if (dirPath.Contains(targetFolderName))
+            {
+                return dirPath;
+            }
+
+            // まだパスに欲しいフォルダ名が含まれていない。
+
+            // 下の階層があるかチェック
+            var child2 = Directory.GetDirectories(dirPath);
+            if (child2.Length == 0)
+            {
+                continue;
+            }
+
+            // 下の階層があるので、読み込み
+            var result = Recursive(targetFolderName, child2);
+            if (!string.IsNullOrEmpty(result))
+            {
+                return result;
+            }
+        }
+
+        return string.Empty;
+    }
+
     /* 
-	 * DoPostprocess() is called when build performed.
-	 * @param [in] reports	collection of AssetBundleBuildReport from each BundleBuilders.
-	 */
+     * DoPostprocess() is called when build performed.
+     * @param [in] reports	collection of AssetBundleBuildReport from each BundleBuilders.
+     */
     public void DoPostprocess(IEnumerable<AssetBundleBuildReport> buildReports, IEnumerable<ExportReport> exportReports)
     {
         // リスト名とversionから、出力するlistの名称を決め、ファイルを移動させる。
@@ -39,15 +246,8 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             return;
         }
 
-        // Debug.Log("sampleExport destination:" + sampleExportArray[0].ExportedItems[0].destination);
-        // Debug.Log("currentTargetPlatform:" + EditorUserBuildSettings.activeBuildTarget + " export platform str is:" + BuildTargetUtility.TargetToAssetBundlePlatformName(EditorUserBuildSettings.activeBuildTarget));
-
-        /*
-			ここは大変まどろっこしいことをしていて、
-			exporterからexportPathを取得できないので、exportされたAssetから"現在のプラットフォームString/現在のプラットフォームString" というパス/ファイル名になるmanifestファイルを探し出し、
-			そのパスの直上のディレクトリ名がexportPathの最下位のフォルダ名になるので、それを取得しリスト名として使用している。
-		 */
         var exportPlatformStr = BuildTargetUtility.TargetToAssetBundlePlatformName(EditorUserBuildSettings.activeBuildTarget);
+
         var platformDelimiter = exportPlatformStr + "/" + exportPlatformStr + ".manifest";// XPlatform/XPlatform.manifest
 
         var rootManifestEntry = sampleExportArray[0].ExportedItems.Where(p => p.destination.Contains(platformDelimiter)).FirstOrDefault();
@@ -57,25 +257,19 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             return;
         }
 
-        var wholeExportFolderName = rootManifestEntry.destination.Substring(0, rootManifestEntry.destination.IndexOf(platformDelimiter) - 1/*remove last / */);
+        // full path for export base path.
+        var wholeExportFolderPath = rootManifestEntry.destination.Substring(0, rootManifestEntry.destination.IndexOf(platformDelimiter) - 1/*remove last / */);
 
-        var settingFilePath = wholeExportFolderName + ".json";
+        var graphName = new DirectoryInfo(wholeExportFolderPath).Name;
+        var settingFilePath = EditVersionJson(graphName);
 
-        if (!File.Exists(settingFilePath))
+        var settingFileData = string.Empty;
+        using (var sr = new StreamReader(settingFilePath))
         {
-            Debug.Log("no setting file exists:" + settingFilePath);
-            return;
+            settingFileData = sr.ReadToEnd();
         }
 
-
-        var settingFileData = File.ReadAllBytes(settingFilePath);
-        if (settingFileData.Length == 0)
-        {
-            Debug.Log("setting file is empty:" + settingFilePath + " need to define ListProfile class parameters.");
-            return;
-        }
-
-        var settingProfile = JsonUtility.FromJson<ListProfile>(Encoding.UTF8.GetString(settingFileData));
+        var settingProfile = JsonUtility.FromJson<ListProfile>(settingFileData);
 
         var listIdentity = settingProfile.identity;
         var listVersion = settingProfile.version;
@@ -83,7 +277,7 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
         var rootManifestPath = rootManifestEntry.destination;
         Debug.Log("generating AssetBundleList. rootManifestPath:" + rootManifestPath + " generate list identity:" + listIdentity + " version:" + listVersion);
 
-        var targetDirectory = FileController.PathCombine(wholeExportFolderName, exportPlatformStr, listVersion);
+        var targetDirectory = FileController.PathCombine(wholeExportFolderPath, exportPlatformStr, listVersion);
 
         // check if version folder is exists.
         if (Directory.Exists(targetDirectory))
@@ -135,8 +329,8 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             var bundleAndDependencies = new List<AssetBundleInfo>();
 
             /*
-				load root manifest file and get assetBundle names and dependencies.
-			*/
+                load root manifest file and get assetBundle names and dependencies.
+            */
 
             using (var sr = new StreamReader(rootManifestPath))
             {
@@ -226,8 +420,8 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             var assetBundleInfos = new List<AssetBundleInfo>();
 
             /*
-				load each assetBundle info from bundle manifests.
-			*/
+                load each assetBundle info from bundle manifests.
+            */
             foreach (var bundleAndDependencie in bundleAndDependencies)
             {
                 var targetBundleName = bundleAndDependencie.bundleName;
@@ -236,7 +430,7 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
                 newAssetBundleInfo.bundleName = targetBundleName;
                 newAssetBundleInfo.dependsBundleNames = bundleAndDependencie.dependsBundleNames;
 
-                using (var sr = new StreamReader(FileController.PathCombine(wholeExportFolderName, exportPlatformStr, targetBundleName + ".manifest")))
+                using (var sr = new StreamReader(FileController.PathCombine(wholeExportFolderPath, exportPlatformStr, targetBundleName + ".manifest")))
                 {
                     var rootYaml = new YamlStream();
                     rootYaml.Load(sr);
@@ -305,7 +499,7 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
                     }
 
                     // set size.
-                    newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(wholeExportFolderName, exportPlatformStr, targetBundleName)).Length;
+                    newAssetBundleInfo.size = new FileInfo(FileController.PathCombine(wholeExportFolderPath, exportPlatformStr, targetBundleName)).Length;
 
                     // Debug.LogError("newAssetBundleInfo.size:" + newAssetBundleInfo.size);
 
@@ -317,8 +511,8 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             var str = JsonUtility.ToJson(assetBundleList, true);
 
 
-            var listOutputPaht = FileController.PathCombine(wholeExportFolderName, exportPlatformStr, listVersion, listIdentity + ".json");
-            using (var sw = new StreamWriter(listOutputPaht))
+            var listOutputPath = FileController.PathCombine(wholeExportFolderPath, exportPlatformStr, listVersion, listIdentity + ".json");
+            using (var sw = new StreamWriter(listOutputPath))
             {
                 sw.WriteLine(str);
             }
