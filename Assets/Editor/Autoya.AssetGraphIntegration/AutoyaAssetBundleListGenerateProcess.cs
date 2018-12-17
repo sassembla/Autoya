@@ -111,7 +111,7 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
         // ポップアップを開く
         var window = EditorWindow.GetWindow<AssetBundleListVersionSettingsEditWindow>(typeof(AssetBundleListVersionSettingsEditWindow));
         window.Init(saveActions);
-        window.titleContent = new GUIContent("ABListVersion Editor");
+        window.titleContent = new GUIContent("ABListVer Edit");
 
         return string.Empty;
     }
@@ -282,9 +282,8 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
         // check if version folder is exists.
         if (Directory.Exists(targetDirectory))
         {
-            Debug.Log("same version files are already exists. list identity:" + listIdentity + " version:" + listVersion + " path:" + targetDirectory + " need to delete directory.");
+            Debug.Log("same version files are already exists. list identity:" + listIdentity + " version:" + listVersion + " path:" + targetDirectory + " need to delete directory or modify list version. for editing list version, open Window > Autoya > Open AssetBundleListVersionEditor. ");
             return;
-            // Directory.Delete(targetDirectory, true);
         }
 
         // create version directory under exportPlatformStr.
@@ -418,6 +417,7 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             // create assetBundleList.
 
             var assetBundleInfos = new List<AssetBundleInfo>();
+            var classIdSet = new HashSet<int>();
 
             /*
                 load each assetBundle info from bundle manifests.
@@ -495,6 +495,31 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
                                     }
                                     break;
                                 }
+                            case "ClassTypes":
+                                {
+                                    var seq = (YamlSequenceNode)root_item.Value;
+                                    foreach (var iSeq in seq)
+                                    {
+                                        var innerMap = (YamlMappingNode)iSeq;
+                                        foreach (var map in innerMap)
+                                        {
+                                            switch ((string)map.Key)
+                                            {
+                                                case "Class":
+                                                    {
+                                                        classIdSet.Add(Convert.ToInt32((string)map.Value));
+                                                        break;
+                                                    }
+                                            }
+                                        }
+                                    }
+                                    break;
+                                }
+                            default:
+                                {
+                                    // ignore.
+                                    break;
+                                }
                         }
                     }
 
@@ -516,6 +541,9 @@ public class AutoyaAssetBundleListGenerateProcess : IPostprocess
             {
                 sw.WriteLine(str);
             }
+
+            // generate Link.xml
+            LinkXMLGenerator.ExportLinkXMLWithUsingClassIds(Application.dataPath, classIdSet.ToArray());
         }
     }
 }

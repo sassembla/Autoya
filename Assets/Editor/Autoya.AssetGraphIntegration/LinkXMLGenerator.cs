@@ -4,21 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Xml;
 using UnityEditor;
 using UnityEngine;
 
 public class LinkXMLGenerator
 {
-    // ExportLinkXMLWithUsingClassIds をどこからか叩く必要がある。
-
-    // [MenuItem("/Window/Generate link.xml Test")]
-    // public static void Go()
-    // {
-    //     ExportLinkXMLWithUsingClassIds(210);
-    // }
-
-
-    public static string GetClassNameById(int id)
+    /*
+        IDからClassNameを得る
+     */
+    private static string GetClassNameById(int id)
     {
         var editorAssemblyPath = string.Empty;
         switch (Application.platform)
@@ -58,10 +53,13 @@ public class LinkXMLGenerator
         return string.Empty;
     }
 
-
-    public static void ExportLinkXMLWithUsingClassIds(params int[] classIds)
+    /*
+        Link.xmlを生成する。
+        すでに存在する場合マージを行う。
+     */
+    public static void ExportLinkXMLWithUsingClassIds(string generateTargetFolderPath, params int[] classIds)
     {
-        var targetPath = Path.Combine(Application.dataPath, "link.xml");
+        var targetPath = Path.Combine(generateTargetFolderPath, "link.xml");
 
         var lastClassNames = new List<string>();
         foreach (var classId in classIds)
@@ -88,21 +86,61 @@ public class LinkXMLGenerator
         dllPaths.Add(baseRuntimeDllPath);
 
         var className_FullNameDict = CollectClassNames(dllPaths.ToArray());
-        var asmName_classNamesDict = new Dictionary<string, List<string>>();
+        var asmName_classNamesDict = new Dictionary<string, HashSet<string>>();
         foreach (var lastClassName in lastClassNames)
         {
+            if (!className_FullNameDict.ContainsKey(lastClassName))
+            {
+                continue;
+            }
+
             var asmName_fullClassNamePair = className_FullNameDict[lastClassName];
             var asmName = asmName_fullClassNamePair.Key;
             var fullClassName = asmName_fullClassNamePair.Value;
 
             if (!asmName_classNamesDict.ContainsKey(asmName))
             {
-                asmName_classNamesDict[asmName] = new List<string>();
+                asmName_classNamesDict[asmName] = new HashSet<string>();
             }
 
             asmName_classNamesDict[asmName].Add(fullClassName);
         }
 
+        // ファイルが存在しなければ生成する。
+        if (!File.Exists(targetPath))
+        {
+            var emptyLinkXml = "<linker></linker>";
+            using (var sw = new StreamWriter(targetPath))
+            {
+                sw.WriteLine(emptyLinkXml);
+            }
+            AssetDatabase.Refresh();
+        }
+
+        // 既存のファイルを読み込む
+        var document = new XmlDocument();
+        document.Load(targetPath);
+
+
+        // 既存のファイルの要素を読み込む
+        foreach (var child in document.ChildNodes)
+        {
+            foreach (var child2 in ((XmlElement)child).ChildNodes)
+            {
+                var asmName = ((XmlElement)child2).GetAttribute("fullname");
+
+                if (!asmName_classNamesDict.ContainsKey(asmName))
+                {
+                    asmName_classNamesDict[asmName] = new HashSet<string>();
+                }
+
+                foreach (var child3 in ((XmlElement)child2).ChildNodes)
+                {
+                    var className = ((XmlElement)child3).GetAttribute("fullname");
+                    asmName_classNamesDict[asmName].Add(className);
+                }
+            }
+        }
 
         var stringBuilder = new StringBuilder();
 
@@ -141,6 +179,8 @@ public class LinkXMLGenerator
         var footer =
 "</linker>"
         ;
+
+
         stringBuilder.AppendLine(footer);
 
         using (var sw = new StreamWriter(targetPath, false))

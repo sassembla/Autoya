@@ -877,7 +877,10 @@ namespace AutoyaFramework.Purchase
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
 
             // set failed ticketId to log. this will be used if Paid is occured.
-            onMemoryFailedLog[i.transactionID] = callbacks.ticketId;
+            if (!string.IsNullOrEmpty(i.transactionID))
+            {
+                onMemoryFailedLog[i.transactionID] = callbacks.ticketId;
+            }
 
             var cor = HttpPost(
                 connectionId,

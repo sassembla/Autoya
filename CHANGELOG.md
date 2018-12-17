@@ -7,6 +7,16 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 ## [Unreleased]
 
 
+## [0.9.5] - 2018/12/17
+
+### Feature
+- link.xml generator is added. link.xml will be generated when some AssetBundle built.
+- AssetBundleListVersionEditor is added. open Window > Autoya > Open AssetBundleVersionEditor. this is useful for modifing the version of the AssetBundle List.
+
+### Fixed
+- PurchaseRouter, possible bug (fire when user cancel) is fixed.
+
+
 ## [0.9.4] - 2018/12/09
 ### Changed
 - DownloadAssetBundleListIfNeed method signature changed. error code is added.
@@ -236,7 +246,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.4...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.5...HEAD
+[0.9.4]: https://github.com/sassembla/autoya/compare/0.9.4...0.9.5
 [0.9.4]: https://github.com/sassembla/autoya/compare/0.9.3...0.9.4
 [0.9.3]: https://github.com/sassembla/autoya/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/sassembla/autoya/compare/0.9.1...0.9.2
