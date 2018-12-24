@@ -10,9 +10,7 @@ public class URLSchemeSample : MonoBehaviour
             this handler will fire when you tap your URL Scheme on browser/mail/other app.
             
             e,g,
-                sctest://heheh%3Fherecomes%3Ddaredevil%26you%3Dgood
-
-            <this feature is only supported on iOS.>
+                sctest://heheh?herecomes=daredevil&you=good
          */
         Autoya.Notification_SetURLSchemeReceiver(
             schemeParameterDict =>
