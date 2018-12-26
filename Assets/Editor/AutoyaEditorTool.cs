@@ -15,6 +15,9 @@ public class AutoyaEditorTool
         var frameworkPath = "Assets/Autoya";
         CollectPathRecursive(frameworkPath, assetPaths);
 
+        var pluginsPath = "Assets/Plugins/Android/AutoyaAndroidPlugin";
+        CollectPathRecursive(pluginsPath, assetPaths);
+
         AssetDatabase.ExportPackage(assetPaths.ToArray(), "Autoya.unitypackage", ExportPackageOptions.IncludeDependencies);
 
         var assetGraphPath = "Assets/Editor";
