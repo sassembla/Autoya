@@ -722,6 +722,9 @@ namespace AutoyaFramework.Purchase
 
         private void SendPaid(PurchaseEventArgs e)
         {
+            var dataStr = string.Empty;
+
+            // set if need.
             var ticketId = string.Empty;
 
             // set ticketId if failed ticketId is allocated with same transaction id.
@@ -733,10 +736,12 @@ namespace AutoyaFramework.Purchase
                 onMemoryFailedLog.Remove(e.purchasedProduct.transactionID);
             }
 
-            var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
-            var dataStr = JsonUtility.ToJson(new Ticket(ticketId, e.purchasedProduct.receipt));
-
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PAID_PREFIX + Guid.NewGuid().ToString();
+            var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
+
+            dataStr = JsonUtility.ToJson(
+                new Ticket(ticketId, e.purchasedProduct.receipt)
+            );
 
             var cor = HttpPost(
                 connectionId,
@@ -877,7 +882,7 @@ namespace AutoyaFramework.Purchase
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
 
             // set failed ticketId to log. this will be used if Paid is occured.
-            if (!string.IsNullOrEmpty(i.transactionID))
+            if (i != null && !string.IsNullOrEmpty(i.transactionID))
             {
                 onMemoryFailedLog[i.transactionID] = callbacks.ticketId;
             }
