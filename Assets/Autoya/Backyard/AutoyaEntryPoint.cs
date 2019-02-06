@@ -30,6 +30,7 @@ namespace AutoyaFramework
         public static bool forceFailHttp = false;
         public static bool forceSetHttpCodeAsUnauthorized = false;
         public static bool forceMaintenance = false;
+        public static bool forceAppUpdated = false;
 
         public static void ResetAllForceSetting()
         {

@@ -277,7 +277,7 @@ namespace AutoyaFramework
                         /*
 							maintenance or auth failed is already handled.
 						*/
-                        if (autoyaStatus.inMaintenance || autoyaStatus.isAuthFailed)
+                        if (autoyaStatus.isAuthFailed)
                         {
                             return;
                         }
@@ -918,8 +918,14 @@ namespace AutoyaFramework
                 fire application update request after succeeded.
             */
             var appUpdateDescription = insencitiveKV[AuthSettings.AUTH_RESPONSEHEADER_APPVERSION];
-            if (!string.IsNullOrEmpty(appUpdateDescription))
+            if (!string.IsNullOrEmpty(appUpdateDescription) || forceAppUpdated)
             {
+                if (forceAppUpdated)
+                {
+                    // must be 1X.Y.Z, grater number than current app.
+                    appUpdateDescription = "1" + OnAppVersionRequired();
+                }
+
                 OnNewAppRequested(appUpdateDescription);
             }
         }
