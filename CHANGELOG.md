@@ -6,6 +6,13 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.7] - 2019/02/06
+
+### Changed
+- adding force application update flag for test.
+- IAP fail handling is refactorerd.
+
+
 ## [0.9.6] - 2018/12/26
 
 ### Feature
