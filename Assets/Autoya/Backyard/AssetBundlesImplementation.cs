@@ -608,6 +608,23 @@ namespace AutoyaFramework
         }
 
         /**
+            get bundle names of "on memory" assetBundle.
+         */
+        public static string[] AssetBundle_GetOnMemoryAssetBundleNames()
+        {
+            var cont = CheckAssetBundlesFeatureCondition(
+                            (code, reason) => { }
+                        );
+
+            if (!cont)
+            {
+                return new string[0];
+            }
+
+            return autoya._assetBundleLoader.OnMemoryBundleNames();
+        }
+
+        /**
             get bundle names of "storage cached" assetBundle from assetBundleList. 
          */
         public static void AssetBundle_CachedBundleNames(Action<string[]> onBundleNamesReady, Action<AssetBundlesError, string> onError)
