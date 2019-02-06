@@ -12,6 +12,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - adding force application update flag for test.
 - IAP fail handling is refactorerd.
 
+### Feature
+- collect on memory assetBundle name feature is added.
+
 
 ## [0.9.6] - 2018/12/26
 
