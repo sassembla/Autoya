@@ -5,6 +5,11 @@
 small, thin framework for Unity.  
 which contains essential game features.
 
+## Required
+* Unity 2018.x or later.
+* Scripting Runtime Version 4.6 Eq.
+
+
 ## Features
 * Authentication handling
 * AssetBundle load/management
