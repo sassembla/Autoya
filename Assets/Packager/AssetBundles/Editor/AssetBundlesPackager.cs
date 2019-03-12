@@ -18,6 +18,8 @@ public class AssetBundlesPackager
         assetPaths.Add("Assets/Autoya/Backyard/BackyardSettings.cs");
         assetPaths.Add("Assets/Autoya/AutoyaDependencies.cs");
 
+        assetPaths.Add("Assets/Packager/AssetBundles/AssetBundlesLoadSample.cs");
+
         AssetDatabase.ExportPackage(assetPaths.ToArray(), "Autoya.AssetBundles.unitypackage", ExportPackageOptions.IncludeDependencies);
     }
 
