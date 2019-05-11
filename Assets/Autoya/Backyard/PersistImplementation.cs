@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using AutoyaFramework.Persistence.CacheHit;
 using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Persistence.URLCaching;
 using UnityEngine;
@@ -18,6 +19,7 @@ namespace AutoyaFramework
 
         private FilePersistence _autoyaFilePersistence;
         private URLCache _autoyaURLCache;
+        private CacheHit _autoyaChacheHit;
 
         public static bool Persist_IsExist(string domain, string filePath)
         {
@@ -66,6 +68,10 @@ namespace AutoyaFramework
             return autoya._autoyaFilePersistence.FileNamesInDomain(domain);
         }
 
+        public static string[] Persist_DirectoryNamesInDomain(string domain)
+        {
+            return autoya._autoyaFilePersistence.DirectoryNamesInDomain(domain);
+        }
 
 
         /*
@@ -175,6 +181,54 @@ namespace AutoyaFramework
             }
 
             autoya._autoyaURLCache.ClearCaching(domain);
+        }
+
+        public static void Persist_CacheItems(
+            string domain,
+            string[] items,
+            Action onSucceeded,
+            Action<int, string> onFailed)
+        {
+            if (autoya._autoyaChacheHit == null)
+            {
+                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+            }
+
+            var cor = autoya._autoyaChacheHit.CacheItems(domain, items, onSucceeded, onFailed);
+            autoya.mainthreadDispatcher.Commit(cor);
+        }
+
+        public static bool Persist_HitItem(
+            string domain,
+            string item
+        )
+        {
+            if (autoya._autoyaChacheHit == null)
+            {
+                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+            }
+
+            return autoya._autoyaChacheHit.HitItem(domain, item);
+        }
+
+        public static void Persist_ClearCacheHit()
+        {
+            if (autoya._autoyaChacheHit == null)
+            {
+                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+            }
+
+            autoya._autoyaChacheHit.ClearCacheHit();
+        }
+
+        public static int Debug_Persist_CacheReference(string domain, Char index)
+        {
+            if (autoya._autoyaChacheHit == null)
+            {
+                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+            }
+
+            return autoya._autoyaChacheHit.CacheReference(domain, index);
         }
     }
 }
