@@ -39,6 +39,15 @@ namespace AutoyaFramework.Persistence.Files
             return false;
         }
 
+        public bool IsDirectoryExists(string folderPath)
+        {
+            if (Directory.Exists(folderPath))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public bool CreateDirectory(string path)
         {
             if (Directory.Exists(path))
@@ -253,6 +262,27 @@ namespace AutoyaFramework.Persistence.Files
         }
 
         /**
+			returns all directory names in domain/.
+		*/
+        public string[] DirectoryNamesInDomain(string domain)
+        {
+            var domainPath = Path.Combine(basePath, domain);
+
+            if (Directory.Exists(domainPath))
+            {
+                var dirPaths = Directory.GetDirectories(domainPath);
+
+                if (dirPaths.Length == 0)
+                {
+                    return new string[] { };
+                }
+
+                return dirPaths;
+            }
+            return new string[] { };
+        }
+
+        /**
 			load data from domain/fileName if file is exists.
 			else return empty.
 		*/
@@ -310,6 +340,19 @@ namespace AutoyaFramework.Persistence.Files
             if (Directory.Exists(domainPath))
             {
                 Directory.Delete(domainPath, true);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+			delete all files in specific path.
+		*/
+        public bool DeleteDirectory(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                Directory.Delete(path, true);
                 return true;
             }
             return false;
