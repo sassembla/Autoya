@@ -612,12 +612,32 @@ int delayInSeconds = 2;
             [metadata setObject:@"" forKey:@"numberOfUnits"];
             [metadata setObject:@"" forKey:@"unit"];
         }
+
+        if ((@available(iOS 11_2, macOS 10_13_2, tvOS 11_2, *)) && (nil != [product subscriptionPeriod]))  {
+            if (nil !=  [[product subscriptionPeriod] numberOfUnits]) {
+                NSNumber *numberOfUnits = [NSNumber numberWithInt:[[product subscriptionPeriod] numberOfUnits]];
+                [metadata setObject:numberOfUnits forKey:@"subscriptionNumberOfUnits"];
+            } else {
+                [metadata setObject:@"" forKey:@"subscriptionNumberOfUnits"];
+            }
+            if (nil != [[product subscriptionPeriod] unit]) {
+                NSNumber *unit = [NSNumber numberWithInt:[[product subscriptionPeriod] unit]];
+                [metadata setObject:unit forKey:@"subscriptionPeriodUnit"];
+            } else {
+                [metadata setObject:@"" forKey:@"subscriptionPeriodUnit"];
+            }
+        } else {
+            [metadata setObject:@"" forKey:@"subscriptionNumberOfUnits"];
+            [metadata setObject:@"" forKey:@"subscriptionPeriodUnit"];
+        }
 #else
         [metadata setObject:@"" forKey:@"introductoryPrice"];
         [metadata setObject:@"" forKey:@"introductoryPriceLocale"];
         [metadata setObject:@"" forKey:@"introductoryPriceNumberOfPeriods"];
         [metadata setObject:@"" forKey:@"numberOfUnits"];
         [metadata setObject:@"" forKey:@"unit"];
+        [metadata setObject:@"" forKey:@"subscriptionNumberOfUnits"];
+        [metadata setObject:@"" forKey:@"subscriptionPeriodUnit"];
 #endif
 
 
