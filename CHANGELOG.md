@@ -6,6 +6,16 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+
+## [0.9.8] - 2019/05/13
+
+### Changed
+- Unity IAP is updated to 1.22.0.
+
+### Feature
+- save hashes and check the hash is existed or not. This feature is called "HashHit".
+
+
 ## [0.9.7] - 2019/02/06
 
 ### Changed
@@ -261,7 +271,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.6...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.8...HEAD
+[0.9.8]: https://github.com/sassembla/autoya/compare/0.9.7...0.9.8
+[0.9.7]: https://github.com/sassembla/autoya/compare/0.9.6...0.9.7
 [0.9.6]: https://github.com/sassembla/autoya/compare/0.9.5...0.9.6
 [0.9.5]: https://github.com/sassembla/autoya/compare/0.9.4...0.9.5
 [0.9.4]: https://github.com/sassembla/autoya/compare/0.9.3...0.9.4
