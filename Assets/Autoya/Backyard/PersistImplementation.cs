@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using AutoyaFramework.Persistence.CacheHit;
+using AutoyaFramework.Persistence.HashHit;
 using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Persistence.URLCaching;
 using UnityEngine;
@@ -19,7 +19,7 @@ namespace AutoyaFramework
 
         private FilePersistence _autoyaFilePersistence;
         private URLCache _autoyaURLCache;
-        private CacheHit _autoyaChacheHit;
+        private HashHit _autoyaChacheHit;
 
         public static bool Persist_IsExist(string domain, string filePath)
         {
@@ -183,7 +183,7 @@ namespace AutoyaFramework
             autoya._autoyaURLCache.ClearCaching(domain);
         }
 
-        public static void Persist_CacheItems(
+        public static void Persist_CacheHashes(
             string domain,
             string[] items,
             Action onSucceeded,
@@ -191,44 +191,44 @@ namespace AutoyaFramework
         {
             if (autoya._autoyaChacheHit == null)
             {
-                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+                autoya._autoyaChacheHit = new HashHit(autoya._autoyaFilePersistence);
             }
 
-            var cor = autoya._autoyaChacheHit.CacheItems(domain, items, onSucceeded, onFailed);
+            var cor = autoya._autoyaChacheHit.CacheHashes(domain, items, onSucceeded, onFailed);
             autoya.mainthreadDispatcher.Commit(cor);
         }
 
-        public static bool Persist_HitItem(
+        public static bool Persist_HitHash(
             string domain,
             string item
         )
         {
             if (autoya._autoyaChacheHit == null)
             {
-                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+                autoya._autoyaChacheHit = new HashHit(autoya._autoyaFilePersistence);
             }
 
-            return autoya._autoyaChacheHit.HitItem(domain, item);
+            return autoya._autoyaChacheHit.HitHash(domain, item);
         }
 
-        public static void Persist_ClearCacheHit()
+        public static void Persist_ClearOnMemoryHashCache()
         {
             if (autoya._autoyaChacheHit == null)
             {
-                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+                autoya._autoyaChacheHit = new HashHit(autoya._autoyaFilePersistence);
             }
 
-            autoya._autoyaChacheHit.ClearCacheHit();
+            autoya._autoyaChacheHit.ClearOnMemoryHashCache();
         }
 
-        public static int Debug_Persist_CacheReference(string domain, Char index)
+        public static int Debug_Persist_HashCountByDomain(string domain, Char index)
         {
             if (autoya._autoyaChacheHit == null)
             {
-                autoya._autoyaChacheHit = new CacheHit(autoya._autoyaFilePersistence);
+                autoya._autoyaChacheHit = new HashHit(autoya._autoyaFilePersistence);
             }
 
-            return autoya._autoyaChacheHit.CacheReference(domain, index);
+            return autoya._autoyaChacheHit.HashCountByDomain(domain, index);
         }
     }
 }

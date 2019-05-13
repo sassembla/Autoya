@@ -47,7 +47,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         True(!result, "should not be exist.");
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e l l o w o r l d".Split(' '),
             () =>
@@ -75,7 +75,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         yield return Cache();
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e o w o r d".Split(' '),// l removed.
             () =>
@@ -108,7 +108,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         yield return Cache();
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e l l o w o r l d 0".Split(' '),// 0, added.
             () =>
@@ -147,7 +147,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         True(!result, "should not be exist.");
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e ll o w o r l d".Split(' '),// ll and l will be into same folder.
             () =>
@@ -168,7 +168,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
             () => { throw new TimeoutException("timeout."); }
         );
 
-        var cacheReference = Autoya.Debug_Persist_CacheReference(
+        var cacheReference = Autoya.Debug_Persist_HashCountByDomain(
             AutoyaFilePersistTestsFileDomain,
             'l'
         );
@@ -184,7 +184,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         var initialFilePaths = Autoya.Persist_DirectoryNamesInDomain(AutoyaFilePersistTestsFileDomain);
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e o w o r l d".Split(' '),// ll removed.
             () =>
@@ -218,7 +218,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
     public IEnumerator ContentAdded()
     {
         yield return Cache();
-        var cacheReference = Autoya.Debug_Persist_CacheReference(
+        var cacheReference = Autoya.Debug_Persist_HashCountByDomain(
             AutoyaFilePersistTestsFileDomain,
             'l'
         );
@@ -226,7 +226,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         var initialFilePaths = Autoya.Persist_DirectoryNamesInDomain(AutoyaFilePersistTestsFileDomain);
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e ll o w o r l d".Split(' '),// ll, added.
             () =>
@@ -255,7 +255,7 @@ public class CacheHitImplementationTest_UpdateCache : MiyamasuTestRunner
         var lFilePaths = Directory.GetFiles(targetPath);
         True(lFilePaths.Length == 2, "not match, expect:2, actual:" + lFilePaths.Length);
 
-        cacheReference = Autoya.Debug_Persist_CacheReference(
+        cacheReference = Autoya.Debug_Persist_HashCountByDomain(
             AutoyaFilePersistTestsFileDomain,
             'l'
         );

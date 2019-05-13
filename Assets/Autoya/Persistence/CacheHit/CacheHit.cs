@@ -8,15 +8,15 @@ using System.Text;
 using AutoyaFramework.Persistence.Files;
 using UnityEngine.Networking;
 
-namespace AutoyaFramework.Persistence.CacheHit
+namespace AutoyaFramework.Persistence.HashHit
 {
-    public class CacheHit
+    public class HashHit
     {
         private readonly FilePersistence filePersist;
         private Dictionary<string, Dictionary<Char, int>> onMemoryHeadCountCache = new Dictionary<string, Dictionary<Char, int>>();
         private Dictionary<string, Func<string, string>> hmacFuncCache = new Dictionary<string, Func<string, string>>();
 
-        public CacheHit(FilePersistence fp)
+        public HashHit(FilePersistence fp)
         {
             this.filePersist = fp;
         }
@@ -53,7 +53,7 @@ namespace AutoyaFramework.Persistence.CacheHit
             }
         }
 
-        public IEnumerator CacheItems(
+        public IEnumerator CacheHashes(
             string domain,
             string[] items,
             Action onSucceeded,
@@ -268,7 +268,7 @@ namespace AutoyaFramework.Persistence.CacheHit
             yield break;
         }
 
-        public bool HitItem(
+        public bool HitHash(
             string domain,
             string item
         )
@@ -302,12 +302,12 @@ namespace AutoyaFramework.Persistence.CacheHit
             return false;
         }
 
-        public void ClearCacheHit()
+        public void ClearOnMemoryHashCache()
         {
             onMemoryHeadCountCache.Clear();
         }
 
-        public int CacheReference(string domain, Char index)
+        public int HashCountByDomain(string domain, Char index)
         {
             if (onMemoryHeadCountCache.ContainsKey(domain))
             {

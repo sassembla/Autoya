@@ -45,7 +45,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
         True(!result, "should not be exist.");
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e l l o w o r l d".Split(' '),
             () =>
@@ -73,7 +73,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
         yield return Cache();
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e o w o r d".Split(' '),// l removed.
             () =>
@@ -104,7 +104,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return Cache();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "h");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "h");
 
         True(hit);
         yield break;
@@ -119,7 +119,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return Cache();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "x");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "x");
 
         False(hit);
         yield break;
@@ -134,9 +134,9 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return Cache();
 
-        Autoya.Persist_ClearCacheHit();
+        Autoya.Persist_ClearOnMemoryHashCache();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "h");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "h");
 
         True(hit);
         yield break;
@@ -147,9 +147,9 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return Cache();
 
-        Autoya.Persist_ClearCacheHit();
+        Autoya.Persist_ClearOnMemoryHashCache();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "x");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "x");
 
         False(hit);
         yield break;
@@ -174,7 +174,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
         True(!result, "should not be exist.");
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e ll l oo w o r l d".Split(' '),// l and ll, o and oo.
             () =>
@@ -202,7 +202,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
         yield return CacheMultipleSameInitial();
 
         var done = false;
-        Autoya.Persist_CacheItems(
+        Autoya.Persist_CacheHashes(
             AutoyaFilePersistTestsFileDomain,
             "h e o w o r d".Split(' '),// l removed.
             () =>
@@ -233,7 +233,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return CacheMultipleSameInitial();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "h");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "h");
 
         True(hit);
         yield break;
@@ -248,7 +248,7 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return CacheMultipleSameInitial();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "x");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "x");
 
         False(hit);
         yield break;
@@ -263,9 +263,9 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return CacheMultipleSameInitial();
 
-        Autoya.Persist_ClearCacheHit();
+        Autoya.Persist_ClearOnMemoryHashCache();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "h");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "h");
 
         True(hit);
         yield break;
@@ -276,9 +276,9 @@ public class CacheHitImplementationTest : MiyamasuTestRunner
     {
         yield return CacheMultipleSameInitial();
 
-        Autoya.Persist_ClearCacheHit();
+        Autoya.Persist_ClearOnMemoryHashCache();
 
-        var hit = Autoya.Persist_HitItem(AutoyaFilePersistTestsFileDomain, "x");
+        var hit = Autoya.Persist_HitHash(AutoyaFilePersistTestsFileDomain, "x");
 
         False(hit);
         yield break;
