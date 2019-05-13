@@ -526,10 +526,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
         };
 
         router = new PurchaseRouter(
-           iEnum =>
-           {
-               runner.StartCoroutine(iEnum);
-           },
+           iEnum => runner.StartCoroutine(iEnum),
            productData =>
            {
                // dummy response.
@@ -551,17 +548,24 @@ public class PurchaseRouterTests : MiyamasuTestRunner
            DummyResponsehandlingDelegate
        );
 
-        yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
+        yield return WaitUntil(
+            () => router.IsPurchaseReady(),
+            () =>
+            {
+                throw new TimeoutException("failed to ready.");
+            }
+        );
 
         var purchaseId = "dummy purchase Id";
         var productId = "100_gold_coins";
 
+        var done = false;
         var cor = router.PurchaseAsync(
             purchaseId,
             productId,
             pId =>
             {
-                // do nothing.
+                done = true;
             },
             (pId, err, code, reason) =>
             {
@@ -569,7 +573,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             }
         );
 
-        while (cor.MoveNext())
+        while (done)
         {
             yield return null;
         }
