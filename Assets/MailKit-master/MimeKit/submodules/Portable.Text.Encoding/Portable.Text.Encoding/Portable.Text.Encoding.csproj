@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EEE48C75-11BE-4B50-B759-F85B5052D473}</ProjectGuid>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Portable.Text</RootNamespace>
+    <AssemblyName>Portable.Text.Encoding</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\Profile7</OutputPath>
+    <IntermediateOutputPath>obj\Debug\Profile7</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\Profile7</OutputPath>
+    <IntermediateOutputPath>obj\Release\Profile7</IntermediateOutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>portable.text.encoding.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Common\ByteEncoding.cs" />
+    <Compile Include="Common\MonoEncoding.cs" />
+    <Compile Include="Common\MonoSafeEncoding.cs" />
+    <Compile Include="CJK\CP51932.cs" />
+    <Compile Include="CJK\CP932.cs" />
+    <Compile Include="CJK\CP936.cs" />
+    <Compile Include="CJK\CP949.cs" />
+    <Compile Include="CJK\CP950.cs" />
+    <Compile Include="CJK\CodeTable.cs" />
+    <Compile Include="CJK\DbcsConvert.cs" />
+    <Compile Include="CJK\DbcsEncoding.cs" />
+    <Compile Include="CJK\GB18030Encoding.cs" />
+    <Compile Include="CJK\GB18030Source.cs" />
+    <Compile Include="CJK\ISO2022JP.cs" />
+    <Compile Include="CJK\JISConvert.cs" />
+    <Compile Include="MidEast\CP1254.cs" />
+    <Compile Include="MidEast\CP1255.cs" />
+    <Compile Include="MidEast\CP1256.cs" />
+    <Compile Include="MidEast\CP28596.cs" />
+    <Compile Include="MidEast\CP28598.cs" />
+    <Compile Include="MidEast\CP28599.cs" />
+    <Compile Include="MidEast\CP38598.cs" />
+    <Compile Include="Other\CP1251.cs" />
+    <Compile Include="Other\CP1257.cs" />
+    <Compile Include="Other\CP1258.cs" />
+    <Compile Include="Other\CP20866.cs" />
+    <Compile Include="Other\CP21866.cs" />
+    <Compile Include="Other\CP28594.cs" />
+    <Compile Include="Other\CP28595.cs" />
+    <Compile Include="Other\CP57002.cs" />
+    <Compile Include="Other\CP874.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rare\CP1026.cs" />
+    <Compile Include="Rare\CP1047.cs" />
+    <Compile Include="Rare\CP1140.cs" />
+    <Compile Include="Rare\CP1141.cs" />
+    <Compile Include="Rare\CP1142.cs" />
+    <Compile Include="Rare\CP1143.cs" />
+    <Compile Include="Rare\CP1144.cs" />
+    <Compile Include="Rare\CP1145.cs" />
+    <Compile Include="Rare\CP1146.cs" />
+    <Compile Include="Rare\CP1147.cs" />
+    <Compile Include="Rare\CP1148.cs" />
+    <Compile Include="Rare\CP1149.cs" />
+    <Compile Include="Rare\CP20273.cs" />
+    <Compile Include="Rare\CP20277.cs" />
+    <Compile Include="Rare\CP20278.cs" />
+    <Compile Include="Rare\CP20280.cs" />
+    <Compile Include="Rare\CP20284.cs" />
+    <Compile Include="Rare\CP20285.cs" />
+    <Compile Include="Rare\CP20290.cs" />
+    <Compile Include="Rare\CP20297.cs" />
+    <Compile Include="Rare\CP20420.cs" />
+    <Compile Include="Rare\CP20424.cs" />
+    <Compile Include="Rare\CP20871.cs" />
+    <Compile Include="Rare\CP21025.cs" />
+    <Compile Include="Rare\CP37.cs" />
+    <Compile Include="Rare\CP500.cs" />
+    <Compile Include="Rare\CP708.cs" />
+    <Compile Include="Rare\CP852.cs" />
+    <Compile Include="Rare\CP855.cs" />
+    <Compile Include="Rare\CP857.cs" />
+    <Compile Include="Rare\CP858.cs" />
+    <Compile Include="Rare\CP862.cs" />
+    <Compile Include="Rare\CP864.cs" />
+    <Compile Include="Rare\CP866.cs" />
+    <Compile Include="Rare\CP869.cs" />
+    <Compile Include="Rare\CP870.cs" />
+    <Compile Include="Rare\CP875.cs" />
+    <Compile Include="Western\CP10000.cs" />
+    <Compile Include="Western\CP10079.cs" />
+    <Compile Include="Western\CP1250.cs" />
+    <Compile Include="Western\CP1252.cs" />
+    <Compile Include="Western\CP1253.cs" />
+    <Compile Include="Western\CP28592.cs" />
+    <Compile Include="Western\CP28593.cs" />
+    <Compile Include="Western\CP28597.cs" />
+    <Compile Include="Western\CP28605.cs" />
+    <Compile Include="Western\CP437.cs" />
+    <Compile Include="Western\CP850.cs" />
+    <Compile Include="Western\CP860.cs" />
+    <Compile Include="Western\CP861.cs" />
+    <Compile Include="Western\CP863.cs" />
+    <Compile Include="Western\CP865.cs" />
+    <Compile Include="ASCIIEncoding.cs" />
+    <Compile Include="Decoder.cs" />
+    <Compile Include="DecoderExceptionFallback.cs" />
+    <Compile Include="DecoderExceptionFallbackBuffer.cs" />
+    <Compile Include="DecoderFallback.cs" />
+    <Compile Include="DecoderFallbackBuffer.cs" />
+    <Compile Include="DecoderFallbackException.cs" />
+    <Compile Include="DecoderReplacementFallback.cs" />
+    <Compile Include="DecoderReplacementFallbackBuffer.cs" />
+    <Compile Include="Encoder.cs" />
+    <Compile Include="EncoderExceptionFallback.cs" />
+    <Compile Include="EncoderExceptionFallbackBuffer.cs" />
+    <Compile Include="EncoderFallback.cs" />
+    <Compile Include="EncoderFallbackBuffer.cs" />
+    <Compile Include="EncoderFallbackException.cs" />
+    <Compile Include="EncoderReplacementFallback.cs" />
+    <Compile Include="EncoderReplacementFallbackBuffer.cs" />
+    <Compile Include="Encoding.cs" />
+    <Compile Include="EncodingInfo.cs" />
+    <Compile Include="Latin1Encoding.cs" />
+    <Compile Include="NormalizationForm.cs" />
+    <Compile Include="UnicodeEncoding.cs" />
+    <Compile Include="UTF7Encoding.cs" />
+    <Compile Include="UTF32Encoding.cs" />
+    <Compile Include="UTF8Encoding.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CJK\big5.table">
+      <LogicalName>big5.table</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CJK\gb18030.table">
+      <LogicalName>gb18030.table</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CJK\gb2312.table">
+      <LogicalName>gb2312.table</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CJK\jis.table">
+      <LogicalName>jis.table</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CJK\ks.table">
+      <LogicalName>ks.table</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <ItemGroup />
+</Project>

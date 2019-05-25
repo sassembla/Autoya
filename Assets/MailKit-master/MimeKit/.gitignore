@@ -1,0 +1,13 @@
+Mono.Data.Sqlite/Documentation
+*project.lock.json
+*.csproj.nuget.cache
+*.csproj.nuget.dgspec.json
+*.userprefs
+*.user
+*.suo
+*~
+test-results
+packages
+obj
+bin
+.vs

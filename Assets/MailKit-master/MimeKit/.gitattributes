@@ -1,0 +1,7 @@
+*.csproj text
+*.nuspec text
+*.sln eol=crlf
+*.txt text
+*.yml text
+*.cs text
+*.md text

@@ -1,0 +1,13 @@
+*.csproj.nuget.cache
+*project.lock.json
+*.userprefs
+*.user
+*.suo
+*~
+test-results
+packages
+obj
+bin
+.vs
+*.tree
+*.zip
