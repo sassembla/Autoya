@@ -98,8 +98,8 @@ public class ValidationTests : MiyamasuTestRunner
         using (var client = new SmtpClient())
         {
             client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-            client.Connect("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
+            // 587 だとエラーが出る。いろいろやり方がありそう。
+            client.Connect("smtp.gmail.com", 465, SecureSocketOptions.Auto);
 
             // client.Authenticate("toru.inoue@kissaki.tv", "kDb-SFT-6nV-keR");
             Debug.Log("ここまで動作する。");
