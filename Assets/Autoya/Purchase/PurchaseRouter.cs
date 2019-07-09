@@ -67,10 +67,12 @@ namespace AutoyaFramework.Purchase
         public struct PurchaseFailed
         {
             public string ticketId;
+            public string transactionId;
             public string reason;
-            public PurchaseFailed(string ticketId, string reason)
+            public PurchaseFailed(string ticketId, string transactionId, string reason)
             {
                 this.ticketId = ticketId;
+                this.transactionId = transactionId;
                 this.reason = reason;
             }
         }
@@ -874,29 +876,34 @@ namespace AutoyaFramework.Purchase
                     }
             }
 
-            /*
-				send failed/cancelled ticketId if possible.
-			*/
-            var purchaseCancelledUrl = PurchaseSettings.PURCHASE_URL_CANCEL;
-            var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, reason));
-            var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
 
             // set failed ticketId to log. this will be used if Paid is occured.
+            var currentTransactionId = string.Empty;
             if (i != null && !string.IsNullOrEmpty(i.transactionID))
             {
                 onMemoryFailedLog[i.transactionID] = callbacks.ticketId;
+                currentTransactionId = i.transactionID;
             }
 
+            /*
+                send failed/cancelled ticketId if possible.
+            */
+            var purchaseCancelledUrl = PurchaseSettings.PURCHASE_URL_CANCEL;
+            var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, currentTransactionId, reason));
+            var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
+            Debug.Log("purchaseCancelledUrl:" + purchaseCancelledUrl);
             var cor = HttpPost(
                 connectionId,
                 purchaseCancelledUrl,
                 dataStr,
                 (conId, responseData) =>
                 {
+                    Debug.Log("responseData:" + responseData);
                     // do nothing.
                 },
                 (conId, code, errorReason) =>
                 {
+                    Debug.Log("errorReason:" + errorReason);
                     // do nothing.
                 }
             );
