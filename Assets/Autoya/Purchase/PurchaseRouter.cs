@@ -891,19 +891,17 @@ namespace AutoyaFramework.Purchase
             var purchaseCancelledUrl = PurchaseSettings.PURCHASE_URL_CANCEL;
             var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, currentTransactionId, reason));
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
-            Debug.Log("purchaseCancelledUrl:" + purchaseCancelledUrl);
+
             var cor = HttpPost(
                 connectionId,
                 purchaseCancelledUrl,
                 dataStr,
                 (conId, responseData) =>
                 {
-                    Debug.Log("responseData:" + responseData);
                     // do nothing.
                 },
                 (conId, code, errorReason) =>
                 {
-                    Debug.Log("errorReason:" + errorReason);
                     // do nothing.
                 }
             );
