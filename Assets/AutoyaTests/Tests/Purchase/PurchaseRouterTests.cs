@@ -501,12 +501,12 @@ public class PurchaseRouterTests : MiyamasuTestRunner
     }
 
     [Serializable]
-    public class SampleTicletJsonData
+    public class SampleTicketJsonData
     {
         [SerializeField] public string productId;
         [SerializeField] public string dateTime;
 
-        public SampleTicletJsonData(string productId, string dateTime)
+        public SampleTicketJsonData(string productId, string dateTime)
         {
             this.productId = productId;
             this.dateTime = dateTime;
@@ -520,7 +520,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
 
         Func<string, string> onTicletRequestFunc = givenProductId =>
         {
-            var data = new SampleTicletJsonData(givenProductId, dateTimeStr);
+            var data = new SampleTicketJsonData(givenProductId, dateTimeStr);
             var jsonStr = JsonUtility.ToJson(data);
             return jsonStr;
         };
