@@ -6,6 +6,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.9] - 2019/07/09
+### Changed
+- added transactionId parameter when Unity IAP is failed or cancelled if possible. this might be help for IAP consumption logic.
 
 ## [0.9.8] - 2019/05/13
 
