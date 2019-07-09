@@ -274,7 +274,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.8...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.9...HEAD
+[0.9.8]: https://github.com/sassembla/autoya/compare/0.9.8...0.9.9
 [0.9.8]: https://github.com/sassembla/autoya/compare/0.9.7...0.9.8
 [0.9.7]: https://github.com/sassembla/autoya/compare/0.9.6...0.9.7
 [0.9.6]: https://github.com/sassembla/autoya/compare/0.9.5...0.9.6
