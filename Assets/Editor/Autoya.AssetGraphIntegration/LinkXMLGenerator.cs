@@ -77,8 +77,8 @@ public class LinkXMLGenerator
                 wholeRuntimeDllPath = Path.Combine(EditorApplication.applicationPath, "Contents/Managed/UnityEngine");
                 break;
             case RuntimePlatform.WindowsEditor:
-                baseRuntimeDllPath = Path.Combine(EditorApplication.applicationPath, "not yet tested");
-                wholeRuntimeDllPath = Path.Combine(EditorApplication.applicationPath, "not yet tested");
+                baseRuntimeDllPath = Path.Combine(Path.GetDirectoryName(EditorApplication.applicationPath), "Data/Managed/UnityEngine.dll");
+                wholeRuntimeDllPath = Path.Combine(Path.GetDirectoryName(EditorApplication.applicationPath), "Data/Managed/UnityEngine");
                 break;
         }
 
