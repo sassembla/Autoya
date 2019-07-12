@@ -39,7 +39,7 @@ namespace UnityEngine.AssetGraph
 
                     baseDirPath = baseDirPath.Substring(index);
 
-                    s_basePath = baseDirPath;
+                    s_basePath = baseDirPath + "/";
                 }
                 return s_basePath;
             }
