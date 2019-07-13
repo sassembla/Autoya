@@ -6,9 +6,19 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.10] - 2019/07/12
+
+### Changed
+- fixed AssetGraph + Windows AssetBundle export bug.
+
+### Feature
+- added Link.xml generate support for Windows.
+
+
 ## [0.9.9] - 2019/07/09
 ### Changed
 - added transactionId parameter when Unity IAP is failed or cancelled if possible. this might be help for IAP consumption logic.
+
 
 ## [0.9.8] - 2019/05/13
 
@@ -274,7 +284,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.9...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.10...HEAD
+[0.9.10]: https://github.com/sassembla/autoya/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/sassembla/autoya/compare/0.9.8...0.9.9
 [0.9.8]: https://github.com/sassembla/autoya/compare/0.9.7...0.9.8
 [0.9.7]: https://github.com/sassembla/autoya/compare/0.9.6...0.9.7
