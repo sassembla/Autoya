@@ -565,5 +565,79 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
             );
         }
     }
+
+    [MTest]
+    public IEnumerator Timeout()
+    {
+        // large picture.
+        var imagePath = "https://upload.wikimedia.org/wikipedia/commons/2/2e/Zhao_Chang_-_Picture_of_the_New_Year_-_Google_Art_Project.jpg";
+        var loadedFailed = false;
+        Autoya.Persist_URLCaching_Load<Sprite>(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath,
+            bytes =>
+            {
+                // return sprite from bytes.
+                var tex = new Texture2D(1, 1);
+                tex.LoadImage(bytes);
+                var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                return newSprite;
+            },
+            cached =>
+            {
+                Fail();
+            },
+            (code, reason) =>
+            {
+                loadedFailed = true;
+            },
+            null,
+            1
+        );
+
+        yield return WaitUntil(
+            () => loadedFailed,
+            () => { throw new TimeoutException("timeout."); },
+            1000
+        );
+    }
+
+    [MTest]
+    public IEnumerator TimeoutWithKey()
+    {
+        // large picture.
+        var imagePath = "https://upload.wikimedia.org/wikipedia/commons/2/2e/Zhao_Chang_-_Picture_of_the_New_Year_-_Google_Art_Project.jpg";
+        var key = "myKey?a=b";
+        var loadedFailed = false;
+        Autoya.Persist_URLCaching_Load<Sprite>(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath,
+            key,
+            bytes =>
+            {
+                // return sprite from bytes.
+                var tex = new Texture2D(1, 1);
+                tex.LoadImage(bytes);
+                var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                return newSprite;
+            },
+            cached =>
+            {
+                Fail();
+            },
+            (code, reason) =>
+            {
+                loadedFailed = true;
+            },
+            null,
+            1
+        );
+
+        yield return WaitUntil(
+            () => loadedFailed,
+            () => { throw new TimeoutException("timeout."); },
+            1000
+        );
+    }
 }
 

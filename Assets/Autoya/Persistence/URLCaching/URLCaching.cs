@@ -79,13 +79,13 @@ namespace AutoyaFramework.Persistence.URLCaching
         /**
             T型と、保存してあるファイルのdomain、ファイルのDL元url、urlの差分更新のためのハッシュ値、byte列からT型を生成する式を渡すと、T型を返してくる。
          */
-        public IEnumerator LoadFromURLAs<T>(string storePath, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
+        public IEnumerator LoadFromURLAs<T>(string storePath, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
             var urlBase = new Uri(url);
             var urlWithoutHash = urlBase.Authority + urlBase.LocalPath;
             var hash = Convert.ToBase64String(Encoding.UTF8.GetBytes(urlBase.Query));
 
-            var cor = Load<T>(url, urlWithoutHash, hash, storePath, bytesToTConverter, onLoaded, onLoadFailed, requestHeader);
+            var cor = Load<T>(url, urlWithoutHash, hash, storePath, bytesToTConverter, onLoaded, onLoadFailed, requestHeader, timeout);
 
             while (cor.MoveNext())
             {
@@ -93,7 +93,7 @@ namespace AutoyaFramework.Persistence.URLCaching
             }
         }
 
-        public IEnumerator LoadFromURLAs<T>(string storePath, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
+        public IEnumerator LoadFromURLAs<T>(string storePath, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
             // urlでない場合、urlとして扱うためのパラメータを足す。
             if (!key.StartsWith("https://"))
@@ -106,7 +106,7 @@ namespace AutoyaFramework.Persistence.URLCaching
             var keyWithoutHash = keyBase.Authority + keyBase.LocalPath;
             var hash = Convert.ToBase64String(Encoding.UTF8.GetBytes(keyBase.Query));
 
-            var cor = Load<T>(url, keyWithoutHash, hash, storePath, bytesToTConverter, onLoaded, onLoadFailed, requestHeader);
+            var cor = Load<T>(url, keyWithoutHash, hash, storePath, bytesToTConverter, onLoaded, onLoadFailed, requestHeader, timeout);
 
             while (cor.MoveNext())
             {
@@ -114,7 +114,7 @@ namespace AutoyaFramework.Persistence.URLCaching
             }
         }
 
-        private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null) where T : UnityEngine.Object
+        private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
 
             // ファイルパス、ファイル名を生成する
@@ -229,7 +229,7 @@ namespace AutoyaFramework.Persistence.URLCaching
                 handler.removeFileOnAbort = true;
                 request.downloadHandler = handler;
 
-                request.timeout = 5;
+                request.timeout = (int)timeout;
 
                 var p = request.SendWebRequest();
 
