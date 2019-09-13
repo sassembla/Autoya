@@ -2,6 +2,7 @@ using AutoyaFramework.Encrypt.AES256;
 using AutoyaFramework.Encrypt.RIPEMD;
 using AutoyaFramework.Encrypt.SHA_2;
 using Miyamasu;
+using System.Linq;
 
 public class EncryptTests : MiyamasuTestRunner
 {
@@ -41,6 +42,28 @@ public class EncryptTests : MiyamasuTestRunner
         var len2 = decryptedStr.Length;
 
         True(sample.Length == decryptedStr.Length, "not match, dec:" + decryptedStr + " len1:" + len1 + " len2:" + len2);
+    }
+
+    [MTest]
+    public void AESEncryptBytes()
+    {
+        var sampleBytes = new byte[1024];
+        var rnd = new System.Random();
+        rnd.NextBytes(sampleBytes);
+
+        string key = "z,mv--342krnsdrfJDSf33dq2423nsda";
+        string iv = "12325346457462343654867843523421";
+
+        var aes = new AES256(key, iv);
+
+        var encryptedBytes = aes.Encrypt(sampleBytes);
+        var decryptedBytes = aes.Decrypt(encryptedBytes);
+
+        var bytesLen1 = sampleBytes.Length;
+        var bytesLen2 = decryptedBytes.Length;
+
+        True(sampleBytes.Length == decryptedBytes.Length, "not match," + " bytesLen1:" + bytesLen1 + " bytesLen2:" + bytesLen2);
+        True(sampleBytes.SequenceEqual(decryptedBytes),"not match");
     }
 
     [MTest]
