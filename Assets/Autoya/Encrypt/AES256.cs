@@ -59,5 +59,33 @@ namespace AutoyaFramework.Encrypt.AES256
                 return utf8Enc.GetString(decrypted);
             }
         }
+
+        public byte[] Encrypt(byte[] baseBytes)
+        {
+            using (var encryptor = rijndael.CreateEncryptor(keyBytes, IVBytes))
+            using (var ms = new MemoryStream())
+            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            {
+                cs.Write(baseBytes, 0, baseBytes.Length);
+                cs.FlushFinalBlock();
+                return ms.ToArray();
+            }
+        }
+
+        public byte[] Decrypt(byte[] baseBytes)
+        {
+            using (var decryptor = rijndael.CreateDecryptor(keyBytes, IVBytes))
+            using (var ms = new MemoryStream(baseBytes))
+            using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+            {
+                var decryptedBuffer = new byte[baseBytes.Length];
+                var len = cs.Read(decryptedBuffer, 0, baseBytes.Length);
+
+                var decrypted = new byte[len];
+                Buffer.BlockCopy(decryptedBuffer, 0, decrypted, 0, len);
+
+                return decrypted;
+            }
+        }
     }
 }
