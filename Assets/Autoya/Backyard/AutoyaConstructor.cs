@@ -62,13 +62,13 @@ namespace AutoyaFramework
             _notification = new Notifications(AutoyaMainthreadDispatcher.AddNativeObserver);
             _autoyaHttp = new HTTPConnection();
 
+            InitializeAppManifest();
+
             mainthreadDispatcher.Commit(
                 OnBootApplication(),
                 IsFirstBoot(
                     isFirstBoot =>
                     {
-                        InitializeAppManifest();
-
                         InitializeAssetBundleFeature();
 
                         /*

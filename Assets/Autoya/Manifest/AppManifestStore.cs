@@ -45,7 +45,12 @@ namespace AutoyaFramework.AppManifest
         }
     }
 
-    public class AppManifestStore<RuntimeManifestType, BuildManifestType> where RuntimeManifestType : new() where BuildManifestType : new()
+    public interface IRuntimeManifestBase
+    {
+        IRuntimeManifestBase Compare(IRuntimeManifestBase stored);
+    }
+
+    public class AppManifestStore<RuntimeManifestType, BuildManifestType> where RuntimeManifestType : IRuntimeManifestBase, new() where BuildManifestType : new()
     {
 
         private RuntimeManifest<RuntimeManifestType> runtimeManifest;
@@ -79,7 +84,10 @@ namespace AutoyaFramework.AppManifest
                 }
                 else
                 {
-                    runtimeManifestObj = JsonUtility.FromJson<RuntimeManifestType>(runtimeManifestObjStr);
+                    // get persisted and compare to coded one.
+                    var persistedRuntimeManifestObj = JsonUtility.FromJson<RuntimeManifestType>(runtimeManifestObjStr);
+                    var codedRuntimeManifestObj = new RuntimeManifestType();
+                    runtimeManifestObj = (RuntimeManifestType)codedRuntimeManifestObj.Compare(persistedRuntimeManifestObj);
                 }
             }
 

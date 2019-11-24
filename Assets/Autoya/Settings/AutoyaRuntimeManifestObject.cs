@@ -16,7 +16,7 @@ namespace AutoyaFramework.AppManifest
         独自型を置く場合、ToString()をつけると、Autoya.Manifest_GetAppManifest()メソッドでSerializeされた情報を表示できる。
     */
     [Serializable]
-    public class RuntimeManifestObject
+    public class RuntimeManifestObject : IRuntimeManifestBase
     {
         [SerializeField]
         public AssetBundleListInfo[] resourceInfos;
@@ -43,6 +43,38 @@ namespace AutoyaFramework.AppManifest
                    listDownloadUrl = "https://raw.githubusercontent.com/sassembla/Autoya/master/AssetBundles"
                }
            };
+        }
+
+        public IRuntimeManifestBase Compare(IRuntimeManifestBase stored)
+        {
+            var storedRuntimeManifest = ((RuntimeManifestObject)stored);
+
+            var storedKeys = storedRuntimeManifest.resourceInfos.Select(info => info.listIdentity).ToList();
+            var codedKeys = this.resourceInfos.Select(info => info.listIdentity).ToList();
+
+            // collect which is not contained in stored and contained in coded.
+            var storedKeyShouldContainIdentities = codedKeys.Except(storedKeys);
+
+            // collect which is not contained in coded and contained in stored.
+            var storedKeyShouldNotContainIdentities = storedKeys.Except(codedKeys);
+
+            if (0 < storedKeyShouldContainIdentities.Count() || 0 < storedKeyShouldNotContainIdentities.Count())
+            {
+                var currentStoredInfos = storedRuntimeManifest.resourceInfos.ToList();
+
+                // defferent identity exists between coded and stored data. coded has it but stored does not.
+                var shouldContainResourceInfoRange = this.resourceInfos.Where(info => storedKeyShouldContainIdentities.Contains(info.listIdentity));
+                currentStoredInfos.AddRange(shouldContainResourceInfoRange);
+
+                // defferent identity exists between coded and stored data. stored has it but coded does not. must be deleted.
+                currentStoredInfos.RemoveAll(info => storedKeyShouldNotContainIdentities.Contains(info.listIdentity));
+
+                var result = new RuntimeManifestObject();
+                result.resourceInfos = currentStoredInfos.ToArray();
+                return result;
+            }
+
+            return stored;
         }
 
         public override string ToString()

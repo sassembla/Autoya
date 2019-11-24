@@ -893,20 +893,21 @@ namespace AutoyaFramework
 
                         // compare with runtimeManifest data.
                         var listIdentities = LoadAppUsingAssetBundleListIdentities();
-                        foreach (var listIdentity in listIdentities)
+
+                        if (listIdentities.Contains(identity))
                         {
-                            if (listIdentity == identity)
+                            // request new version.
+                            var answer = OnRequestNewAssetBundleList(identity, newVersion);
+                            if (answer.doOrNot)
                             {
-                                // request new version.
-                                var answer = OnRequestNewAssetBundleList(listIdentity, newVersion);
-                                if (answer.doOrNot)
-                                {
-                                    // start download new list.
-                                    var listUrl = answer.url;
-                                    urls.Add(listUrl);
-                                }
-                                break;
+                                // start download new list.
+                                var listUrl = answer.url;
+                                urls.Add(listUrl);
                             }
+                        }
+                        else
+                        {
+                            Debug.LogError("含まれてないリストがきてるのでエラー");
                         }
                     }
 
