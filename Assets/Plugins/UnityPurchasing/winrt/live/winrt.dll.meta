@@ -1,57 +1,94 @@
 fileFormatVersion: 2
 guid: b0a27fa03f86162498ca6160b67f8211
-timeCreated: 1438229491
-licenseType: Free
 PluginImporter:
-  serializedVersion: 1
+  externalObjects: {}
+  serializedVersion: 2
   iconMap: {}
   executionOrder: {}
+  defineConstraints: []
   isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
   platformData:
-    Android:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    Any:
-      enabled: 0
-      settings: {}
-    Editor:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-        DefaultValueInitialized: true
-        OS: AnyOS
-    Linux:
+  - first:
+      '': Linux
+    second:
       enabled: 0
       settings:
         CPU: x86
-    Linux64:
-      enabled: 0
-      settings:
-        CPU: x86_64
-    OSXIntel:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    OSXIntel64:
+  - first:
+      '': OSXIntel
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    WP8:
+  - first:
+      '': OSXIntel64
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      '': WP8
+    second:
       enabled: 1
       settings:
         CPU: AnyCPU
         DontProcess: False
         PlaceholderPath: 
-    Win:
+  - first:
+      Android: Android
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    Win64:
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    WindowsStoreApps:
+        DefaultValueInitialized: true
+        OS: AnyOS
+  - first:
+      Facebook: Win
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Facebook: Win64
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: Linux64
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: Win
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: Win64
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
       enabled: 1
       settings:
         CPU: AnyCPU
@@ -59,7 +96,9 @@ PluginImporter:
         PlaceholderPath: Assets/Plugins/UnityPurchasing/winrt/winrt.dll
         SDK: AnySDK
         ScriptingBackend: AnyScriptingBackend
-    iOS:
+  - first:
+      iPhone: iOS
+    second:
       enabled: 0
       settings:
         CompileFlags: 

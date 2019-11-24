@@ -1,79 +1,135 @@
 fileFormatVersion: 2
 guid: beaa20fa6c7d74f4b827965ed821c78b
-timeCreated: 1472513313
-licenseType: Pro
 PluginImporter:
-  serializedVersion: 1
+  externalObjects: {}
+  serializedVersion: 2
   iconMap: {}
   executionOrder: {}
+  defineConstraints: []
   isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
   platformData:
-    Android:
+  - first:
+      '': Linux
+    second:
+      enabled: 0
+      settings:
+        CPU: x86
+  - first:
+      '': LinuxUniversal
+    second:
+      enabled: 0
+      settings:
+        CPU: None
+  - first:
+      '': OSXIntel
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    Any:
+  - first:
+      '': OSXIntel64
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      '': SamsungTV
+    second:
+      enabled: 0
+      settings:
+        STV_MODEL: STANDARD_13
+  - first:
+      '': Tizen
+    second:
+      enabled: 1
+      settings: {}
+  - first:
+      '': Web
+    second:
       enabled: 0
       settings: {}
-    Editor:
+  - first:
+      '': WebStreamed
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Android: Android
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
         DefaultValueInitialized: true
         OS: AnyOS
-    Linux:
+  - first:
+      Facebook: WebGL
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Facebook: Win
+    second:
       enabled: 0
       settings:
-        CPU: x86
-    Linux64:
+        CPU: AnyCPU
+  - first:
+      Facebook: Win64
+    second:
       enabled: 0
       settings:
-        CPU: x86_64
-    LinuxUniversal:
+        CPU: AnyCPU
+  - first:
+      Standalone: Linux64
+    second:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: OSXUniversal
+    second:
       enabled: 0
       settings:
         CPU: None
-    OSXIntel:
+  - first:
+      Standalone: Win
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    OSXIntel64:
+  - first:
+      Standalone: Win64
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    OSXUniversal:
-      enabled: 0
-      settings:
-        CPU: None
-    SamsungTV:
-      enabled: 0
-      settings:
-        STV_MODEL: STANDARD_13
-    Tizen:
-      enabled: 1
-      settings: {}
-    Web:
+  - first:
+      WebGL: WebGL
+    second:
       enabled: 0
       settings: {}
-    WebGL:
-      enabled: 0
-      settings: {}
-    WebStreamed:
-      enabled: 0
-      settings: {}
-    Win:
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    Win64:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    WindowsStoreApps:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    iOS:
+  - first:
+      iPhone: iOS
+    second:
       enabled: 0
       settings:
         CompileFlags: 

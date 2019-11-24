@@ -1,94 +1,157 @@
 fileFormatVersion: 2
 guid: c70e72c27561c0a46bce5532e233e3cd
-timeCreated: 1438229493
-licenseType: Free
 PluginImporter:
-  serializedVersion: 1
+  externalObjects: {}
+  serializedVersion: 2
   iconMap: {}
   executionOrder: {}
+  defineConstraints: []
   isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
   platformData:
-    Android:
-      enabled: 1
-      settings:
-        CPU: AnyCPU
-    Any:
-      enabled: 0
-      settings: {}
-    BlackBerry:
+  - first:
+      '': BlackBerry
+    second:
       enabled: 1
       settings: {}
-    Editor:
-      enabled: 1
-      settings:
-        CPU: AnyCPU
-        DefaultValueInitialized: true
-        OS: AnyOS
-    Linux:
+  - first:
+      '': Linux
+    second:
       enabled: 1
       settings:
         CPU: x86
-    Linux64:
-      enabled: 1
-      settings:
-        CPU: x86_64
-    LinuxUniversal:
+  - first:
+      '': LinuxUniversal
+    second:
       enabled: 1
       settings: {}
-    OSXIntel:
+  - first:
+      '': OSXIntel
+    second:
       enabled: 1
       settings:
         CPU: AnyCPU
-    OSXIntel64:
+  - first:
+      '': OSXIntel64
+    second:
       enabled: 1
       settings:
         CPU: AnyCPU
-    OSXUniversal:
-      enabled: 1
-      settings: {}
-    SamsungTV:
+  - first:
+      '': SamsungTV
+    second:
       enabled: 1
       settings:
         STV_MODEL: STANDARD_13
-    Tizen:
+  - first:
+      '': Tizen
+    second:
       enabled: 1
       settings: {}
-    WP8:
+  - first:
+      '': WP8
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
         DontProcess: False
         PlaceholderPath: 
-    Web:
+  - first:
+      '': Web
+    second:
       enabled: 1
       settings: {}
-    WebGL:
+  - first:
+      '': WebStreamed
+    second:
       enabled: 1
       settings: {}
-    WebStreamed:
-      enabled: 1
-      settings: {}
-    Win:
+  - first:
+      Android: Android
+    second:
       enabled: 1
       settings:
         CPU: AnyCPU
-    Win64:
+  - first:
+      Any: 
+    second:
+      enabled: 0
+      settings: {}
+  - first:
+      Editor: Editor
+    second:
       enabled: 1
       settings:
         CPU: AnyCPU
-    WindowsStoreApps:
+        DefaultValueInitialized: true
+        OS: AnyOS
+  - first:
+      Facebook: WebGL
+    second:
+      enabled: 1
+      settings: {}
+  - first:
+      Facebook: Win
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      Facebook: Win64
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: Linux64
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: OSXUniversal
+    second:
+      enabled: 1
+      settings:
+        CPU: 
+  - first:
+      Standalone: Win
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      Standalone: Win64
+    second:
+      enabled: 1
+      settings:
+        CPU: AnyCPU
+  - first:
+      WebGL: WebGL
+    second:
+      enabled: 1
+      settings: {}
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
         DontProcess: False
         PlaceholderPath: 
         SDK: AnySDK
-    iOS:
+  - first:
+      iPhone: iOS
+    second:
       enabled: 1
       settings:
         CompileFlags: 
         FrameworkDependencies: 
-    tvOS:
+  - first:
+      tvOS: tvOS
+    second:
       enabled: 1
       settings: {}
   userData: 
