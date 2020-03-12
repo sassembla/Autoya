@@ -1,0 +1,464 @@
+fileFormatVersion: 2
+guid: c0f202c2c9f734366b196745d9f67be3
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8591429104403205399
+    second: LoginUISpritesheet_0
+  - first:
+      213: 3817388887242705114
+    second: LoginUISpritesheet_1
+  - first:
+      213: -2204935619836809584
+    second: LoginUISpritesheet_2
+  - first:
+      213: -7705592629937583598
+    second: LoginUISpritesheet_3
+  - first:
+      213: -387962990239944508
+    second: LoginUISpritesheet_4
+  - first:
+      213: 7140436924912566949
+    second: LoginUISpritesheet_5
+  - first:
+      213: 2710246890353932502
+    second: LoginUISpritesheet_6
+  - first:
+      213: 3061078513286218413
+    second: LoginUISpritesheet_7
+  - first:
+      213: -878074506993162660
+    second: LoginUISpritesheet_8
+  - first:
+      213: 6212664666209643757
+    second: LoginUISpritesheet_9
+  - first:
+      213: 5392111293704056245
+    second: LoginUISpritesheet_10
+  - first:
+      213: 6645486004027853007
+    second: LoginUISpritesheet_11
+  - first:
+      213: 2607644821567609229
+    second: LoginUISpritesheet_12
+  - first:
+      213: 6884595622737266239
+    second: LoginUISpritesheet_13
+  externalObjects: {}
+  serializedVersion: 10
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: -1
+    aniso: -1
+    mipBias: -100
+    wrapU: 1
+    wrapV: 1
+    wrapW: -1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: LoginUISpritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 603
+        width: 335
+        height: 44
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 28c8e60706b834530b5bcd650ecd9b99
+      internalID: 8591429104403205399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 539
+        width: 335
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 857399a18cd6a430b828e8074866c17d
+      internalID: 3817388887242705114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 475
+        width: 335
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb14447d6f7fa46978040b827348da0f
+      internalID: -2204935619836809584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 410
+        width: 337
+        height: 46
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c11b05135ee74ce5b84c0bf966fd842
+      internalID: -7705592629937583598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 347
+        width: 335
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a9a987096b6e34630811b46254303d71
+      internalID: -387962990239944508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 283
+        width: 335
+        height: 44
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 8, y: 8, z: 8, w: 8}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47e91e7d0abb343eb985e7dbda6c404f
+      internalID: 7140436924912566949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 401
+        y: 585
+        width: 62
+        height: 62
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a1b5d581755314b03b8f0f61fafcf379
+      internalID: 2710246890353932502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 393
+        y: 548
+        width: 77
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3358b5657f4aa4faa8e5b4d2e5190ed3
+      internalID: 3061078513286218413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 511
+        y: 624
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 23109e0a257fc49638d5cabbf41c4be7
+      internalID: -878074506993162660
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 559
+        y: 624
+        width: 56
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8aea3633f7fc3496fb6eff07b3e927a5
+      internalID: 6212664666209643757
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 779
+        y: 623
+        width: 179
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c94cc91349bf742c2b6f900ad2e244d8
+      internalID: 5392111293704056245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 793
+        y: 553
+        width: 151
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a0eefdb3b170412e9d7508985976d92
+      internalID: 6645486004027853007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 777
+        y: 511
+        width: 186
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9056b22c41dd42b184af1f21a35e60c
+      internalID: 2607644821567609229
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LoginUISpritesheet_13
+      rect:
+        serializedVersion: 2
+        x: 803
+        y: 450
+        width: 133
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e807cdc2ad734e8181071601d2f89bb
+      internalID: 6884595622737266239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

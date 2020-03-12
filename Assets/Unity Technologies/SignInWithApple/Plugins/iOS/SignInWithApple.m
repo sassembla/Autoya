@@ -2,10 +2,6 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import "UnityAppController.h"
 
-/*
-    iOSだけをサポートしたい。
-    TVOSは明示的にサポートしたくない。
-*/
 struct UserInfo
 {
     const char * userId;
@@ -18,8 +14,7 @@ struct UserInfo
     ASUserDetectionStatus userDetectionStatus;
 };
 
-
-
+typedef void (*IsSIWAEnabledCallback)(int result);
 
 typedef void (*SignInWithAppleCallback)(int result, struct UserInfo s1);
 
@@ -27,28 +22,30 @@ API_AVAILABLE(ios(13.0), tvos(13.0))
 typedef void (*CredentialStateCallback)(ASAuthorizationAppleIDProviderCredentialState state);
 
 API_AVAILABLE(ios(13.0), tvos(13.0))
-@interface UnitySignInWithApple : NSObject<ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding>
+@interface SIWAObject : NSObject<ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding>
 
-@property (nonatomic) SignInWithAppleCallback loginCallback;
+@property (nonatomic) SignInWithAppleCallback signupCallback;
 @property (nonatomic) CredentialStateCallback credentialStateCallback;
 
 @end
 
 API_AVAILABLE(ios(13.0), tvos(13.0))
-static UnitySignInWithApple* _unitySignInWithAppleInstance;
+static SIWAObject* _sIWAObj;
 
-@implementation UnitySignInWithApple
+@implementation SIWAObject
 {
     ASAuthorizationAppleIDRequest* request;
 }
 
-+(UnitySignInWithApple*)instance
++(SIWAObject*)instance
 {
-    if (_unitySignInWithAppleInstance == nil) {
-        _unitySignInWithAppleInstance = [[UnitySignInWithApple alloc] init];
+    if (_sIWAObj == nil) {
+        _sIWAObj = [[SIWAObject alloc] init];
     }
-    return _unitySignInWithAppleInstance;
+    return _sIWAObj;
 }
+
+
 
 -(void)startRequest
 {
@@ -75,14 +72,20 @@ static UnitySignInWithApple* _unitySignInWithAppleInstance;
     }];
 }
 
+
+
+// delegates.
+
+// delegate for presentation anchor.
 -(ASPresentationAnchor)presentationAnchorForAuthorizationController:(ASAuthorizationController *)controller
 {
     return _UnityAppController.window;
 }
 
+// delegate for authorizationController completed.
 -(void)authorizationController:(ASAuthorizationController *)controller didCompleteWithAuthorization:(ASAuthorization *)authorization
 {
-    if (self.loginCallback)
+    if (self.signupCallback)
     {
         struct UserInfo data;
 
@@ -100,16 +103,17 @@ static UnitySignInWithApple* _unitySignInWithAppleInstance;
             data.userId = [credential.user UTF8String];
             data.userDetectionStatus = credential.realUserStatus;
             data.error = "";
-            self.loginCallback(1, data);
+            self.signupCallback(1, data);
         } else {
             // Fallback on earlier versions
         }
     }
 }
 
+// delegate for authorizationController completed with error.
 -(void)authorizationController:(ASAuthorizationController *)controller didCompleteWithError:(NSError *)error
 {
-    if (self.loginCallback)
+    if (self.signupCallback)
     {
         // All members need to be set to a non-null value.
         struct UserInfo data;
@@ -117,33 +121,44 @@ static UnitySignInWithApple* _unitySignInWithAppleInstance;
         data.displayName = "";
         data.email = "";
         data.userId = "";
-        data.userDetectionStatus = 1;
+        data.userDetectionStatus = ASUserDetectionStatusUnknown;
         data.error = [error.localizedDescription UTF8String];
-        self.loginCallback(0, data);
+        self.signupCallback(0, data);
     }
 }
 
 @end
+// SIWAObject
 
-void UnitySignInWithApple_Login(SignInWithAppleCallback callback)
-{
+
+
+// externed functions.
+
+void SignInWithApple_CheckIsSIWAEnabled(IsSIWAEnabledCallback callback) {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
-        UnitySignInWithApple* login = [UnitySignInWithApple instance];
-        login.loginCallback = callback;
-        [login startRequest];
+        callback(1);
     } else {
-        // Fallback on earlier versions
+        callback(0);
+    }
+}
+
+void SignInWithApple_Signup(SignInWithAppleCallback callback) {
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        SIWAObject* siwa = [SIWAObject instance];
+        siwa.signupCallback = callback;
+        [siwa startRequest];
+    } else {
+        // do nothing.
     }
 }
 
 API_AVAILABLE(ios(13.0), tvos(13.0))
-void UnitySignInWithApple_GetCredentialState(const char *userID, CredentialStateCallback callback)
-{
+void SignInWithApple_GetCredentialState(const char *userID, CredentialStateCallback callback) {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
-        UnitySignInWithApple* login = [UnitySignInWithApple instance];
-        login.credentialStateCallback = callback;
-        [login getCredentialState: [NSString stringWithUTF8String: userID]];
+        SIWAObject* siwa = [SIWAObject instance];
+        siwa.credentialStateCallback = callback;
+        [siwa getCredentialState: [NSString stringWithUTF8String: userID]];
     } else {
-        // Fallback on earlier versions
+        // do nothing.
     }
 }

@@ -1,15 +1,23 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using AOT;
 using UnityEngine;
-using UnityEngine.Events;
+
+
+
+public enum CredentialState
+{
+    CredentialRevoked,
+    CredentialAuthorized,
+    CredentialNotFound,
+    CredentialTransferred,
+}
+
+
 
 /*
-    このクラスもUnity社製、なのでサンプルと見ていい。
-    いっぺん動かしてから階層を消してみよう。
+    ユーザー状態
 */
-
 public enum UserDetectionStatus
 {
     LikelyReal,
@@ -17,13 +25,9 @@ public enum UserDetectionStatus
     Unsupported
 }
 
-public enum UserCredentialState
-{
-    Revoked,
-    Authorized,
-    NotFound
-}
-
+/*
+    ユーザー情報
+*/
 [Serializable]
 public struct UserInfo
 {
@@ -37,47 +41,84 @@ public struct UserInfo
     [SerializeField] public UserDetectionStatus userDetectionStatus;
 }
 
-[Serializable]
-public class SignInWithAppleEvent : UnityEvent<SignInWithApple.CallbackArgs> { }
+
+
+
+
+
+
 
 [Serializable]
 public class SignInWithApple
 {
+    /*
+        コールバック型
+    */
     [Serializable]
     public struct CallbackArgs
     {
-        /// <summary>
-        /// The state of the user's authorization.
-        /// </summary>
-        [SerializeField] public UserCredentialState credentialState;
+        [SerializeField] public bool isSIWAEnabled;
 
-        /// <summary>
-        /// The logged in user info after the call is done.
-        /// </summary>
+        [SerializeField] public CredentialState credentialState;
+
         [SerializeField] public UserInfo userInfo;
+    }
 
-        /// <summary>
-        /// Whether the call ends up with an error.
-        /// </summary>
-        [SerializeField] public string error;
+    private enum State
+    {
+        None,
+        IsSIWAEnabledProcessing,
+        SignUpProcessing,
+        GettingCredential,
+    }
+
+    private static State state = State.None;
+
+    /*
+        コールバックのインスタンス
+    */
+    private static Callback isSIWAEnabledCompletedCallback;
+    private static Callback signupCompletedCallback;
+    private static Callback credentialStateCallback;
+
+
+
+    /*
+        ネイティブ側から呼ばれるdelegate定義
+    */
+    public delegate void Callback(CallbackArgs args);
+
+
+    private delegate void IsSIWAEnabledCompleted(int result);
+
+    /*
+        isSIWAEnabled完了時にネイティブ側から呼ばれる関数
+    */
+    [MonoPInvokeCallback(typeof(IsSIWAEnabledCompleted))]
+    private static void IsSIWAEnabledCompletedCallback(int result)
+    {
+        var args = new CallbackArgs();
+        if (result == 1)
+        {
+            args.isSIWAEnabled = true;
+        }
+        else
+        {
+            args.isSIWAEnabled = false;
+        }
+
+        isSIWAEnabledCompletedCallback(args);
+        isSIWAEnabledCompletedCallback = null;
     }
 
 
+    private delegate void SignupCompleted(int result, UserInfo info);
 
-    // MonoBeに依存してるかと思ったらそうでもないインスタンス
-    private static Callback s_LoginCompletedCallback;
-    private static Callback s_CredentialStateCallback;
-
-    private static readonly ConcurrentQueue<Action> s_EventQueue = new ConcurrentQueue<Action>();
-
-
-
-    public delegate void Callback(CallbackArgs args);
-
-    private delegate void LoginCompleted(int result, UserInfo info);
-
-    [MonoPInvokeCallback(typeof(LoginCompleted))]
-    private static void LoginCompletedCallback(int result, [MarshalAs(UnmanagedType.Struct)]UserInfo info)
+    /*
+        signup完了時にネイティブ側から呼ばれる関数
+    */
+    [MonoPInvokeCallback(typeof(SignupCompleted))]
+    private static void SignupCompletedCallback(int result, [MarshalAs(UnmanagedType.Struct)]UserInfo info)
     {
         var args = new CallbackArgs();
         if (result != 0)
@@ -93,175 +134,240 @@ public class SignInWithApple
         }
         else
         {
-            args.error = info.error;
+            args.userInfo = new UserInfo
+            {
+                error = info.error
+            };
         }
 
-        s_LoginCompletedCallback(args);
-        s_LoginCompletedCallback = null;
+        signupCompletedCallback(args);
+        signupCompletedCallback = null;
     }
 
-    private delegate void GetCredentialStateCompleted(UserCredentialState state);
+
+    private delegate void GetCredentialStateCompleted(CredentialState state);
 
     [MonoPInvokeCallback(typeof(GetCredentialStateCompleted))]
-    private static void GetCredentialStateCallback([MarshalAs(UnmanagedType.SysInt)]UserCredentialState state)
+    private static void GetCredentialStateCallback([MarshalAs(UnmanagedType.SysInt)]CredentialState state)
     {
         var args = new CallbackArgs
         {
             credentialState = state
         };
 
-        s_CredentialStateCallback(args);
-        s_CredentialStateCallback = null;
+        credentialStateCallback(args);
+        credentialStateCallback = null;
     }
 
 
 
-
-
-
-
-
-    [Header("Event fired when login is complete.")]
-    public SignInWithAppleEvent onLogin;
-
-    [Header("Event fired when the users credential state has been retrieved.")]
-    public SignInWithAppleEvent onCredentialState;
-
-    [Header("Event fired when there is an error.")]
-    public SignInWithAppleEvent onError;
-
-
-
-    /// <summary>
-    /// Get credential state and trigger onCredentialState or onError event when action is completed.
-    /// </summary>
-    /// <param name="userID">The user id to query the credential state on.</param>
-    public void GetCredentialState(string userID)
+    /*
+        SIWAが使用できるかどうか調べる
+    */
+    public static bool IsSIWAAvailable()
     {
-        GetCredentialState(userID, TriggerCredentialStateEvent);
+        switch (state)
+        {
+            case State.None:
+                break;
+            default:
+                return false;
+        }
+
+        state = State.IsSIWAEnabledProcessing;
+
+        var result = false;
+        isSIWAEnabledCompletedCallback = args =>
+        {
+            state = State.None;
+
+            result = args.isSIWAEnabled;
+        };
+
+#if UNITY_EDITOR
+        state = State.None;
+
+        // iOSであればtrueを、Androidであればfalseを返す。
+#if UNITY_IOS
+        return true;
+#elif UNITY_ANDROID
+        return false;
+#endif
+
+
+#elif UNITY_IOS
+        IntPtr cback = IntPtr.Zero;
+        IsSIWAEnabledCompleted d = IsSIWAEnabledCompletedCallback;
+        cback = Marshal.GetFunctionPointerForDelegate(d);
+
+        SignInWithApple_CheckIsSIWAEnabled(cback);
+#endif
+        return result;
     }
 
-    /// <summary>
-    /// Invoke login and provide a custom callback when action is completed.
-    /// When a custom trigger is used, the onCredentialState or onError unity event won't trigger.
-    /// </summary>
-    /// <param name="userID">The user id to query the credential state on.</param>
-    /// <param name="callback">The custom callback to trigger when action is completed.</param>
-    public void GetCredentialState(string userID, Callback callback)
+
+    /*
+        signupを行う
+    */
+    public static void SignupOrSignin(Action<bool, string, string, string, string, UserDetectionStatus> onSucceeded, Action<string> onFailed)
     {
-        if (s_CredentialStateCallback != null)
-            throw new InvalidOperationException("Credential state fetch called while another request is in progress");
-        s_CredentialStateCallback = callback;
 
-        GetCredentialStateInternal(userID);
-    }
+        switch (state)
+        {
+            case State.None:
+                break;
+            default:
+                onFailed("another process running. waiting for end of:" + state);
+                return;
+        }
 
-    private void GetCredentialStateInternal(string userID)
-    {
-        Debug.Log("これエディタでも動くようにしたいなー");
-#if UNITY_IOS && !UNITY_EDITOR
-            IntPtr cback = IntPtr.Zero;
-            GetCredentialStateCompleted d = GetCredentialStateCallback;
-            cback = Marshal.GetFunctionPointerForDelegate(d);
+        state = State.SignUpProcessing;
 
-            UnitySignInWithApple_GetCredentialState(userID, cback);
+        signupCompletedCallback = args =>
+        {
+            state = State.None;
+
+            var userInfo = args.userInfo; ;
+
+            // success
+            if (string.IsNullOrEmpty(userInfo.error))
+            {
+                /*
+                    success
+                    {
+                        "userId": "000692.40362e95611641bbb392d7dddc6b25ca.1447",
+                        "email": "",
+                        "displayName": "",
+                        "idToken": "eyJraWQiOiI4NkQ4OEtmIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmtpYWFraS50ZXN0IiwiZXhwIjoxNTg0MDExMTk1LCJpYXQiOjE1ODQwMTA1OTUsInN1YiI6IjAwMDY5Mi40MDM2MmU5NTYxMTY0MWJiYjM5MmQ3ZGRkYzZiMjVjYS4xNDQ3IiwiY19oYXNoIjoiUms5RHk4aGhvSUhUR2NTWlVjbkFhdyIsImVtYWlsIjoiOHp0OGpteTVieEBwcml2YXRlcmVsYXkuYXBwbGVpZC5jb20iLCJlbWFpbF92ZXJpZmllZCI6InRydWUiLCJpc19wcml2YXRlX2VtYWlsIjoidHJ1ZSIsImF1dGhfdGltZSI6MTU4NDAxMDU5NSwibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.LWDdtt-AS42QbgfO6q2zfe2uJ7rvsQNgUz8phrOO4sltT4fNPMdJDAcdpHj7wuEYUhSoC4lKSTzEyVOSqXzxHNrWah6VEki49vWmNlHObTTdEHyfh6zhjj5Keve5WWO-1s7kmPu6eEFeyz3gAbvRPpck_tTWgx6N6-oijdccTy4jdstAt5mxUtzhT-oPw8LvEC0kLpRhZyOcjfiFsMZ2AFXzkQAbl6JaKdrvSZNcgM-VbzJrfg4b_bS14FAPqKN3ZJ_ksSvyaY3ugI0NBT_rUeINugOoABwk1h1bv7RW4R66Pmg5oAGDH_m3AwKkFkltIbZyAMXsmP3HU6iMr2iquA",
+                        "error": "",
+                        "userDetectionStatus": 1
+                    }  
+                */
+                var userId = userInfo.userId;
+                var email = userInfo.email;
+                var displayName = userInfo.displayName;
+                var idToken = userInfo.idToken;
+                var userDetectionStatus = userInfo.userDetectionStatus;
+
+                if (!string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(email))
+                {
+                    // signin.
+                    onSucceeded(false, userId, email, displayName, idToken, userDetectionStatus);
+                    return;
+                }
+
+                // signup.
+                onSucceeded(true, userId, email, displayName, idToken, userDetectionStatus);
+                return;
+            }
+
+            /*
+                {
+                    "userInfo": {
+                        "userId": "",
+                        "email": "",
+                        "displayName": "",
+                        "idToken": "",
+                        "error": "",
+                        "userDetectionStatus": 0
+                    }
+                    "error": "The operation couldn’t be completed. (com.apple.AuthenticationServices.AuthorizationError error 1001.)"
+                }
+            */
+            // error
+            onFailed(userInfo.error);
+        };
+
+#if UNITY_EDITOR
+        state = State.None;
+        onSucceeded(true, "dummy userId", "dummy email", "dummy displayName", "dummy idToken", UserDetectionStatus.LikelyReal);
+#elif UNITY_IOS
+        IntPtr cback = IntPtr.Zero;
+        SignupCompleted d = SignupCompletedCallback;
+        cback = Marshal.GetFunctionPointerForDelegate(d);
+
+        SignInWithApple_Signup(cback);
 #endif
     }
 
-    /// <summary>
-    /// Invoke login and trigger onLogin or onError event when login is completed.
-    /// </summary>
-    public void Login()
+
+
+
+
+    /*
+        credential state を取得する
+    */
+    public static void GetCredentialState(string siwaId, Action<CredentialState> onSucceeded, Action<string> onFailed)
     {
-        Login(TriggerOnLoginEvent);
-    }
+        switch (state)
+        {
+            case State.None:
+                break;
+            default:
+                onFailed("another process running. waiting for end of:" + state);
+                return;
+        }
 
-    /// <summary>
-    /// Invoke login and provide a custom callback when login is completed.
-    /// When a custom trigger is used, the onLogin or onError unity event won't trigger.
-    /// </summary>
-    /// <param name="callback">The custom callback to trigger when login is completed.</param>
-    public void Login(Callback callback)
-    {
-        if (s_LoginCompletedCallback != null)
-            throw new InvalidOperationException("Login called while another login is in progress");
-        s_LoginCompletedCallback = callback;
+        if (string.IsNullOrEmpty(siwaId))
+        {
+            onFailed("siwaId is null or empty. please set valid value.");
+            return;
+        }
 
-        LoginInternal();
-    }
+        state = State.GettingCredential;
+        credentialStateCallback = args =>
+        {
+            state = State.None;
+            var credentialStateValue = args.credentialState;
+            var credState = (CredentialState)Enum.ToObject(typeof(CredentialState), credentialStateValue);
+            onSucceeded(credState);
+        };
 
-    private void LoginInternal()
-    {
-#if (UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
-            IntPtr cback = IntPtr.Zero;
-            LoginCompleted d = LoginCompletedCallback;
-            cback = Marshal.GetFunctionPointerForDelegate(d);
+#if UNITY_EDITOR
+        state = State.None;
+        onSucceeded(CredentialState.CredentialAuthorized);
+#elif UNITY_IOS
+        GetCredentialStateCompleted d = GetCredentialStateCallback;
+        IntPtr cback = Marshal.GetFunctionPointerForDelegate(d);
 
-            UnitySignInWithApple_Login(cback);
+        SignInWithApple_GetCredentialState(siwaId, cback);
 #endif
     }
 
-    private void TriggerOnLoginEvent(CallbackArgs args)
-    {
-        if (args.error != null)
-        {
-            TriggerOnErrorEvent(args);
-            return;
-        }
 
-        s_EventQueue.Enqueue(delegate ()
-        {
-            if (onLogin != null)
-            {
-                onLogin.Invoke(args);
-            }
-        });
+
+
+
+
+    /*
+        ネイティブ側へのブリッジ
+    */
+
+#if UNITY_EDITOR
+    private static void SignInWithApple_Signup(IntPtr callback)
+    {
+        // サインアップ処理
     }
 
-    private void TriggerCredentialStateEvent(CallbackArgs args)
+    private static void SignInWithApple_GetCredentialState(string userID, IntPtr callback)
     {
-        if (args.error != null)
-        {
-            TriggerOnErrorEvent(args);
-            return;
-        }
-
-        s_EventQueue.Enqueue(delegate ()
-        {
-            if (onCredentialState != null)
-            {
-                onCredentialState.Invoke(args);
-            }
-        });
+        // クレデンシャルの取得処理
     }
+#elif UNITY_IOS
+    [DllImport("__Internal")]
+    private static extern void SignInWithApple_CheckIsSIWAEnabled(IntPtr callback);
 
-    private void TriggerOnErrorEvent(CallbackArgs args)
-    {
-        s_EventQueue.Enqueue(delegate ()
-        {
-            if (onError != null)
-            {
-                onError.Invoke(args);
-            }
-        });
-    }
+    [DllImport("__Internal")]
+    private static extern void SignInWithApple_Signup(IntPtr callback);
 
-    public void Update()
-    {
-        Action action;
-        while (s_EventQueue.TryDequeue(out action))
-        {
-            action.Invoke();
-        }
-    }
+    [DllImport("__Internal")]
+    private static extern void SignInWithApple_GetCredentialState(string userID, IntPtr callback);
+#else
+    private static void SignInWithApple_CheckIsSIWAEnabled(IntPtr callback){}
 
+    private static void SignInWithApple_Signup(IntPtr callback){}
 
-#if UNITY_IOS && !UNITY_EDITOR
-        [DllImport("__Internal")]
-        private static extern void UnitySignInWithApple_Login(IntPtr callback);
-
-        [DllImport("__Internal")]
-        private static extern void UnitySignInWithApple_GetCredentialState(string userID, IntPtr callback);
+    private static void SignInWithApple_GetCredentialState(string userID, IntPtr callback){}
 #endif
 
 }
