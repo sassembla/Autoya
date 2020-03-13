@@ -47,12 +47,15 @@ static SIWAObject* _sIWAObj;
 
 
 
--(void)startRequest
+-(void)startRequest:(NSString *)nonce
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         ASAuthorizationAppleIDProvider* provider = [[ASAuthorizationAppleIDProvider alloc] init];
         request = [provider createRequest];
         [request setRequestedScopes: @[ASAuthorizationScopeEmail, ASAuthorizationScopeFullName]];
+        
+        // set nonce for verification.
+        [request setNonce:nonce];
 
         ASAuthorizationController* controller = [[ASAuthorizationController alloc] initWithAuthorizationRequests:@[request]];
         controller.delegate = self;
@@ -142,11 +145,12 @@ void SignInWithApple_CheckIsSIWAEnabled(IsSIWAEnabledCallback callback) {
     }
 }
 
-void SignInWithApple_Signup(SignInWithAppleCallback callback) {
+void SignInWithApple_Signup(const char *nonce, SignInWithAppleCallback callback) {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         SIWAObject* siwa = [SIWAObject instance];
         siwa.signupCallback = callback;
-        [siwa startRequest];
+        
+        [siwa startRequest:[NSString stringWithUTF8String: nonce]];
     } else {
         // do nothing.
     }

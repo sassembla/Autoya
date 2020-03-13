@@ -207,9 +207,9 @@ public class SignInWithApple
 
 
     /*
-        signupを行う
+        signup or signinを行う
     */
-    public static void SignupOrSignin(Action<bool, string, string, string, string, UserDetectionStatus> onSucceeded, Action<string> onFailed)
+    public static void SignupOrSignin(string nonce, Action<bool, string, string, string, string, UserDetectionStatus> onSucceeded, Action<string> onFailed)
     {
 
         switch (state)
@@ -236,8 +236,8 @@ public class SignInWithApple
                     success
                     {
                         "userId": "000692.40362e95611641bbb392d7dddc6b25ca.1447",
-                        "email": "",
-                        "displayName": "",
+                        "email": "xxx@xx.x",
+                        "displayName": "xxxxx",
                         "idToken": "eyJraWQiOiI4NkQ4OEtmIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmtpYWFraS50ZXN0IiwiZXhwIjoxNTg0MDExMTk1LCJpYXQiOjE1ODQwMTA1OTUsInN1YiI6IjAwMDY5Mi40MDM2MmU5NTYxMTY0MWJiYjM5MmQ3ZGRkYzZiMjVjYS4xNDQ3IiwiY19oYXNoIjoiUms5RHk4aGhvSUhUR2NTWlVjbkFhdyIsImVtYWlsIjoiOHp0OGpteTVieEBwcml2YXRlcmVsYXkuYXBwbGVpZC5jb20iLCJlbWFpbF92ZXJpZmllZCI6InRydWUiLCJpc19wcml2YXRlX2VtYWlsIjoidHJ1ZSIsImF1dGhfdGltZSI6MTU4NDAxMDU5NSwibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.LWDdtt-AS42QbgfO6q2zfe2uJ7rvsQNgUz8phrOO4sltT4fNPMdJDAcdpHj7wuEYUhSoC4lKSTzEyVOSqXzxHNrWah6VEki49vWmNlHObTTdEHyfh6zhjj5Keve5WWO-1s7kmPu6eEFeyz3gAbvRPpck_tTWgx6N6-oijdccTy4jdstAt5mxUtzhT-oPw8LvEC0kLpRhZyOcjfiFsMZ2AFXzkQAbl6JaKdrvSZNcgM-VbzJrfg4b_bS14FAPqKN3ZJ_ksSvyaY3ugI0NBT_rUeINugOoABwk1h1bv7RW4R66Pmg5oAGDH_m3AwKkFkltIbZyAMXsmP3HU6iMr2iquA",
                         "error": "",
                         "userDetectionStatus": 1
@@ -286,7 +286,7 @@ public class SignInWithApple
         SignupCompleted d = SignupCompletedCallback;
         cback = Marshal.GetFunctionPointerForDelegate(d);
 
-        SignInWithApple_Signup(cback);
+        SignInWithApple_Signup(nonce, cback);
 #endif
     }
 
@@ -344,7 +344,7 @@ public class SignInWithApple
     */
 
 #if UNITY_EDITOR
-    private static void SignInWithApple_Signup(IntPtr callback)
+    private static void SignInWithApple_Signup(string nonce, IntPtr callback)
     {
         // サインアップ処理
     }
@@ -358,14 +358,14 @@ public class SignInWithApple
     private static extern void SignInWithApple_CheckIsSIWAEnabled(IntPtr callback);
 
     [DllImport("__Internal")]
-    private static extern void SignInWithApple_Signup(IntPtr callback);
+    private static extern void SignInWithApple_Signup(string nonce, IntPtr callback);
 
     [DllImport("__Internal")]
     private static extern void SignInWithApple_GetCredentialState(string userID, IntPtr callback);
 #else
     private static void SignInWithApple_CheckIsSIWAEnabled(IntPtr callback){}
 
-    private static void SignInWithApple_Signup(IntPtr callback){}
+    private static void SignInWithApple_Signup(string nonce, IntPtr callback){}
 
     private static void SignInWithApple_GetCredentialState(string userID, IntPtr callback){}
 #endif
