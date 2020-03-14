@@ -1,66 +1,36 @@
 ﻿using System;
-using System.Collections;
+using AutoyaFramework.ThirdpartyAuthentication.SignInWithApple;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SignInWithAppleSample : MonoBehaviour
 {
-    public void ButtonPress()
+    public Button SIWAButton;
+
+    public void Awake()
     {
-        /*
-            さてどんなケースを考える？
-            ・SignInWithAppleを使ってsignupする
-            ・SignInWithAppleを使ってsigninする
-            ・保持しているsiwaIdから状態を知る
-            こんなとこか、
+        // check if SIWA is available on this environment.
+        var available = SignInWithApple.IsSIWAAvailable();
+        Debug.Log("is SIWA Available?:" + available);
 
-            revokeとかは端末からできちゃうんで、知りたいかどうか。
+        if (!available)
+        {
+            // SIWA is not available. deactivate the SIWA button. prefer to hide the button if possible.
+            SIWAButton.interactable = false;
+            return;
+        }
 
-        */
-        StartCoroutine(Go());
+        // SIWA is available. activate the SIWA button.
+        SIWAButton.interactable = true;
     }
 
-    private IEnumerator Go()
+    public void StartSIWA()
     {
-        // SIWAが使用可能かどうか
-        var avail = SignInWithApple.IsSIWAAvailable();
-        Debug.Log("avail:" + avail);
-
-        if (!avail)
-        {
-            yield break;
-        }
-
-        var id = "000692.40362e95611641bbb392d7dddc6b25ca.1447";
-        var done = false;
-        // userIdがあれば、どんな状態か取得できる。
-        SignInWithApple.GetCredentialState(
-            id,
-            credentialState =>
-            {
-                /*
-                    CredentialRevoked,
-                    CredentialAuthorized,
-                    CredentialNotFound,
-                    CredentialTransferred,
-                */
-                Debug.Log("credentialState:" + credentialState);
-                done = true;
-            },
-            reason =>
-            {
-                Debug.Log("reason:" + reason);
-            }
-        );
-        while (!done)
-        {
-            yield return null;
-        }
-
-        // nonceをサーバから取得し、サーバ側で検証できるようにする。ここではlocalで作っている。
-        var nonce = Guid.NewGuid().ToString();
+        // getting nonce from your application server is good way to get more accurate authentication with SIWA on serverside.
+        var nonce = Guid.NewGuid().ToString();// generating nonce here for example.
 
         /*
-            サインアップ/サインイン処理からCredential取得処理を連続して行う
+            signup / signin with nonce parameter.
         */
         SignInWithApple.SignupOrSignin(
             nonce,
@@ -88,7 +58,8 @@ public class SignInWithAppleSample : MonoBehaviour
                         Real user status is only supported on iOS at this time. macOS, watchOS, tvOS, and web-based apps all return Unsupported.
                 */
 
-                // userIdがあれば、どんな状態か取得できる。
+
+                // when you have the userId on memory, you can get the credential state of the userId.
                 SignInWithApple.GetCredentialState(
                     userInfo.userId,
                     credentialState =>
