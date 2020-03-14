@@ -7,7 +7,8 @@ struct UserInfo
     const char * userId;
     const char * email;
     const char * displayName;
-
+    
+    const char * authorizationCode;
     const char * idToken;
     const char * error;
 
@@ -93,15 +94,27 @@ static SIWAObject* _sIWAObj;
         struct UserInfo data;
 
         if (@available(iOS 13.0, tvOS 13.0, *)) {
+            
             ASAuthorizationAppleIDCredential* credential = (ASAuthorizationAppleIDCredential*)authorization.credential;
-            NSString* idToken = [[NSString alloc] initWithData:credential.identityToken encoding:NSUTF8StringEncoding];
+            
+            // get authCode
+            NSString* authorizationCode = [[NSString alloc]
+                                     initWithData:credential.authorizationCode encoding:NSUTF8StringEncoding];
+            
+            // get idToken
+            NSString* idToken = [[NSString alloc]
+                                 initWithData:credential.identityToken encoding:NSUTF8StringEncoding];
+            
             NSPersonNameComponents* name = credential.fullName;
 
+            // input data.
+            data.authorizationCode = [authorizationCode UTF8String];
             data.idToken = [idToken UTF8String];
-
             data.displayName = [[NSPersonNameComponentsFormatter localizedStringFromPersonNameComponents:name
                                                                                                    style:NSPersonNameComponentsFormatterStyleDefault
-                                                                                                 options:0] UTF8String];
+                                                                                                 options:0]
+                                UTF8String];
+            
             data.email = [credential.email UTF8String];
             data.userId = [credential.user UTF8String];
             data.userDetectionStatus = credential.realUserStatus;

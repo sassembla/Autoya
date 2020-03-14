@@ -26,19 +26,43 @@ public enum UserDetectionStatus
 }
 
 /*
-    ユーザー情報
+    インターナルなユーザー情報
 */
 [Serializable]
-public struct UserInfo
+public struct _UserInfo
 {
     [SerializeField] public string userId;
     [SerializeField] public string email;
     [SerializeField] public string displayName;
 
+    [SerializeField] public string authorizationCode;
     [SerializeField] public string idToken;
     [SerializeField] public string error;
 
     [SerializeField] public UserDetectionStatus userDetectionStatus;
+}
+
+
+public struct UserInfo
+{
+    public readonly string userId;
+    public readonly string email;
+    public readonly string displayName;
+
+    public readonly string authorizationCode;
+    public readonly string idToken;
+    public readonly UserDetectionStatus userDetectionStatus;
+
+
+    public UserInfo(string authorizationCode, string userId, string email, string displayName, string idToken, UserDetectionStatus userDetectionStatus)
+    {
+        this.authorizationCode = authorizationCode;
+        this.userId = userId;
+        this.email = email;
+        this.displayName = displayName;
+        this.idToken = idToken;
+        this.userDetectionStatus = userDetectionStatus;
+    }
 }
 
 
@@ -61,7 +85,7 @@ public class SignInWithApple
 
         [SerializeField] public CredentialState credentialState;
 
-        [SerializeField] public UserInfo userInfo;
+        [SerializeField] public _UserInfo userInfo;
     }
 
     private enum State
@@ -112,19 +136,20 @@ public class SignInWithApple
     }
 
 
-    private delegate void SignupCompleted(int result, UserInfo info);
+    private delegate void SignupCompleted(int result, _UserInfo info);
 
     /*
         signup完了時にネイティブ側から呼ばれる関数
     */
     [MonoPInvokeCallback(typeof(SignupCompleted))]
-    private static void SignupCompletedCallback(int result, [MarshalAs(UnmanagedType.Struct)]UserInfo info)
+    private static void SignupCompletedCallback(int result, [MarshalAs(UnmanagedType.Struct)]_UserInfo info)
     {
         var args = new CallbackArgs();
         if (result != 0)
         {
-            args.userInfo = new UserInfo
+            args.userInfo = new _UserInfo
             {
+                authorizationCode = info.authorizationCode,
                 idToken = info.idToken,
                 displayName = info.displayName,
                 email = info.email,
@@ -134,7 +159,7 @@ public class SignInWithApple
         }
         else
         {
-            args.userInfo = new UserInfo
+            args.userInfo = new _UserInfo
             {
                 error = info.error
             };
@@ -209,7 +234,7 @@ public class SignInWithApple
     /*
         signup or signinを行う
     */
-    public static void SignupOrSignin(string nonce, Action<bool, string, string, string, string, UserDetectionStatus> onSucceeded, Action<string> onFailed)
+    public static void SignupOrSignin(string nonce, Action<bool, UserInfo> onSucceeded, Action<string> onFailed)
     {
 
         switch (state)
@@ -238,26 +263,33 @@ public class SignInWithApple
                         "userId": "000692.40362e95611641bbb392d7dddc6b25ca.1447",
                         "email": "xxx@xx.x",
                         "displayName": "xxxxx",
+                        "authorizationCode": "c4902247f521c4104ba925bbc17143b8c.0.nwzs.l8YIwin6RbYr9aYGlRMoQg",
                         "idToken": "eyJraWQiOiI4NkQ4OEtmIiwiYWxnIjoiUlMyNTYifQ.eyJpc3MiOiJodHRwczovL2FwcGxlaWQuYXBwbGUuY29tIiwiYXVkIjoiY29tLmtpYWFraS50ZXN0IiwiZXhwIjoxNTg0MDExMTk1LCJpYXQiOjE1ODQwMTA1OTUsInN1YiI6IjAwMDY5Mi40MDM2MmU5NTYxMTY0MWJiYjM5MmQ3ZGRkYzZiMjVjYS4xNDQ3IiwiY19oYXNoIjoiUms5RHk4aGhvSUhUR2NTWlVjbkFhdyIsImVtYWlsIjoiOHp0OGpteTVieEBwcml2YXRlcmVsYXkuYXBwbGVpZC5jb20iLCJlbWFpbF92ZXJpZmllZCI6InRydWUiLCJpc19wcml2YXRlX2VtYWlsIjoidHJ1ZSIsImF1dGhfdGltZSI6MTU4NDAxMDU5NSwibm9uY2Vfc3VwcG9ydGVkIjp0cnVlfQ.LWDdtt-AS42QbgfO6q2zfe2uJ7rvsQNgUz8phrOO4sltT4fNPMdJDAcdpHj7wuEYUhSoC4lKSTzEyVOSqXzxHNrWah6VEki49vWmNlHObTTdEHyfh6zhjj5Keve5WWO-1s7kmPu6eEFeyz3gAbvRPpck_tTWgx6N6-oijdccTy4jdstAt5mxUtzhT-oPw8LvEC0kLpRhZyOcjfiFsMZ2AFXzkQAbl6JaKdrvSZNcgM-VbzJrfg4b_bS14FAPqKN3ZJ_ksSvyaY3ugI0NBT_rUeINugOoABwk1h1bv7RW4R66Pmg5oAGDH_m3AwKkFkltIbZyAMXsmP3HU6iMr2iquA",
                         "error": "",
                         "userDetectionStatus": 1
-                    }  
+                    }
                 */
-                var userId = userInfo.userId;
-                var email = userInfo.email;
-                var displayName = userInfo.displayName;
-                var idToken = userInfo.idToken;
-                var userDetectionStatus = userInfo.userDetectionStatus;
 
-                if (!string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(email))
+                // Debug.Log("data:" + JsonUtility.ToJson(userInfo));
+
+                var publicUserInfo = new UserInfo(
+                    userInfo.authorizationCode,
+                    userInfo.userId,
+                    userInfo.email,
+                    userInfo.displayName,
+                    userInfo.idToken,
+                    userInfo.userDetectionStatus
+                );
+
+                if (!string.IsNullOrEmpty(publicUserInfo.userId) && string.IsNullOrEmpty(publicUserInfo.email))
                 {
                     // signin.
-                    onSucceeded(false, userId, email, displayName, idToken, userDetectionStatus);
+                    onSucceeded(false, publicUserInfo);
                     return;
                 }
 
                 // signup.
-                onSucceeded(true, userId, email, displayName, idToken, userDetectionStatus);
+                onSucceeded(true, publicUserInfo);
                 return;
             }
 
@@ -267,6 +299,7 @@ public class SignInWithApple
                         "userId": "",
                         "email": "",
                         "displayName": "",
+                        "authorizationCode": "",
                         "idToken": "",
                         "error": "",
                         "userDetectionStatus": 0
@@ -280,7 +313,17 @@ public class SignInWithApple
 
 #if UNITY_EDITOR
         state = State.None;
-        onSucceeded(true, "dummy userId", "dummy email", "dummy displayName", "dummy idToken", UserDetectionStatus.LikelyReal);
+        onSucceeded(
+            true,
+            new UserInfo(
+                "dummy authorizationCode",
+                "dummy userId",
+                "dummy email",
+                "dummy displayName",
+                "dummy idToken",
+                UserDetectionStatus.LikelyReal
+            )
+        );
 #elif UNITY_IOS
         IntPtr cback = IntPtr.Zero;
         SignupCompleted d = SignupCompletedCallback;
