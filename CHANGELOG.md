@@ -6,6 +6,12 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+
+## [0.9.11] - 2020/03/16
+
+### Feature
+- added Sign in with Apple authentication feature.
+
 ## [0.9.10] - 2019/07/12
 
 ### Changed
@@ -284,7 +290,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.10...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.11...HEAD
+[0.9.11]: https://github.com/sassembla/autoya/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/sassembla/autoya/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/sassembla/autoya/compare/0.9.8...0.9.9
 [0.9.8]: https://github.com/sassembla/autoya/compare/0.9.7...0.9.8
