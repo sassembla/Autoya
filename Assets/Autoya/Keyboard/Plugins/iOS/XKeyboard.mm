@@ -139,12 +139,12 @@ static XKeyboardDelegate*    _keyboard = nil;
 
 - (void)keyboadDidAppear:(NSNotification*)notification {
     //    ボタンのグラデーションレイヤーのサイズ調整(ここでしかできない)
-    for (CALayer *layer in sendButton.layer.sublayers){
-        if ([layer isKindOfClass:CAGradientLayer.class]) {
-            CAGradientLayer* gLayer = (CAGradientLayer*)layer;
-            gLayer.frame = CGRectMake(sendButton.bounds.origin.x, sendButton.bounds.origin.y, sendButton.bounds.size.width, sendButton.bounds.size.height);
-        }
-    }
+    // for (CALayer *layer in sendButton.layer.sublayers){
+    //     if ([layer isKindOfClass:CAGradientLayer.class]) {
+    //         CAGradientLayer* gLayer = (CAGradientLayer*)layer;
+    //         gLayer.frame = CGRectMake(sendButton.bounds.origin.x, sendButton.bounds.origin.y, sendButton.bounds.size.width, sendButton.bounds.size.height);
+    //     }
+    // }
 }
 
 - (void)willHide:(NSNotification*)notif {

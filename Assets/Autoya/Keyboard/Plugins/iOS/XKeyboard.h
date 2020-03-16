@@ -21,13 +21,10 @@ KeyboardShowParam;
 
 - (void)textInputDone:(id)sender;
 - (void)textInputLostFocus;
-- (void)keyboardWillHide:(NSNotification*)notification;
 
-+ (void)Initialize;
 + (XKeyboardDelegate*)Instance;
 
 - (id)init;
-- (void)setKeyboardParams:(KeyboardShowParam)param;
 - (void)show;
 - (void)hide;
 - (void)setText:(NSString*)newText;
