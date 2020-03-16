@@ -57,9 +57,6 @@ static XKeyboardDelegate*    _keyboard = nil;
                 sendButton = (UIButton *)i;
 //                ボタンアクションのセット
                 [sendButton addTarget:self action:@selector(textInputDone:) forControlEvents:UIControlEventTouchUpInside];
-                
-//                このボタンの背景はグラデカラーだけがあればいいので、下地の背景カラーを透明にする。
-                sendButton.backgroundColor = UIColor.clearColor;
                 continue;
             }
         }
@@ -71,7 +68,7 @@ static XKeyboardDelegate*    _keyboard = nil;
         textView.inputAccessoryView = paddingView;
         
         textView.delegate = self;
-        textView.returnKeyType = UIReturnKeySend;
+        textView.returnKeyType = UIReturnKeyDone;
         
         
         // 通知系のセット
@@ -138,13 +135,7 @@ static XKeyboardDelegate*    _keyboard = nil;
 }
 
 - (void)keyboadDidAppear:(NSNotification*)notification {
-    //    ボタンのグラデーションレイヤーのサイズ調整(ここでしかできない)
-    // for (CALayer *layer in sendButton.layer.sublayers){
-    //     if ([layer isKindOfClass:CAGradientLayer.class]) {
-    //         CAGradientLayer* gLayer = (CAGradientLayer*)layer;
-    //         gLayer.frame = CGRectMake(sendButton.bounds.origin.x, sendButton.bounds.origin.y, sendButton.bounds.size.width, sendButton.bounds.size.height);
-    //     }
-    // }
+    // do something you need.
 }
 
 - (void)willHide:(NSNotification*)notif {
@@ -224,12 +215,12 @@ static XKeyboardDelegate*    _keyboard = nil;
                                 baseViewOriginalHeight + diff
                                 );
     
-//     textView自体のサイズに対してそのままセットすると、なんと行が見切れる。お前、、というわけで、heightの2倍をセットして見切れを消す。よくないが。
+//     textView自体のサイズに対して文字をそのままセットすると、なんと一番下の行が見切れるケースがある。お前、、というわけで、height + 1をセットして見切れを消す。よくはないがこれで見切れが回避できる。
     textView.frame = CGRectMake(
                                 textView.frame.origin.x,
                                 textView.frame.origin.y,
                                 textView.frame.size.width,
-                                height * 2
+                                height+1// magic number for protect last text line from dismiss.
                                 );
 }
 
