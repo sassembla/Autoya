@@ -16,7 +16,9 @@ static XKeyboardDelegate*    _keyboard = nil;
     
     NSString*           initialText;
     UIKeyboardType      keyboardType;
-
+    
+    NSString*           closeFlags;
+    
     BOOL                _willHide;
     BOOL                _active;
     KeyboardStatus      _status;
@@ -96,16 +98,20 @@ static XKeyboardDelegate*    _keyboard = nil;
 
 // 入力完了後に呼ばれるメソッド。
 - (void)textInputDone:(id)sender {
-    if (_status == Visible)
+    if (_status == Visible) {
         _status = Done;
+    }
+    
     [self hide];
 }
 
 // Unityからhideを行うメソッド
 - (void)textInputLostFocus {
     // NSLog(@"textInputLostFocus");
-    if (_status == Visible)
+    if (_status == Visible) {
         _status = LostFocus;
+    }
+    
     [self hide];
 }
 
@@ -142,16 +148,35 @@ static XKeyboardDelegate*    _keyboard = nil;
 }
 
 - (void)willHide:(NSNotification*)notif {
+    
+    closeFlags = [NSString stringWithFormat:@"%@%@", closeFlags, @"w"];
     _willHide = YES;
 }
 
 - (void)didHide:(NSNotification*)notif {
-    // ^マークでの予測変換時にもキーボードの消失が発生する。statusで区別し、動作を変更することで対処できる。
-    if (_status != Visible) {
+
+    closeFlags = [NSString stringWithFormat:@"%@%@", closeFlags, @"d"];
+    
+    // ^マークでの予測変換時にもキーボードの消失が発生する。statusで区別し、閉じる処理が行われている場合のみ終了扱いにする。
+    if ([closeFlags containsString:@"t"]) {
+        
         [baseView removeFromSuperview];
-        [self setText:@""];
         _active     = NO;
+        
+        // doneの場合、入力されていた文字列を消す。
+        if (_status == Done) {
+            [self setText:@""];
+            return;
+        }
+        
+        // ここまで来た場合はキャンセル扱いにし、入力済みの文字列を返せるようにする。
+        _status = Canceled;
     }
+    
+    // w -> textViewDidEndEditing -> d と来る場合、通常の閉じるケース
+    // textViewDidEndEditing -> w -> d と来る場合、他のアプリで閉じるケース
+    // textViewDidEndEditing がないまま w -> d に来てるケースは閉じない
+    // この３つがある。
 }
 
 
@@ -160,18 +185,19 @@ static XKeyboardDelegate*    _keyboard = nil;
     delegateによるオーバーライド系
  */
 - (BOOL)textViewShouldBeginEditing:(UITextView*)view {
+
+    closeFlags = @"";
     _willHide = NO;
     return YES;
 }
 
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    closeFlags = [NSString stringWithFormat:@"%@%@", closeFlags, @"t"];
+}
+
 // Unityからのtext取得
 - (NSString*)getText {
-    if (_status == Canceled)
-        return initialText;
-    else
-    {
-        return [textView text];
-    }
+    return [textView text];
 }
 
 - (void)setText:(NSString*)newText {
@@ -314,13 +340,20 @@ extern "C" int XKeyboard_IsActive() {
 
 extern "C" int XKeyboard_IsDone() {
     // NSLog(@"XKeyboard_IsDone, _keyboard.status:%d", _keyboard.status);
-    return (_keyboard && _keyboard.status != Visible) ? 1 : 0;
+    return (_keyboard && _keyboard.status == Done) ? 1 : 0;
 }
 
-extern "C" void XKeyboard_GetRect(float* x, float* y, float* w, float* h) {
-   
-    CGRect area =  _keyboard ? [[XKeyboardDelegate Instance] getFrame] : CGRectMake(0, 0, 0, 0);
+extern "C" int XKeyboard_IsCancelled()
+{
+    // NSLog(@"XKeyboard_IsCancelled, _keyboard.status:%d", _keyboard.status);
+    return (_keyboard && _keyboard.status == Canceled) ? 1 : 0;
+}
 
+extern "C" void XKeyboard_GetRect(float* x, float* y, float* w, float* h)
+{
+    
+    CGRect area =  _keyboard ? [[XKeyboardDelegate Instance] getFrame] : CGRectMake(0, 0, 0, 0);
+    
     // convert to unity coord system
 
     float   multX   = (float)GetMainDisplaySurface()->targetW / UnityGetGLView().bounds.size.width;

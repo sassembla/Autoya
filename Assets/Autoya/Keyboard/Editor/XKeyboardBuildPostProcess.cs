@@ -32,10 +32,11 @@ public static class XKeyboardBuildPostProcess
 
         var iOSBuildTargetName = PBXProject.GetUnityTargetName();
         Debug.Log("Defaultのレイヤーをなんとかする");
-        var imageAssetResourcePath = $"{Application.dataPath}/Autoya/Keyboard/Plugins/iOS/KeyboardXibs/Default/defaultKeyboard.imageset";
+        var imageAssetResourcePath = $"{Application.dataPath}/Autoya/Keyboard/Plugins/iOS/KeyboardXibs/Default/defaultKeyboard.imageset";// これなんだろう、何かサンプルを置けばいいか。
         var xcAssetsFolderPath = Path.Combine(projectBasePath, iOSBuildTargetName, "Images.xcassets");
+        Debug.Log("xcAssetsFolderPath:" + xcAssetsFolderPath + " imageAssetResourcePath:" + imageAssetResourcePath);
 
-        if (Directory.Exists(xcAssetsFolderPath))
+        if (false && Directory.Exists(xcAssetsFolderPath))
         {
             var imageSetPath = Path.Combine(xcAssetsFolderPath, "defaultKeyboard.imageset");
             if (Directory.Exists(imageSetPath) && 0 < Directory.GetFiles(imageSetPath).Length)
@@ -64,7 +65,7 @@ public static class XKeyboardBuildPostProcess
             return;
         }
 
-        Debug.LogError("failed to find xcAssetsFolderPath:" + xcAssetsFolderPath);
+        // Debug.LogError("failed to find xcAssetsFolderPath:" + xcAssetsFolderPath);
     }
 }
 #endif
