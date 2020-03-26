@@ -275,6 +275,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             {
                 state = State.None;
 
+
                 var userInfo = args.userInfo; ;
 
                 // success
@@ -304,7 +305,24 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
                         userInfo.userDetectionStatus
                     );
 
-                    if (!string.IsNullOrEmpty(publicUserInfo.userId) && string.IsNullOrEmpty(publicUserInfo.email))
+                    // check if requested authorizationScope data is contained or not.
+                    // if requested but not contained, the request is not first one. 
+                    // determine the result as "signin".
+                    var isSignin = false;
+                    switch (authorizationScope)
+                    {
+                        case AuthorizationScope.Email:
+                            isSignin = string.IsNullOrEmpty(publicUserInfo.email);
+                            break;
+                        case AuthorizationScope.FullName:
+                            isSignin = string.IsNullOrEmpty(publicUserInfo.displayName);
+                            break;
+                        case AuthorizationScope.EmailAndFullName:
+                            isSignin = string.IsNullOrEmpty(publicUserInfo.email) && string.IsNullOrEmpty(publicUserInfo.displayName);
+                            break;
+                    }
+
+                    if (isSignin)
                     {
                         // signin.
                         onSucceeded(false, publicUserInfo);
