@@ -34,6 +34,7 @@ public class SignInWithAppleSample : MonoBehaviour
         */
         SignInWithApple.SignupOrSignin(
             nonce,
+            AuthorizationScope.Email,
             (isSignup, userInfo) =>
             {
                 Debug.Log(

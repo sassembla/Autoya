@@ -48,12 +48,26 @@ static SIWAObject* _sIWAObj;
 
 
 
--(void)startRequest:(NSString *)nonce
+-(void)startRequest:(NSString *)nonce scope:(int) scope
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         ASAuthorizationAppleIDProvider* provider = [[ASAuthorizationAppleIDProvider alloc] init];
         request = [provider createRequest];
-        [request setRequestedScopes: @[ASAuthorizationScopeEmail, ASAuthorizationScopeFullName]];
+        
+        switch (scope) {
+            case 0:
+                [request setRequestedScopes: @[ASAuthorizationScopeEmail]];
+                break;
+            case 1:
+                [request setRequestedScopes: @[ASAuthorizationScopeFullName]];
+                break;
+            case 2:
+                [request setRequestedScopes: @[ASAuthorizationScopeEmail, ASAuthorizationScopeFullName]];
+                break;
+            default:
+                [NSException raise:@"unsupported scope" format:@"scope:%d is not supported.", scope];
+                break;
+        }
         
         // set nonce for verification.
         [request setNonce:nonce];
@@ -158,12 +172,12 @@ void SignInWithApple_CheckIsSIWAEnabled(IsSIWAEnabledCallback callback) {
     }
 }
 
-void SignInWithApple_Signup(const char *nonce, SignInWithAppleCallback callback) {
+void SignInWithApple_Signup(const char *nonce, int scope, SignInWithAppleCallback callback) {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
         SIWAObject* siwa = [SIWAObject instance];
         siwa.signupCallback = callback;
         
-        [siwa startRequest:[NSString stringWithUTF8String: nonce]];
+        [siwa startRequest:[NSString stringWithUTF8String: nonce] scope:scope];
     } else {
         // do nothing.
     }

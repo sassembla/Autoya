@@ -6,6 +6,13 @@ using UnityEngine;
 namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
 {
 
+    public enum AuthorizationScope
+    {
+        Email,
+        FullName,
+        EmailAndFullName
+    }
+
     /*
         state of the user credential given by GetCredentialState method.
     */
@@ -250,7 +257,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             2. client should use the nonce to execute SignupOrSignin(nonce, (isSignup, SIWA userInfo) => {do sending idToken and other data to your server}) method.
             3. application server receives the idToken included the nonce. do delete record of the nonce and validate idToken with nonce. this way gives you to accurate JWT verification and avoid replay attack.
         */
-        public static void SignupOrSignin(string nonce, Action<bool, UserInfo> onSucceeded, Action<string> onFailed)
+        public static void SignupOrSignin(string nonce, AuthorizationScope authorizationScope, Action<bool, UserInfo> onSucceeded, Action<string> onFailed)
         {
 
             switch (state)
@@ -345,7 +352,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             SignupCompleted d = SignupCompletedCallback;
             cback = Marshal.GetFunctionPointerForDelegate(d);
 
-            SignInWithApple_Signup(nonce, cback);
+            SignInWithApple_Signup(nonce, (int)authorizationScope,  cback);
 #endif
         }
 
@@ -406,7 +413,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
         private static extern void SignInWithApple_CheckIsSIWAEnabled(IntPtr callback);
 
         [DllImport("__Internal")]
-        private static extern void SignInWithApple_Signup(string nonce, IntPtr callback);
+        private static extern void SignInWithApple_Signup(string nonce, int scope, IntPtr callback);
 
         [DllImport("__Internal")]
         private static extern void SignInWithApple_GetCredentialState(string userID, IntPtr callback);
