@@ -6,6 +6,11 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.13] - 2020/03/26
+
+### Fixed
+- Sign in with Apple with authorization request enabled.
+
 
 ## [0.9.11] - 2020/03/16
 
@@ -290,7 +295,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.11...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.13...HEAD
+[0.9.13]: https://github.com/sassembla/autoya/compare/0.9.11...0.9.13
 [0.9.11]: https://github.com/sassembla/autoya/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/sassembla/autoya/compare/0.9.9...0.9.10
 [0.9.9]: https://github.com/sassembla/autoya/compare/0.9.8...0.9.9
