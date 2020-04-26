@@ -360,6 +360,10 @@ namespace AutoyaFramework
         */
 
         // assetBundleList store controls.
+
+        /*
+            should return stored AssetBundleLists from storage.
+        */
         private AssetBundleList[] LoadAssetBundleListsFromStorage()
         {
             // load stored assetBundleList then return it.
@@ -372,6 +376,33 @@ namespace AutoyaFramework
                 )
             ).ToArray();
         }
+
+        /*
+            should remove unnecessary stored AssetBundleLists from storage for ABList update.
+        */
+        private void OnRemoveUnnecessaryAssetBundleListsFromStorage(string[] unnecessaryStoredAssetBundleListIdentities)
+        {
+            // load stored assetBundleList then remove unnecessary one.
+            var filePaths = Autoya.Persist_FileNamesInDomain(AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN);
+            foreach (var path in filePaths)
+            {
+                var list = JsonUtility.FromJson<AssetBundleList>(
+                    Autoya.Persist_Load(
+                        AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, Path.GetFileName(path)
+                    )
+                );
+
+                // remove unnecessary stored AssetBundleList.
+                var identity = list.identity;
+                if (unnecessaryStoredAssetBundleListIdentities.Contains(identity))
+                {
+                    Autoya.Persist_Delete(
+                        AssetBundlesSettings.ASSETBUNDLES_LIST_STORED_DOMAIN, Path.GetFileName(path)
+                    );
+                }
+            }
+        }
+
         private bool StoreAssetBundleListToStorage(AssetBundleList list)
         {
             var listStr = JsonUtility.ToJson(list);

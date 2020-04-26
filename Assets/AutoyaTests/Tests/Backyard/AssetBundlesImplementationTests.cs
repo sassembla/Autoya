@@ -2526,4 +2526,12 @@ public class AssetBundlesImplementationTests : MiyamasuTestRunner
             );
         }
     }
+
+
+    // ABFeature自体のテストとして、Autoyaの起動時にダミーのManifestとStoredを生成し、食い違うことを確認する
+    public IEnumerator CompareAssetBundleListOnBoot()
+    {
+
+        yield break;
+    }
 }

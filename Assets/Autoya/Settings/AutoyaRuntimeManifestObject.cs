@@ -1,6 +1,5 @@
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -45,36 +44,29 @@ namespace AutoyaFramework.AppManifest
            };
         }
 
-        public IRuntimeManifestBase Compare(IRuntimeManifestBase stored)
+        public void UpdateFromStoredJson(string stored)
         {
-            var storedRuntimeManifest = ((RuntimeManifestObject)stored);
+            var storedRuntimeManifest = JsonUtility.FromJson<RuntimeManifestObject>(stored);
 
-            var storedKeys = storedRuntimeManifest.resourceInfos.Select(info => info.listIdentity).ToList();
-            var codedKeys = this.resourceInfos.Select(info => info.listIdentity).ToList();
+            // collect coded and stored both contained and use it for update.
+            var storedIdentitityListDict = storedRuntimeManifest.resourceInfos.ToDictionary(info => info.listIdentity, info => info);
+            var currentCodedIdentityListDict = this.resourceInfos.ToDictionary(info => info.listIdentity, info => info);
 
-            // collect which is not contained in stored and contained in coded.
-            var storedKeyShouldContainIdentities = codedKeys.Except(storedKeys);
+            var storedKeys = storedIdentitityListDict.Keys.ToArray();
+            var currentCodedKeys = currentCodedIdentityListDict.Keys.ToArray();
 
-            // collect which is not contained in coded and contained in stored.
-            var storedKeyShouldNotContainIdentities = storedKeys.Except(codedKeys);
-
-            if (0 < storedKeyShouldContainIdentities.Count() || 0 < storedKeyShouldNotContainIdentities.Count())
+            var shouldContainIdentities = storedKeys.Intersect(currentCodedKeys).ToArray();
+            foreach (var shouldContainIdentity in shouldContainIdentities)
             {
-                var currentStoredInfos = storedRuntimeManifest.resourceInfos.ToList();
+                // use storedList by default. not checking version here.
+                var storedList = storedIdentitityListDict[shouldContainIdentity];
 
-                // defferent identity exists between coded and stored data. coded has it but stored does not.
-                var shouldContainResourceInfoRange = this.resourceInfos.Where(info => storedKeyShouldContainIdentities.Contains(info.listIdentity));
-                currentStoredInfos.AddRange(shouldContainResourceInfoRange);
-
-                // defferent identity exists between coded and stored data. stored has it but coded does not. must be deleted.
-                currentStoredInfos.RemoveAll(info => storedKeyShouldNotContainIdentities.Contains(info.listIdentity));
-
-                var result = new RuntimeManifestObject();
-                result.resourceInfos = currentStoredInfos.ToArray();
-                return result;
+                // update coded listDict by stored.
+                currentCodedIdentityListDict[shouldContainIdentity] = storedList;
             }
 
-            return stored;
+            // update.
+            this.resourceInfos = currentCodedIdentityListDict.Values.ToArray();
         }
 
         public override string ToString()

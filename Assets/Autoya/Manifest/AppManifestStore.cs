@@ -47,7 +47,7 @@ namespace AutoyaFramework.AppManifest
 
     public interface IRuntimeManifestBase
     {
-        IRuntimeManifestBase Compare(IRuntimeManifestBase stored);
+        void UpdateFromStoredJson(string storedString);
     }
 
     public class AppManifestStore<RuntimeManifestType, BuildManifestType> where RuntimeManifestType : IRuntimeManifestBase, new() where BuildManifestType : new()
@@ -85,9 +85,8 @@ namespace AutoyaFramework.AppManifest
                 else
                 {
                     // get persisted and compare to coded one.
-                    var persistedRuntimeManifestObj = JsonUtility.FromJson<RuntimeManifestType>(runtimeManifestObjStr);
-                    var codedRuntimeManifestObj = new RuntimeManifestType();
-                    runtimeManifestObj = (RuntimeManifestType)codedRuntimeManifestObj.Compare(persistedRuntimeManifestObj);
+                    runtimeManifestObj = new RuntimeManifestType();
+                    runtimeManifestObj.UpdateFromStoredJson(runtimeManifestObjStr);
                 }
             }
 

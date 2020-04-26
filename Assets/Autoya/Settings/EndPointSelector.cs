@@ -24,7 +24,7 @@ namespace AutoyaFramework.Settings.EndPoint
         private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
         /*
-			delegate for supply assetBundle get request header geneate func for modules.
+			delegate for supply endpoint info get request header geneate func for modules.
 		*/
         public delegate Dictionary<string, string> EndPointsGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
         private readonly EndPointsGetRequestHeaderDelegate endPointGetRequestHeaderDelegate;

@@ -17,17 +17,6 @@ namespace AutoyaFramework
 
         private ICoroutineUpdater mainthreadDispatcher;
 
-        /**
-            all conditions which Autoya has.
-        */
-        private class AutoyaParameters
-        {
-            // public string _app_version;
-            // public string _assets_version;
-
-            // public string _buildNumber;
-        }
-
         private Autoya(string basePath = "")
         {
             // Debug.LogWarning("autoya initialize start. basePath:" + basePath);
@@ -65,12 +54,11 @@ namespace AutoyaFramework
             InitializeAppManifest();
 
             mainthreadDispatcher.Commit(
+                InitializeAssetBundleFeature(),
                 OnBootApplication(),
                 IsFirstBoot(
                     isFirstBoot =>
                     {
-                        InitializeAssetBundleFeature();
-
                         /*
                             start authentication.
                         */

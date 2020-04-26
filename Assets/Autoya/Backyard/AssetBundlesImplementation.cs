@@ -39,7 +39,7 @@ namespace AutoyaFramework
         /*
 			Initializer
 		 */
-        private void InitializeAssetBundleFeature()
+        private IEnumerator InitializeAssetBundleFeature()
         {
             // initialize AssetBundleListDownloader.
             AssetBundleListDownloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
@@ -63,16 +63,31 @@ namespace AutoyaFramework
             // get assetBundleList identitiy from manifest info.
             var runtimeManifestContaindAssetBundleListIdentities = LoadAppUsingAssetBundleListIdentities();
 
-
-            // 取得失敗などでmanifestの内容の方が多いことがあり得る。差を取り出し、DLが必要な状態かどうか判断する。
-            var excepts = runtimeManifestContaindAssetBundleListIdentities.Except(storedListIdentities);
-
-            // not all assetBundleList are stored yet.
-            // need to run AssetBundle_DownloadAssetBundleListsIfNeed().
-            if (excepts.Any())
+            // remove unnecessary stored ABList if runtimeManifest is changed and ABListInfo is removed.
             {
-                assetBundleFeatState = AssetBundlesFeatureState.None;
-                return;
+                var storedMinusManifest = storedListIdentities.Except(runtimeManifestContaindAssetBundleListIdentities);
+
+                if (storedMinusManifest.Any())
+                {
+                    OnRemoveUnnecessaryAssetBundleListsFromStorage(storedMinusManifest.ToArray());
+
+                    // renew stored list identities.
+                    storedLists = LoadAssetBundleListsFromStorage();
+                    storedListIdentities = storedLists.Select(list => list.identity).ToArray();
+                }
+            }
+
+            // check stored ABList. if less than required by RuntimeManifest, need to download additional ABList.
+            {
+                var manifestMinusStored = runtimeManifestContaindAssetBundleListIdentities.Except(storedListIdentities);
+
+                // not all assetBundleList are stored yet.
+                // need to run AssetBundle_DownloadAssetBundleListsIfNeed().
+                if (manifestMinusStored.Any())
+                {
+                    assetBundleFeatState = AssetBundlesFeatureState.None;
+                    yield break;
+                }
             }
 
             // all assetBundleList is stored and ready.
