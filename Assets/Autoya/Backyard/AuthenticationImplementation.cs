@@ -27,23 +27,28 @@ namespace AutoyaFramework
         public delegate void HttpResponseHandlingDelegate(string connectionId, Dictionary<string, string> responseHeader, int httpCode, object data, string errorReason, Action<string, object> succeeded, Action<string, int, string, AutoyaStatus> failed);
 
         /*
-			delegate for supply assetBundleList get request header geneate func for modules.
+			delegate for supply assetBundleList get request header generate func for modules.
 		*/
         public delegate Dictionary<string, string> AssetBundleListGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
         /*
-			delegate for supply assetBundlePreloadList get request header geneate func for modules.
+			delegate for supply assetBundlePreloadList get request header generate func for modules.
 		*/
         public delegate Dictionary<string, string> AssetBundlePreloadListGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
         /*
-			delegate for supply assetBundle get request header geneate func for modules.
+			delegate for supply assetBundle get request header generate func for modules.
 		*/
         public delegate Dictionary<string, string> AssetBundleGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
+        /*
+            delegate for supply endPoint get request header generate func for modules.
+        */
+        public delegate Dictionary<string, string> EndPointGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
 
         private HttpRequestHeaderDelegate httpRequestHeaderDelegate;
         private HttpResponseHandlingDelegate httpResponseHandlingDelegate;
         private AssetBundleListGetRequestHeaderDelegate assetBundleListGetRequestHeaderDelegate;
         private AssetBundlePreloadListGetRequestHeaderDelegate assetBundlePreloadListGetRequestHeaderDelegate;
         private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+        private EndPointGetRequestHeaderDelegate endPointGetRequestHeaderDelegate;
 
         private AuthRouter _autoyaAuthRouter;
 
@@ -59,6 +64,7 @@ namespace AutoyaFramework
             this.assetBundleListGetRequestHeaderDelegate = OnAssetBundleListGetRequest;
             this.assetBundlePreloadListGetRequestHeaderDelegate = OnAssetBundlePreloadListGetRequest;
             this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
+            this.endPointGetRequestHeaderDelegate = OnEndPointGetRequest;
 
             Action onAuthSucceeded = () =>
             {

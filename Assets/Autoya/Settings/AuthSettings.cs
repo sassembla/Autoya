@@ -17,10 +17,10 @@ namespace AutoyaFramework.Settings.Auth
         /*
 			auth urls and prefixies.
 		*/
-        public const string AUTH_URL_BOOT = "https://httpbin.org/post";
+        public static string AUTH_URL_BOOT = "https://httpbin.org/post";
         public const string AUTH_CONNECTIONID_BOOT_PREFIX = "boot_";
 
-        public const string AUTH_URL_REFRESH_TOKEN = "https://httpbin.org/post";
+        public static string AUTH_URL_REFRESH_TOKEN = "https://httpbin.org/post";
         public const string AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX = "ref_token_";
 
         /*

@@ -1,12 +1,10 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using AutoyaFramework;
 using AutoyaFramework.Settings.AssetBundles;
 using AutoyaFramework.Settings.Auth;
 using Miyamasu;
-using UnityEngine;
 
 /**
     resVersionが変わったという情報をサーバが流してきた場合、

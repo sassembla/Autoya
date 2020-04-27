@@ -6,6 +6,7 @@ using AutoyaFramework.Purchase;
 using System;
 using AutoyaFramework.Settings.App;
 using AutoyaFramework.Notification;
+using System.Collections;
 
 /**
     constructor implementation of Autoya.
@@ -52,34 +53,88 @@ namespace AutoyaFramework
             _autoyaHttp = new HTTPConnection();
 
             InitializeAppManifest();
+            InitializeEndPointImplementation();
 
-            mainthreadDispatcher.Commit(
-                InitializeAssetBundleFeature(),
-                OnBootApplication(),
-                IsFirstBoot(
-                    isFirstBoot =>
+            /*
+                endPoint -> AB -> OnBootLoop -> authentication.
+            */
+            IEnumerator bootSequence()
+            {
+                {
+                    var cor = UpdateEndPoints();
+                    var cont = cor.MoveNext();
+                    if (cont)
                     {
-                        /*
-                            start authentication.
-                        */
-                        Authenticate(
-                            isFirstBoot,
-                            () =>
-                            {
-                                /*
-                                    initialize purchase feature.
-                                */
-                                if (isPlayer)
-                                {
-                                    ReloadPurchasability();
-                                }
-                            }
-                        );
+                        yield return null;
+                        while (cor.MoveNext())
+                        {
+                            yield return null;
+                        }
                     }
-                )
-            );
+                }
 
+                {
+                    var cor = InitializeAssetBundleFeature();
+                    var cont = cor.MoveNext();
+                    if (cont)
+                    {
+                        yield return null;
+                        while (cor.MoveNext())
+                        {
+                            yield return null;
+                        }
+                    }
+                }
 
+                {
+                    var cor = OnBootApplication();
+                    var cont = cor.MoveNext();
+                    if (cont)
+                    {
+                        yield return null;
+                        while (cor.MoveNext())
+                        {
+                            yield return null;
+                        }
+                    }
+                }
+
+                {
+                    var cor = IsFirstBoot(
+                        isFirstBoot =>
+                        {
+                            /*
+                                start authentication.
+                            */
+                            Authenticate(
+                                isFirstBoot,
+                                () =>
+                                {
+                                    /*
+                                        initialize purchase feature.
+                                    */
+                                    if (isPlayer)
+                                    {
+                                        ReloadPurchasability();
+                                    }
+                                }
+                            );
+                        }
+                    );
+
+                    var cont = cor.MoveNext();
+                    if (cont)
+                    {
+                        yield return null;
+                        while (cor.MoveNext())
+                        {
+                            yield return null;
+                        }
+                    }
+                }
+            }
+
+            mainthreadDispatcher.Commit(bootSequence());
         }
 
         public static void Shutdown()

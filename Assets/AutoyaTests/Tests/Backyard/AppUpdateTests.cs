@@ -1,11 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using AutoyaFramework;
-using AutoyaFramework.Settings.AssetBundles;
-using AutoyaFramework.Settings.Auth;
 using Miyamasu;
-using UnityEngine;
 
 /**
     appVersionが変わったという情報をサーバが流してきた場合、

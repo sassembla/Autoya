@@ -17,7 +17,7 @@ namespace AutoyaFramework.Settings.AssetBundles
         public const string PLATFORM_STR =
 
 #if UNITY_IOS
-			"iOS";
+            "iOS";
 #elif UNITY_ANDROID
 			"Android";
 #elif UNITY_WEBGL
@@ -30,7 +30,7 @@ namespace AutoyaFramework.Settings.AssetBundles
 			"OSX";
 #endif
 
-        public const string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/preload/";
+        public static string ASSETBUNDLES_URL_DOWNLOAD_PRELOADLIST = "https://raw.githubusercontent.com/sassembla/Autoya/assetbundle_multi_list_support/AssetBundles/preload/";
 
 
         public const string ASSETBUNDLES_DOWNLOAD_PREFIX = "assetbundle_";

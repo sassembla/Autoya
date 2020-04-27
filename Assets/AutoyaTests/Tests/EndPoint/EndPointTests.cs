@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using AutoyaFramework.Settings.EndPoint;
+using AutoyaFramework.EndPointSelect;
 using Miyamasu;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Purchasing;
 
 
 /**
@@ -23,16 +24,43 @@ public class EndPointTests : MiyamasuTestRunner
 
         var endPointSelector = new EndPointSelector(
             new IEndPoint[]{
-                new slideshow(),
-                new UnusedEndPoint(),
+                new main(),
+                new sub(),
             }
         );
 
         var succeeded = false;
 
         var cor = endPointSelector.UpToDate(
-            "https://httpbin.org/json",
+            "https://raw.githubusercontent.com/sassembla/Autoya/master/Assets/AutoyaTests/RuntimeData/EndPoints/mainAndSub.json",
             new Dictionary<string, string>(),
+            responseStr =>
+            {
+                var endPoints = new List<EndPoint>();
+                var classNamesAndValuesSource = MiniJson.JsonDecode(responseStr) as Dictionary<string, object>;
+                foreach (var classNamesAndValueSrc in classNamesAndValuesSource)
+                {
+                    var className = classNamesAndValueSrc.Key;
+                    var rawParameterList = classNamesAndValueSrc.Value as List<object>;
+
+                    var parameterDict = new Dictionary<string, string>();
+                    foreach (var rawParameters in rawParameterList)
+                    {
+                        var parameters = rawParameters as Dictionary<string, object>;
+                        foreach (var parameter in parameters)
+                        {
+                            var key = parameter.Key;
+                            var val = parameter.Value as string;
+                            parameterDict[key] = val;
+                        }
+                    }
+
+                    var endPoint = new EndPoint(className, parameterDict);
+                    endPoints.Add(endPoint);
+                }
+
+                return new EndPoints(endPoints.ToArray());
+            },
             namesAndErrors =>
             {
                 if (namesAndErrors.Length == 0)
@@ -42,7 +70,7 @@ public class EndPointTests : MiyamasuTestRunner
                 }
                 Debug.LogError("fauled to parse, errors:" + namesAndErrors.Length);
             },
-            () =>
+            failReason =>
             {
                 Debug.LogError("failed to get endPoints.");
             },
@@ -57,8 +85,8 @@ public class EndPointTests : MiyamasuTestRunner
 
         Assert.True(succeeded);
 
-        var ep = endPointSelector.GetEndPoint<slideshow>();
-        Assert.True(ep.author == "Yours Truly", "not match.");
-        Assert.True(ep.date == "default_date");
+        var ep = endPointSelector.GetEndPoint<main>();
+        Assert.True(ep.key0 == "val0");
+        Assert.True(ep.key1 == "default_val1");
     }
 }

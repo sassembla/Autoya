@@ -4,15 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoyaFramework.Connections.HTTP;
 using UnityEngine;
-using UnityEngine.Purchasing;
 
 /**
     endpoint selector is:
         update endpoint data from http request.
         requires the all classes which implements IEndPoint to initialize.
 */
-namespace AutoyaFramework.Settings.EndPoint
+namespace AutoyaFramework.EndPointSelect
 {
+    public class EndPoints
+    {
+        public readonly EndPoint[] endPoints;
+
+        public EndPoints(EndPoint[] endPoints)
+        {
+            this.endPoints = endPoints;
+        }
+    }
+
+    public class EndPoint
+    {
+        public readonly string endPointName;
+        public readonly Dictionary<string, string> parameters;
+        public EndPoint(string endPointName, Dictionary<string, string> parameters)
+        {
+            this.endPointName = endPointName;
+            this.parameters = parameters;
+        }
+    }
+
     public class EndPointSelector
     {
         private readonly Dictionary<Type, IEndPoint> endPointDict;
@@ -45,25 +65,32 @@ namespace AutoyaFramework.Settings.EndPoint
             failed(connectionId, httpCode, errorReason, new AutoyaStatus());
         }
 
-        public EndPointSelector(IEndPoint[] endPointInstances, EndPointsGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
+        public EndPointSelector(IEndPoint[] endPointInstances = null, EndPointsGetRequestHeaderDelegate requestHeader = null, HttpResponseHandlingDelegate httpResponseHandlingDelegate = null)
         {
             this.endPointDict = new Dictionary<Type, IEndPoint>();
-            foreach (var endPointInstance in endPointInstances)
+            if (endPointInstances != null && 0 < endPointInstances.Length)
             {
-                endPointDict[endPointInstance.GetType()] = endPointInstance;
-            }
-
-            var targetType = typeof(IEndPoint);
-            var collectedTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(p => targetType.IsAssignableFrom(p) && targetType != p);
-            foreach (var collectedType in collectedTypes)
-            {
-                if (!endPointDict.ContainsKey(collectedType))
+                foreach (var endPointInstance in endPointInstances)
                 {
-                    Debug.LogError("EndPointSelector should be initialize with all types which impletents IEndPoint. required:" + collectedType);
-                    Debug.Break();
+                    endPointDict[endPointInstance.GetType()] = endPointInstance;
                 }
+
+#if UNITY_EDITOR
+                // in editor, check if the EndPointSelecter is initialized with all of classes which implemented ISelectiveEndPoint.
+                var targetType = typeof(IEndPoint);
+                var collectedTypes = AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(s => s.GetTypes())
+                    .Where(p => targetType.IsAssignableFrom(p) && targetType != p);
+
+                foreach (var collectedType in collectedTypes)
+                {
+                    if (!endPointDict.ContainsKey(collectedType))
+                    {
+                        Debug.LogError("EndPointSelector should be initialize with all types which impletents IEndPoint. required:" + collectedType);
+                        Debug.Break();
+                    }
+                }
+#endif
             }
 
             if (requestHeader != null)
@@ -85,18 +112,28 @@ namespace AutoyaFramework.Settings.EndPoint
             }
         }
 
+        public bool HasAnyEndPointInfo()
+        {
+            if (endPointDict.Count == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public IEnumerator UpToDate(
             string url,
             Dictionary<string, string> requestHeader,
+            Func<string, EndPoints> onConvert,
             Action<(string, Exception)[]> onUpdated,
-            Action onFailed,
+            Action<string> onFailed,
             double timeout,
             int retryCount
         )
         {
             var currentCount = 0;
 
-            var rawStringData = string.Empty;
+            EndPoints revAndEndPoints = null;
 
         retry:
             var succeeded = false;
@@ -116,7 +153,7 @@ namespace AutoyaFramework.Settings.EndPoint
                         string.Empty,
                         (conId, response) =>
                         {
-                            rawStringData = (string)response;
+                            revAndEndPoints = onConvert((string)response);
                             succeeded = true;
                         },
                         (conId, code, reason, status) =>
@@ -135,7 +172,7 @@ namespace AutoyaFramework.Settings.EndPoint
                         reason,
                         (conId, response) =>
                         {
-                            rawStringData = (string)response;
+                            revAndEndPoints = onConvert((string)response);
                             succeeded = true;
                         },
                         (conId, code, failReason, status) =>
@@ -154,17 +191,18 @@ namespace AutoyaFramework.Settings.EndPoint
 
             if (succeeded)
             {
-                var errors = ResetEndPoints(rawStringData);
+                var errors = UpdateEndPoints(revAndEndPoints);
                 onUpdated(errors);
                 yield break;
             }
 
             if (currentCount == retryCount)
             {
-                onFailed();
+                onFailed("failed through all retry.");
                 yield break;
             }
 
+            // start retry.
             currentCount++;
 
             // wait 2, 4, 8... sec.
@@ -179,12 +217,11 @@ namespace AutoyaFramework.Settings.EndPoint
             goto retry;
         }
 
-        private (string, Exception)[] ResetEndPoints(string data)
+        private (string, Exception)[] UpdateEndPoints(EndPoints revAndEndPoints)
         {
             var errors = new List<(string, Exception)>();
 
-            var classNamesAndValues = MiniJson.JsonDecode(data) as Dictionary<string, object>;
-
+            var classNamesAndValues = revAndEndPoints.endPoints.ToDictionary(ep => ep.endPointName, ep => ep.parameters);
             foreach (var endPointTypeAndInstance in endPointDict)
             {
                 var endPointTypeStr = endPointTypeAndInstance.Key.ToString();
@@ -192,12 +229,12 @@ namespace AutoyaFramework.Settings.EndPoint
                 {
                     if (classNamesAndValues.ContainsKey(endPointTypeStr))
                     {
-                        var keysAndValues = classNamesAndValues[endPointTypeStr] as Dictionary<string, object>;
+                        var keysAndValues = classNamesAndValues[endPointTypeStr];
                         var dataSource = new Dictionary<string, string>();
                         foreach (var keyValue in keysAndValues)
                         {
                             var key = keyValue.Key;
-                            var val = keyValue.Value as string;
+                            var val = keyValue.Value;
                             if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(val))
                             {
                                 continue;

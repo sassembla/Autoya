@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using AutoyaFramework.AssetBundles;
@@ -11,6 +10,8 @@ using UnityEngine;
 using AutoyaFramework.Settings.App;
 using System.Linq;
 using System.IO;
+using AutoyaFramework.EndPointSelect;
+using UnityEngine.Purchasing;
 
 /**
     modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
@@ -20,6 +21,92 @@ namespace AutoyaFramework
 
     public partial class Autoya
     {
+        /*
+            EndPoint selector feature.
+        */
+
+        /**
+            should return instances which implements IEndPoint to enable EndPointSelector.
+        */
+        private IEndPoint[] OnEndPointInstansRequired()
+        {
+            return new IEndPoint[0];
+        }
+
+        /**
+            return request headers for getting endPoint info.
+         */
+        private Dictionary<string, string> OnEndPointGetRequest(string url, Dictionary<string, string> requestHeader)
+        {
+            return requestHeader;
+        }
+
+        /**
+            should return endPoints by parsing response from your endpoint info server.
+        */
+        private EndPoints OnEndPointsParseFromUpdateResponse(string responseStr)
+        {
+            /*
+                e,g,
+
+                {
+                    "main": [{
+                            "key0": "val0"
+                        },
+                        {
+                            "key1": "val1"
+                        }
+                    ],
+                    "sub": [{
+                        "key1": "val1"
+                    }]
+                }
+            */
+            var endPoints = new List<EndPoint>();
+            var classNamesAndValuesSource = MiniJson.JsonDecode(responseStr) as Dictionary<string, object>;
+            foreach (var classNamesAndValueSrc in classNamesAndValuesSource)
+            {
+                var className = classNamesAndValueSrc.Key;
+                var rawParameterList = classNamesAndValueSrc.Value as List<object>;
+
+                var parameterDict = new Dictionary<string, string>();
+                foreach (var rawParameters in rawParameterList)
+                {
+                    var parameters = rawParameters as Dictionary<string, object>;
+                    foreach (var parameter in parameters)
+                    {
+                        var key = parameter.Key;
+                        var val = parameter.Value as string;
+                        parameterDict[key] = val;
+                    }
+                }
+
+                var endPoint = new EndPoint(className, parameterDict);
+                endPoints.Add(endPoint);
+            }
+
+            return new EndPoints(endPoints.ToArray());
+        }
+
+        /**
+            fired when endPoint request is succeeded.
+        */
+        private void OnEndPointUpdateSucceeded()
+        {
+            // do something.
+        }
+
+        /**
+            fired when endPoint request is failed.
+        */
+        private void OnEndPointUpdateFailed((string requestFailedEndPointName, System.Exception exception)[] errors)
+        {
+            // do something if need to do when endPoint request is failed.
+        }
+
+
+
+
         /**
             you can do something before Autoya boot.
          */

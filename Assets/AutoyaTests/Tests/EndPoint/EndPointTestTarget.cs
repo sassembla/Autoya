@@ -1,23 +1,23 @@
 using System.Collections.Generic;
-using AutoyaFramework.Settings.EndPoint;
+using AutoyaFramework.EndPointSelect;
 
-public class slideshow : IEndPoint
+public class main : IEndPoint
 {
-    public string author = "default_author";
-    public string date = "default_date";
+    public string key0 = "default_val0";
+    public string key1 = "default_val1";
 
     public void UpToDate(Dictionary<string, string> dataSource)
     {
-        author = dataSource["author"];
+        key0 = dataSource["key0"];
     }
 }
 
 
-public class UnusedEndPoint : IEndPoint
+public class sub : IEndPoint
 {
-    public string A;
+    public string key0;
     public void UpToDate(Dictionary<string, string> dataSource)
     {
-        A = "here_comes";
+        key0 = "default_val0";
     }
 }

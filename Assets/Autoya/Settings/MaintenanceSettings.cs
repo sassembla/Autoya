@@ -5,7 +5,7 @@ namespace AutoyaFramework.Settings.Maintenance
         /*
 			urls and prefixies.
 		*/
-        public const string MAINTENANCE_URL = "http://google.com";
+        public string MAINTENANCE_URL = "http://google.com";
         public const string MAINTENANCE_PREFIX = "maintenance_";
     }
 }
