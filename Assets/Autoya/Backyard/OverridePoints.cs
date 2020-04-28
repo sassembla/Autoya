@@ -46,46 +46,47 @@ namespace AutoyaFramework
         */
         private EndPoints OnEndPointsParseFromUpdateResponse(string responseStr)
         {
-            /*
-                e,g,
+            // /*
+            //     e,g,
 
-                {
-                    "main": [{
-                            "key0": "val0"
-                        },
-                        {
-                            "key1": "val1"
-                        }
-                    ],
-                    "sub": [{
-                        "key1": "val1"
-                    }]
-                }
-            */
-            var endPoints = new List<EndPoint>();
-            var classNamesAndValuesSource = MiniJson.JsonDecode(responseStr) as Dictionary<string, object>;
-            foreach (var classNamesAndValueSrc in classNamesAndValuesSource)
-            {
-                var className = classNamesAndValueSrc.Key;
-                var rawParameterList = classNamesAndValueSrc.Value as List<object>;
+            //     {
+            //         "main": [{
+            //                 "key0": "val0"
+            //             },
+            //             {
+            //                 "key1": "val1"
+            //             }
+            //         ],
+            //         "sub": [{
+            //             "key1": "val1"
+            //         }]
+            //     }
+            // */
+            // var endPoints = new List<EndPoint>();
+            // var classNamesAndValuesSource = MiniJson.JsonDecode(responseStr) as Dictionary<string, object>;
+            // foreach (var classNamesAndValueSrc in classNamesAndValuesSource)
+            // {
+            //     var className = classNamesAndValueSrc.Key;
+            //     var rawParameterList = classNamesAndValueSrc.Value as List<object>;
 
-                var parameterDict = new Dictionary<string, string>();
-                foreach (var rawParameters in rawParameterList)
-                {
-                    var parameters = rawParameters as Dictionary<string, object>;
-                    foreach (var parameter in parameters)
-                    {
-                        var key = parameter.Key;
-                        var val = parameter.Value as string;
-                        parameterDict[key] = val;
-                    }
-                }
+            //     var parameterDict = new Dictionary<string, string>();
+            //     foreach (var rawParameters in rawParameterList)
+            //     {
+            //         var parameters = rawParameters as Dictionary<string, object>;
+            //         foreach (var parameter in parameters)
+            //         {
+            //             var key = parameter.Key;
+            //             var val = parameter.Value as string;
+            //             parameterDict[key] = val;
+            //         }
+            //     }
 
-                var endPoint = new EndPoint(className, parameterDict);
-                endPoints.Add(endPoint);
-            }
+            //     var endPoint = new EndPoint(className, parameterDict);
+            //     endPoints.Add(endPoint);
+            // }
 
-            return new EndPoints(endPoints.ToArray());
+            // return new EndPoints(endPoints.ToArray());
+            return null;
         }
 
         /**
