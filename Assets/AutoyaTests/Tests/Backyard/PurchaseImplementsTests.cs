@@ -164,7 +164,12 @@ public class PurchaseImplementationTests : MiyamasuTestRunner
         );
 
         Autoya.forceFailAuthentication = false;
-        Debug.Log("AuthFailedInPurchase 終了");
+
+        yield return WaitUntil(
+            () => Autoya.Auth_IsAuthenticated(),
+            () => { throw new TimeoutException("failed to fail."); },
+            10
+        );
     }
 
     [MTest]
