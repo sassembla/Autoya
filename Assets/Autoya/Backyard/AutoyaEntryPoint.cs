@@ -40,6 +40,7 @@ namespace AutoyaFramework
             forceFailHttp = false;
             forceSetHttpCodeAsUnauthorized = false;
             forceMaintenance = false;
+            forceAppUpdated = false;
         }
     }
 }

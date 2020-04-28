@@ -14,7 +14,7 @@ using AutoyaFramework.EndPointSelect;
 using UnityEngine.Purchasing;
 
 /**
-    modify this class for your app's authentication, purchase, assetBundles, appManifest dataflow.
+    modify this class for your app's endpoint update, authentication, purchase, assetBundles, appManifest dataflow.
 */
 namespace AutoyaFramework
 {
@@ -28,10 +28,10 @@ namespace AutoyaFramework
         /**
             should return instances which implements IEndPoint to enable EndPointSelector.
         */
-        private IEndPoint[] OnEndPointInstansRequired()
+        private Func<IEndPoint[]> OnEndPointInstanceRequired = () =>
         {
             return new IEndPoint[0];
-        }
+        };
 
         /**
             return request headers for getting endPoint info.
@@ -42,51 +42,57 @@ namespace AutoyaFramework
         }
 
         /**
+            fire when endPoint get request is started.
+        */
+        private void OnEndPointGetRequestStarted()
+        {
+
+        }
+
+        /**
             should return endPoints by parsing response from your endpoint info server.
         */
         private EndPoints OnEndPointsParseFromUpdateResponse(string responseStr)
         {
-            // /*
-            //     e,g,
+            /*
+                e,g,
+                {
+                    "main": [{
+                            "key0": "val0"
+                        },
+                        {
+                            "key1": "val1"
+                        }
+                    ],
+                    "sub": [{
+                        "key1": "val1"
+                    }]
+                }
+            */
+            var endPoints = new List<EndPoint>();
+            var classNamesAndValuesSource = MiniJson.JsonDecode(responseStr) as Dictionary<string, object>;
+            foreach (var classNamesAndValueSrc in classNamesAndValuesSource)
+            {
+                var className = classNamesAndValueSrc.Key;
+                var rawParameterList = classNamesAndValueSrc.Value as List<object>;
 
-            //     {
-            //         "main": [{
-            //                 "key0": "val0"
-            //             },
-            //             {
-            //                 "key1": "val1"
-            //             }
-            //         ],
-            //         "sub": [{
-            //             "key1": "val1"
-            //         }]
-            //     }
-            // */
-            // var endPoints = new List<EndPoint>();
-            // var classNamesAndValuesSource = MiniJson.JsonDecode(responseStr) as Dictionary<string, object>;
-            // foreach (var classNamesAndValueSrc in classNamesAndValuesSource)
-            // {
-            //     var className = classNamesAndValueSrc.Key;
-            //     var rawParameterList = classNamesAndValueSrc.Value as List<object>;
+                var parameterDict = new Dictionary<string, string>();
+                foreach (var rawParameters in rawParameterList)
+                {
+                    var parameters = rawParameters as Dictionary<string, object>;
+                    foreach (var parameter in parameters)
+                    {
+                        var key = parameter.Key;
+                        var val = parameter.Value as string;
+                        parameterDict[key] = val;
+                    }
+                }
 
-            //     var parameterDict = new Dictionary<string, string>();
-            //     foreach (var rawParameters in rawParameterList)
-            //     {
-            //         var parameters = rawParameters as Dictionary<string, object>;
-            //         foreach (var parameter in parameters)
-            //         {
-            //             var key = parameter.Key;
-            //             var val = parameter.Value as string;
-            //             parameterDict[key] = val;
-            //         }
-            //     }
+                var endPoint = new EndPoint(className, parameterDict);
+                endPoints.Add(endPoint);
+            }
 
-            //     var endPoint = new EndPoint(className, parameterDict);
-            //     endPoints.Add(endPoint);
-            // }
-
-            // return new EndPoints(endPoints.ToArray());
-            return null;
+            return new EndPoints(endPoints.ToArray());
         }
 
         /**
@@ -98,23 +104,33 @@ namespace AutoyaFramework
         }
 
         /**
-            fired when endPoint request is failed.
+            fired when endPoint request is failed with retry count.
         */
         private void OnEndPointUpdateFailed((string requestFailedEndPointName, System.Exception exception)[] errors)
         {
             // do something if need to do when endPoint request is failed.
         }
 
+        /**
+            fired after OnEndPointUpdateFailed and should return if you want more retry or not.
+        */
+        private Func<bool> ShouldRetryEndPointGetRequestOrNot = () =>
+        {
+            return false;
+        };
+
 
 
 
         /**
-            you can do something before Autoya boot.
+            you can do something before Autoya boot completion.
          */
         private IEnumerator OnBootApplication()
         {
             yield break;
         }
+
+
 
         /*
             maintenance handlers.

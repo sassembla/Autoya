@@ -220,40 +220,42 @@ namespace AutoyaFramework.EndPointSelect
         private (string, Exception)[] UpdateEndPoints(EndPoints revAndEndPoints)
         {
             var errors = new List<(string, Exception)>();
-
-            var classNamesAndValues = revAndEndPoints.endPoints.ToDictionary(ep => ep.endPointName, ep => ep.parameters);
-            foreach (var endPointTypeAndInstance in endPointDict)
+            if (revAndEndPoints != null)
             {
-                var endPointTypeStr = endPointTypeAndInstance.Key.ToString();
-                try
+                var classNamesAndValues = revAndEndPoints.endPoints.ToDictionary(ep => ep.endPointName, ep => ep.parameters);
+                foreach (var endPointTypeAndInstance in endPointDict)
                 {
-                    if (classNamesAndValues.ContainsKey(endPointTypeStr))
+                    var endPointTypeStr = endPointTypeAndInstance.Key.ToString();
+                    try
                     {
-                        var keysAndValues = classNamesAndValues[endPointTypeStr];
-                        var dataSource = new Dictionary<string, string>();
-                        foreach (var keyValue in keysAndValues)
+                        if (classNamesAndValues.ContainsKey(endPointTypeStr))
                         {
-                            var key = keyValue.Key;
-                            var val = keyValue.Value;
-                            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(val))
+                            var keysAndValues = classNamesAndValues[endPointTypeStr];
+                            var dataSource = new Dictionary<string, string>();
+                            foreach (var keyValue in keysAndValues)
                             {
-                                continue;
+                                var key = keyValue.Key;
+                                var val = keyValue.Value;
+                                if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(val))
+                                {
+                                    continue;
+                                }
+                                dataSource[key] = val;
                             }
-                            dataSource[key] = val;
+
+                            endPointTypeAndInstance.Value.UpToDate(dataSource);
+                            continue;
                         }
-
-                        endPointTypeAndInstance.Value.UpToDate(dataSource);
-                        continue;
+                        // classnames not contained ep name.
                     }
-                    // classnames not contained ep name.
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("endpoint failed to uptodate, e:" + e);
-                    errors.Add((endPointTypeStr, e));
-                }
+                    catch (Exception e)
+                    {
+                        Debug.LogError("endpoint failed to uptodate, e:" + e);
+                        errors.Add((endPointTypeStr, e));
+                    }
 
-                // ep name is not contained in classnames.
+                    // ep name is not contained in classnames.
+                }
             }
 
             return errors.ToArray();

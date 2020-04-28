@@ -37,10 +37,24 @@ namespace AutoyaFramework
 
 
         /*
+            delegates
+        */
+
+        // request header handling.
+        private AssetBundleListGetRequestHeaderDelegate assetBundleListGetRequestHeaderDelegate;
+        private AssetBundlePreloadListGetRequestHeaderDelegate assetBundlePreloadListGetRequestHeaderDelegate;
+        private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
+
+
+        /*
 			Initializer
 		 */
         private IEnumerator InitializeAssetBundleFeature()
         {
+            this.assetBundleListGetRequestHeaderDelegate = OnAssetBundleListGetRequest;
+            this.assetBundlePreloadListGetRequestHeaderDelegate = OnAssetBundlePreloadListGetRequest;
+            this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
+
             // initialize AssetBundleListDownloader.
             AssetBundleListDownloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
             {

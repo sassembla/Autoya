@@ -43,12 +43,18 @@ namespace AutoyaFramework
         */
         public delegate Dictionary<string, string> EndPointGetRequestHeaderDelegate(string url, Dictionary<string, string> requestHeader);
 
+
+        /*
+            delegates
+        */
+
+        // request header handling.
         private HttpRequestHeaderDelegate httpRequestHeaderDelegate;
+
+        // response handling.
         private HttpResponseHandlingDelegate httpResponseHandlingDelegate;
-        private AssetBundleListGetRequestHeaderDelegate assetBundleListGetRequestHeaderDelegate;
-        private AssetBundlePreloadListGetRequestHeaderDelegate assetBundlePreloadListGetRequestHeaderDelegate;
-        private AssetBundleGetRequestHeaderDelegate assetBundleGetRequestHeaderDelegate;
-        private EndPointGetRequestHeaderDelegate endPointGetRequestHeaderDelegate;
+
+
 
         private AuthRouter _autoyaAuthRouter;
 
@@ -58,13 +64,8 @@ namespace AutoyaFramework
 
         private void Authenticate(bool isFirstBoot, Action internalOnAuthenticated)
         {
+            // setup request headers handling.
             this.httpRequestHeaderDelegate = OnHttpRequest;
-            this.httpResponseHandlingDelegate = HttpResponseHandling;
-
-            this.assetBundleListGetRequestHeaderDelegate = OnAssetBundleListGetRequest;
-            this.assetBundlePreloadListGetRequestHeaderDelegate = OnAssetBundlePreloadListGetRequest;
-            this.assetBundleGetRequestHeaderDelegate = OnAssetBundleGetRequest;
-            this.endPointGetRequestHeaderDelegate = OnEndPointGetRequest;
 
             Action onAuthSucceeded = () =>
             {

@@ -53,15 +53,22 @@ namespace AutoyaFramework
             _autoyaHttp = new HTTPConnection();
 
             InitializeAppManifest();
-            InitializeEndPointImplementation();
+
+            // setup response handling.
+            this.httpResponseHandlingDelegate = HttpResponseHandling;
 
             /*
                 endPoint -> AB -> OnBootLoop -> authentication.
             */
             IEnumerator bootSequence()
             {
+                // EndPointSelector initialize and update.
                 {
-                    var cor = UpdateEndPoints();
+                    InitializeEndPointImplementation();
+
+                retryEndPointRequest:
+                    var failed = false;
+                    var cor = UpdateEndPoints(() => failed = true);
                     var cont = cor.MoveNext();
                     if (cont)
                     {
@@ -71,8 +78,17 @@ namespace AutoyaFramework
                             yield return null;
                         }
                     }
+
+                    if (failed)
+                    {
+                        if (ShouldRetryEndPointGetRequestOrNot())
+                        {
+                            goto retryEndPointRequest;
+                        }
+                    }
                 }
 
+                // initialize AB feature.
                 {
                     var cor = InitializeAssetBundleFeature();
                     var cont = cor.MoveNext();
@@ -86,6 +102,7 @@ namespace AutoyaFramework
                     }
                 }
 
+                // boot app loop.
                 {
                     var cor = OnBootApplication();
                     var cont = cor.MoveNext();
@@ -99,6 +116,7 @@ namespace AutoyaFramework
                     }
                 }
 
+                // check if first boot or not.
                 {
                     var cor = IsFirstBoot(
                         isFirstBoot =>
@@ -122,6 +140,7 @@ namespace AutoyaFramework
                         }
                     );
 
+                    // run 1st loop for getting autoya instance.
                     var cont = cor.MoveNext();
                     if (cont)
                     {

@@ -14,8 +14,17 @@ namespace AutoyaFramework
     {
         private EndPointSelector _endPointSelector;
 
+        /*
+            delegates
+        */
+
+        // request header handling.
+        private EndPointGetRequestHeaderDelegate endPointGetRequestHeaderDelegate;
+
         private void InitializeEndPointImplementation()
         {
+            this.endPointGetRequestHeaderDelegate = OnEndPointGetRequest;
+
             // initialize EndPointSelector.
             EndPointSelector.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
             {
@@ -26,10 +35,10 @@ namespace AutoyaFramework
                 return endPointGetRequestHeaderDelegate(p1, p2);
             };
 
-            _endPointSelector = new EndPointSelector(OnEndPointInstansRequired(), endPointGetRequestHeaderDel, httpResponseHandlingDel);
+            _endPointSelector = new EndPointSelector(OnEndPointInstanceRequired(), endPointGetRequestHeaderDel, httpResponseHandlingDel);
         }
 
-        private IEnumerator UpdateEndPoints()
+        private IEnumerator UpdateEndPoints(Action onFailed)
         {
             if (!_endPointSelector.HasAnyEndPointInfo())
             {
@@ -39,6 +48,7 @@ namespace AutoyaFramework
             var url = EndPointSelectorSettings.ENDPOINT_INFO_URL;
             var reqHeader = endPointGetRequestHeaderDelegate(url, new Dictionary<string, string>());
 
+            OnEndPointGetRequestStarted();
             var cor = _endPointSelector.UpToDate(
                 url,
                 reqHeader,
@@ -51,6 +61,7 @@ namespace AutoyaFramework
                     if (0 < errors.Length)
                     {
                         OnEndPointUpdateFailed(errors);
+                        onFailed();
                         return;
                     }
                     OnEndPointUpdateSucceeded();
@@ -62,6 +73,7 @@ namespace AutoyaFramework
                             (failReason, new Exception(failReason))
                         }
                     );
+                    onFailed();
                 },
                 EndPointSelectorSettings.TIMEOUT_SEC,
                 EndPointSelectorSettings.MAX_RETRY_COUNT
@@ -86,11 +98,27 @@ namespace AutoyaFramework
         public static IEnumerator Debug_EndPointUpdate(IEndPoint[] endPointInstances)
         {
             autoya._endPointSelector = new EndPointSelector(endPointInstances);
-            var cor = autoya.UpdateEndPoints();
+            var cor = autoya.UpdateEndPoints(() => { });
             while (cor.MoveNext())
             {
                 yield return null;
             }
+        }
+
+        public static void Debug_OnEndPointInstanceRequired(Func<IEndPoint[]> debugFunc)
+        {
+            autoya.OnEndPointInstanceRequired = () =>
+            {
+                return debugFunc();
+            };
+        }
+
+        public static void Debug_SetShouldRetryEndPointGetRequest(Func<bool> debugFunc)
+        {
+            autoya.ShouldRetryEndPointGetRequestOrNot = () =>
+            {
+                return debugFunc();
+            };
         }
     }
 }
