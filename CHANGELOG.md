@@ -6,6 +6,12 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.14] - 2020/04/29
+
+### Feature
+- EndPointSelector is added and implemented into Autoya's workflow.
+
+
 ## [0.9.13] - 2020/03/26
 
 ### Fixed
@@ -295,7 +301,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.13...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.14...HEAD
+[0.9.14]: https://github.com/sassembla/autoya/compare/0.9.13...0.9.14
 [0.9.13]: https://github.com/sassembla/autoya/compare/0.9.11...0.9.13
 [0.9.11]: https://github.com/sassembla/autoya/compare/0.9.10...0.9.11
 [0.9.10]: https://github.com/sassembla/autoya/compare/0.9.9...0.9.10
