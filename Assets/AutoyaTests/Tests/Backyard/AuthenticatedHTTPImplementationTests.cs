@@ -321,14 +321,16 @@ public class AuthenticatedHTTPImplementationTests : MiyamasuTestRunner
 
         yield return WaitUntil(
             () => unauthorized,
-            () => { throw new TimeoutException("timeout."); }
+            () => { throw new TimeoutException("timeout."); },
+            10
         );
 
 
         // token refresh feature is already running. wait end.
         yield return WaitUntil(
             () => Autoya.Auth_IsAuthenticated(),
-            () => { throw new TimeoutException("failed to refresh token."); }
+            () => { throw new TimeoutException("failed to refresh token."); },
+            20
         );
     }
 
