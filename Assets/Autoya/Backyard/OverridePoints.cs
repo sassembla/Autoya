@@ -342,6 +342,20 @@ namespace AutoyaFramework
             }
         }
 
+        // fire on failed version.
+        private string OnValidateFailedHttpResponse(string method, string url, int statusCode, Dictionary<string, string> responseHeader, string failedReason)
+        {
+            // let's validate http response if need.
+            var isValid = true;
+            if (isValid)
+            {
+                return failedReason;
+            }
+            else
+            {
+                return "run over by a bicycle.";
+            }
+        }
 
 
         /*

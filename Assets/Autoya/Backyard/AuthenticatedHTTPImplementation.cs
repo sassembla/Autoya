@@ -94,7 +94,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("GET", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -171,7 +178,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("POST", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -248,7 +262,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("PUT", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -323,7 +344,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("DELETE", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -400,7 +428,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("GET", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -477,7 +512,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("POST", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -554,7 +596,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("PUT", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -630,7 +679,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("DELETE", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -713,7 +769,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("POST", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
@@ -790,7 +853,14 @@ namespace AutoyaFramework
                     },
                     (conId, code, reason, responseHeader) =>
                     {
-                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { }, failed);
+                        autoya.HttpResponseHandling(conId, responseHeader, code, string.Empty, reason, (_conId, _data) => { },
+                            (_conId, _code, _reason, _status) =>
+                            {
+                                // use validated reason for some security appearance.
+                                var validatedReason = autoya.OnValidateFailedHttpResponse("PUT", url, _code, responseHeader, _reason);
+                                failed(_conId, _code, validatedReason, _status);
+                            }
+                        );
                     },
                     timeoutSec
                 )
