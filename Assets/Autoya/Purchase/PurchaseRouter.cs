@@ -51,7 +51,7 @@ namespace AutoyaFramework.Purchase
         /*
 			delegate for supply http request header generate func for modules.
 		*/
-        public delegate Dictionary<string, string> HttpRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, string data);
+        public delegate Dictionary<string, string> HttpRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, object data);
 
         /*
 			delegate for handle http response for modules.
@@ -61,7 +61,7 @@ namespace AutoyaFramework.Purchase
         private readonly HttpRequestHeaderDelegate httpRequestHeaderDelegate;
         private readonly HttpResponseHandlingDelegate httpResponseHandlingDelegate;
 
-        private readonly Func<string, string> onTicketRequest;
+        private readonly Func<string, object> onTicketRequest;
 
         [Serializable]
         public struct PurchaseFailed
@@ -143,7 +143,7 @@ namespace AutoyaFramework.Purchase
 
         private readonly string storeKind;
 
-        private Dictionary<string, string> BasicRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, string data)
+        private Dictionary<string, string> BasicRequestHeaderDelegate(string method, string url, Dictionary<string, string> requestHeader, object data)
         {
             return requestHeader;
         }
@@ -937,7 +937,7 @@ namespace AutoyaFramework.Purchase
             );
         }
 
-        private IEnumerator HttpPost(string connectionId, string url, string data, Action<string, string> succeeded, Action<string, int, string> failed)
+        private IEnumerator HttpPost(string connectionId, string url, object data, Action<string, string> succeeded, Action<string, int, string> failed)
         {
             var header = this.httpRequestHeaderDelegate("POST", url, new Dictionary<string, string>(), data);
 
@@ -946,21 +946,46 @@ namespace AutoyaFramework.Purchase
                 succeeded(conId, result as string);
             };
 
-            return http.Post(
-                connectionId,
-                header,
-                url,
-                data,
-                (string conId, int code, Dictionary<string, string> respHeaders, string result) =>
-                {
-                    httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
-                },
-                (conId, code, reason, respHeaders) =>
-                {
-                    httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
-                },
-                PurchaseSettings.TIMEOUT_SEC
-            );
+            // send string or byte[] to server via http.
+            if (data is string)
+            {
+                return http.Post(
+                    connectionId,
+                    header,
+                    url,
+                    (string)data,
+                    (string conId, int code, Dictionary<string, string> respHeaders, string result) =>
+                    {
+                        httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                    },
+                    (conId, code, reason, respHeaders) =>
+                    {
+                        httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                    },
+                    PurchaseSettings.TIMEOUT_SEC
+                );
+            }
+
+            if (data is byte[])
+            {
+                return http.Post(
+                    connectionId,
+                    header,
+                    url,
+                    (byte[])data,
+                    (string conId, int code, Dictionary<string, string> respHeaders, byte[] result) =>
+                    {
+                        httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                    },
+                    (conId, code, reason, respHeaders) =>
+                    {
+                        httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                    },
+                    PurchaseSettings.TIMEOUT_SEC
+                );
+            }
+
+            throw new Exception("should set string or byte[] to data.");
         }
     }
 }

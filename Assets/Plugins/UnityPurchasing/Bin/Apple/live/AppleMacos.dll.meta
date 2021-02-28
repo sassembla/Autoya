@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e8b01e2bfc35b412e96617d9a230fc19
+guid: 2e96617d901e2bfc35b41a230fc19e8b
 timeCreated: 1441823904
 licenseType: Pro
 PluginImporter:
@@ -34,15 +34,15 @@ PluginImporter:
       settings:
         CPU: None
     OSXIntel:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
     OSXIntel64:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
     OSXUniversal:
-      enabled: 0
+      enabled: 1
       settings:
         CPU: AnyCPU
     Win:
@@ -58,7 +58,7 @@ PluginImporter:
       settings:
         CPU: AnyCPU
     iOS:
-      enabled: 1
+      enabled: 0
       settings:
         CompileFlags: 
         FrameworkDependencies: 

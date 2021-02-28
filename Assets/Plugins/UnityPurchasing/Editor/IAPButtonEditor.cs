@@ -1,4 +1,5 @@
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING || UNITY_UNIFIED_IAP
+
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Purchasing;

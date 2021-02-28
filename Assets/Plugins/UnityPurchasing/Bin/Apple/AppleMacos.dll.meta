@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 481ccfa6c50984049a3b7c1c173a6e69
+guid: 049a3b7fa6c50984c1c173a6e69481cc
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -26,13 +26,13 @@ PluginImporter:
   - first:
       '': OSXIntel
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: None
   - first:
       '': OSXIntel64
     second:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: None
   - first:
@@ -101,9 +101,9 @@ PluginImporter:
   - first:
       Standalone: OSXUniversal
     second:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: AnyCPU
+        CPU: None
   - first:
       Standalone: Win
     second:
@@ -134,7 +134,7 @@ PluginImporter:
   - first:
       iPhone: iOS
     second:
-      enabled: 0
+      enabled: 1
       settings:
         CompileFlags: 
         FrameworkDependencies: 

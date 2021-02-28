@@ -1,3 +1,208 @@
+## [2.2.7] - 2021-01-27
+
+### Changed
+
+- Amazon - Include SDK version 2.0.76. Continuing to investigate sensitivity to slow-network conditions.
+
+### Fixed
+- GooglePlay - Purchasing silently failing, showing `Failed to purchase unknown product {0}: System.Collections.Generic.List``1[UnityEngine.AndroidJavaObject]` in log, not calling `IStoreListener.OnPurchaseFailed`, after prior purchase when offline, after Initializing, until app has been restarted.
+- GooglePlay - `IStoreController.FetchAdditionalProducts` cleared receipts inappropriately.
+- Apple - Exception seen when purchasing and initializing with existing purchases (e.g. Non-Consumables) on devices set to Thai language. Internal logging of `DateTime` used `CurrentCulture` instead of `InvariantCulture`. Removed logs.
+
+## [2.2.6] - 2021-01-14
+
+### Changed
+- GooglePlay - OnSetupFailed called immediately when Unity IAP fails to connect to the underlying service. To handle users who are logged-out of Google Play we stop the initialization process quickly.
+
+### Fixed
+- GooglePlay - ConfirmPendingPurchase failed to acknowledge purchases after purchase and app restart.
+- GooglePlay - ProcessPurchase unexpectely called when player backgrounded and foregrounded app before the initialization phase finished.
+- GooglePlay - Initialization incorrectly reported as failing, while race-condition returned fetched product metadata simultaneously.
+- Apple - "ArgumentOutOfRangeException: Not a valid calendar for the given culture" during Apple receipt validation (`CrossPlatformValidator.Validate` > `AppleValidator.Validate` > `AppleReceiptParser.Parse`) on devices set to Thai locale.
+
+## [2.2.5] - 2020-12-14
+
+### Fixed
+- GooglePlay - Fails to initialize when the player has made no purchases
+- GooglePlay - Missing ProcessPurchase callback at app start when the transaction is (1) purchased, (2) processed by the app with a ProcessPurchaseResult.Pending result, (3) the app is terminated, and (4) the app is restarted
+- GooglePlay - NullReferenceException from "FillPurchases" (logged internal API) when returning from background, unpredictably
+- Apple - Unity IAP 2.2.2's Apple Silicon fix not included in release; continuous integration pipeline fixed
+- `StandardPurchasingModule.appStore` returns `AppStore.MacAppStore` for Mac App Store, `AppStore.AppleAppStore` for iOS App Store, and `AppStore.WinRT` for Windows Desktop. (No change to 
+`AppStore.SamsungApps`, `AppStore.AmazonAppStore`, or `AppStore.GooglePlay`.)
+
+## [2.2.4] - 2020-12-03
+
+### Fixed
+- GooglePlay - `IStoreListener.ProcessPurchase` called more than once for any purchase which is not consumed, i.e. when `ProcessPurchaseResult.Pending` is returned, by fixing a race-condition.
+
+### Changed
+- GooglePlay - To receive `ProcessPurchase` calls after foregrounding the app, when a purchase is made outside the app (e.g. in the Play Store app), please upgrade the core package via the Package Manager to `com.unity.purchasing@2.2.1` or higher. 
+
+## [2.2.3] - 2020-12-01
+
+### Fixed
+- GooglePlay - `IStoreListener.OnInitialized` is now called after all purchases have been fetched from the store.
+- GooglePlay - `IStoreListener.OnPurchaseFailed` would not be called in projects where the purchased product's ID differed from its Store Specific ID.
+- GooglePlay - All receipts were corrupt after a purchase of a Consumable, until the next Android `Activity.onResume` lifecycle event, if the user had previously bought a Subscription.
+- GooglePlay - Fix `MissingMethodException` seen in projects using `com.unity.purchasing@2.0.3` through `2.2.0` when a user launches their game after having previously purchased a Product.
+
+## [2.2.2] - 2020-11-20
+
+### Fixed
+- Mac App Store - Support for Apple Silicon, `arm64` slice added to binary
+- GooglePlay - ProductMetadata.localizedPrice no longer floors fractions, e.g. "$19.99" was "$19.00"
+- GooglePlay - Fix several purchasing-flow issues
+   - OnPurchaseFailed not called after canceled purchase
+   - Exceptions shown in logcat after normal purchase
+   - Purchases of consumables left incomplete, resulting in "product already owned" errors
+- GooglePlay - Fix initialization when [Android] "Player Settings > Publishing Settings > Minification: Proguard" is enabled. "AndroidJavaException: java.lang.ClassNotFoundException: com.android.billingclient.api.PurchasesUpdatedListener"
+
+
+## [2.2.1] - 2020-11-13
+
+### Fixed
+- GooglePlay - ProductMetadata.localizedPrice always `0` 
+- GooglePlay - "Main" thread warning seen in IStoreListener.OnInitialized and related callbacks.
+
+### Added
+- GooglePlay - Subscription metadata is now available in `GoogleProductMetadata` from `ProductMetadata.GetGoogleProductMetadata()` via `IStoreController.products`.
+   - For example, use `GoogleProductMetadata googleMetadata = storeController.product.all[0].metadata.GetGoogleProductMetadata();` now instead of the deprecated, `IGooglePlayStoreExtensions.GetProductJSONDictionary`.
+   - string originalJson - Note, a single SkuDetails JSON, instead of multiple from `GetProductJSONDictionary` 
+   - string subscriptionPeriod
+   - string freeTrialPeriod
+   - string introductoryPrice
+   - string introductoryPricePeriod
+   - int introductoryPriceCycles
+
+## [2.2.0] - 2020-11-06
+
+### Changed
+- GooglePlay - Upgrades to Google Play Billing Library v3.0.1. This replaces the Google Play AIDL implementation.
+   - The transaction identifier is always purchaseToken. This replaces the v2.1.0 orderId behavior. See `IGooglePlayConfiguration` changes below.
+   - Adds new and deprecates `IGooglePlayStoreExtensions` APIs
+      - Deprecated - disabled.
+         - `IGooglePlayStoreExtensions.IsOwned`
+         - `IGooglePlayStoreExtensions.SetLogLevel`
+         - `IGooglePlayStoreExtensions.GetProductJSONDictionary` - use the `ProductMetadata` of `product.metadata` from `IStoreController.products`
+      - Deprecated - will be removed in future release.
+         - `IGooglePlayStoreExtensions.FinishAdditionalTransaction`
+      - New variant (signature)
+         - `IGooglePlayStoreExtensions.UpgradeDowngradeSubscription(string oldSku, string newSku, int desiredProrationMode)` - allow refined proration mode for subscription upgrade or downgrade as described in the [Google ProrationMode documentation](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.ProrationMode)
+      - New methods
+         - `IGooglePlayStoreExtensions.ConfirmSubscriptionPriceChange(string productId, Action<bool> callback)` - prompt users to confirm a price change for their subscription
+         - `IGooglePlayStoreExtensions.SetDeferredPurchaseListener(Action<Product> action)` - listen for new pending out-of-app purchases, consider notifying users here
+         - `IGooglePlayStoreExtensions.SetObfuscatedAccountId(string accountId)` - to help Google detect and reduce irregular activities when making a purchase
+         - `IGooglePlayStoreExtensions.SetObfuscatedProfileId(string profileId)` - to help Google detect and reduce irregular activities when making a purchase
+   - deprecates `IGooglePlayConfiguration` APIs
+      - Deprecated - disabled.
+         - `IGooglePlayConfiguration.SetPublicKey`
+         - `IGooglePlayConfiguration.aggressivelyRecoverLostPurchases`
+         - `IGooglePlayConfiguration.UsePurchaseTokenForTransactionId`
+
+### Fixed
+- IAP Catalog - GooglePlay - pricing template when exporting to CSV, now sets autofill pricing to `false` instead of `true`
+- GooglePlay - Subscription receipts will update, e.g. after an upgrade or downgrade, whenever the player pauses or resumes their app. See this change reflected in the `product.receipt` of `IStoreController.products`.
+
+### Added 
+- Apple Macos - Support for building IL2CPP on MacOS
+
+## [2.1.1] - 2020-10-23
+
+### Fixed
+- Amazon - Fix build failure caused by duplicate classes
+- Amazon - Fix ResponseReceiver flaw reported by Amazon APK audit caused by permission attribute location in AndroidManifest.xml 
+
+## [2.1.0] - 2020-10-14
+### Future
+- GooglePlay - Transaction IDs for all Google Play transactions will be switched to use Google's Purchase Token in a future version of Unity IAP. Google's Order ID previously was used when possible. This version introduces a feature to switch to Purchase Token now, and also to automatically use Purchase Token if `aggressivelyRecoverLostPurchases = true`.
+
+### Changed
+
+- GooglePlay - Live payments using `aggressivelyRecoverLostPurchases = true` - switched to Google's Purchase Token from using Google's Order ID to represent all transaction IDs. Automatically sets `Product.transactionID` to GooglePlay `purchaseToken` when `aggressivelyRecoverLostPurchases` is `true`. Continues to use `orderId`, otherwise. CLARIFICATION: To reinforce the preferred usage of `aggressivelyRecoverLostPurchases`, a de-duplicating backend purchase verification server is recommended to be added to a game's transaction verification pipeline when using this feature. Without such a server the recovered purchases may not be easily or safely de-duplicated by a client.
+   - When upgrading from previous versions of Unity IAP, and if enabled `bool IGooglePlayConfiguration.aggressivelyRecoverLostPurchases`, any purchases your users have made will be processed again by Unity IAP; ProcessPurchase will be called for all these purchases.
+   - Afterwards, for future purchases, this change reduces future duplicate processing calls; ProcessPurchase should no longer be called after an interrupted purchase for an item already purcahsed by the user. 
+  - Update purchase verification servers to treat orderId and purchaseToken as the same ID. Extract the purchaseToken from the JSON receipt, or fetch the orderId using a purchaseToken and the server API [`purchases.products` Google Play Developer API](https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.products). 
+  - Override this behavior with `UsePurchaseTokenForTransactionId`, below.
+- GooglePlay Security - Add GooglePlayReceipt.orderID and obsolete GooglePlayReceipt.transactionID for the local receipt validator, for clarity.
+- GooglePlay - Reduce the frequency of double-processing when a purchase is canceled, if using `aggressivelyRecoverLostPurchases = true`. Always records purchaseToken in TransactionLog when a transaction is completed.
+
+### Added
+- GooglePlay - Ability to override the `Product.transactionID` and use either Google's Purchase Token, or the legacy Order ID when possible, with `UsePurchaseTokenForTransactionId`.
+  - Call `void IGooglePlayConfiguration.UsePurchaseTokenForTransactionId(bool usePurchaseToken)` to disable the default behavior
+     - a) `false` to use the `orderId`, when possible; this is the legacy and non-unique transaction ID behavior. This must switch to the purchaseToken when the orderId is not available from Google, which is when `aggressivelyRecoverLostPurchases = true`. 
+     - b) `true` to always use the unique purchaseToken in transactionID. NOTE: this is the preferred option, and it will be the only behavior available in a future version of Unity IAP.
+  - **Background:** The GooglePlay purchaseToken is the unique identifier for all GooglePlay purchases; it is always available for all purchase types and all purchase records. The GooglePlay orderId is not available for all purchase types, notably sandbox and promo code, and also is currently not available for those purchase records which are returned for `aggressivelyRecoverLostPurchases = true` recovered purchases: the Google Play Billing history API used by this feature does not return orderId and therefore cannot be set as the Product.transactionID at that time. Historically, Unity IAP chose to prefer orderId for transactionID in its original implementation. And when the orderId was missing from purchase records (sandbox test purchases, and other no-money purchases), Unity IAP would use the purchaseToken as the transactionID. 
+  - **Impact:** Since Unity IAP version 1.23.3 this resulted in non-unique transactionIDs for purchases made which were "aggressively" restored: two distinct ProcessPurchase calls for one purchase could be generated, where Product.transactionID would change between two values (orderId and purchaseToken) and be non-unique. With this version, Unity IAP is starting a transition to only using purchaseToken, and avoids the impact for any new purchases made by a user.
+
+### Fixed
+- Receipt Validation Obfuscator - Compilation of `GoolgPlayTangle.cs` and `AppleTangle.cs` files. The generated files have been restored to their pre-2.0.0 location.
+- GooglePlay - 2020.2 support, removing usage of obsolete UnityEngine.VR.VRSettings API.
+
+## [2.0.0] - 2020-07-15
+### Removed
+- UnityChannel / Xiaomi - Completed deprecation, removing related APIs: `UnityEngine.Store`, `IUnityChannelExtensions`, `IUnityChannelConfiguration`.
+- CloudMoolah - Removed.
+- Tizen - Removed.
+- UDP package is no longer installed as a prerequisite
+
+### Added
+- UWP - Additional logging during initialization to diagnose developer portal misconfigurations. See https://docs.microsoft.com/en-us/windows/uwp/monetize/in-app-purchases-and-trials#how-to-use-product-ids-for-add-ons-in-your-code for a broad discussion of Windows.ApplicationModel.Store configuration.
+- UDP - if not installed or up-to-date, a menu will prompt you to install or update it upon selecting UDP support features. (See below)
+
+### Fixed
+- Reduced logging during initialization and purchasing
+- Amazon - Removed KeyNotFoundException after purchase failure
+- UDP - Removed one NullPointerException vulnerability
+- GooglePlay developerPayload spurious JSON parsing exception in log
+
+### Changed
+- IAP Updater "Updater Settings..." button now reads "More Information..." to be more accurate
+- UDP store implementation is still available, but must be installed in a separate module, available in either Asset Store or Package manager. The UDP module will need to be updated manually. (See above) 
+- Visibility of INativeStores is now public, mainly to support the new UDP package's needs
+- Resource files - The Product Catalog, Android Target Billing Mode, and Receipt Obfuscator Tangle files will be moved out of the plugins folder.
+
+### Important upgrade note
+- **Upgrading from prior Unity IAP?** - Unity may generate a _bad Android build_ once, immediately after installing the upgrade to this version of Unity IAP. Unity will be misconfigured to incorrectly include multiple Andriod app store Java implementations. So **if a dialog appears asking permission to update e.g. the "SamsungApps.aar" file's metadata, during the first build after the upgrade to this version of Unity IAP,** then click Yes, cancel the build, and rebuild. This dialog undesirably defeats Unity IAP's system for including one Android app store (Window > Unity IAP > Android > Target {app store}), resulting in the inclusion of Android Java code for two app stores. Android app stores such as Google Play and Samsung Apps may block publication of an APK which is detected to include Java code for two app store. Restarting Unity after upgrading will also avoid this dialog.
+
+## [1.23.5] - 2020-08-12
+### Fixed
+- GooglePlay - Fixed `IGooglePlayConfiguration.aggressivelyRecoverLostPurchases == false` (default) to reward players for currently in-flight purchases only, and not historical purchases, when the player cleans their device's TransactionLog, starts and cancels a purchase, and restarts the app.
+
+## [1.23.4] - 2020-07-13
+### Added
+- Security - Supports receipts from GooglePlay which omit `packageName`. These as are seen from v1.23.2's purchase-recovery features.
+   - The purchasing receipt's `packageName` is omitted by a GooglePlay historical purchase query APIs used by v1.23.2. When the RSASSA-PKCS1-v1_5 signature is valid and the receipt's `packageName` is not included, the `appBundleId` / `googleBundleId` input into `UnityEngine.Purchasing.Security.CrossPlatformValidator` is ignored. To avoid replay attacks we encourage developers continue heuristically scrutinizing the returned `purchaseTime` and `productId` values found in decoded receipts.
+
+### Removed
+- Analytics - For publication to Kids Category on Google Play and Apple App Store, removed `SystemInfo.deviceUniqueIdentifier` collection and sharing with `ecommerce.iap.unity3d.com` server.
+
+## [1.23.3] - 2020-06-28
+### Changed
+- GooglePlay - Default the failed-purchase recovery behavior to be disabled, which was introduced in `1.23.2`, to address players deleting their game's TransactionLog and receiving multiple products for a single purchase. Opt-in to the `1.23.2` behavior with `bool IGooglePlayConfiguration.aggressivelyRecoverLostPurchases = true;`, when also using a game server capable of validating each transaction and deduplicate based upon `Product.transactionID`, to reward players one time for a single purchase and support quickly recovering from interrupted-purchases.
+   - When a Google Play purchase is made the transaction can become out of synchronization with the Google Play server, appearing to be both failed on the game, and contradictorily successful on the Google Play store — an email message indicating purchase success may be received by the player. This desynchronization occurs when a purchase is interrupted while the native purchasing dialog is displayed to the player. Enable this feature to more aggressively detect these lost purchases.
+   - NOTICE: It is strongly recommended this feature be used with an off-device transaction de-duplication mechanism to avoid double-rewarding the player. An example is a game server which records Product.transactionID for each successful purchase and reports to the game whether a new transaction has already been processed for this player during a previous gameplay session. The scenario this occurs is when a player purchases a product, uninstalls and reinstalls their game — erasing Unity IAP’s on-device TransactionLog de-duplication database — and then the player attempts and aborts a re-purchase by cancelling it. The purchase cancellation is one trigger for this recovery feature which may result in recovering and notifying a duplicate success to the game for only the initial purchase. The game could then deny rewarding the player for this detected duplicate purchase.
+   - KNOWN-ISSUE: CrossPlatformValidator may show these historically-restored transactions as invalid.
+
+## [1.23.2] - 2020-06-17
+### Added
+- GooglePlay - Improves the chance of successfully purchasing a Consumable or NonConsumable when the _purchase flow_ is interrupted. Also addresses the dialog, "Your order is still being processed".
+   - Unity IAP will now detect this _purchasing_ failure. It will call the `IStoreListener.OnPurchaseFailed` API, initially. Then it will query Google Play for purchase success during the current app session until network is restored, and it will continue querying in the next app session, after a restart. It will finally call the `IStoreListener.ProcessPurchase` API if it finds a successful, unaccounted purchase.
+   - Addresses the case where (1) a consumable or nonconsumable purchase flow is started and (2) a network disruption occurs, or the app is sent to the background and the purchasing Activity is canceled, or the app is terminated. 
+- GooglePlay - Improves the chance of successfully repurchasing a Consumable whose successful transaction failed however to be _completed_ during the current app session.
+   - Unity IAP will now detect this _consumption_ failure. It will automatically retry completing the purchase until it succeeds. Note that `DuplicateTransaction` may still be reported while the retry is ongoing, until the user's product is repurchasable again. See below for new APIs to monitor the consumption flow.
+   - Addresses the case where (1) a Consumable purchase calls `IStoreListener.ProcessPurchase`, then (2) the transaction is completed by returning `ProcessPurchaseResult.Complete` from `IStoreListener.ProcessPurchase` or by directly calling `IStoreController.ConfirmPendingPurchase` [internally this always records the transaction identifier to the TransactionLog], and finally (3) an interruption (network or exit) aborts the transaction consumption. Only restarting the app or refunding the purchase would reliably resolve this case.
+- GooglePlay - Adds an `"isOwned" : <boolean>` sub-entry to the `Product.receipt`'s `"Payload"` JSON entry in order to help developers understand this product's current ownership state. 
+   - Contains `true` if the product is owned by the user. And please note that `true` may also indicate that Unity IAP is actively retrying consumption. Its boolean value will be `false` if the product is available for repurchase, or if we do not yet know Google Play's current status for this product. To clarify the receipt structure, `"isOwned"` is located in the Google Play-specific escaped-JSON sub-document. Sample `Product.receipt`, abbreviated: `{"Payload":"{\"json\": ..., \"signature\": ..., \"isOwned\":true}}"`. See the Google Play section of the [Unity IAP Receipt receipt documentation](https://docs.unity3d.com/Manual/UnityIAPPurchaseReceipts.html) for more on the receipt JSON structure.
+- GooglePlay - Adds `boolean IGooglePlayStoreExtensions.IsOwned(Product)` API to conveniently extract the new ownership state, above, from the Google Play JSON receipt. 
+   - Returns `true` if the product is still owned by the user. Returns `false` if the product is available for repurchase. Example: 
+```extensionProvider.GetExtension<IGooglePlayStoreExtensions>()```
+```.IsOwned(storeController.products.WithID("100.gold.coins"));```.
+- GooglePlay - Adds `void IGooglePlayStoreExtensions.SetLogLevel(int level)` API to reduce logging. 
+   - `level` defaults to the legacy value of `0` and configures the Google Play Java store integration to emit debug, info, warning, and error logs. Setting `1` will restrict logging to emit only warnings and errors. Example: `extensionProvider.GetExtension<IGooglePlayStoreExtensions>().SetLogLevel(1)`.
+- GooglePlay - After the purchasing dialog, "You already own this product" from Google Play is shown, the `IStoreListener.OnPurchaseFailed` API is calls with an error of `PurchaseFailureReason.DuplicateTransaction`.
+   - Unity IAP now treats "You already own this product" as a successful purchase, and _also_ calls `IStoreListener.ProcessPurchase`. Note: This amends the related behavior introduced in 1.23.1.
+   - Addresses the scenario where (1) a Consumable is purchased, and during purchasing (2) the Google Play store is interrupted by e.g. a network disruption. (3) Unity IAP correctly calls `IStoreListener.OnPurchaseFailed`, reporting the interruption as a purchase failure. (4) The user restores the network, attempts to re-purchase, Google Play shows "You already own this product", and Unity IAP reports the message as an error, calling `IStoreListener.OnPurchaseFailed` again. (4.1) Repeated re-purchase attempts fail, also potentially failing even after restarting the app.
+
 ## [1.23.1] - 2019-11-18
 ### Added
 - UWP - Additional logging during initialization to diagnose developer portal misconfigurations. See https://docs.microsoft.com/en-us/windows/uwp/monetize/in-app-purchases-and-trials#how-to-use-product-ids-for-add-ons-in-your-code for a broad discussion of Windows.ApplicationModel.Store configuration.
@@ -21,6 +226,12 @@
 - GooglePlay - IStoreListener.OnInitializeFailed / IStoreCallback.OnSetupFailed should return InitializationFailureReason.AppNotKnown error when user changes password off-device - user must login. Previously erroneously generated infinite error 6 codes when fetching purchase history after password change.
 - OverflowException when initializing if device locale used the comma (“,”) character as decimal separator.
 
+## [1.22.1] - 2019-08-13
+### Fixed
+- GooglePlay - SubscriptionInfo.getSubscriptionInfo() KeyNotFoundException when parsing receipts which omit expected fields.
+- GooglePlay - IStoreListener.OnInitializeFailed / IStoreCallback.OnSetupFailed should return InitializationFailureReason.AppNotKnown error when user changes password off-device - user must login. Previously erroneously generated infinite error 6 codes when fetching purchase history after password change.
+- OverflowException when initializing if device locale used the comma (“,”) character as decimal separator. 
+
 ## [1.22.0] - 2019-03-18
 ### Added
 - Added Unity Distribution Portal (UDP) module as an Android build target. Unity Distribution Portal streamlines your distribution process. UDP allows you to only build one version of your game, centralize the management of your marketing assets and metadata, and submit your content to multiple app stores, all in the same workflow. For more details, please refer to https://docs.unity3d.com/Packages/com.unity.purchasing.udp@1.0/manual/index.html.
@@ -36,6 +247,9 @@
 - Re-enabled Facebook IAP implementation for non-Gameroom Canvas apps.
 - Fixed GooglePlay store consumable products already owned error due to network issues.
 - Fixed wrong product id when cancel a subscription product purchase.
+
+## [1.21.0] - 2018-08-14
+- Limited release, for closed beta of UDP.
 
 ## [1.20.1] - 2018-10-5
 ### Added

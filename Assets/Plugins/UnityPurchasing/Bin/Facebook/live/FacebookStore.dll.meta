@@ -1,79 +1,33 @@
 fileFormatVersion: 2
 guid: 97e43e86f5dfe4cb4a0eeee600af6b43
-timeCreated: 1473188568
-licenseType: Pro
 PluginImporter:
-  serializedVersion: 1
+  externalObjects: {}
+  serializedVersion: 2
   iconMap: {}
   executionOrder: {}
+  defineConstraints: []
   isPreloaded: 0
+  isOverridable: 0
+  isExplicitlyReferenced: 0
+  validateReferences: 1
   platformData:
-    Android:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    Any:
+  - first:
+      Any: 
+    second:
       enabled: 0
       settings: {}
-    Editor:
+  - first:
+      Editor: Editor
+    second:
       enabled: 0
       settings:
-        CPU: AnyCPU
         DefaultValueInitialized: true
-        OS: AnyOS
-    Linux:
-      enabled: 0
-      settings:
-        CPU: None
-    Linux64:
-      enabled: 0
-      settings:
-        CPU: None
-    LinuxUniversal:
-      enabled: 0
-      settings:
-        CPU: None
-    OSXIntel:
-      enabled: 0
-      settings:
-        CPU: None
-    OSXIntel64:
-      enabled: 0
-      settings:
-        CPU: None
-    OSXUniversal:
-      enabled: 0
-      settings:
-        CPU: None
-    SamsungTV:
-      enabled: 0
-      settings:
-        STV_MODEL: STANDARD_13
-    WebGL:
-      enabled: 0
-      settings: {}
-    Win:
+  - first:
+      Windows Store Apps: WindowsStoreApps
+    second:
       enabled: 0
       settings:
         CPU: AnyCPU
-    Win64:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    WindowsStoreApps:
-      enabled: 0
-      settings:
-        CPU: AnyCPU
-    iOS:
-      enabled: 0
-      settings:
-        CompileFlags: 
-        FrameworkDependencies: 
-    tvOS:
-      enabled: 0
-      settings:
-        CompileFlags: 
-        FrameworkDependencies: 
   userData: 
   assetBundleName: 
   assetBundleVariant: 

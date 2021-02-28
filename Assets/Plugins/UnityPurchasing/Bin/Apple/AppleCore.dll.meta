@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 481ccfa6c50984049a3b7c1c173a6e69
+guid: 84049a50973a6e693b7c1c1481ccfa6c
 PluginImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -134,7 +134,14 @@ PluginImporter:
   - first:
       iPhone: iOS
     second:
-      enabled: 0
+      enabled: 1
+      settings:
+        CompileFlags: 
+        FrameworkDependencies: 
+  - first:
+      tvOS: tvOS
+    second:
+      enabled: 1
       settings:
         CompileFlags: 
         FrameworkDependencies: 
