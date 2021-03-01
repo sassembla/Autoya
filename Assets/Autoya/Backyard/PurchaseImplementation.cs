@@ -66,6 +66,7 @@ namespace AutoyaFramework
 
             _purchaseRouter = new PurchaseRouter(
                 mainthreadDispatcher.Commit,
+                GetProductInfosAs,
                 productSourceData => OnLoadProductsResponse(productSourceData),
                 productId => OnTicketRequest(productId),
                 ticketData => OnTicketResponse(ticketData),

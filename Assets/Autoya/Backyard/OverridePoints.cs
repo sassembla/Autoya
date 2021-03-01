@@ -380,12 +380,25 @@ namespace AutoyaFramework
         */
 
         /**
+            fire when this app requests product information to the server.
+            return PurchaseRouter.RequestProductInfosAs.String means get response as string.
+            return PurchaseRouter.RequestProductInfosAs.Binary means get response as byte[].
+        */
+        private PurchaseRouter.RequestProductInfosAs GetProductInfosAs()
+        {
+            return PurchaseRouter.RequestProductInfosAs.String;
+        }
+
+        /**
             fire when the server returns product datas for this app.
             these datas should return platform-specific data.
 
+            responseData is string when GetProductInfosAsString() returns RequestProductInfosAs.String.
+            responseData is byte[] when GetProductInfosAsString() returns RequestProductInfosAs.Binary.
+
             e,g, if player is iOS, should return iOS item data.
         */
-        private ProductInfo[] OnLoadProductsResponse(string responseData)
+        private ProductInfo[] OnLoadProductsResponse(object responseData)
         {
             /*
                 get ProductInfo[] data from this responseData.
@@ -393,7 +406,8 @@ namespace AutoyaFramework
 
                 consider convert response data to productInfo[].
                 e.g.
-                    string responseData -> JsonUtility.FromJson<ProductInfos>(responseData) -> productInfos.
+                    string responseData -> JsonUtility.FromJson<ProductInfos>((string)responseData) -> productInfos.
+                    byte[] responseData -> JsonUtility.FromJson<ProductInfos>(Encoding.UTF8.GetString((byte[])responseData)) -> productInfos.
 
 
                 below is reading products data from settings for example.

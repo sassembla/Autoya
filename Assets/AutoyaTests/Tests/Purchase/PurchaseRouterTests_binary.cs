@@ -5,6 +5,7 @@ using System.Text;
 using AutoyaFramework;
 using AutoyaFramework.Purchase;
 using Miyamasu;
+using NUnit.Framework;
 using UnityEngine;
 
 /**
@@ -78,6 +79,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -89,8 +91,6 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             givenProductId => Encoding.UTF8.GetBytes(givenProductId),
             ticketData =>
             {
-                Debug.Log("起動時セット ticketData:" + ticketData);
-                Debug.Log("ticketData:" + ((byte[])ticketData).Length);
                 return Encoding.UTF8.GetString((byte[])ticketData);
             },
             () => { },
@@ -196,6 +196,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -279,6 +280,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -317,6 +319,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -409,6 +412,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -481,6 +485,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -545,6 +550,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
 
         router = new PurchaseRouter(
             iEnum => runner.StartCoroutine(iEnum),
+            () => PurchaseRouter.RequestProductInfosAs.Binary,
             productData =>
             {
                 // dummy response.
@@ -556,6 +562,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             onTicketRequestFunc,// ここがリクエストに乗っかるので、ticketDataの値でassertを書けばいい。
             ticketData =>
             {
+                Assert.True(ticketData is byte[], "not byte[],  but ticketData:" + ticketData);
                 var ticketDataStr = Encoding.UTF8.GetString((byte[])ticketData);
                 True(ticketDataStr.Contains(dateTimeStr));
                 return ticketDataStr;

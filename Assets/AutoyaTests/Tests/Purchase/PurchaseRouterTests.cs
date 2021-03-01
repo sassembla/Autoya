@@ -76,6 +76,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.
@@ -189,6 +190,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+           () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.
@@ -272,6 +274,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.
@@ -309,6 +312,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.
@@ -401,6 +405,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.
@@ -473,6 +478,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 runner.StartCoroutine(iEnum);
             },
+            () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.
@@ -537,6 +543,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
 
         router = new PurchaseRouter(
             iEnum => runner.StartCoroutine(iEnum),
+            () => PurchaseRouter.RequestProductInfosAs.String,
             productData =>
             {
                 // dummy response.

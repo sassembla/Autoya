@@ -77,6 +77,12 @@ namespace AutoyaFramework.Purchase
             }
         }
 
+        public enum RequestProductInfosAs
+        {
+            String,
+            Binary
+        }
+
         public enum RouterState
         {
             None,
@@ -190,7 +196,8 @@ namespace AutoyaFramework.Purchase
 		 */
         public PurchaseRouter(
             Action<IEnumerator> executor,
-            Func<string, ProductInfo[]> onLoadProducts,
+            Func<RequestProductInfosAs> getProductInfosAs,
+            Func<object, ProductInfo[]> onLoadProducts,
             Func<string, object> onTicketRequest,
             Func<object, string> onTicketResponse,
             Action onPurchaseReady,
@@ -244,7 +251,12 @@ namespace AutoyaFramework.Purchase
             this.onPurchaseCompletedInBackground = onPurchaseCompletedInBackground;
 
 
-            var cor = _Ready(onLoadProducts, onPurchaseReady, onPurchaseReadyFailed);
+            var cor = _Ready(
+                getProductInfosAs,
+                onLoadProducts,
+                onPurchaseReady,
+                onPurchaseReadyFailed
+            );
             enumExecutor(cor);
         }
 
@@ -254,7 +266,8 @@ namespace AutoyaFramework.Purchase
         }
 
         private IEnumerator _Ready(
-            Func<string, ProductInfo[]> onLoadProducts,
+            Func<RequestProductInfosAs> getProductInfosAs,
+            Func<object, ProductInfo[]> onLoadProducts,
             Action reloaded,
             Action<PurchaseReadyError, int, string> failedToReady
         )
@@ -274,13 +287,22 @@ namespace AutoyaFramework.Purchase
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_READY_PREFIX + Guid.NewGuid().ToString();
             var url = PurchaseSettings.PURCHASE_URL_READY;
 
+            var getAs = getProductInfosAs();
 
             var cor = HttpGet(
                 connectionId,
                 url,
                 (conId, data) =>
                 {
-                    var products = onLoadProducts(data);
+                    if (data is string)
+                    {
+                        var productsFromStr = onLoadProducts((string)data);
+                        this.verifiedProducts = productsFromStr;
+                        ReadyIAPFeature(productsFromStr);
+                        return;
+                    }
+
+                    var products = onLoadProducts((byte[])data);
                     this.verifiedProducts = products;
                     ReadyIAPFeature(products);
                 },
@@ -288,7 +310,8 @@ namespace AutoyaFramework.Purchase
                 {
                     routerState = RouterState.FailedToGetProducts;
                     this.failedToReady(PurchaseReadyError.FailedToGetProducts, code, reason);
-                }
+                },
+                getAs
             );
 
             while (cor.MoveNext())
@@ -559,7 +582,7 @@ namespace AutoyaFramework.Purchase
 						renew callback.
 					*/
                     callbacks = new Callbacks(product, purchaseId, ticketId, purchaseSucceeded, purchaseFailed);
-                    this.controller.InitiatePurchase(product, ticketId);
+                    this.controller.InitiatePurchase(product);
                     return;
                 }
             }
@@ -590,7 +613,6 @@ namespace AutoyaFramework.Purchase
         /// </summary>
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs e)
         {
-            Debug.Log("ProcessPurchase");
             if (callbacks.p == null)
             {
                 SendPaid(e);
@@ -612,7 +634,7 @@ namespace AutoyaFramework.Purchase
                 case RouterState.Purchasing:
                     {
                         var purchasedUrl = PurchaseSettings.PURCHASE_URL_PURCHASE;
-                        Debug.Log("この辺から先かなあ、、、");
+
                         var data = onPurchaseDeployRequest(new TicketAndReceipt(callbacks.ticketId, e.purchasedProduct.receipt));
 
                         var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PURCHASE_PREFIX + Guid.NewGuid().ToString();
@@ -751,7 +773,6 @@ namespace AutoyaFramework.Purchase
 
         private void SendPaid(PurchaseEventArgs e)
         {
-            Debug.Log("SendPaid");
             // set if need.
             var ticketId = string.Empty;
 
@@ -942,31 +963,51 @@ namespace AutoyaFramework.Purchase
 
         /*
 			http functions for purchase.
-            TODO: receiving bytes should required in future.
 		*/
-        private IEnumerator HttpGet(string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed)
+        private IEnumerator HttpGet(string connectionId, string url, Action<string, object> succeeded, Action<string, int, string> failed, RequestProductInfosAs getAs)
         {
             var header = this.httpRequestHeaderDelegate("GET", url, new Dictionary<string, string>(), string.Empty);
 
             Action<string, object> onSucceeded = (conId, result) =>
             {
-                succeeded(conId, result as string);
+                succeeded(conId, result);
             };
 
-            return http.Get(
-                connectionId,
-                header,
-                url,
-                (string conId, int code, Dictionary<string, string> respHeaders, string result) =>
-                {
-                    httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
-                },
-                (conId, code, reason, respHeaders) =>
-                {
-                    httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
-                },
-                PurchaseSettings.TIMEOUT_SEC
-            );
+            switch (getAs)
+            {
+                case RequestProductInfosAs.String:// request string and got string result.
+                    return http.Get(
+                        connectionId,
+                        header,
+                        url,
+                        (string conId, int code, Dictionary<string, string> respHeaders, string result) =>
+                        {
+                            httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                        },
+                        (conId, code, reason, respHeaders) =>
+                        {
+                            httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                        },
+                        PurchaseSettings.TIMEOUT_SEC
+                    );
+                case RequestProductInfosAs.Binary:// request byte[] and got byte[] result.
+                    return http.GetByBytes(
+                        connectionId,
+                        header,
+                        url,
+                        (string conId, int code, Dictionary<string, string> respHeaders, byte[] result) =>
+                        {
+                            httpResponseHandlingDelegate(conId, respHeaders, code, result, string.Empty, onSucceeded, failed);
+                        },
+                        (conId, code, reason, respHeaders) =>
+                        {
+                            httpResponseHandlingDelegate(conId, respHeaders, code, string.Empty, reason, onSucceeded, failed);
+                        },
+                        PurchaseSettings.TIMEOUT_SEC
+                    );
+                default:
+                    throw new Exception("request data should be string or byte[].");
+            }
         }
 
         private IEnumerator HttpPost(string connectionId, string url, object data, Action<string, object> succeeded, Action<string, int, string> failed)
