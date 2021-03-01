@@ -85,7 +85,7 @@ public class PurchaseImplementationTests : MiyamasuTestRunner
         yield return WaitUntil(
             () => done,
             () => { throw new TimeoutException("failed to purchase."); },
-            10
+            30
         );
         True(succeeded, "not successed.");
     }

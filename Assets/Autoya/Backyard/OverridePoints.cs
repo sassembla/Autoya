@@ -439,10 +439,12 @@ namespace AutoyaFramework
 
             request url is defined at PurchaseSettings.cs/PURCHASE_URL_TICKET.
          */
-        private string OnTicketRequest(string choosedProductId)
+        private object OnTicketRequest(string choosedProductId)
         {
+            // should return string or byte[] for ticket request.
+
             // by default, choosedProductId will be send as raw string.
-            // when you change this like "{"productId":choosedProductId}", Tikcet request will be contains json representation.
+            // when you change this like "{"productId":choosedProductId}", Ticket request will be contains json representation.
             // please modify here if you need.
             return choosedProductId;
         }
@@ -452,10 +454,26 @@ namespace AutoyaFramework
             you can modify received ticket data string to desired data.
             returned string will be send to the server for item-deploy information of this purchase.
         */
-        private string OnTicketResponse(string ticketData)
+        private string OnTicketResponse(object ticketData)
         {
+            // ticketData comes as string or byte[].
+
             // modify if need.
-            return ticketData;
+            return (string)ticketData;
+        }
+
+        /**
+            called when app received the receipt of the product.
+            the receipt is combinated with the ticket for this purchase.
+
+            you can modify this payload data for validationg these receipt andt ticket in your server.
+            should return string or byte[] data.
+        */
+        private object OnPurchaseDeployRequest(PurchaseRouter.TicketAndReceipt payload)
+        {
+            Debug.Log("OnPurchaseDeployRequestにはきてる");
+            // modify if need.
+            return JsonUtility.ToJson(payload);
         }
 
         /**
@@ -466,7 +484,7 @@ namespace AutoyaFramework
             server received "paid" information and returned response code 200,
             after that, framework complete uncompleted purchase then fire this method.
          */
-        private void onPaidPurchaseDoneInBackground(string backgroundPurchasedProductId)
+        private void onPaidPurchaseDoneInBackground(string backgroundPurchasedProductId, object serverResponseData)
         {
             // server deployed some products for this player. update player's parameter if need.
         }

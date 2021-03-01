@@ -81,6 +81,7 @@ namespace AutoyaFramework
                     var cor = OnPurchaseReadyFailed(err, code, reason, purchaseErrorStatus);
                     mainthreadDispatcher.Commit(cor);
                 },
+                OnPurchaseDeployRequest,
                 onPaidPurchaseDoneInBackground,
                 httpRequestHeaderDel,
                 httpResponseHandlingDel

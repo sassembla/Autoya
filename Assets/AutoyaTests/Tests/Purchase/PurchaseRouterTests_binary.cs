@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using AutoyaFramework;
 using AutoyaFramework.Purchase;
 using Miyamasu;
@@ -8,8 +9,9 @@ using UnityEngine;
 
 /**
 	tests for Autoya Purchase
+    binary version.
 */
-public class PurchaseRouterTests : MiyamasuTestRunner
+public class PurchaseRouterTests_binary : MiyamasuTestRunner
 {
     /**
 		Unity 5.5以降対応のpurchaseのテスト。以下のようなことをまるっとやっている。
@@ -84,11 +86,16 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
-            givenProductId => givenProductId,
-            ticketData => (string)ticketData,
+            givenProductId => Encoding.UTF8.GetBytes(givenProductId),
+            ticketData =>
+            {
+                Debug.Log("起動時セット ticketData:" + ticketData);
+                Debug.Log("ticketData:" + ((byte[])ticketData).Length);
+                return Encoding.UTF8.GetString((byte[])ticketData);
+            },
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt)
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt))
         );
 
         yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
@@ -197,11 +204,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
-            givenProductId => givenProductId,
-            ticketData => (string)ticketData,
+            givenProductId => Encoding.UTF8.GetBytes(givenProductId),
+            ticketData => Encoding.UTF8.GetString((byte[])ticketData),
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate
@@ -259,7 +266,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
 #elif UNITY_IOS || UNITY_ANDROID
 		// pass.
 #else
-		yield break;
+        yield break;
 #endif
 
         // done, but transaction is remaining.
@@ -280,11 +287,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
-            givenProductId => givenProductId,
-            ticketData => (string)ticketData,
+            givenProductId => Encoding.UTF8.GetBytes(givenProductId),
+            ticketData => Encoding.UTF8.GetString((byte[])ticketData),
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             (backgroundPurchasedProductId, data) =>
             {
                 completed = true;
@@ -293,7 +300,8 @@ public class PurchaseRouterTests : MiyamasuTestRunner
 
         yield return WaitUntil(
             () => completed,
-            () => { throw new TimeoutException("failed to complete remaining transaction."); }
+            () => { throw new TimeoutException("failed to complete remaining transaction."); },
+            30
         );
     }
 
@@ -317,11 +325,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
-            givenProductId => givenProductId,
-            ticketData => (string)ticketData,
+            givenProductId => Encoding.UTF8.GetBytes(givenProductId),
+            ticketData => Encoding.UTF8.GetString((byte[])ticketData),
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate
@@ -390,7 +398,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
 #elif UNITY_IOS || UNITY_ANDROID
 		// pass.
 #else
-		yield break;
+        yield break;
 #endif
 
 
@@ -409,11 +417,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
-            givenProductId => givenProductId,
+            givenProductId => Encoding.UTF8.GetBytes(givenProductId),
             ticketData => Guid.NewGuid().ToString(),
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate
@@ -481,7 +489,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                     new ProductInfo("1000_gold_coins", "1000_gold_coins_iOS", true, "one ton of coins.")
                 };
             },
-            givenProductId => givenProductId,
+            givenProductId => Encoding.UTF8.GetBytes(givenProductId),
             ticketData => Guid.NewGuid().ToString(),
             () =>
             {
@@ -491,7 +499,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             {
                 Fail("failed to boot store func. err:" + err + " reason:" + reason);
             },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             (backgroundPurchasedProductId, data) =>
             {
                 completed = true;
@@ -506,7 +514,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
         yield return WaitUntil(
             () => rebooted && completed,
             () => { throw new TimeoutException("timeout."); },
-            10
+            30
         );
     }
 
@@ -528,11 +536,11 @@ public class PurchaseRouterTests : MiyamasuTestRunner
     {
         var dateTimeStr = DateTime.Now.Ticks.ToString();
 
-        Func<string, string> onTicketRequestFunc = givenProductId =>
+        Func<string, byte[]> onTicketRequestFunc = givenProductId =>
         {
             var data = new SampleTicketJsonData(givenProductId, dateTimeStr);
             var jsonStr = JsonUtility.ToJson(data);
-            return jsonStr;
+            return Encoding.UTF8.GetBytes(jsonStr);
         };
 
         router = new PurchaseRouter(
@@ -548,13 +556,13 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             onTicketRequestFunc,// ここがリクエストに乗っかるので、ticketDataの値でassertを書けばいい。
             ticketData =>
             {
-                var ticketDataStr = (string)ticketData;
+                var ticketDataStr = Encoding.UTF8.GetString((byte[])ticketData);
                 True(ticketDataStr.Contains(dateTimeStr));
                 return ticketDataStr;
             },
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate

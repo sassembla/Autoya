@@ -173,8 +173,9 @@ namespace AutoyaFramework.Purchase
         }
 
         private readonly Action<IEnumerator> enumExecutor;
-        private readonly Func<string, string> onTicketResponse;
-        private readonly Action<string> onPurchaseCompletedInBackground;
+        private readonly Func<object, string> onTicketResponse;
+        private readonly Func<TicketAndReceipt, object> onPurchaseDeployRequest;
+        private readonly Action<string, object> onPurchaseCompletedInBackground;
 
         private ProductInfo[] verifiedProducts;
 
@@ -190,11 +191,12 @@ namespace AutoyaFramework.Purchase
         public PurchaseRouter(
             Action<IEnumerator> executor,
             Func<string, ProductInfo[]> onLoadProducts,
-            Func<string, string> onTicketRequest,
-            Func<string, string> onTicketResponse,
+            Func<string, object> onTicketRequest,
+            Func<object, string> onTicketResponse,
             Action onPurchaseReady,
             Action<PurchaseReadyError, int, string> onPurchaseReadyFailed,
-            Action<string> onPurchaseCompletedInBackground = null,
+            Func<TicketAndReceipt, object> onPurchaseDeployRequest,
+            Action<string, object> onPurchaseCompletedInBackground = null,
             HttpRequestHeaderDelegate httpGetRequestHeaderDeletage = null,
             HttpResponseHandlingDelegate httpResponseHandlingDelegate = null
         )
@@ -238,6 +240,7 @@ namespace AutoyaFramework.Purchase
 
             this.onTicketRequest = onTicketRequest;
             this.onTicketResponse = onTicketResponse;
+            this.onPurchaseDeployRequest = onPurchaseDeployRequest;
             this.onPurchaseCompletedInBackground = onPurchaseCompletedInBackground;
 
 
@@ -487,29 +490,38 @@ namespace AutoyaFramework.Purchase
 
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_TICKET_PREFIX + Guid.NewGuid().ToString();
 
-            var cor = HttpPost(
-                connectionId,
-                ticketUrl,
-                data,
-                (conId, resultData) =>
-                {
-                    var ticketId = onTicketResponse(resultData);
-
-                    TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
-                },
-                (conId, code, reason) =>
-                {
-                    routerState = RouterState.PurchaseReady;
-                    if (purchaseFailed != null)
-                    {
-                        purchaseFailed(purchaseId, PurchaseError.TicketGetError, code, reason);
-                    }
-                }
-            );
-            while (cor.MoveNext())
+            if (data is string || data is byte[])
             {
-                yield return null;
+                var cor = HttpPost(
+                    connectionId,
+                    ticketUrl,
+                    data,
+                    (conId, resultData) =>
+                    {
+                        var ticketId = onTicketResponse(resultData);
+
+                        TicketReceived(purchaseId, productId, ticketId, purchaseSucceeded, purchaseFailed);
+                    },
+                    (conId, code, reason) =>
+                    {
+                        routerState = RouterState.PurchaseReady;
+                        if (purchaseFailed != null)
+                        {
+                            purchaseFailed(purchaseId, PurchaseError.TicketGetError, code, reason);
+                        }
+                    }
+               );
+
+                while (cor.MoveNext())
+                {
+                    yield return null;
+                }
+
+                // done sending.
+                yield break;
             }
+
+            throw new Exception("request data should be string or byte[].");
         }
 
         private struct Callbacks
@@ -560,11 +572,11 @@ namespace AutoyaFramework.Purchase
         }
 
         [Serializable]
-        private struct Ticket
+        public struct TicketAndReceipt
         {
             [SerializeField] private string ticketId;
             [SerializeField] private string data;
-            public Ticket(string ticketId, string data)
+            public TicketAndReceipt(string ticketId, string data)
             {
                 this.ticketId = ticketId;
                 this.data = data;
@@ -578,6 +590,7 @@ namespace AutoyaFramework.Purchase
         /// </summary>
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs e)
         {
+            Debug.Log("ProcessPurchase");
             if (callbacks.p == null)
             {
                 SendPaid(e);
@@ -599,35 +612,41 @@ namespace AutoyaFramework.Purchase
                 case RouterState.Purchasing:
                     {
                         var purchasedUrl = PurchaseSettings.PURCHASE_URL_PURCHASE;
-                        var dataStr = JsonUtility.ToJson(new Ticket(callbacks.ticketId, e.purchasedProduct.receipt));
+                        Debug.Log("この辺から先かなあ、、、");
+                        var data = onPurchaseDeployRequest(new TicketAndReceipt(callbacks.ticketId, e.purchasedProduct.receipt));
 
                         var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PURCHASE_PREFIX + Guid.NewGuid().ToString();
 
-                        var cor = HttpPost(
-                            connectionId,
-                            purchasedUrl,
-                            dataStr,
-                            (conId, responseData) =>
-                            {
-                                var product = e.purchasedProduct;
-                                controller.ConfirmPendingPurchase(e.purchasedProduct);
-                                routerState = RouterState.PurchaseReady;
-
-                                if (callbacks.purchaseSucceeded != null)
+                        if (data is string || data is byte[])
+                        {
+                            var cor = HttpPost(
+                                connectionId,
+                                purchasedUrl,
+                                data,
+                                (conId, responseData) =>
                                 {
-                                    callbacks.purchaseSucceeded();
-                                }
-                            },
-                            (conId, code, reason) =>
-                            {
-                                // OK以外のコードについてはcompleteを行わず、リトライ。
-                                routerState = RouterState.RetrySending;
+                                    var product = e.purchasedProduct;
+                                    controller.ConfirmPendingPurchase(e.purchasedProduct);
+                                    routerState = RouterState.PurchaseReady;
 
-                                StartRetry(callbacks, e);
-                            }
-                        );
-                        enumExecutor(cor);
-                        break;
+                                    if (callbacks.purchaseSucceeded != null)
+                                    {
+                                        callbacks.purchaseSucceeded();
+                                    }
+                                },
+                                (conId, code, reason) =>
+                                {
+                                    // OK以外のコードについてはcompleteを行わず、リトライ。
+                                    routerState = RouterState.RetrySending;
+
+                                    StartRetry(callbacks, e);
+                                }
+                            );
+                            enumExecutor(cor);
+                            break;
+                        }
+
+                        throw new Exception("request data should be string or byte[].");
                     }
                 default:
                     {
@@ -665,34 +684,42 @@ namespace AutoyaFramework.Purchase
                 yield return new WaitForSeconds(waitSec);
 
                 var purchasedUrl = PurchaseSettings.PURCHASE_URL_PURCHASE;
-                var dataStr = JsonUtility.ToJson(new Ticket(callbacks.ticketId, e.purchasedProduct.receipt));
+                var data = onPurchaseDeployRequest(new TicketAndReceipt(callbacks.ticketId, e.purchasedProduct.receipt));
 
                 var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PURCHASE_PREFIX + Guid.NewGuid().ToString();
 
-                var cor = HttpPost(
-                    connectionId,
-                    purchasedUrl,
-                    dataStr,
-                    (conId, responseData) =>
-                    {
-                        var product = e.purchasedProduct;
-                        controller.ConfirmPendingPurchase(e.purchasedProduct);
-
-                        routerState = RouterState.PurchaseReady;
-
-                        if (callbacks.purchaseSucceeded != null)
+                IEnumerator cor = null;
+                if (data is string || data is byte[])
+                {
+                    cor = HttpPost(
+                        connectionId,
+                        purchasedUrl,
+                        data,
+                        (conId, responseData) =>
                         {
-                            callbacks.purchaseSucceeded();
+                            var product = e.purchasedProduct;
+                            controller.ConfirmPendingPurchase(e.purchasedProduct);
+
+                            routerState = RouterState.PurchaseReady;
+
+                            if (callbacks.purchaseSucceeded != null)
+                            {
+                                callbacks.purchaseSucceeded();
+                            }
+                        },
+                        (conId, code, reason) =>
+                        {
+                            // still in RetrySending state.
+                            // update failed httpCode for show last failed reason.
+                            retryFailedHttpCode = code;
+                            retryFailedHttpReason = reason;
                         }
-                    },
-                    (conId, code, reason) =>
-                    {
-                        // still in RetrySending state.
-                        // update failed httpCode for show last failed reason.
-                        retryFailedHttpCode = code;
-                        retryFailedHttpReason = reason;
-                    }
-                );
+                    );
+                }
+                else
+                {
+                    throw new Exception("request data should be string or byte[].");
+                }
 
                 while (cor.MoveNext())
                 {
@@ -724,8 +751,7 @@ namespace AutoyaFramework.Purchase
 
         private void SendPaid(PurchaseEventArgs e)
         {
-            var dataStr = string.Empty;
-
+            Debug.Log("SendPaid");
             // set if need.
             var ticketId = string.Empty;
 
@@ -741,31 +767,36 @@ namespace AutoyaFramework.Purchase
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PAID_PREFIX + Guid.NewGuid().ToString();
             var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
 
-            dataStr = JsonUtility.ToJson(
-                new Ticket(ticketId, e.purchasedProduct.receipt)
-            );
+            var data = onPurchaseDeployRequest(new TicketAndReceipt(ticketId, e.purchasedProduct.receipt));
 
-            var cor = HttpPost(
-                connectionId,
-                purchasedUrl,
-                dataStr,
-                (conId, responseData) =>
-                {
-                    // complete paid product transaction.
-                    controller.ConfirmPendingPurchase(e.purchasedProduct);
-
-                    if (onPurchaseCompletedInBackground != null)
+            if (data is string || data is byte[])
+            {
+                var cor = HttpPost(
+                    connectionId,
+                    purchasedUrl,
+                    data,
+                    (conId, responseData) =>
                     {
-                        onPurchaseCompletedInBackground(responseData);
+                        // complete paid product transaction.
+                        controller.ConfirmPendingPurchase(e.purchasedProduct);
+
+                        if (onPurchaseCompletedInBackground != null)
+                        {
+                            onPurchaseCompletedInBackground(e.purchasedProduct.definition.id, responseData);
+                        }
+                    },
+                    (conId, code, reason) =>
+                    {
+                        // systems do this process again automatically.
+                        // no need to do something.
                     }
-                },
-                (conId, code, reason) =>
-                {
-                    // systems do this process again automatically.
-                    // no need to do something.
-                }
-            );
-            enumExecutor(cor);
+                );
+                enumExecutor(cor);
+            }
+            else
+            {
+                throw new Exception("request data should be string or byte[].");
+            }
         }
 
         /// <summary>
@@ -911,6 +942,7 @@ namespace AutoyaFramework.Purchase
 
         /*
 			http functions for purchase.
+            TODO: receiving bytes should required in future.
 		*/
         private IEnumerator HttpGet(string connectionId, string url, Action<string, string> succeeded, Action<string, int, string> failed)
         {
@@ -937,13 +969,13 @@ namespace AutoyaFramework.Purchase
             );
         }
 
-        private IEnumerator HttpPost(string connectionId, string url, object data, Action<string, string> succeeded, Action<string, int, string> failed)
+        private IEnumerator HttpPost(string connectionId, string url, object data, Action<string, object> succeeded, Action<string, int, string> failed)
         {
             var header = this.httpRequestHeaderDelegate("POST", url, new Dictionary<string, string>(), data);
 
             Action<string, object> onSucceeded = (conId, result) =>
             {
-                succeeded(conId, result as string);
+                succeeded(conId, result);
             };
 
             // send string or byte[] to server via http.
