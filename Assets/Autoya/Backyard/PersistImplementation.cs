@@ -53,6 +53,11 @@ namespace AutoyaFramework
             return autoya._autoyaFilePersistence.Load(domain, filePath);
         }
 
+        public static byte[] Persist_LoadAsBytes(string domain, string filePath)
+        {
+            return autoya._autoyaFilePersistence.LoadAsBytes(domain, filePath);
+        }
+
         public static bool Persist_Delete(string domain, string filePath)
         {
             return autoya._autoyaFilePersistence.Delete(domain, filePath);
@@ -138,7 +143,7 @@ namespace AutoyaFramework
             caching series
          */
 
-        public static void Persist_URLCaching_Load<T>(string domain, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null,int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
+        public static void Persist_URLCaching_Load<T>(string domain, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
             if (autoya._autoyaURLCache == null)
             {
@@ -181,6 +186,15 @@ namespace AutoyaFramework
             }
 
             autoya._autoyaURLCache.ClearCaching(domain);
+        }
+
+        public static string Persist_URLCaching_PathOf(string domain, string url)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+            return autoya._autoyaURLCache.PathOf(domain, url);
         }
 
         public static void Persist_CacheHashes(

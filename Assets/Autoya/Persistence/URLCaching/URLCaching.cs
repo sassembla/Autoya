@@ -114,7 +114,27 @@ namespace AutoyaFramework.Persistence.URLCaching
             }
         }
 
-        private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
+        public string PathOf(string storePath, string url)
+        {
+            var urlBase = new Uri(url);
+            var urlWithoutHash = urlBase.Authority + urlBase.LocalPath;
+            var hash = Convert.ToBase64String(Encoding.UTF8.GetBytes(urlBase.Query));
+
+            // ファイルパス、ファイル名を生成する
+            var targetFolderNameAndHash = GenerateFolderAndFilePath(urlWithoutHash, hash, storePath);
+            var targetFolderName = targetFolderNameAndHash.url;
+            var targetFileName = targetFolderNameAndHash.url + "_" + targetFolderNameAndHash.hash;
+
+            // フォルダ、ファイルがあるかどうかチェックする
+            var folderPath = Path.Combine(storePath, targetFolderName);
+            var existFolderPaths = filePersist.FileNamesInDomain(folderPath);
+
+            var fileUniquePath = Path.Combine(folderPath, targetFileName);
+
+            return Path.Combine(filePersist.basePath, fileUniquePath);
+        }
+
+        private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, double timeout = BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
 
             // ファイルパス、ファイル名を生成する
