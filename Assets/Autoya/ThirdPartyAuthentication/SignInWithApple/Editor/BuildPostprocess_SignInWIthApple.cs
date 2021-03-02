@@ -24,6 +24,8 @@ public static class BuildPostprocess_SignInWIthApple
             var targetName = PBXProject.GetUnityTargetName();
             var guid = proj.TargetGuidByName(targetName);
 
+            proj.AddCapability(guid, PBXCapabilityType.SignInWithApple);
+
             proj.AddFrameworkToProject(guid, "AuthenticationServices.framework", true);
 
             // SignInWithApple有効化
