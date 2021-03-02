@@ -181,6 +181,7 @@ namespace AutoyaFramework.Purchase
         private readonly Action<IEnumerator> enumExecutor;
         private readonly Func<object, string> onTicketResponse;
         private readonly Func<TicketAndReceipt, object> onPurchaseDeployRequest;
+        private readonly Func<PurchaseFailed, object> onPurchaseFailedRequest;
         private readonly Action<string, object> onPurchaseCompletedInBackground;
 
         private ProductInfo[] verifiedProducts;
@@ -203,6 +204,7 @@ namespace AutoyaFramework.Purchase
             Action onPurchaseReady,
             Action<PurchaseReadyError, int, string> onPurchaseReadyFailed,
             Func<TicketAndReceipt, object> onPurchaseDeployRequest,
+            Func<PurchaseFailed, object> onPurchaseFailedRequest,
             Action<string, object> onPurchaseCompletedInBackground = null,
             HttpRequestHeaderDelegate httpGetRequestHeaderDeletage = null,
             HttpResponseHandlingDelegate httpResponseHandlingDelegate = null
@@ -248,6 +250,7 @@ namespace AutoyaFramework.Purchase
             this.onTicketRequest = onTicketRequest;
             this.onTicketResponse = onTicketResponse;
             this.onPurchaseDeployRequest = onPurchaseDeployRequest;
+            this.onPurchaseFailedRequest = onPurchaseFailedRequest;
             this.onPurchaseCompletedInBackground = onPurchaseCompletedInBackground;
 
 
@@ -941,13 +944,13 @@ namespace AutoyaFramework.Purchase
                 send failed/cancelled ticketId if possible.
             */
             var purchaseCancelledUrl = PurchaseSettings.PURCHASE_URL_CANCEL;
-            var dataStr = JsonUtility.ToJson(new PurchaseFailed(callbacks.ticketId, currentTransactionId, reason));
+            var data = onPurchaseFailedRequest(new PurchaseFailed(callbacks.ticketId, currentTransactionId, reason));
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_CANCEL_PREFIX + Guid.NewGuid().ToString();
 
             var cor = HttpPost(
                 connectionId,
                 purchaseCancelledUrl,
-                dataStr,
+                data,
                 (conId, responseData) =>
                 {
                     // do nothing.

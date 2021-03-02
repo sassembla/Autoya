@@ -83,6 +83,7 @@ namespace AutoyaFramework
                     mainthreadDispatcher.Commit(cor);
                 },
                 OnPurchaseDeployRequest,
+                OnPurchaseFailedRequest,
                 onPaidPurchaseDoneInBackground,
                 httpRequestHeaderDel,
                 httpResponseHandlingDel

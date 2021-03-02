@@ -89,13 +89,11 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
                 };
             },
             givenProductId => Encoding.UTF8.GetBytes(givenProductId),
-            ticketData =>
-            {
-                return Encoding.UTF8.GetString((byte[])ticketData);
-            },
+            ticketData => Encoding.UTF8.GetString((byte[])ticketData),
             () => { },
             (err, code, reason) => { },
-            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt))
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData))
         );
 
         yield return WaitUntil(() => router.IsPurchaseReady(), () => { throw new TimeoutException("failed to ready."); });
@@ -210,6 +208,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate
@@ -294,6 +293,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) =>
             {
                 completed = true;
@@ -333,6 +333,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate
@@ -392,9 +393,9 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
     {
 
         /*
-			・storeのリブートに際して失敗したtransactionが復活するかどうか
-			が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
-		 */
+            ・storeのリブートに際して失敗したtransactionが復活するかどうか
+            が実機に依存するため、このテストはiOS/Androidの実機上でしか動作しない。
+         */
 #if UNITY_EDITOR
         var a = true;
         if (a) yield break;
@@ -426,6 +427,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate
@@ -505,6 +507,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
                 Fail("failed to boot store func. err:" + err + " reason:" + reason);
             },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) =>
             {
                 completed = true;
@@ -570,6 +573,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
             null,
             DummyResponsehandlingDelegate

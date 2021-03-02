@@ -262,6 +262,10 @@ namespace AutoyaFramework
             yield break;
         }
 
+        /**
+        fire when logout.
+        need to delete token if token is stored.
+         */
         private IEnumerator OnLogout(Action succeeded, Action<string> failed)
         {
             var result = Autoya.Persist_Delete(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
@@ -478,14 +482,27 @@ namespace AutoyaFramework
 
         /**
             called when app received the receipt of the product.
-            the receipt is combinated with the ticket for this purchase.
+            the receipt is combinated with the ticket for this purchase in the payload object.
 
-            you can modify this payload data for validationg these receipt andt ticket in your server.
+            then you should verify it in your server.
+
+            you can modify this payload data for validating the receipt and the ticket here.
             should return string or byte[] data.
         */
         private object OnPurchaseDeployRequest(PurchaseRouter.TicketAndReceipt payload)
         {
-            Debug.Log("OnPurchaseDeployRequestにはきてる");
+            // modify if need.
+            return JsonUtility.ToJson(payload);
+        }
+
+        /**
+            called when app received failure event of purchase.
+
+            then you can send it to your server for collecting the fail/cancel reason and data of this purchase.
+            should return string or byte[] data.
+        */
+        private object OnPurchaseFailedRequest(PurchaseRouter.PurchaseFailed payload)
+        {
             // modify if need.
             return JsonUtility.ToJson(payload);
         }

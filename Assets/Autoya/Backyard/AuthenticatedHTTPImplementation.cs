@@ -707,10 +707,6 @@ namespace AutoyaFramework
             string userConnectionId = null
         )
         {
-            Uri myUri = new Uri(url);
-            var ip = System.Net.Dns.GetHostAddresses(myUri.Host)[0];
-            Debug.Log("ip:" + ip);
-
             var connectionId = Guid.NewGuid().ToString();
 
             if (!string.IsNullOrEmpty(userConnectionId))
