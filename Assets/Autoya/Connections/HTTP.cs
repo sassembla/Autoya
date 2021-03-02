@@ -41,7 +41,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -93,7 +93,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -146,7 +146,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -198,7 +198,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -251,7 +251,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -303,7 +303,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -324,7 +324,7 @@ namespace AutoyaFramework.Connections.HTTP
                 }
                 else
                 {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(result), responseHeaders);
                 }
             }
         }
@@ -356,7 +356,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -377,7 +377,7 @@ namespace AutoyaFramework.Connections.HTTP
                 }
                 else
                 {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(result), responseHeaders);
                 }
             }
         }
@@ -408,7 +408,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -429,7 +429,7 @@ namespace AutoyaFramework.Connections.HTTP
                 }
                 else
                 {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(result), responseHeaders);
                 }
             }
         }
@@ -442,7 +442,12 @@ namespace AutoyaFramework.Connections.HTTP
 
             using (var request = UnityWebRequest.Post(url, string.Empty))
             {
-                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(data);
+                // set data if not 0.
+                if (0 < data.Length)
+                {
+                    request.uploadHandler = (UploadHandler)new UploadHandlerRaw(data);
+                }
+
                 if (requestHeader != null)
                 {
                     foreach (var kv in requestHeader)
@@ -461,7 +466,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
@@ -514,7 +519,7 @@ namespace AutoyaFramework.Connections.HTTP
                     if (0 < timeoutSec && limitTick < DateTime.UtcNow.Ticks)
                     {
                         request.Abort();
-                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE + timeoutSec, null);
+                        failed(connectionId, BackyardSettings.HTTP_TIMEOUT_CODE, BackyardSettings.HTTP_TIMEOUT_MESSAGE, null);
                         yield break;
                     }
                 }
