@@ -756,7 +756,8 @@ namespace AutoyaFramework
         public static void AssetBundle_LoadAsset<T>(
             string assetName,
             Action<string, T> loadSucceeded,
-            Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed
+            Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed,
+            double timeout = AssetBundlesSettings.TIMEOUT_SEC
         ) where T : UnityEngine.Object
         {
             var cont = CheckAssetBundlesFeatureCondition(
@@ -790,7 +791,7 @@ namespace AutoyaFramework
             }
 
             autoya.mainthreadDispatcher.Commit(
-                autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed)
+                autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed, timeout)
             );
         }
 
@@ -800,7 +801,8 @@ namespace AutoyaFramework
             LoadSceneMode mode,
             Action<string> loadSucceeded,
             Action<string, AssetBundleLoadError, string, AutoyaStatus> loadFailed,
-            bool async = true
+            bool async = true,
+            double timeout = AssetBundlesSettings.TIMEOUT_SEC
         )
         {
             var cont = CheckAssetBundlesFeatureCondition(
@@ -839,7 +841,8 @@ namespace AutoyaFramework
                     mode,
                     loadSucceeded,
                     loadFailed,
-                    async
+                    async,
+                    timeout
                 )
             );
         }
