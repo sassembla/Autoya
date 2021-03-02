@@ -6,6 +6,20 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.15] - 2021/03/01
+
+### Changed
+- Unity IAP is updated to 2.2.7.
+- byte[]|string GetProductInfosAs() method added on OverridePoints.cs. so you can choose sending byte[] or string for getting productInfos from your server.
+- Android purchase feature never contains user payload.
+
+### Added
+- add binary request support for purchase failed request.
+- add binary ticket request feature for purchase.
+- add PathOf method to URLCaching feature. this returns path of specific path of contents.
+- add timeout support for AssetBundle LoadAsset method and LoadScene method.
+
+
 ## [0.9.14] - 2020/04/29
 
 ### Feature
@@ -301,7 +315,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.14...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.15...HEAD
+[0.9.15]: https://github.com/sassembla/autoya/compare/0.9.14...0.9.15
 [0.9.14]: https://github.com/sassembla/autoya/compare/0.9.13...0.9.14
 [0.9.13]: https://github.com/sassembla/autoya/compare/0.9.11...0.9.13
 [0.9.11]: https://github.com/sassembla/autoya/compare/0.9.10...0.9.11
