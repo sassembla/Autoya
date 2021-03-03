@@ -93,6 +93,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData))
         );
 
@@ -208,6 +209,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
             null,
@@ -293,6 +295,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) =>
             {
@@ -332,6 +335,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             ticketData => Encoding.UTF8.GetString((byte[])ticketData),
             () => { },
             (err, code, reason) => { },
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
@@ -427,6 +431,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },
             null,
@@ -507,6 +512,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
                 Fail("failed to boot store func. err:" + err + " reason:" + reason);
             },
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) =>
             {
@@ -572,6 +578,7 @@ public class PurchaseRouterTests_binary : MiyamasuTestRunner
             },
             () => { },
             (err, code, reason) => { },
+            ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             ticketAndReceipt => Encoding.UTF8.GetBytes(JsonUtility.ToJson(ticketAndReceipt)),
             failData => Encoding.UTF8.GetBytes(JsonUtility.ToJson(failData)),
             (backgroundPurchasedProductId, data) => { },

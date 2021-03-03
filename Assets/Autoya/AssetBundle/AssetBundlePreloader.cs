@@ -301,9 +301,6 @@ namespace AutoyaFramework.AssetBundles
 			 */
             foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames)
             {
-                var bundleLoadConId = AssetBundlesSettings.ASSETBUNDLES_PRELOADBUNDLE_PREFIX + Guid.NewGuid().ToString();
-                var bundleUrl = loader.GetAssetBundleDownloadUrl(shouldDownloadAssetBundleName);
-
                 var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
                 var crc = targetBundleInfo.crc;
 

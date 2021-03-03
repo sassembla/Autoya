@@ -181,6 +181,7 @@ namespace AutoyaFramework.Purchase
         private readonly Action<IEnumerator> enumExecutor;
         private readonly Func<object, string> onTicketResponse;
         private readonly Func<TicketAndReceipt, object> onPurchaseDeployRequest;
+        private readonly Func<TicketAndReceipt, object> onPurchaseDeployRequestForAlreadyPaid;
         private readonly Func<PurchaseFailed, object> onPurchaseFailedRequest;
         private readonly Action<string, object> onPurchaseCompletedInBackground;
 
@@ -204,6 +205,7 @@ namespace AutoyaFramework.Purchase
             Action onPurchaseReady,
             Action<PurchaseReadyError, int, string> onPurchaseReadyFailed,
             Func<TicketAndReceipt, object> onPurchaseDeployRequest,
+            Func<TicketAndReceipt, object> onPurchaseDeployRequestForAlreadyPaid,
             Func<PurchaseFailed, object> onPurchaseFailedRequest,
             Action<string, object> onPurchaseCompletedInBackground = null,
             HttpRequestHeaderDelegate httpGetRequestHeaderDeletage = null,
@@ -250,6 +252,7 @@ namespace AutoyaFramework.Purchase
             this.onTicketRequest = onTicketRequest;
             this.onTicketResponse = onTicketResponse;
             this.onPurchaseDeployRequest = onPurchaseDeployRequest;
+            this.onPurchaseDeployRequestForAlreadyPaid = onPurchaseDeployRequestForAlreadyPaid;
             this.onPurchaseFailedRequest = onPurchaseFailedRequest;
             this.onPurchaseCompletedInBackground = onPurchaseCompletedInBackground;
 
@@ -600,8 +603,8 @@ namespace AutoyaFramework.Purchase
         [Serializable]
         public struct TicketAndReceipt
         {
-            [SerializeField] private string ticketId;
-            [SerializeField] private string data;
+            [SerializeField] public string ticketId;
+            [SerializeField] public string data;
             public TicketAndReceipt(string ticketId, string data)
             {
                 this.ticketId = ticketId;
@@ -791,7 +794,7 @@ namespace AutoyaFramework.Purchase
             var connectionId = PurchaseSettings.PURCHASE_CONNECTIONID_PAID_PREFIX + Guid.NewGuid().ToString();
             var purchasedUrl = PurchaseSettings.PURCHASE_URL_PAID;
 
-            var data = onPurchaseDeployRequest(new TicketAndReceipt(ticketId, e.purchasedProduct.receipt));
+            var data = onPurchaseDeployRequestForAlreadyPaid(new TicketAndReceipt(ticketId, e.purchasedProduct.receipt));
 
             if (data is string || data is byte[])
             {

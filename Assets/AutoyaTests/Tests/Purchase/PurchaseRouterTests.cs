@@ -90,6 +90,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData)
         );
 
@@ -205,6 +206,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData),
             (backgroundPurchasedProductId, data) => { },
             null,
@@ -290,6 +292,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData),
             (backgroundPurchasedProductId, data) =>
             {
@@ -328,6 +331,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             ticketData => (string)ticketData,
             () => { },
             (err, code, reason) => { },
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData),
             (backgroundPurchasedProductId, data) => { },
@@ -423,6 +427,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             () => { },
             (err, code, reason) => { },
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData),
             (backgroundPurchasedProductId, data) => { },
             null,
@@ -503,6 +508,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                 Fail("failed to boot store func. err:" + err + " reason:" + reason);
             },
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData),
             (backgroundPurchasedProductId, data) =>
             {
@@ -567,6 +573,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
             },
             () => { },
             (err, code, reason) => { },
+            ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             ticketAndReceipt => JsonUtility.ToJson(ticketAndReceipt),
             failData => JsonUtility.ToJson(failData),
             (backgroundPurchasedProductId, data) => { },

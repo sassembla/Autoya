@@ -482,14 +482,25 @@ namespace AutoyaFramework
 
         /**
             called when app received the receipt of the product.
-            the receipt is combinated with the ticket for this purchase in the payload object.
+            the receipt is combinated with the ticket for this purchase.
 
-            then you should verify it in your server.
-
-            you can modify this payload data for validating the receipt and the ticket here.
+            you can modify this payload data for validating these receipt and ticket in your server.
             should return string or byte[] data.
         */
         private object OnPurchaseDeployRequest(PurchaseRouter.TicketAndReceipt payload)
+        {
+            // modify if need.
+            return JsonUtility.ToJson(payload);
+        }
+
+        /**
+            called when app received the receipt of the product which failed to getting OK response once/or more from the server.
+            the receipt is combinated with the ticket for older && undeployed purchase.
+
+            you can modify this payload data for validationg these receipt and ticket in your server.
+            should return string or byte[] data.
+        */
+        private object OnPurchaseDeployRequestForAlreadyPaid(PurchaseRouter.TicketAndReceipt payload)
         {
             // modify if need.
             return JsonUtility.ToJson(payload);
