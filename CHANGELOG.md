@@ -6,6 +6,13 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.16] - 2021/03/03
+
+### Added
+- add binary request support for send paid-purchase request on OverridePoints.cs.
+
+
+
 ## [0.9.15] - 2021/03/01
 
 ### Changed
@@ -315,7 +322,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.15...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.16...HEAD
+[0.9.16]: https://github.com/sassembla/autoya/compare/0.9.15...0.9.16
 [0.9.15]: https://github.com/sassembla/autoya/compare/0.9.14...0.9.15
 [0.9.14]: https://github.com/sassembla/autoya/compare/0.9.13...0.9.14
 [0.9.13]: https://github.com/sassembla/autoya/compare/0.9.11...0.9.13
