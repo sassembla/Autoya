@@ -5,6 +5,7 @@ using AutoyaFramework.Persistence.HashHit;
 using AutoyaFramework.Persistence.Files;
 using AutoyaFramework.Persistence.URLCaching;
 using UnityEngine;
+using System.Collections;
 
 namespace AutoyaFramework
 {
@@ -140,7 +141,7 @@ namespace AutoyaFramework
         }
 
         /*
-            caching series
+            url caching series
          */
 
         public static void Persist_URLCaching_Load<T>(string domain, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
@@ -196,6 +197,29 @@ namespace AutoyaFramework
             }
             return autoya._autoyaURLCache.PathOf(domain, url);
         }
+
+        public static void Persist_URLCaching_ExecuteExpiration(string domain, int daysAfterLastRead, Action onDone)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+
+            var cor = autoya._autoyaURLCache.ExecuteExpiration(domain, daysAfterLastRead);
+            IEnumerator waitDone()
+            {
+                yield return cor;
+                onDone();
+            }
+
+            autoya.mainthreadDispatcher.Commit(waitDone());
+        }
+
+
+
+        /*
+            hach cache series
+        */
 
         public static void Persist_CacheHashes(
             string domain,

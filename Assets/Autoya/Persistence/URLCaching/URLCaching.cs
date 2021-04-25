@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using AutoyaFramework.Persistence.Files;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -132,6 +133,69 @@ namespace AutoyaFramework.Persistence.URLCaching
             var fileUniquePath = Path.Combine(folderPath, targetFileName);
 
             return Path.Combine(filePersist.basePath, fileUniquePath);
+        }
+
+
+        public IEnumerator ExecuteExpiration(string storePath, int daysAfterLastRead)
+        {
+            // 特定のドメインに含まれるファイルたちに対して、最終readの日付がNより前のファイルを消す。
+            ;
+            // domainがあっても一つもフォルダが無い場合、終了
+            var targetDirectoryPaths = filePersist.DirectoryNamesInDomain(storePath);
+            if (!targetDirectoryPaths.Any())
+            {
+                yield break;
+            }
+
+            // 対象の最終アクセス日付を確認し、N日以上経過しているものを収集する。
+
+            var running = true;
+
+
+            var handleCount = 30;
+
+            Action threadAct = () =>
+            {
+                var targetDirectoryPathList = targetDirectoryPaths.ToList();
+
+            rest:
+                var takeCount = Mathf.Min(targetDirectoryPathList.Count, handleCount);
+
+                var currentTargetDirPaths = targetDirectoryPathList.GetRange(0, takeCount);
+                targetDirectoryPathList.RemoveRange(0, takeCount);
+
+                foreach (var currentTargetDirPath in currentTargetDirPaths)
+                {
+                    var filePaths = Directory.GetFiles(currentTargetDirPath);
+                    foreach (var filePath in filePaths)
+                    {
+                        // 最低0日からで、最後にreadした日からの経過日数を出す
+                        var elapsedUnreadDayCount = Mathf.Min(0, (float)(DateTime.UtcNow - File.GetLastAccessTimeUtc(filePath)).TotalDays);
+                        if (daysAfterLastRead < elapsedUnreadDayCount)
+                        {
+                            // 一つでも経過していたら、フォルダ自体を削除する
+                            Directory.Delete(currentTargetDirPath, true);
+                            break;
+                        }
+                    }
+                }
+
+                if (0 < targetDirectoryPathList.Count)
+                {
+                    Thread.Sleep(10);
+                    goto rest;
+                }
+
+                running = false;
+            };
+
+            var thread = new Thread(new ThreadStart(threadAct));
+            thread.Start();
+
+            while (running)
+            {
+                yield return null;
+            }
         }
 
         private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, double timeout = BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object

@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using AutoyaFramework;
 using Miyamasu;
+using NUnit.Framework;
 using UnityEngine;
 
 /**
@@ -638,6 +640,138 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
             () => { throw new TimeoutException("timeout."); },
             1000
         );
+    }
+
+    [MTest]
+    public IEnumerator ExecuteExpiration()
+    {
+        var done = false;
+        var day = -1;// マイナスを入れると絶対にexpire対象になる
+
+        // store one image.
+        var loaded = false;
+        var imagePath = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg/400px-2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg?a=b";
+
+        Autoya.Persist_URLCaching_Load(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath,
+            bytes =>
+            {
+                // return sprite from bytes.
+                var tex = new Texture2D(1, 1);
+                tex.LoadImage(bytes);
+                var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                return newSprite;
+            },
+            cached =>
+            {
+                loaded = true;
+            },
+            (code, reason) =>
+            {
+                loaded = true;
+                Fail();
+            }
+        );
+
+        yield return WaitUntil(
+            () => loaded,
+            () => { throw new TimeoutException("timeout for making cache."); }
+        );
+
+        var pathOfCachedImage = Autoya.Persist_URLCaching_PathOf(AutoyaURLCachingTestsFileDomain, imagePath);
+        Assert.True(File.Exists(pathOfCachedImage), "not exist.");
+
+        // delete expired file.
+        Autoya.Persist_URLCaching_ExecuteExpiration(
+            AutoyaURLCachingTestsFileDomain,
+            day,
+            () =>
+            {
+                done = true;
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("timeout."); },
+            50
+        );
+
+        // check deletion.
+        Assert.False(File.Exists(pathOfCachedImage), "should not exist.");
+    }
+
+    [MTest]
+    public IEnumerator ExecuteExpirationForManyFiles()
+    {
+        var done = false;
+        var day_minus_one = -1;// マイナスを入れると絶対にexpire対象になる
+
+        // store many images.
+        var loaded = 0;
+        var imagePathsList = new List<string>();
+        for (var i = 0; i < 40; i++)
+        {
+            var path = "https://dummyimage.com/" + (i + 1) + ".png/09f/fff";
+            imagePathsList.Add(path);
+        };
+        var imagePaths = imagePathsList.ToArray();
+
+        var pathOfCachedImages = new List<string>();
+        foreach (var imagePath in imagePaths)
+        {
+            Autoya.Persist_URLCaching_Load<Texture2D>(
+                AutoyaURLCachingTestsFileDomain,
+                imagePath,
+                bytes =>
+                {
+                    return null;
+                },
+                cached =>
+                {
+                    loaded++;
+                    var pathOf = Autoya.Persist_URLCaching_PathOf(AutoyaURLCachingTestsFileDomain, imagePath);
+                    pathOfCachedImages.Add(pathOf);
+                },
+                (code, reason) =>
+                {
+                    Debug.LogError("code:" + code + " reason:" + reason + " imagePath:" + imagePath);
+                    loaded++;
+                    Fail();
+                },
+                null,
+                100
+            );
+        }
+
+        yield return WaitUntil(
+            () => loaded == imagePaths.Length,
+            () => { throw new TimeoutException("timeout for making cache."); },
+            30
+        );
+
+        // delete expired file.
+        Autoya.Persist_URLCaching_ExecuteExpiration(
+            AutoyaURLCachingTestsFileDomain,
+            day_minus_one,
+            () =>
+            {
+                done = true;
+            }
+        );
+
+        yield return WaitUntil(
+            () => done,
+            () => { throw new TimeoutException("timeout."); },
+            50
+        );
+
+        // check deletion.
+        foreach (var path in pathOfCachedImages)
+        {
+            Assert.False(File.Exists(path), "should not exist.");
+        }
     }
 }
 
