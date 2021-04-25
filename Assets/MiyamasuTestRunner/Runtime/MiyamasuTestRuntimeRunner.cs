@@ -2,10 +2,6 @@ using System;
 using System.Collections;
 using System.Reflection;
 using System.Linq;
-using System.IO;
-using System.Text;
-using System.Threading;
-using Diag = System.Diagnostics;
 using UnityEngine;
 using UnityEngine.TestTools;
 using System.Collections.Generic;
@@ -13,101 +9,122 @@ using System.Collections.Generic;
 /**
 	MiyamasuRuntimeRunnerGenerator
 */
-namespace Miyamasu {
-	public class MiyamasuRuntimeRunnerGenerator {
-		/**
+namespace Miyamasu
+{
+    public class MiyamasuRuntimeRunnerGenerator
+    {
+        /**
 			run on app playing handler.
 		 */
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] public static void RunTestsFromCode () {
-			var runnerSettings = Settings.LoadSettings();
-			if (!runnerSettings.runOnPlay) {
-				// do nothing.
-				return;
-			}
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        public static void RunTestsFromCode()
+        {
+            var runnerSettings = Settings.LoadSettings();
+            if (!runnerSettings.runOnPlay)
+            {
+                // do nothing.
+                return;
+            }
 
-			// ready running.
-			
-			var go = new GameObject("MiyamasuTestMainThreadRunner");
-			go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
-			
-			var runner = go.AddComponent<MainThreadRunner>();
-			var testRunnerGen = new MiyamasuRuntimeRunnerGenerator();
+            // ready running.
 
-			runner.SetTests(testRunnerGen.TestMethodEnums());
-		}
+            var go = new GameObject("MiyamasuTestMainThreadRunner");
+            go.hideFlags = go.hideFlags | HideFlags.HideAndDontSave;
 
-		public MiyamasuRuntimeRunnerGenerator () {}
-		public Func<IEnumerator>[] TestMethodEnums () {
-			var testTargetMethods = Assembly.GetExecutingAssembly().
-				GetTypes().SelectMany(t => t.GetMethods()).
-				Where(method => 0 < method.GetCustomAttributes(typeof(UnityTestAttribute), false).Length).ToArray();
+            var runner = go.AddComponent<MainThreadRunner>();
+            var testRunnerGen = new MiyamasuRuntimeRunnerGenerator();
 
-			var typeAndMethogs = new Dictionary<Type, List<MethodInfo>>();
+            runner.SetTests(testRunnerGen.TestMethodEnums());
+        }
 
-			foreach (var method in testTargetMethods) {
-				var type = method.DeclaringType;
-				if (!typeAndMethogs.ContainsKey(type)) {
-					typeAndMethogs[type] = new List<MethodInfo>();
-				}
-				typeAndMethogs[type].Add(method);
-			}
+        public MiyamasuRuntimeRunnerGenerator() { }
+        public Func<IEnumerator>[] TestMethodEnums()
+        {
+            var testTargetMethods = Assembly.GetExecutingAssembly().
+                GetTypes().SelectMany(t => t.GetMethods()).
+                Where(method => 0 < method.GetCustomAttributes(typeof(UnityTestAttribute), false).Length).ToArray();
 
-			var enums = typeAndMethogs.SelectMany(
-				t => {
-					var ss = new List<Func<IEnumerator>>();
-					foreach (var method in t.Value) {
-						Func<IEnumerator> s = () => {
-							return MethodCoroutines(t.Key, method);
-						};
-						ss.Add(s);
-					}
-					return ss;
-				}
-			).ToArray();
+            var typeAndMethogs = new Dictionary<Type, List<MethodInfo>>();
 
-			return enums;
-		}
+            foreach (var method in testTargetMethods)
+            {
+                var type = method.DeclaringType;
+                if (!typeAndMethogs.ContainsKey(type))
+                {
+                    typeAndMethogs[type] = new List<MethodInfo>();
+                }
+                typeAndMethogs[type].Add(method);
+            }
 
-		private IEnumerator MethodCoroutines (Type type, MethodInfo methodInfo) {
-			var instance = Activator.CreateInstance(type);
-			var cor = methodInfo.Invoke(instance, null) as IEnumerator;
-			yield return cor;
-		}
-		
-		// private class RunnerInstance {
-		// 	public IEnumerator Runner (Action act) {
-		// 		act();
-		// 		yield break;
-		// 	}
+            var enums = typeAndMethogs.SelectMany(
+                t =>
+                {
+                    var i = 0;
+                    var ss = new List<Func<IEnumerator>>();
+                    foreach (var method in t.Value)
+                    {
+                        Func<IEnumerator> s = () =>
+                        {
+                            Debug.Log("セットアップ type:" + t.Key + " index:" + i + " method:" + method.Name);
+                            i++;
+                            return MethodCoroutines(t.Key, method);
+                        };
+                        ss.Add(s);
+                    }
+                    return ss;
+                }
+            ).ToArray();
 
-		// 	public IEnumerator Runner (IEnumerator actEnum, Action done) {
-		// 		while (actEnum.MoveNext()) {
-		// 			yield return null;
-		// 		}
-		// 		done();
-		// 	}
-		// }
+            return enums;
+        }
 
-		// public bool IsTestRunningInPlayingMode () {
-		// 	bool isRunningInPlayingMode = false;
-		// 	RunOnMainThread(
-		// 		() => {
-		// 			isRunningInPlayingMode = Application.isPlaying;
-		// 		}
-		// 	);
-		// 	return isRunningInPlayingMode;
-		// }
+        private IEnumerator MethodCoroutines(Type type, MethodInfo methodInfo)
+        {
+            var instance = Activator.CreateInstance(type);
+            var cor = methodInfo.Invoke(instance, null) as IEnumerator;
+            yield return cor;
+        }
 
-		public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";
-	}
+        // private class RunnerInstance {
+        // 	public IEnumerator Runner (Action act) {
+        // 		act();
+        // 		yield break;
+        // 	}
 
-	[AttributeUsage(AttributeTargets.Method)] public class MSetupAttribute : Attribute {
-		public MSetupAttribute() {}
-	}
-	[AttributeUsage(AttributeTargets.Method)] public class MTeardownAttribute : Attribute {
-		public MTeardownAttribute() {}
-	}
-	[AttributeUsage(AttributeTargets.Method)] public class MTestAttribute : Attribute {
-		public MTestAttribute() {}
-	}
+        // 	public IEnumerator Runner (IEnumerator actEnum, Action done) {
+        // 		while (actEnum.MoveNext()) {
+        // 			yield return null;
+        // 		}
+        // 		done();
+        // 	}
+        // }
+
+        // public bool IsTestRunningInPlayingMode () {
+        // 	bool isRunningInPlayingMode = false;
+        // 	RunOnMainThread(
+        // 		() => {
+        // 			isRunningInPlayingMode = Application.isPlaying;
+        // 		}
+        // 	);
+        // 	return isRunningInPlayingMode;
+        // }
+
+        public const string MIYAMASU_TESTLOG_FILE_NAME = "miyamasu_test.log";
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class MSetupAttribute : Attribute
+    {
+        public MSetupAttribute() { }
+    }
+    [AttributeUsage(AttributeTargets.Method)]
+    public class MTeardownAttribute : Attribute
+    {
+        public MTeardownAttribute() { }
+    }
+    [AttributeUsage(AttributeTargets.Method)]
+    public class MTestAttribute : Attribute
+    {
+        public MTestAttribute() { }
+    }
 }
