@@ -175,7 +175,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
         yield return WaitUntil(
             () => purchaseDone,
             () => { throw new TimeoutException("failed to purchase async."); },
-            30
+            100
         );
         True(purchaseSucceeded, "purchase failed. reason:" + failedReason);
     }
@@ -250,7 +250,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                 return purchaseDone;
             },
             () => { throw new TimeoutException("timeout."); },
-            30
+            100
         );
 
         True(router.State() == PurchaseRouter.RouterState.RetryFailed);
@@ -384,7 +384,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                 return purchaseDone;
             },
             () => { throw new TimeoutException("timeout."); },
-            30
+            100
         );
     }
 
@@ -474,7 +474,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
                 return purchaseDone;
             },
             () => { throw new TimeoutException("timeout."); },
-            30
+            100
         );
 
         forceFailResponse = false;
@@ -524,7 +524,7 @@ public class PurchaseRouterTests : MiyamasuTestRunner
         yield return WaitUntil(
             () => rebooted && completed,
             () => { throw new TimeoutException("timeout."); },
-            10
+            100
         );
     }
 
