@@ -6,6 +6,17 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.17] - 2021/04/26
+
+### Changed
+- adopted to Unity 2020.1.x or later.
+- RIPEMD support is over. feature removed because not contained in .NET Standard 2.0.
+- SIWA support API now handles SIWA ASAuthorizationError code. method signature changed.
+
+### Added
+- expiration feature for URLCaching.
+
+
 ## [0.9.16] - 2021/03/03
 
 ### Added
@@ -322,7 +333,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.16...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.17...HEAD
+[0.9.17]: https://github.com/sassembla/autoya/compare/0.9.16...0.9.17
 [0.9.16]: https://github.com/sassembla/autoya/compare/0.9.15...0.9.16
 [0.9.15]: https://github.com/sassembla/autoya/compare/0.9.14...0.9.15
 [0.9.14]: https://github.com/sassembla/autoya/compare/0.9.13...0.9.14

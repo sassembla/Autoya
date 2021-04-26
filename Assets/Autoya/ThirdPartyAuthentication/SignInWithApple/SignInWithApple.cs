@@ -48,7 +48,8 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
 
         [SerializeField] public string authorizationCode;
         [SerializeField] public string idToken;
-        [SerializeField] public string error;
+        [SerializeField] public int errorCode;
+        [SerializeField] public string reason;
 
         [SerializeField] public UserDetectionStatus userDetectionStatus;
     }
@@ -154,7 +155,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             result callback.
         */
         [MonoPInvokeCallback(typeof(SignupCompleted))]
-        private static void SignupCompletedCallback(int result, [MarshalAs(UnmanagedType.Struct)]_UserInfo info)
+        private static void SignupCompletedCallback(int result, [MarshalAs(UnmanagedType.Struct)] _UserInfo info)
         {
             var args = new CallbackArgs();
             if (result != 0)
@@ -173,7 +174,8 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             {
                 args.userInfo = new _UserInfo
                 {
-                    error = info.error
+                    errorCode = info.errorCode,
+                    reason = info.reason
                 };
             }
 
@@ -190,7 +192,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             result callback.
         */
         [MonoPInvokeCallback(typeof(GetCredentialStateCompleted))]
-        private static void GetCredentialStateCallback([MarshalAs(UnmanagedType.SysInt)]CredentialState state)
+        private static void GetCredentialStateCallback([MarshalAs(UnmanagedType.SysInt)] CredentialState state)
         {
             var args = new CallbackArgs
             {
@@ -257,7 +259,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
             2. client should use the nonce to execute SignupOrSignin(nonce, (isSignup, SIWA userInfo) => {do sending idToken and other data to your server}) method.
             3. application server receives the idToken included the nonce. do delete record of the nonce and validate idToken with nonce. this way gives you to accurate JWT verification and avoid replay attack.
         */
-        public static void SignupOrSignin(string nonce, AuthorizationScope authorizationScope, Action<bool, UserInfo> onSucceeded, Action<string> onFailed)
+        public static void SignupOrSignin(string nonce, AuthorizationScope authorizationScope, Action<bool, UserInfo> onSucceeded, Action<int, string> onFailed)
         {
 
             switch (state)
@@ -265,7 +267,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
                 case State.None:
                     break;
                 default:
-                    onFailed("another process running. waiting for end of:" + state);
+                    onFailed(-1, "another process running. waiting for end of:" + state);
                     return;
             }
 
@@ -276,10 +278,10 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
                 state = State.None;
 
 
-                var userInfo = args.userInfo; ;
+                var userInfo = args.userInfo;
 
                 // success
-                if (string.IsNullOrEmpty(userInfo.error))
+                if (userInfo.errorCode == 0)
                 {
                     /*
                         success
@@ -349,7 +351,7 @@ namespace AutoyaFramework.ThirdpartyAuthentication.SignInWithApple
                     }
                 */
                 // error
-                onFailed(userInfo.error);
+                onFailed(userInfo.errorCode, userInfo.reason);
             };
 
 #if UNITY_EDITOR

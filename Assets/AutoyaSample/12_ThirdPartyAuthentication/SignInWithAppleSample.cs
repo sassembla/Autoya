@@ -79,9 +79,9 @@ public class SignInWithAppleSample : MonoBehaviour
                     }
                 );
             },
-            reason =>
+            (code, reason) =>
             {
-                Debug.Log("reason:" + reason);
+                Debug.Log("code:" + code + " reason:" + reason);
             }
         );
     }

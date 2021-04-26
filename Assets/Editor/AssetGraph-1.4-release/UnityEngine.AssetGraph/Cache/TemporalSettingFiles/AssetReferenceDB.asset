@@ -25,4 +25,20 @@ MonoBehaviour:
     m_importFrom: ProjectSettings/EditorBuildSettings.asset
     m_exportTo: 
     m_variantName: 
+  - m_assetDatabaseId: ac805200d63f94631b675a22f692c6eb
+    m_importFrom: Assets/AutoyaSample/12_ThirdPartyAuthentication/SignInWithAppleSample.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1c13c0391f112441aac9c1b28ba45329
+    m_importFrom: Assets/Autoya/ThirdPartyAuthentication/SignInWithApple/SignInWithApple.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bd49c57e4598542d085444192fdb4560
+    m_importFrom: Assets/Autoya/ThirdPartyAuthentication/SignInWithApple/Plugins/iOS/SignInWithApple.m
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7031d2a1ce77549d2a0e76fd25ae4517
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/Resources/MiyamasuSettings.txt
+    m_exportTo: 
+    m_variantName: 
   m_version: 2

@@ -10,7 +10,8 @@ struct UserInfo
     
     const char * authorizationCode;
     const char * idToken;
-    const char * error;
+    long errorCode;
+    const char * reason;
 
     ASUserDetectionStatus userDetectionStatus;
 };
@@ -132,7 +133,8 @@ static SIWAObject* _sIWAObj;
             data.email = [credential.email UTF8String];
             data.userId = [credential.user UTF8String];
             data.userDetectionStatus = credential.realUserStatus;
-            data.error = "";
+            data.errorCode = 0;
+            data.reason = "";
             self.signupCallback(1, data);
         } else {
             // Fallback on earlier versions
@@ -152,7 +154,9 @@ static SIWAObject* _sIWAObj;
         data.email = "";
         data.userId = "";
         data.userDetectionStatus = ASUserDetectionStatusUnknown;
-        data.error = [error.localizedDescription UTF8String];
+        data.errorCode = error.code;
+        data.reason = [error.localizedDescription UTF8String];
+        
         self.signupCallback(0, data);
     }
 }
