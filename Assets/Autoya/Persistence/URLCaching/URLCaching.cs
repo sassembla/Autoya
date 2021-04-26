@@ -94,6 +94,9 @@ namespace AutoyaFramework.Persistence.URLCaching
             }
         }
 
+        /*
+            URLから取得したAssetをT型のインスタンスに変形させる手順を提供する。
+        */
         public IEnumerator LoadFromURLAs<T>(string storePath, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
             // urlでない場合、urlとして扱うためのパラメータを足す。
@@ -136,10 +139,15 @@ namespace AutoyaFramework.Persistence.URLCaching
         }
 
 
-        public IEnumerator ExecuteExpiration(string storePath, int daysAfterLastRead)
+        /*
+            storePath以下に保存されているファイルに対して、expirationDayCount より長く使用されていないファイルを消す。
+            並列数 parallelHandleFileCount で同時ファイルアクセス上限をセット可能。デフォルトは30
+        */
+        public IEnumerator ExecuteExpiration(string storePath, int expirationDayCount, int parallelHandleFileCount = 30)
         {
             // 特定のドメインに含まれるファイルたちに対して、最終readの日付がNより前のファイルを消す。
-            ;
+            Debug.Assert(0 < parallelHandleFileCount, "parallelHandleFileCount must be more than 0.");
+
             // domainがあっても一つもフォルダが無い場合、終了
             var targetDirectoryPaths = filePersist.DirectoryNamesInDomain(storePath);
             if (!targetDirectoryPaths.Any())
@@ -147,19 +155,16 @@ namespace AutoyaFramework.Persistence.URLCaching
                 yield break;
             }
 
-            // 対象の最終アクセス日付を確認し、N日以上経過しているものを収集する。
+            // 対象の最終アクセス日付を確認し、N日以上経過しているものを削除する。
 
             var running = true;
-
-
-            var handleCount = 30;
 
             Action threadAct = () =>
             {
                 var targetDirectoryPathList = targetDirectoryPaths.ToList();
 
             rest:
-                var takeCount = Mathf.Min(targetDirectoryPathList.Count, handleCount);
+                var takeCount = Mathf.Min(targetDirectoryPathList.Count, parallelHandleFileCount);
 
                 var currentTargetDirPaths = targetDirectoryPathList.GetRange(0, takeCount);
                 targetDirectoryPathList.RemoveRange(0, takeCount);
@@ -170,8 +175,9 @@ namespace AutoyaFramework.Persistence.URLCaching
                     foreach (var filePath in filePaths)
                     {
                         // 最低0日からで、最後にreadした日からの経過日数を出す
-                        var elapsedUnreadDayCount = Mathf.Min(0, (float)(DateTime.UtcNow - File.GetLastAccessTimeUtc(filePath)).TotalDays);
-                        if (daysAfterLastRead < elapsedUnreadDayCount)
+                        // DaysはSecondsやMinutesと違って上限なしのday数(11111とか)を返してくるので、このまま使用する。TotalDaysを使うとdoubleになるため避けている。
+                        var elapsedUnreadDayCount = (DateTime.UtcNow - File.GetLastAccessTimeUtc(filePath)).Days;
+                        if (expirationDayCount < elapsedUnreadDayCount)
                         {
                             // 一つでも経過していたら、フォルダ自体を削除する
                             Directory.Delete(currentTargetDirPath, true);
