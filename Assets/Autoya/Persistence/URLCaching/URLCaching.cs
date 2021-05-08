@@ -26,31 +26,53 @@ namespace AutoyaFramework.Persistence.URLCaching
 
         private Hashtable cachingLock = new Hashtable();
 
-        private Dictionary<string, UnityEngine.Object> pathObjectCache = new Dictionary<string, UnityEngine.Object>();
+        // オンメモリキャッシュ
+        private Dictionary<string, UnityEngine.Object> pathObjectOnMemoryCache = new Dictionary<string, UnityEngine.Object>();
 
-        public void PurgeCache(string storePath, string urlWithoutHash)
+        /*
+            urlに紐づく対象をファイルとオンメモリキャッシュから削除する
+        */
+        public void PurgeCache(string storePath, string urlWithoutHash, bool destroyLoadedObject = false)
         {
             var deleteTargetPath = Path.Combine(storePath, GenerateFolderAndFilePath(urlWithoutHash, string.Empty, storePath).url);
 
             var filePaths = filePersist.FileNamesInDomain(deleteTargetPath);
-            if (filePaths.Any())
+            if (!filePaths.Any())
             {
-                // remove from hard cache.
-                filePersist.DeleteByDomain(deleteTargetPath);
+                return;
+            }
 
-                // remove from on memory cache.
-                var filePath = Path.Combine(deleteTargetPath, Path.GetFileName(filePaths[0]));
-                if (pathObjectCache.ContainsKey(filePath))
+            // remove from hard cache.
+            filePersist.DeleteByDomain(deleteTargetPath);
+
+            // remove from on memory cache.
+            var filePath = Path.Combine(deleteTargetPath, Path.GetFileName(filePaths[0]));
+            if (pathObjectOnMemoryCache.ContainsKey(filePath))
+            {
+                UnityEngine.Object obj = null;
+                if (destroyLoadedObject)
                 {
-                    pathObjectCache.Remove(filePath);
+                    obj = pathObjectOnMemoryCache[filePath];
+                }
+
+                pathObjectOnMemoryCache.Remove(filePath);
+
+                if (destroyLoadedObject)
+                {
+                    GameObject.Destroy(obj);
                 }
             }
         }
 
+        /*
+            ドメイン単位で消す。
+        */
         public void ClearCaching(string storePath)
         {
             filePersist.DeleteByDomain(storePath);
-            pathObjectCache = new Dictionary<string, UnityEngine.Object>();
+
+            // TODO: ドメイン単位で消せると嬉しいが、現在は全部のオンメモリキャッシュを消している。
+            pathObjectOnMemoryCache = new Dictionary<string, UnityEngine.Object>();
         }
 
         private UrlAndHash GenerateFolderAndFilePath(string urlWithoutHash, string hashSource, string storePath)
@@ -94,9 +116,7 @@ namespace AutoyaFramework.Persistence.URLCaching
             }
         }
 
-        /*
-            URLから取得したAssetをT型のインスタンスに変形させる手順を提供する。
-        */
+        // 指定したkeyパラメータをurlのqueryパラメータの代わりに使用する = urlで取得したものをkeyパラメータに依存したパスにキャッシュする。
         public IEnumerator LoadFromURLAs<T>(string storePath, string key, string url, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, int timeout = (int)BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
             // urlでない場合、urlとして扱うためのパラメータを足す。
@@ -118,6 +138,62 @@ namespace AutoyaFramework.Persistence.URLCaching
             }
         }
 
+        /*
+            メモリにload済であればtrueを返す。
+            loadされていなければfalseを返す。
+        */
+        public bool IsLoaded(string storePath, string url, out string fileUniquePath)
+        {
+            var urlBase = new Uri(url);
+            var pathWithoutHash = urlBase.Authority + urlBase.LocalPath;
+            var hash = Convert.ToBase64String(Encoding.UTF8.GetBytes(urlBase.Query));
+
+            // ファイルパス、ファイル名を生成する
+            var targetFolderNameAndHash = GenerateFolderAndFilePath(pathWithoutHash, hash, storePath);
+            var targetFolderName = targetFolderNameAndHash.url;
+            var targetFileName = targetFolderNameAndHash.url + "_" + targetFolderNameAndHash.hash;
+
+            // フォルダ、ファイルがあるかどうかチェックする
+            var folderPath = Path.Combine(storePath, targetFolderName);
+            var existFolderPaths = filePersist.FileNamesInDomain(folderPath);
+
+            fileUniquePath = Path.Combine(folderPath, targetFileName);
+
+            // オンメモリキャッシュに対象が存在するかどうか
+            if (pathObjectOnMemoryCache.ContainsKey(fileUniquePath))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /*
+            ロード済のオンメモリから削除する。
+        */
+        public void Unload(string storePath, string urlWithoutHash, bool destroyLoadedObject = false)
+        {
+            if (IsLoaded(storePath, urlWithoutHash, out var fileUniquePath))
+            {
+                // remove from on memory cache.
+                UnityEngine.Object obj = null;
+                if (destroyLoadedObject)
+                {
+                    obj = pathObjectOnMemoryCache[fileUniquePath];
+                }
+
+                pathObjectOnMemoryCache.Remove(fileUniquePath);
+
+                if (destroyLoadedObject)
+                {
+                    GameObject.Destroy(obj);
+                }
+            }
+        }
+
+        /*
+            urlに対してキャッシュされるpathを返す
+        */
         public string PathOf(string storePath, string url)
         {
             var urlBase = new Uri(url);
@@ -206,7 +282,6 @@ namespace AutoyaFramework.Persistence.URLCaching
 
         private IEnumerator Load<T>(string url, string pathWithoutHash, string hash, string storePath, Func<byte[], T> bytesToTConverter, Action<T> onLoaded, Action<int, string> onLoadFailed, Dictionary<string, string> requestHeader = null, double timeout = BackyardSettings.HTTP_TIMEOUT_SEC) where T : UnityEngine.Object
         {
-
             // ファイルパス、ファイル名を生成する
             var targetFolderNameAndHash = GenerateFolderAndFilePath(pathWithoutHash, hash, storePath);
             var targetFolderName = targetFolderNameAndHash.url;
@@ -219,9 +294,9 @@ namespace AutoyaFramework.Persistence.URLCaching
             var fileUniquePath = Path.Combine(folderPath, targetFileName);
 
             // キャッシュに対象が存在するかどうか
-            if (pathObjectCache.ContainsKey(fileUniquePath))
+            if (pathObjectOnMemoryCache.ContainsKey(fileUniquePath))
             {
-                var cached = pathObjectCache[fileUniquePath] as T;
+                var cached = pathObjectOnMemoryCache[fileUniquePath] as T;
                 onLoaded(cached);
                 yield break;
             }
@@ -237,7 +312,7 @@ namespace AutoyaFramework.Persistence.URLCaching
                 // 待機完了、オンメモリのキャッシュにあるかどうかチェックし、あれば返す。なければダウンロードに移行する。
 
                 UnityEngine.Object _object;
-                if (pathObjectCache.TryGetValue(fileUniquePath, out _object))
+                if (pathObjectOnMemoryCache.TryGetValue(fileUniquePath, out _object))
                 {
                     onLoaded(_object as T);
                     yield break;
@@ -268,7 +343,7 @@ namespace AutoyaFramework.Persistence.URLCaching
                         // 読み出し成功したのでオンメモリに載せる。
                         var tObj = bytesToTConverter(bytes);
 
-                        pathObjectCache[fileUniquePath] = tObj;
+                        pathObjectOnMemoryCache[fileUniquePath] = tObj;
                         lock (writeLock)
                         {
                             cachingLock.Remove(targetFolderName);
@@ -364,8 +439,8 @@ namespace AutoyaFramework.Persistence.URLCaching
                     // 型に対しての返還式を取り出し、byteからT型を生成する。
                     var obj = bytesToTConverter(bytes);
 
-                    // キャッシュを行う
-                    pathObjectCache[fileUniquePath] = obj;
+                    // オンメモリへのキャッシュを行う
+                    pathObjectOnMemoryCache[fileUniquePath] = obj;
 
                     lock (writeLock)
                     {

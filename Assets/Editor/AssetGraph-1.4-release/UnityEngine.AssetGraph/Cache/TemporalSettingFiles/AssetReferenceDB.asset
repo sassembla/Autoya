@@ -13,20 +13,12 @@ MonoBehaviour:
   m_Name: AssetReferenceDB
   m_EditorClassIdentifier: 
   m_assets:
-  - m_assetDatabaseId: 526cdb84319594850bae31788e91464d
-    m_importFrom: Assets/Autoya/Persistence/URLCaching/URLCaching.cs
-    m_exportTo: 
-    m_variantName: 
   - m_assetDatabaseId: 269a7412e7d2a4bee9fa6e819ae61e8a
     m_importFrom: Assets/Autoya/Manifest/ShouldGitIgnore/Resources/BuildManifest.json
     m_exportTo: 
     m_variantName: 
   - m_assetDatabaseId: 1ebbadce6891a432c825e2f9f89902e6
     m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Cache/TemporalSettingFiles/AssetReferenceDB.asset
-    m_exportTo: 
-    m_variantName: 
-  - m_assetDatabaseId: ec5ec1496f4ed40b9a67e5b76a534e22
-    m_importFrom: Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab
     m_exportTo: 
     m_variantName: 
   m_version: 2

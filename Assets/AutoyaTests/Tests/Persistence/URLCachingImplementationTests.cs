@@ -574,6 +574,7 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
         // large picture.
         var imagePath = "https://upload.wikimedia.org/wikipedia/commons/2/2e/Zhao_Chang_-_Picture_of_the_New_Year_-_Google_Art_Project.jpg";
         var loadedFailed = false;
+
         Autoya.Persist_URLCaching_Load<Sprite>(
             AutoyaURLCachingTestsFileDomain,
             imagePath,
@@ -600,7 +601,7 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
         yield return WaitUntil(
             () => loadedFailed,
             () => { throw new TimeoutException("timeout."); },
-            1000
+            10
         );
     }
 
@@ -772,6 +773,59 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
         {
             Assert.False(File.Exists(path), "should not exist.");
         }
+    }
+
+    [MTest]
+    public IEnumerator Unload()
+    {
+        // store one image.
+        var loaded = false;
+        var imagePath = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg/400px-2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg?a=b";
+
+        Autoya.Persist_URLCaching_Load(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath,
+            bytes =>
+            {
+                // return sprite from bytes.
+                var tex = new Texture2D(1, 1);
+                tex.LoadImage(bytes);
+                var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                return newSprite;
+            },
+            cached =>
+            {
+                loaded = true;
+            },
+            (code, reason) =>
+            {
+                loaded = true;
+                Fail();
+            }
+        );
+
+        yield return WaitUntil(
+            () => loaded,
+            () => { throw new TimeoutException("timeout for making cache."); }
+        );
+
+        var pathOfCachedImage = Autoya.Persist_URLCaching_PathOf(AutoyaURLCachingTestsFileDomain, imagePath);
+        Assert.True(File.Exists(pathOfCachedImage), "not exist.");
+
+        // キャッシュ done.
+
+        Autoya.Persist_URLCaching_Unload(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath,
+            true
+        );
+
+        var isLoaded = Autoya.Persist_URLCaching_IsLoaded(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath
+        );
+
+        Assert.True(!isLoaded, "failed to unload.");
     }
 }
 

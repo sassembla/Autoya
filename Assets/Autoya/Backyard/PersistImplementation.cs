@@ -166,6 +166,26 @@ namespace AutoyaFramework
             autoya.mainthreadDispatcher.Commit(cor);
         }
 
+        public static bool Persist_URLCaching_IsLoaded(string domain, string url)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+
+            return autoya._autoyaURLCache.IsLoaded(domain, url, out var path);
+        }
+
+        public static void Persist_URLCaching_Unload(string domain, string url, bool destroyLoadedObject = false)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+
+            autoya._autoyaURLCache.Unload(domain, url, destroyLoadedObject);
+        }
+
         public static void Persist_URLCaching_Purge(string domain, string url)
         {
             if (autoya._autoyaURLCache == null)
