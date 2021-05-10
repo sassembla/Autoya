@@ -169,7 +169,16 @@ namespace AutoyaFramework.AssetBundles
         }
 
 
-        public IEnumerator Preload(AssetBundleLoader loader, PreloadList preloadList, Action<string[], Action, Action> onBeforePreloading, Action<double> progress, Action done, Action<int, string, AutoyaStatus> preloadFailed, Action<string, AssetBundleLoadError, string, AutoyaStatus> bundlePreloadFailed, int maxParallelCount = 1)
+        public IEnumerator Preload(
+            AssetBundleLoader loader,
+            PreloadList preloadList,
+            Action<string[], Action, Action> onBeforePreloading,
+            Action<double> progress,
+            Action done,
+            Action<int, string, AutoyaStatus> preloadFailed,
+            Action<string, AssetBundleLoadError, string, AutoyaStatus> bundlePreloadFailed,
+            int maxParallelCount = 1
+        )
         {
             if (0 < maxParallelCount)
             {
@@ -205,8 +214,8 @@ namespace AutoyaFramework.AssetBundles
             }
 
             /*
-				check if preloadList's assetBundleNames are contained by assetBundleList.
-			 */
+                check if preloadList's assetBundleNames are contained by assetBundleList.
+             */
             var targetAssetBundleNames = preloadList.bundleNames;
             var assetBundleListContainedAssetBundleNames = loader.GetWholeBundleNames();
 
@@ -219,8 +228,8 @@ namespace AutoyaFramework.AssetBundles
             var totalLoadingCoroutinesCount = 0;
 
             /*
-				assetBundle downloaded actions.
-			 */
+                assetBundle downloaded actions.
+             */
             Action<string> bundlePreloadSucceededAct = (bundleName) =>
             {
                 currentDownloadCount++;
@@ -277,12 +286,11 @@ namespace AutoyaFramework.AssetBundles
             }
 
             // ここまでで、DLする対象のAssetBundleと、そのAssetBundleが依存しているAssetBundleまでが確保できている。
-
             /*
-				ask should continue or not before downloading target assetBundles.
+                ask should continue or not before downloading target assetBundles.
                 estimation is not considered about duplication of download same AssetBundle at same time.
                 this is max case.
-			 */
+             */
             var shouldContinueCor = shouldContinuePreloading(shouldDownloadAssetBundleNames.ToArray(), onBeforePreloading);
             while (shouldContinueCor.MoveNext())
             {
@@ -297,8 +305,8 @@ namespace AutoyaFramework.AssetBundles
             }
 
             /*
-				bundles are not cached on storage. should start download.
-			 */
+                bundles are not cached on storage. should start download.
+             */
             foreach (var shouldDownloadAssetBundleName in shouldDownloadAssetBundleNames)
             {
                 var targetBundleInfo = loader.AssetBundleInfoFromBundleName(shouldDownloadAssetBundleName);
@@ -306,14 +314,20 @@ namespace AutoyaFramework.AssetBundles
 
                 var hash = Hash128.Parse(targetBundleInfo.hash);
 
+                // bundle is now cached on storage. cancel downloading.
+                if (loader.IsAssetBundleCachedOnStorage(shouldDownloadAssetBundleName))
+                {
+                    continue;
+                }
+
+                // bundle is not cached and found on memory.
                 if (loader.IsAssetBundleCachedOnMemory(shouldDownloadAssetBundleName))
                 {
-                    // bundle is not cached on storage, but old bundle is no memory. need to unload it.
+                    // bundle is not cached on storage, but old bundle is on memory. need to unload it.
                     loader.UnloadOnMemoryAssetBundle(shouldDownloadAssetBundleName);
                 }
 
                 var bundlePreloadTimeoutTick = 0;// preloader does not have limit now.
-
                 /*
                     AssetBundleのダウンロードを行う。
                     依存取得はoffで、ハンドリングはAssetBundleLoaderのものを使用する。
@@ -341,8 +355,8 @@ namespace AutoyaFramework.AssetBundles
             totalLoadingCoroutinesCount = loadingCoroutines.Count;
 
             /*
-				execute loading.
-			 */
+                execute loading.
+             */
             var currentLoadingCoroutines = new IEnumerator[maxParallelCount];
             while (true)
             {

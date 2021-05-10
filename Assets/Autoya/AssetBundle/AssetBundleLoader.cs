@@ -474,7 +474,12 @@ namespace AutoyaFramework.AssetBundles
                     }
 
                     // start loading assetBundle on memory.
-                    var loadOnMemoryCachedAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
+                    var loadOnMemoryCachedAssetCoroutine = LoadOnMemoryAssetAsync(
+                        bundleName,
+                        assetName,
+                        loadSucceeded,
+                        loadFailed
+                    );
                     while (loadOnMemoryCachedAssetCoroutine.MoveNext())
                     {
                         yield return null;
@@ -507,7 +512,15 @@ namespace AutoyaFramework.AssetBundles
 					load to memory.
 				*/
                 {
-                    var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(bundleName, assetName, url, crc, hash, loadFailed, timeoutTick);
+                    var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(
+                        bundleName,
+                        assetName,
+                        url,
+                        crc,
+                        hash,
+                        loadFailed,
+                        timeoutTick
+                    );
                     while (downloadCoroutine.MoveNext())
                     {
                         yield return null;
@@ -549,7 +562,12 @@ namespace AutoyaFramework.AssetBundles
                         /*
 							load asset from on memory AssetBundle.
 						*/
-                        var loadAssetCoroutine = LoadOnMemoryAssetAsync(bundleName, assetName, loadSucceeded, loadFailed);
+                        var loadAssetCoroutine = LoadOnMemoryAssetAsync(
+                            bundleName,
+                            assetName,
+                            loadSucceeded,
+                            loadFailed
+                        );
                         while (loadAssetCoroutine.MoveNext())
                         {
                             yield return null;
@@ -947,7 +965,6 @@ namespace AutoyaFramework.AssetBundles
             {
                 alreadyStorageCached = true;
             }
-
             using (var request = UnityWebRequestAssetBundle.GetAssetBundle(url, hash, crc))
             {
                 if (requestHeader != null)
@@ -1387,7 +1404,15 @@ namespace AutoyaFramework.AssetBundles
 					load to memory.
 				*/
                 {
-                    var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(bundleName, sceneAssetName, url, crc, hash, loadFailed, timeoutTick);
+                    var downloadCoroutine = DownloadAssetThenCacheAndLoadToMemory(
+                        bundleName,
+                        sceneAssetName,
+                        url,
+                        crc,
+                        hash,
+                        loadFailed,
+                        timeoutTick
+                    );
                     while (downloadCoroutine.MoveNext())
                     {
                         yield return null;
@@ -1440,10 +1465,6 @@ namespace AutoyaFramework.AssetBundles
                         else
                         {
                             SceneManager.LoadScene(sceneAssetName, mode);
-                            Debug.Log("load完了");
-
-                            var cor = SceneManager.UnloadSceneAsync(SceneManager.GetSceneByPath(sceneAssetName));
-                            Debug.Log("ロード完了直後のcor:" + cor);
                         }
 
                         loadSucceeded(sceneAssetName);
@@ -1458,7 +1479,6 @@ namespace AutoyaFramework.AssetBundles
         public void UnloadOnMemoryAssetBundles()
         {
             var assetBundleNames = onMemoryCache.Keys.ToArray();
-
             foreach (var assetBundleName in assetBundleNames)
             {
                 var asset = onMemoryCache[assetBundleName];

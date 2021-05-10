@@ -791,7 +791,12 @@ namespace AutoyaFramework
             }
 
             autoya.mainthreadDispatcher.Commit(
-                autoya._assetBundleLoader.LoadAsset(assetName, loadSucceeded, loadFailed, timeout)
+                autoya._assetBundleLoader.LoadAsset(
+                    assetName,
+                    loadSucceeded,
+                    loadFailed,
+                    timeout
+                )
             );
         }
 
