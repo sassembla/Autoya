@@ -6,6 +6,18 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.19] - 2021/05/11
+
+### Added
+- UnloadByDomain feature for URLCaching.
+
+### Changed
+- URLCaching.ClearCaching method is renamed to URLCaching.PurgeByDomain method.
+
+### Fixed
+- possible preload affect bug to load AssetBundle.
+
+
 ## [0.9.18] - 2021/05/08
 
 ### Added
@@ -343,7 +355,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.18...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.19...HEAD
+[0.9.19]: https://github.com/sassembla/autoya/compare/0.9.18...0.9.19
 [0.9.18]: https://github.com/sassembla/autoya/compare/0.9.17...0.9.18
 [0.9.17]: https://github.com/sassembla/autoya/compare/0.9.16...0.9.17
 [0.9.16]: https://github.com/sassembla/autoya/compare/0.9.15...0.9.16
