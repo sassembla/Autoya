@@ -13,6 +13,7 @@ using UnityEngine;
 public class URLCachingImplementationTests : MiyamasuTestRunner
 {
     private const string AutoyaURLCachingTestsFileDomain = "AutoyaURLCachingTestsFileDomain";
+    private const string AutoyaURLCachingTestsFileDomain2 = "AutoyaURLCachingTestsFileDomain2";
 
     [MSetup]
     public IEnumerator Setup()
@@ -38,6 +39,7 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
 
         // delete all.
         Autoya.Persist_DeleteByDomain(AutoyaURLCachingTestsFileDomain);
+        Autoya.Persist_DeleteByDomain(AutoyaURLCachingTestsFileDomain2);
     }
 
     [MTeardown]
@@ -45,6 +47,7 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
     {
         // delete all cache.
         Autoya.Persist_URLCaching_PurgeByDomain(AutoyaURLCachingTestsFileDomain);
+        Autoya.Persist_URLCaching_PurgeByDomain(AutoyaURLCachingTestsFileDomain2);
     }
 
     [MTest]
@@ -826,6 +829,97 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
         );
 
         Assert.True(!isLoaded, "failed to unload.");
+    }
+
+    [MTest]
+    public IEnumerator UnloadByDomain()
+    {
+        var imagePath = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg/400px-2016-06-14_Orange_and_white_tabby_cat_born_in_2016_茶トラ白ねこ_DSCF6526☆彡.jpg?a=b";
+
+        // store one image in test domain.
+        {
+            var loaded = false;
+            Autoya.Persist_URLCaching_Load(
+                AutoyaURLCachingTestsFileDomain,
+                imagePath,
+                bytes =>
+                {
+                    // return sprite from bytes.
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(bytes);
+                    var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                    return newSprite;
+                },
+                cached =>
+                {
+                    loaded = true;
+                },
+                (code, reason) =>
+                {
+                    loaded = true;
+                    Fail();
+                }
+            );
+
+            yield return WaitUntil(
+                () => loaded,
+                () => { throw new TimeoutException("timeout for making cache."); }
+            );
+        }
+
+        // store one image in test domain2.
+        {
+            var loaded = false;
+            Autoya.Persist_URLCaching_Load(
+                AutoyaURLCachingTestsFileDomain2,
+                imagePath,
+                bytes =>
+                {
+                    // return sprite from bytes.
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(bytes);
+                    var newSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(.5f, .5f));
+                    return newSprite;
+                },
+                cached =>
+                {
+                    loaded = true;
+                },
+                (code, reason) =>
+                {
+                    loaded = true;
+                    Fail();
+                }
+            );
+
+            yield return WaitUntil(
+                () => loaded,
+                () => { throw new TimeoutException("timeout for making cache."); }
+            );
+        }
+
+        // キャッシュ done.
+
+        // AutoyaURLCachingTestsFileDomainの画像をunloadする
+        Autoya.Persist_URLCaching_UnloadByDomain(
+            AutoyaURLCachingTestsFileDomain,
+            true
+        );
+
+        var isLoaded = Autoya.Persist_URLCaching_IsLoaded(
+            AutoyaURLCachingTestsFileDomain,
+            imagePath
+        );
+
+        Assert.True(!isLoaded, "failed to unload.");
+
+
+        var isLoaded2 = Autoya.Persist_URLCaching_IsLoaded(
+            AutoyaURLCachingTestsFileDomain2,
+            imagePath
+        );
+
+        Assert.True(isLoaded2, "failed to unloadByDomain.");
     }
 }
 

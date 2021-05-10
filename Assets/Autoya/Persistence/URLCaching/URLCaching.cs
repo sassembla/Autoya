@@ -65,14 +65,56 @@ namespace AutoyaFramework.Persistence.URLCaching
         }
 
         /*
-            ドメイン単位で消す。
+            ドメイン単位で元ファイルとオンメモリーキャッシュを消す。
         */
-        public void ClearCaching(string storePath)
+        public void PurgeCacheByDomain(string storePath, bool destroyLoadedObject = false)
         {
-            filePersist.DeleteByDomain(storePath);
+            // 削除する前にonMemoryにloadされている可能性のあるpathを収集しておく
+            var domainFullPath = Path.Combine(filePersist.basePath, storePath);
+            if (!Directory.Exists(domainFullPath))
+            {
+                return;
+            }
+            var contentFolderPaths = Directory.GetDirectories(domainFullPath);
 
-            // TODO: ドメイン単位で消せると嬉しいが、現在は全部のオンメモリキャッシュを消している。
-            pathObjectOnMemoryCache = new Dictionary<string, UnityEngine.Object>();
+            // on memoryにcacheされている可能性がある
+            foreach (var contentFolderPath in contentFolderPaths)
+            {
+                if (!Directory.Exists(contentFolderPath))
+                {
+                    continue;
+                }
+
+                var targetFileNameCandidates = Directory.GetFiles(contentFolderPath);
+                if (targetFileNameCandidates.Length == 0)
+                {
+                    continue;
+                }
+
+                var dirPath = Path.GetDirectoryName(targetFileNameCandidates[0]);
+                var dirName = dirPath.Split('/').Last();
+                var targetFileName = Path.GetFileName(targetFileNameCandidates[0]);
+                var fileUniquePath = Path.Combine(storePath, dirName, targetFileName);
+
+                if (pathObjectOnMemoryCache.ContainsKey(fileUniquePath))
+                {
+                    UnityEngine.Object obj = null;
+                    if (destroyLoadedObject)
+                    {
+                        obj = pathObjectOnMemoryCache[fileUniquePath];
+                    }
+
+                    pathObjectOnMemoryCache.Remove(fileUniquePath);
+
+                    if (destroyLoadedObject)
+                    {
+                        GameObject.Destroy(obj);
+                    }
+                }
+            }
+
+            // 実ファイルを削除する
+            filePersist.DeleteByDomain(storePath);
         }
 
         private UrlAndHash GenerateFolderAndFilePath(string urlWithoutHash, string hashSource, string storePath)
@@ -155,7 +197,6 @@ namespace AutoyaFramework.Persistence.URLCaching
 
             // フォルダ、ファイルがあるかどうかチェックする
             var folderPath = Path.Combine(storePath, targetFolderName);
-            var existFolderPaths = filePersist.FileNamesInDomain(folderPath);
 
             fileUniquePath = Path.Combine(folderPath, targetFileName);
 
@@ -187,6 +228,54 @@ namespace AutoyaFramework.Persistence.URLCaching
                 if (destroyLoadedObject)
                 {
                     GameObject.Destroy(obj);
+                }
+            }
+        }
+
+        /*
+            ドメイン単位でオンメモリーキャッシュを消す。
+        */
+        public void UnloadByDomain(string storePath, bool destroyLoadedObject = false)
+        {
+            var domainFullPath = Path.Combine(filePersist.basePath, storePath);
+            if (!Directory.Exists(domainFullPath))
+            {
+                return;
+            }
+            var contentFolderPaths = Directory.GetDirectories(domainFullPath);
+
+            foreach (var contentFolderPath in contentFolderPaths)
+            {
+                if (!Directory.Exists(contentFolderPath))
+                {
+                    continue;
+                }
+
+                var targetFileNameCandidates = Directory.GetFiles(contentFolderPath);
+                if (targetFileNameCandidates.Length == 0)
+                {
+                    continue;
+                }
+
+                var dirPath = Path.GetDirectoryName(targetFileNameCandidates[0]);
+                var dirName = dirPath.Split('/').Last();
+                var targetFileName = Path.GetFileName(targetFileNameCandidates[0]);
+                var fileUniquePath = Path.Combine(storePath, dirName, targetFileName);
+
+                if (pathObjectOnMemoryCache.ContainsKey(fileUniquePath))
+                {
+                    UnityEngine.Object obj = null;
+                    if (destroyLoadedObject)
+                    {
+                        obj = pathObjectOnMemoryCache[fileUniquePath];
+                    }
+
+                    pathObjectOnMemoryCache.Remove(fileUniquePath);
+
+                    if (destroyLoadedObject)
+                    {
+                        GameObject.Destroy(obj);
+                    }
                 }
             }
         }

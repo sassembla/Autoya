@@ -186,6 +186,16 @@ namespace AutoyaFramework
             autoya._autoyaURLCache.Unload(domain, url, destroyLoadedObject);
         }
 
+        public static void Persist_URLCaching_UnloadByDomain(string domain, bool destroyLoadedObject = false)
+        {
+            if (autoya._autoyaURLCache == null)
+            {
+                autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+
+            autoya._autoyaURLCache.UnloadByDomain(domain, destroyLoadedObject);
+        }
+
         public static void Persist_URLCaching_Purge(string domain, string url)
         {
             if (autoya._autoyaURLCache == null)
@@ -199,14 +209,14 @@ namespace AutoyaFramework
             autoya._autoyaURLCache.PurgeCache(domain, urlWithoutHash);
         }
 
-        public static void Persist_URLCaching_PurgeByDomain(string domain)
+        public static void Persist_URLCaching_PurgeByDomain(string domain, bool destroyLoadedObject = false)
         {
             if (autoya._autoyaURLCache == null)
             {
                 autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
             }
 
-            autoya._autoyaURLCache.ClearCaching(domain);
+            autoya._autoyaURLCache.PurgeCacheByDomain(domain, destroyLoadedObject);
         }
 
         public static string Persist_URLCaching_PathOf(string domain, string url)
