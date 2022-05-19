@@ -6,6 +6,14 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
+## [0.9.19] - 2022/05/19
+
+
+### Fixed
+- URLCaching.ExecuteExpiration method is not run in parallel. now become parallel and become fast a little bit.
+
+
+
 ## [0.9.19] - 2021/05/11
 
 ### Added
@@ -355,7 +363,8 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.19...HEAD
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.20...HEAD
+[0.9.20]: https://github.com/sassembla/autoya/compare/0.9.20...0.9.20
 [0.9.19]: https://github.com/sassembla/autoya/compare/0.9.18...0.9.19
 [0.9.18]: https://github.com/sassembla/autoya/compare/0.9.17...0.9.18
 [0.9.17]: https://github.com/sassembla/autoya/compare/0.9.16...0.9.17
