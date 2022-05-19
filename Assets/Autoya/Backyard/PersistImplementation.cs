@@ -228,14 +228,14 @@ namespace AutoyaFramework
             return autoya._autoyaURLCache.PathOf(domain, url);
         }
 
-        public static void Persist_URLCaching_ExecuteExpiration(string domain, int expirationDayCount, Action onDone)
+        public static void Persist_URLCaching_ExecuteExpiration(string domain, int expirationDayCount, int parallelHandleFileCount, Action onDone)
         {
             if (autoya._autoyaURLCache == null)
             {
                 autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
             }
 
-            var cor = autoya._autoyaURLCache.ExecuteExpiration(domain, expirationDayCount);
+            var cor = autoya._autoyaURLCache.ExecuteExpiration(domain, expirationDayCount, parallelHandleFileCount);
             IEnumerator waitDone()
             {
                 yield return cor;

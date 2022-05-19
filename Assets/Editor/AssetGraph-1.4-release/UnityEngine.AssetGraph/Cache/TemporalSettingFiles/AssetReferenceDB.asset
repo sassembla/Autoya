@@ -12,13 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee4bc21567f434b598a3c96ba4946372, type: 3}
   m_Name: AssetReferenceDB
   m_EditorClassIdentifier: 
-  m_assets:
-  - m_assetDatabaseId: 269a7412e7d2a4bee9fa6e819ae61e8a
-    m_importFrom: Assets/Autoya/Manifest/ShouldGitIgnore/Resources/BuildManifest.json
-    m_exportTo: 
-    m_variantName: 
-  - m_assetDatabaseId: 1ebbadce6891a432c825e2f9f89902e6
-    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Cache/TemporalSettingFiles/AssetReferenceDB.asset
-    m_exportTo: 
-    m_variantName: 
+  m_assets: []
   m_version: 2

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using AutoyaFramework.Persistence.Files;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -334,22 +335,24 @@ namespace AutoyaFramework.Persistence.URLCaching
                 var currentTargetDirPaths = targetDirectoryPathList.GetRange(0, takeCount);
                 targetDirectoryPathList.RemoveRange(0, takeCount);
 
-                foreach (var currentTargetDirPath in currentTargetDirPaths)
-                {
-                    var filePaths = Directory.GetFiles(currentTargetDirPath);
-                    foreach (var filePath in filePaths)
+                Parallel.ForEach(currentTargetDirPaths, currentTargetDirPath =>
                     {
-                        // 最低0日からで、最後にreadした日からの経過日数を出す
-                        // DaysはSecondsやMinutesと違って上限なしのday数(11111とか)を返してくるので、このまま使用する。TotalDaysを使うとdoubleになるため避けている。
-                        var elapsedUnreadDayCount = (DateTime.UtcNow - File.GetLastAccessTimeUtc(filePath)).Days;
-                        if (expirationDayCount < elapsedUnreadDayCount)
+                        var filePaths = Directory.GetFiles(currentTargetDirPath);
+                        foreach (var filePath in filePaths)
                         {
-                            // 一つでも経過していたら、フォルダ自体を削除する
-                            Directory.Delete(currentTargetDirPath, true);
-                            break;
+                            // 最低0日からで、最後にreadした日からの経過日数を出す
+                            // DaysはSecondsやMinutesと違って上限なしのday数(11111とか)を返してくるので、このまま使用する。TotalDaysを使うとdoubleになるため避けている。
+                            var elapsedUnreadDayCount = (DateTime.UtcNow - File.GetLastAccessTimeUtc(filePath)).Days;
+
+                            if (expirationDayCount < elapsedUnreadDayCount)
+                            {
+                                // 一つでも経過していたら、フォルダ自体を削除する
+                                Directory.Delete(currentTargetDirPath, true);
+                                break;
+                            }
                         }
                     }
-                }
+                );
 
                 if (0 < targetDirectoryPathList.Count)
                 {

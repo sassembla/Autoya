@@ -690,6 +690,7 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
         Autoya.Persist_URLCaching_ExecuteExpiration(
             AutoyaURLCachingTestsFileDomain,
             day,
+            30,
             () =>
             {
                 done = true;
@@ -759,6 +760,7 @@ public class URLCachingImplementationTests : MiyamasuTestRunner
         Autoya.Persist_URLCaching_ExecuteExpiration(
             AutoyaURLCachingTestsFileDomain,
             day_minus_one,
+            30,
             () =>
             {
                 done = true;
