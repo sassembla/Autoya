@@ -22,6 +22,11 @@ namespace AutoyaFramework
         private URLCache _autoyaURLCache;
         private HashHit _autoyaChacheHit;
 
+        public static string Persist_BasePath()
+        {
+            return autoya._autoyaFilePersistence.basePath;
+        }
+
         public static bool Persist_IsExist(string domain, string filePath)
         {
             return autoya._autoyaFilePersistence.IsExist(domain, filePath);
@@ -160,6 +165,12 @@ namespace AutoyaFramework
             if (autoya._autoyaURLCache == null)
             {
                 autoya._autoyaURLCache = new URLCache(autoya._autoyaFilePersistence);
+            }
+
+            if (autoya._autoyaURLCache.TryLoadFromCache<T>(domain, url, onLoaded))
+            {
+                // キャッシュから読めたならこれ以降用はない。
+                return;
             }
 
             var cor = autoya._autoyaURLCache.LoadFromURLAs<T>(domain, url, bytesToTConverter, onLoaded, onLoadFailed, requestHeader, timeout);

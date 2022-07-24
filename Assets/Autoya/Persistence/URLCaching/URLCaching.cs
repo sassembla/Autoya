@@ -552,5 +552,19 @@ namespace AutoyaFramework.Persistence.URLCaching
                 }
             );
         }
+
+        public bool TryLoadFromCache<T>(string storePath, string url, Action<T> onLoaded) where T : UnityEngine.Object
+        {
+            if (IsLoaded(storePath, url, out var fileUniquePath))
+            {
+                if (pathObjectOnMemoryCache.TryGetValue(fileUniquePath, out var value))
+                {
+                    onLoaded(value as T);
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
