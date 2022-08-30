@@ -12,6 +12,11 @@ using System.Linq;
 using System.IO;
 using AutoyaFramework.EndPointSelect;
 using UnityEngine.Purchasing;
+using System.Text;
+
+// TODO: OnPersistentPathRequired 足す。
+// 初回起動時通信無効化ルートを足す。
+// ABのget失敗時レスポンスチェックを足す。
 
 /**
     modify this class for your app's endpoint update, authentication, purchase, assetBundles, appManifest dataflow.
@@ -172,7 +177,7 @@ namespace AutoyaFramework
         /**
             send authentication data to server at first boot.
         */
-        private IEnumerator OnBootAuthRequest(Action<Dictionary<string, string>, string> setHeaderAndDataToRequest)
+        private IEnumerator OnBootAuthRequest(Action<Dictionary<string, string>, string> setHeaderAndDataToRequest, Action skip)
         {
             // set boot body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
             var data = "some boot data";
@@ -220,12 +225,12 @@ namespace AutoyaFramework
             received Unauthorized code from server. then, should authenticate again.
             set header and data for refresh token.
         */
-        private IEnumerator OnTokenRefreshRequest(Action<Dictionary<string, string>, string> setHeaderToRequest)
+        private IEnumerator OnTokenRefreshRequest(Action<string, Dictionary<string, string>, object> setMethod_Header_ValueToRequest, Action cancel)
         {
-            // set refresh body data for Http.Post to server.(if empty, this framework use Http.Get for sending data to server.)
-            var data = "some refresh data";
+            // ready refresh request body data. byte[] or string, non-null value is available for request. also byte[0] or string.Empty is available.
+            var data = Encoding.UTF8.GetBytes("some refresh request payload bytes data");
 
-            // return refresh token for re-authenticate.
+            // load refresh token for re-authenticate.
             var refreshToken = Autoya.Persist_Load(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME);
 
             var base64Str = Base64.FromString(refreshToken);
@@ -234,21 +239,26 @@ namespace AutoyaFramework
                 {"Authorization", base64Str}
             };
 
-            setHeaderToRequest(refreshRequestHeader, data);
+            setMethod_Header_ValueToRequest("POST", refreshRequestHeader, data);
             yield break;
         }
 
         /**
             received refreshed token.
+            response value type is equal to request value type. byte[] or string will return.
+
             if failed to validate response, call refreshFailed(int errorCode, string reason).
                 this refreshFailed method raises the notification against Autoya.Auth_SetOnRefreshAuthFailed() handler.
         */
-        private IEnumerator OnTokenRefreshResponse(Dictionary<string, string> responseHeader, string data, Action<int, string> refreshFailed)
+        private IEnumerator OnTokenRefreshResponse(Dictionary<string, string> responseHeader, object data, Action<int, string> refreshFailed)
         {
+            // this example code expects data is byte[].
+            var stringValue = Encoding.UTF8.GetString((byte[])data);
+
             var isValidResponse = true;
             if (isValidResponse)
             {
-                Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, data);
+                Autoya.Persist_Update(AuthSettings.AUTH_STORED_FRAMEWORK_DOMAIN, AuthSettings.AUTH_STORED_TOKEN_FILENAME, stringValue);
             }
             else
             {
@@ -382,6 +392,14 @@ namespace AutoyaFramework
         /*
             purchase feature handlers.
         */
+
+        /**
+            fire before booting purchase feature. you can delay the timing of booting purchase feature.
+        */
+        private IEnumerator OnBeforeBootingPurchasingFeature()
+        {
+            yield break;
+        }
 
         /**
             fire when this app requests product information to the server.

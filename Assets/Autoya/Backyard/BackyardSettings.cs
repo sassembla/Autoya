@@ -15,5 +15,8 @@ namespace AutoyaFramework
 
         public const string HTTP_CODE_ERROR_SUFFIX = "httpResponseCodeError:";
         public const string HTTP_TIMEOUT_MESSAGE = "timeout. sec:";
+
+        // UnityWebRequest returns 200 when isNetworkError == true. set this value for valid handling.
+        public const int HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE = -200;
     }
 }

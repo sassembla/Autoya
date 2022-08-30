@@ -200,11 +200,28 @@ namespace AutoyaFramework
                     tokenRequestHeader = requestHeader;
                     bootData = data;
                 };
-                var bootKeyLoadCor = autoya.OnBootAuthRequest(authRequestHeaderLoaded);
+
+                // get boot auth request parameter or cancelled by developer.
+                var skipped = false;
+                var bootKeyLoadCor = autoya.OnBootAuthRequest(
+                    authRequestHeaderLoaded,
+                    () =>
+                    {
+                        skipped = true;
+                    }
+                );
 
                 while (bootKeyLoadCor.MoveNext())
                 {
                     yield return null;
+                }
+
+                if (skipped)
+                {
+                    // set as suceeded without request.
+                    authState = AuthState.Logon;
+                    onBootSucceeded();
+                    yield break;
                 }
 
                 if (string.IsNullOrEmpty(bootData))
@@ -372,7 +389,24 @@ namespace AutoyaFramework
                     tokenRequestHeader = requestHeader;
                     bootData = data;
                 };
-                var bootKeyLoadCor = autoya.OnBootAuthRequest(authRequestHeaderLoaded);
+
+                // get boot auth request parameter or skip it by developer.
+                var skipped = false;
+                var bootKeyLoadCor = autoya.OnBootAuthRequest(
+                    authRequestHeaderLoaded,
+                    () =>
+                    {
+                        skipped = true;
+                    }
+                );
+
+                if (skipped)
+                {
+                    // set as suceeded without request.
+                    authState = AuthState.Logon;
+                    onBootSucceeded();
+                    yield break;
+                }
 
                 while (bootKeyLoadCor.MoveNext())
                 {
@@ -457,7 +491,9 @@ namespace AutoyaFramework
                         {
                             authState = AuthState.Refreshing;
 
-                            mainthreadDispatcher.Commit(RefreshToken());
+                            // start refreshing token.
+                            tokenRefreshRetryCount = 0;
+                            mainthreadDispatcher.Commit(RequestRefreshToken());
                             break;
                         }
                     default:
@@ -468,78 +504,165 @@ namespace AutoyaFramework
                 }
             }
 
-            private IEnumerator RefreshToken()
+
+            private IEnumerator RequestRefreshToken()
             {
-                // start refreshing token.
-                var refresingTokenHttp = new HTTPConnection();
+                var refreshingTokenHttp = new HTTPConnection();
                 var refreshTokenUrl = AuthSettings.AUTH_URL_REFRESH_TOKEN;
 
                 var refreshTokenConnectionId = AuthSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
 
+
+                var requestMethod = "GET";
                 Dictionary<string, string> refreshRequestHeader = null;
-                var refreshTokenData = string.Empty;
-                Action<Dictionary<string, string>, string> refreshRequestHeaderLoaded = (requestHeader, data) =>
+                object refreshTokenData = null;
+                var cancelled = false;
+
+                Action<string, Dictionary<string, string>, object> refreshRequestHeaderLoaded = (method, requestHeader, data) =>
                 {
+                    Debug.Assert(method.ToUpper() == "GET" || method.ToUpper() == "POST", "refresh token request method must be GET or POST. incoming value is:" + method);
+                    requestMethod = method;
+
                     refreshRequestHeader = requestHeader;
+
+                    Debug.Assert(data is byte[] || data is string, "refresh token request payload should be byte[] or string. incoming type is:" + data.GetType());
+                    Debug.Assert(data != null, "refresh token request payload must not be null, set byte[0] or string.Empty instead null. incoming value is null of:" + data.GetType());
                     refreshTokenData = data;
                 };
 
-                var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded);
+                var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded, () => cancelled = true);
                 while (authKeyLoadCor.MoveNext())
                 {
                     yield return null;
                 }
 
-                if (string.IsNullOrEmpty(refreshTokenData))
+                // if cancelled, refresh is no longer retrying and stop. Autoya's state become logout.
+                if (cancelled)
                 {
-                    var refreshingTokenCor = refresingTokenHttp.Get(
-                        refreshTokenConnectionId,
-                        refreshRequestHeader,
-                        refreshTokenUrl,
-                        (conId, code, responseHeader, data) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, data, string.Empty);
-                        },
-                        (conId, code, failedReason, responseHeader) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
-                        },
-                        BackyardSettings.HTTP_TIMEOUT_SEC
-                    );
-
-                    while (refreshingTokenCor.MoveNext())
-                    {
-                        yield return null;
-                    }
+                    authState = AuthState.Logout;
+                    yield break;
                 }
-                else
-                {
-                    var refreshingTokenCor = refresingTokenHttp.Post(
-                        refreshTokenConnectionId,
-                        refreshRequestHeader,
-                        refreshTokenUrl,
-                        refreshTokenData,
-                        (conId, code, responseHeader, data) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, data, string.Empty);
-                        },
-                        (conId, code, failedReason, responseHeader) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
-                        },
-                        BackyardSettings.HTTP_TIMEOUT_SEC
-                    );
 
-                    while (refreshingTokenCor.MoveNext())
+                // request value is string. request with string then expects response is also string.
+                if (refreshTokenData is string)
+                {
+                    switch (requestMethod)
                     {
-                        yield return null;
+                        case "GET":
+                            {
+                                var cor = refreshingTokenHttp.Get(
+                                    refreshTokenConnectionId,
+                                    refreshRequestHeader,
+                                    refreshTokenUrl,
+                                    (conId, code, responseHeader, data) =>
+                                    {
+                                        OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+                                    },
+                                    (conId, code, failedReason, responseHeader) =>
+                                    {
+                                        OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+                                    },
+                                    BackyardSettings.HTTP_TIMEOUT_SEC
+                                );
+
+                                while (cor.MoveNext())
+                                {
+                                    yield return null;
+                                }
+
+                                break;
+                            }
+                        case "POST":
+                            {
+                                var cor = refreshingTokenHttp.Post(
+                                    refreshTokenConnectionId,
+                                    refreshRequestHeader,
+                                    refreshTokenUrl,
+                                    refreshTokenData as string,
+                                    (conId, code, responseHeader, data) =>
+                                    {
+                                        OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+                                    },
+                                    (conId, code, failedReason, responseHeader) =>
+                                    {
+                                        OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
+                                    },
+                                    BackyardSettings.HTTP_TIMEOUT_SEC
+                                );
+
+                                while (cor.MoveNext())
+                                {
+                                    yield return null;
+                                }
+                                break;
+                            }
+                        default:
+                            Debug.LogError("unsupported refresh token request method:" + requestMethod);
+                            break;
                     }
+
+                    yield break;
+                }
+
+                // request value is byte[] then expects response is also byte[].
+                switch (requestMethod)
+                {
+                    case "GET":
+                        {
+                            var cor = refreshingTokenHttp.GetByBytes(
+                                refreshTokenConnectionId,
+                                refreshRequestHeader,
+                                refreshTokenUrl,
+                                (conId, code, responseHeader, data) =>
+                                {
+                                    OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+                                },
+                                (conId, code, failedReason, responseHeader) =>
+                                {
+                                    OnRefreshResult(conId, responseHeader, code, new byte[0], failedReason);
+                                },
+                                BackyardSettings.HTTP_TIMEOUT_SEC
+                            );
+
+                            while (cor.MoveNext())
+                            {
+                                yield return null;
+                            }
+
+                            break;
+                        }
+                    case "POST":
+                        {
+                            var cor = refreshingTokenHttp.Post(
+                                refreshTokenConnectionId,
+                                refreshRequestHeader,
+                                refreshTokenUrl,
+                                (byte[])refreshTokenData,
+                                (conId, code, responseHeader, data) =>
+                                {
+                                    OnRefreshResult(conId, responseHeader, code, data, string.Empty);
+                                },
+                                (conId, code, failedReason, responseHeader) =>
+                                {
+                                    OnRefreshResult(conId, responseHeader, code, new byte[0], failedReason);
+                                },
+                                BackyardSettings.HTTP_TIMEOUT_SEC
+                            );
+
+                            while (cor.MoveNext())
+                            {
+                                yield return null;
+                            }
+                            break;
+                        }
+                    default:
+                        Debug.LogError("unsupported refresh token request method:" + requestMethod);
+                        break;
                 }
             }
 
-            private void OnRefreshResult(string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, string resultData, string errorReason)
+            private void OnRefreshResult(string tokenConnectionId, Dictionary<string, string> responseHeader, int responseCode, object resultData, string errorReason)
             {
-
                 if (forceFailTokenRefresh)
                 {
                     responseCode = 500;
@@ -554,9 +677,7 @@ namespace AutoyaFramework
                     errorReason,
                     (succeededConId, succeededData) =>
                     {
-                        var tokenData = succeededData as string;
-
-                        mainthreadDispatcher.Commit(OnTokenRefreshSucceeded(responseHeader, tokenData));
+                        mainthreadDispatcher.Commit(OnTokenRefreshSucceeded(responseHeader, succeededData));
                     },
                     (failedConId, failedCode, failedReason, autoyaStatus) =>
                     {
@@ -610,7 +731,7 @@ namespace AutoyaFramework
                 );
             }
 
-            private IEnumerator OnTokenRefreshSucceeded(Dictionary<string, string> responseHeader, string tokenData)
+            private IEnumerator OnTokenRefreshSucceeded(Dictionary<string, string> responseHeader, object tokenData)
             {
                 var failed = false;
                 var code = 0;
@@ -665,69 +786,10 @@ namespace AutoyaFramework
                 }
 
                 // start refreshing token again.
-                var refresingTokenHttp = new HTTPConnection();
-                var refreshTokenUrl = AuthSettings.AUTH_URL_REFRESH_TOKEN;
-
-                var refreshTokenConnectionId = AuthSettings.AUTH_CONNECTIONID_REFRESH_TOKEN_PREFIX + Guid.NewGuid().ToString();
-
-                Dictionary<string, string> refreshRequestHeader = null;
-                var refreshTokenData = string.Empty;
-                Action<Dictionary<string, string>, string> refreshRequestHeaderLoaded = (requestHeader, data) =>
-                {
-                    refreshRequestHeader = requestHeader;
-                    refreshTokenData = data;
-                };
-
-                var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded);
-                while (authKeyLoadCor.MoveNext())
+                var cor = RequestRefreshToken();
+                while (cor.MoveNext())
                 {
                     yield return null;
-                }
-
-                if (string.IsNullOrEmpty(refreshTokenData))
-                {
-                    var cor = refresingTokenHttp.Get(
-                        refreshTokenConnectionId,
-                        refreshRequestHeader,
-                        refreshTokenUrl,
-                        (conId, code, responseHeader, data) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, data, string.Empty);
-                        },
-                        (conId, code, failedReason, responseHeader) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
-                        },
-                        BackyardSettings.HTTP_TIMEOUT_SEC
-                    );
-
-                    while (cor.MoveNext())
-                    {
-                        yield return null;
-                    }
-                }
-                else
-                {
-                    var cor = refresingTokenHttp.Post(
-                        refreshTokenConnectionId,
-                        refreshRequestHeader,
-                        refreshTokenUrl,
-                        refreshTokenData,
-                        (conId, code, responseHeader, data) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, data, string.Empty);
-                        },
-                        (conId, code, failedReason, responseHeader) =>
-                        {
-                            OnRefreshResult(conId, responseHeader, code, string.Empty, failedReason);
-                        },
-                        BackyardSettings.HTTP_TIMEOUT_SEC
-                    );
-
-                    while (cor.MoveNext())
-                    {
-                        yield return null;
-                    }
                 }
             }
 
@@ -760,7 +822,9 @@ namespace AutoyaFramework
                     case AuthState.RefreshFailed:
                         {
                             authState = AuthState.Refreshing;
-                            mainthreadDispatcher.Commit(RefreshToken());
+
+                            // start refreshing token again.
+                            mainthreadDispatcher.Commit(RequestRefreshToken());
                             return true;
                         }
                     default:

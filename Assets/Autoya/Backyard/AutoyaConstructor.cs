@@ -133,7 +133,13 @@ namespace AutoyaFramework
                                     */
                                     if (isPlayer)
                                     {
-                                        ReloadPurchasability();
+                                        // wait the ready for booting purchase feature then start purchase feature.
+                                        IEnumerator firstReloadPurchasabilityCor() {
+                                            yield return OnBeforeBootingPurchasingFeature();
+                                            ReloadPurchasability();
+                                        }
+
+                                        mainthreadDispatcher.Commit(firstReloadPurchasabilityCor());
                                     }
                                 }
                             );

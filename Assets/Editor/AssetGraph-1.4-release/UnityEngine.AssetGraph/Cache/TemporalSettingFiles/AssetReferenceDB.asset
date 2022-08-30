@@ -13,12 +13,32 @@ MonoBehaviour:
   m_Name: AssetReferenceDB
   m_EditorClassIdentifier: 
   m_assets:
-  - m_assetDatabaseId: e078a2e730aec470c80ad27a2309c8c7
+  - m_assetDatabaseId: 756b0626c83fc40bdaca5f4c433b1939
+    m_importFrom: Assets/Autoya/Connections/HTTP.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 634bb7eba261343a9b17387d140093d7
     m_importFrom: Assets/Autoya/Manifest/ShouldGitIgnore/Resources/BuildManifest.json
     m_exportTo: 
     m_variantName: 
   - m_assetDatabaseId: 1ebbadce6891a432c825e2f9f89902e6
     m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Cache/TemporalSettingFiles/AssetReferenceDB.asset
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ec5ec1496f4ed40b9a67e5b76a534e22
+    m_importFrom: Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fab6efc27462e4c7998d23540c726709
+    m_importFrom: Assets/Autoya/Backyard/AutoyaConstructor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5a42b7637efb64b369dda7965632849e
+    m_importFrom: Assets/Autoya/Backyard/OverridePoints.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e4d338a31cc0c43d9b42979b09c5f058
+    m_importFrom: Assets/Autoya/Backyard/AuthenticationImplementation.cs
     m_exportTo: 
     m_variantName: 
   m_version: 2

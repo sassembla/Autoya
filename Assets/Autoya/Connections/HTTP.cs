@@ -51,6 +51,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -72,9 +78,14 @@ namespace AutoyaFramework.Connections.HTTP
             var currentDate = DateTime.UtcNow;
             var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-            using (var request = UnityWebRequest.Post(url, data))
+            using (var request = UnityWebRequest.Post(url, data))// UnityWebRequest post should contains body. this cannot be avoid.
             {
-                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
+                var utf8EncodedData = Encoding.UTF8.GetBytes(data);
+                if (0 < utf8EncodedData.Length)
+                {
+                    request.uploadHandler = (UploadHandler)new UploadHandlerRaw(utf8EncodedData);
+                }
+
                 if (requestHeader != null)
                 {
                     foreach (var kv in requestHeader)
@@ -103,6 +114,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -156,6 +173,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -208,6 +231,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -261,6 +290,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -313,6 +348,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -366,6 +407,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -418,6 +465,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -476,6 +529,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
@@ -529,6 +588,12 @@ namespace AutoyaFramework.Connections.HTTP
 
                 if (request.isNetworkError)
                 {
+                    if (responseCode == 200)
+                    {
+                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                    }
+
                     failed(connectionId, responseCode, request.error, responseHeaders);
                     yield break;
                 }
