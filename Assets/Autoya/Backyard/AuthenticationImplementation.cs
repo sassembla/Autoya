@@ -201,7 +201,7 @@ namespace AutoyaFramework
                     bootData = data;
                 };
 
-                // get boot auth request parameter or cancelled by developer.
+                // get boot auth request parameter or skipped by developer.
                 var skipped = false;
                 var bootKeyLoadCor = autoya.OnBootAuthRequest(
                     authRequestHeaderLoaded,
@@ -294,7 +294,7 @@ namespace AutoyaFramework
                     {
                         var tokenData = succeededData as string;
 
-                        mainthreadDispatcher.Commit(OnBootSucceeded(responseHeader, tokenData));
+                        mainthreadDispatcher.Commit(OnBootRequestSucceeded(responseHeader, tokenData));
                     },
                     (failedConId, failedCode, failedReason, autoyaStatus) =>
                     {
@@ -322,7 +322,7 @@ namespace AutoyaFramework
                 );
             }
 
-            private IEnumerator OnBootSucceeded(Dictionary<string, string> responseHeader, string tokenData)
+            private IEnumerator OnBootRequestSucceeded(Dictionary<string, string> responseHeader, string tokenData)
             {
                 var failed = false;
                 var code = 0;
@@ -390,7 +390,7 @@ namespace AutoyaFramework
                     bootData = data;
                 };
 
-                // get boot auth request parameter or skip it by developer.
+                // get boot auth request parameter or skipped by developer.
                 var skipped = false;
                 var bootKeyLoadCor = autoya.OnBootAuthRequest(
                     authRequestHeaderLoaded,
@@ -400,6 +400,11 @@ namespace AutoyaFramework
                     }
                 );
 
+                while (bootKeyLoadCor.MoveNext())
+                {
+                    yield return null;
+                }
+
                 if (skipped)
                 {
                     // set as suceeded without request.
@@ -408,10 +413,6 @@ namespace AutoyaFramework
                     yield break;
                 }
 
-                while (bootKeyLoadCor.MoveNext())
-                {
-                    yield return null;
-                }
                 if (string.IsNullOrEmpty(bootData))
                 {
                     var cor = tokenHttp.Get(

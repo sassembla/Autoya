@@ -176,6 +176,8 @@ namespace AutoyaFramework
 
         /**
             send authentication data to server at first boot.
+
+            run skip() when you want to skip on boot request. then Autoya become logon mode.
         */
         private IEnumerator OnBootAuthRequest(Action<Dictionary<string, string>, string> setHeaderAndDataToRequest, Action skip)
         {
@@ -224,6 +226,8 @@ namespace AutoyaFramework
         /**
             received Unauthorized code from server. then, should authenticate again.
             set header and data for refresh token.
+
+            run cancel() if you want to cancel token refresh request. then Autoya will become logout mode and do nothing.
         */
         private IEnumerator OnTokenRefreshRequest(Action<string, Dictionary<string, string>, object> setMethod_Header_ValueToRequest, Action cancel)
         {
@@ -273,8 +277,8 @@ namespace AutoyaFramework
         }
 
         /**
-        fire when logout.
-        need to delete token if token is stored.
+            fire when logout.
+            need to delete token if token is stored.
          */
         private IEnumerator OnLogout(Action succeeded, Action<string> failed)
         {

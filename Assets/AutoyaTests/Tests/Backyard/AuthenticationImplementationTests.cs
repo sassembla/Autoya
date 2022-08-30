@@ -78,7 +78,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
         Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
         yield return WaitUntil(
             () => logouted,
-            () => { throw new TimeoutException(""); }
+            () => { throw new TimeoutException("failed to logout."); }
         );
 
         var authenticated = Autoya.Auth_IsAuthenticated();
@@ -101,7 +101,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
         Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
         yield return WaitUntil(
             () => logouted,
-            () => { throw new TimeoutException(""); }
+            () => { throw new TimeoutException("failed to logout."); }
         );
 
 
@@ -133,7 +133,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
         Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
         yield return WaitUntil(
             () => logouted,
-            () => { throw new TimeoutException(""); }
+            () => { throw new TimeoutException("failed to handle bootAuthFailed."); }
         );
 
 
@@ -170,7 +170,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
         Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
         yield return WaitUntil(
             () => logouted,
-            () => { throw new TimeoutException(""); }
+            () => { throw new TimeoutException("failed to auth"); }
         );
 
 
@@ -190,7 +190,7 @@ public class AuthImplementationTests : MiyamasuTestRunner
         Autoya.Auth_Logout(() => { logouted = true; }, reason => { });
         yield return WaitUntil(
             () => logouted,
-            () => { throw new TimeoutException(""); }
+            () => { throw new TimeoutException("intentional logout timeout."); }
         );
 
 
