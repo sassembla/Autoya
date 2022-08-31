@@ -517,7 +517,6 @@ namespace AutoyaFramework
                 var requestMethod = "GET";
                 Dictionary<string, string> refreshRequestHeader = null;
                 object refreshTokenData = null;
-                var cancelled = false;
 
                 Action<string, Dictionary<string, string>, object> refreshRequestHeaderLoaded = (method, requestHeader, data) =>
                 {
@@ -531,17 +530,10 @@ namespace AutoyaFramework
                     refreshTokenData = data;
                 };
 
-                var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded, () => cancelled = true);
+                var authKeyLoadCor = autoya.OnTokenRefreshRequest(refreshRequestHeaderLoaded);
                 while (authKeyLoadCor.MoveNext())
                 {
                     yield return null;
-                }
-
-                // if cancelled, refresh is no longer retrying and stop. Autoya's state become logout.
-                if (cancelled)
-                {
-                    authState = AuthState.Logout;
-                    yield break;
                 }
 
                 // request value is string. request with string then expects response is also string.

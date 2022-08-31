@@ -226,10 +226,8 @@ namespace AutoyaFramework
         /**
             received Unauthorized code from server. then, should authenticate again.
             set header and data for refresh token.
-
-            run cancel() if you want to cancel token refresh request. then Autoya will become logout mode and do nothing.
         */
-        private IEnumerator OnTokenRefreshRequest(Action<string, Dictionary<string, string>, object> setMethod_Header_ValueToRequest, Action cancel)
+        private IEnumerator OnTokenRefreshRequest(Action<string, Dictionary<string, string>, object> setMethod_Header_ValueToRequest)
         {
             // ready refresh request body data. byte[] or string, non-null value is available for request. also byte[0] or string.Empty is available.
             var data = Encoding.UTF8.GetBytes("some refresh request payload bytes data");
