@@ -9,35 +9,37 @@ using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph
 {
-    [Serializable] 
+    [Serializable]
     [CustomAssetImporterConfigurator(typeof(ModelImporter), "Model", "setting.fbx")]
     public class ModelImportSettingsConfigurator : IAssetImporterConfigurator
     {
-        public void Initialize (ConfigurationOption option)
+        public void Initialize(ConfigurationOption option)
         {
         }
 
-        public bool IsModified (AssetImporter referenceImporter, AssetImporter importer, BuildTarget target, string group)
-        {
-            var r = referenceImporter as ModelImporter;
-            var t = importer as ModelImporter;
-            if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
-            }
-            return !IsEqual (t, r);
-        }
-
-        public void Configure (AssetImporter referenceImporter, AssetImporter importer, BuildTarget target, string group)
+        public bool IsModified(AssetImporter referenceImporter, AssetImporter importer, BuildTarget target, string group)
         {
             var r = referenceImporter as ModelImporter;
             var t = importer as ModelImporter;
-            if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+            if (r == null || t == null)
+            {
+                throw new AssetGraphException(string.Format("Invalid AssetImporter assigned for {0}", importer.assetPath));
             }
-            OverwriteImportSettings (t, r);
+            return !IsEqual(t, r);
         }
 
-        public void OnInspectorGUI (AssetImporter referenceImporter, BuildTargetGroup target, Action onValueChanged)
+        public void Configure(AssetImporter referenceImporter, AssetImporter importer, BuildTarget target, string group)
+        {
+            var r = referenceImporter as ModelImporter;
+            var t = importer as ModelImporter;
+            if (r == null || t == null)
+            {
+                throw new AssetGraphException(string.Format("Invalid AssetImporter assigned for {0}", importer.assetPath));
+            }
+            OverwriteImportSettings(t, r);
+        }
+
+        public void OnInspectorGUI(AssetImporter referenceImporter, BuildTargetGroup target, Action onValueChanged)
         {
         }
 
@@ -48,9 +50,9 @@ namespace UnityEngine.AssetGraph
         /// </summary>
         /// <returns><c>true</c>, if both settings are the equal, <c>false</c> otherwise.</returns>
         /// <param name="target">Target importer to test equality.</param>
-        public bool IsEqual (ModelImporter target, ModelImporter reference)
+        public bool IsEqual(ModelImporter target, ModelImporter reference)
         {
-            if (target.importMaterials != reference.importMaterials)
+            if (target.materialImportMode != reference.materialImportMode)
                 return false;
             if (target.importAnimation != reference.importAnimation)
                 return false;
@@ -86,58 +88,59 @@ namespace UnityEngine.AssetGraph
             {
                 if (target.clipAnimations.Length != reference.clipAnimations.Length)
                     return false;
-                for (int i = 0; i < target.clipAnimations.Length; i++) {
-                    if (target.clipAnimations [i].additiveReferencePoseFrame != reference.clipAnimations [i].additiveReferencePoseFrame)
+                for (int i = 0; i < target.clipAnimations.Length; i++)
+                {
+                    if (target.clipAnimations[i].additiveReferencePoseFrame != reference.clipAnimations[i].additiveReferencePoseFrame)
                         return false;
-                    if (target.clipAnimations [i].curves != reference.clipAnimations [i].curves)
+                    if (target.clipAnimations[i].curves != reference.clipAnimations[i].curves)
                         return false;
-                    if (target.clipAnimations [i].cycleOffset != reference.clipAnimations [i].cycleOffset)
+                    if (target.clipAnimations[i].cycleOffset != reference.clipAnimations[i].cycleOffset)
                         return false;
-                    if (target.clipAnimations [i].events != reference.clipAnimations [i].events)
+                    if (target.clipAnimations[i].events != reference.clipAnimations[i].events)
                         return false;
-                    if (target.clipAnimations [i].firstFrame != reference.clipAnimations [i].firstFrame)
+                    if (target.clipAnimations[i].firstFrame != reference.clipAnimations[i].firstFrame)
                         return false;
-                    if (target.clipAnimations [i].hasAdditiveReferencePose != reference.clipAnimations [i].hasAdditiveReferencePose)
+                    if (target.clipAnimations[i].hasAdditiveReferencePose != reference.clipAnimations[i].hasAdditiveReferencePose)
                         return false;
-                    if (target.clipAnimations [i].heightFromFeet != reference.clipAnimations [i].heightFromFeet)
+                    if (target.clipAnimations[i].heightFromFeet != reference.clipAnimations[i].heightFromFeet)
                         return false;
-                    if (target.clipAnimations [i].heightOffset != reference.clipAnimations [i].heightOffset)
+                    if (target.clipAnimations[i].heightOffset != reference.clipAnimations[i].heightOffset)
                         return false;
-                    if (target.clipAnimations [i].keepOriginalOrientation != reference.clipAnimations [i].keepOriginalOrientation)
+                    if (target.clipAnimations[i].keepOriginalOrientation != reference.clipAnimations[i].keepOriginalOrientation)
                         return false;
-                    if (target.clipAnimations [i].keepOriginalPositionXZ != reference.clipAnimations [i].keepOriginalPositionXZ)
+                    if (target.clipAnimations[i].keepOriginalPositionXZ != reference.clipAnimations[i].keepOriginalPositionXZ)
                         return false;
-                    if (target.clipAnimations [i].keepOriginalPositionY != reference.clipAnimations [i].keepOriginalPositionY)
+                    if (target.clipAnimations[i].keepOriginalPositionY != reference.clipAnimations[i].keepOriginalPositionY)
                         return false;
-                    if (target.clipAnimations [i].lastFrame != reference.clipAnimations [i].lastFrame)
+                    if (target.clipAnimations[i].lastFrame != reference.clipAnimations[i].lastFrame)
                         return false;
-                    if (target.clipAnimations [i].lockRootHeightY != reference.clipAnimations [i].lockRootHeightY)
+                    if (target.clipAnimations[i].lockRootHeightY != reference.clipAnimations[i].lockRootHeightY)
                         return false;
-                    if (target.clipAnimations [i].lockRootPositionXZ != reference.clipAnimations [i].lockRootPositionXZ)
+                    if (target.clipAnimations[i].lockRootPositionXZ != reference.clipAnimations[i].lockRootPositionXZ)
                         return false;
-                    if (target.clipAnimations [i].lockRootRotation != reference.clipAnimations [i].lockRootRotation)
+                    if (target.clipAnimations[i].lockRootRotation != reference.clipAnimations[i].lockRootRotation)
                         return false;
-                    if (target.clipAnimations [i].loop != reference.clipAnimations [i].loop)
+                    if (target.clipAnimations[i].loop != reference.clipAnimations[i].loop)
                         return false;
-                    if (target.clipAnimations [i].loopPose != reference.clipAnimations [i].loopPose)
+                    if (target.clipAnimations[i].loopPose != reference.clipAnimations[i].loopPose)
                         return false;
-                    if (target.clipAnimations [i].loopTime != reference.clipAnimations [i].loopTime)
+                    if (target.clipAnimations[i].loopTime != reference.clipAnimations[i].loopTime)
                         return false;
-                    if (target.clipAnimations [i].maskNeedsUpdating != reference.clipAnimations [i].maskNeedsUpdating)
+                    if (target.clipAnimations[i].maskNeedsUpdating != reference.clipAnimations[i].maskNeedsUpdating)
                         return false;
-                    if (target.clipAnimations [i].maskSource != reference.clipAnimations [i].maskSource)
+                    if (target.clipAnimations[i].maskSource != reference.clipAnimations[i].maskSource)
                         return false;
-                    if (target.clipAnimations [i].maskType != reference.clipAnimations [i].maskType)
+                    if (target.clipAnimations[i].maskType != reference.clipAnimations[i].maskType)
                         return false;
-                    if (target.clipAnimations [i].mirror != reference.clipAnimations [i].mirror)
+                    if (target.clipAnimations[i].mirror != reference.clipAnimations[i].mirror)
                         return false;
-                    if (target.clipAnimations [i].name != reference.clipAnimations [i].name)
+                    if (target.clipAnimations[i].name != reference.clipAnimations[i].name)
                         return false;
-                    if (target.clipAnimations [i].rotationOffset != reference.clipAnimations [i].rotationOffset)
+                    if (target.clipAnimations[i].rotationOffset != reference.clipAnimations[i].rotationOffset)
                         return false;
-                    if (target.clipAnimations [i].takeName != reference.clipAnimations [i].takeName)
+                    if (target.clipAnimations[i].takeName != reference.clipAnimations[i].takeName)
                         return false;
-                    if (target.clipAnimations [i].wrapMode != reference.clipAnimations [i].wrapMode)
+                    if (target.clipAnimations[i].wrapMode != reference.clipAnimations[i].wrapMode)
                         return false;
                 }
             }
@@ -146,8 +149,9 @@ namespace UnityEngine.AssetGraph
             {
                 if (target.extraExposedTransformPaths.Length != reference.extraExposedTransformPaths.Length)
                     return false;
-                for (int i = 0; i < target.extraExposedTransformPaths.Length; i++) {
-                    if (target.extraExposedTransformPaths [i] != reference.extraExposedTransformPaths [i])
+                for (int i = 0; i < target.extraExposedTransformPaths.Length; i++)
+                {
+                    if (target.extraExposedTransformPaths[i] != reference.extraExposedTransformPaths[i])
                         return false;
                 }
             }
@@ -170,22 +174,23 @@ namespace UnityEngine.AssetGraph
                 {
                     if (target.humanDescription.human.Length != reference.humanDescription.human.Length)
                         return false;
-                    for (int i = 0; i < target.humanDescription.human.Length; i++) {
-                        if (target.humanDescription.human [i].boneName != reference.humanDescription.human [i].boneName)
+                    for (int i = 0; i < target.humanDescription.human.Length; i++)
+                    {
+                        if (target.humanDescription.human[i].boneName != reference.humanDescription.human[i].boneName)
                             return false;
-                        if (target.humanDescription.human [i].humanName != reference.humanDescription.human [i].humanName)
+                        if (target.humanDescription.human[i].humanName != reference.humanDescription.human[i].humanName)
                             return false;
 
                         // limit
-                        if (target.humanDescription.human [i].limit.axisLength != reference.humanDescription.human [i].limit.axisLength)
+                        if (target.humanDescription.human[i].limit.axisLength != reference.humanDescription.human[i].limit.axisLength)
                             return false;
-                        if (target.humanDescription.human [i].limit.center != reference.humanDescription.human [i].limit.center)
+                        if (target.humanDescription.human[i].limit.center != reference.humanDescription.human[i].limit.center)
                             return false;
-                        if (target.humanDescription.human [i].limit.max != reference.humanDescription.human [i].limit.max)
+                        if (target.humanDescription.human[i].limit.max != reference.humanDescription.human[i].limit.max)
                             return false;
-                        if (target.humanDescription.human [i].limit.min != reference.humanDescription.human [i].limit.min)
+                        if (target.humanDescription.human[i].limit.min != reference.humanDescription.human[i].limit.min)
                             return false;
-                        if (target.humanDescription.human [i].limit.useDefaultValues != reference.humanDescription.human [i].limit.useDefaultValues)
+                        if (target.humanDescription.human[i].limit.useDefaultValues != reference.humanDescription.human[i].limit.useDefaultValues)
                             return false;
                     }
                 }
@@ -201,14 +206,15 @@ namespace UnityEngine.AssetGraph
                 {
                     if (target.humanDescription.skeleton.Length != reference.humanDescription.skeleton.Length)
                         return false;
-                    for (int i = 0; i < target.humanDescription.skeleton.Length; i++) {
-                        if (target.humanDescription.skeleton [i].name != reference.humanDescription.skeleton [i].name)
+                    for (int i = 0; i < target.humanDescription.skeleton.Length; i++)
+                    {
+                        if (target.humanDescription.skeleton[i].name != reference.humanDescription.skeleton[i].name)
                             return false;
-                        if (target.humanDescription.skeleton [i].position != reference.humanDescription.skeleton [i].position)
+                        if (target.humanDescription.skeleton[i].position != reference.humanDescription.skeleton[i].position)
                             return false;
-                        if (target.humanDescription.skeleton [i].rotation != reference.humanDescription.skeleton [i].rotation)
+                        if (target.humanDescription.skeleton[i].rotation != reference.humanDescription.skeleton[i].rotation)
                             return false;
-                        if (target.humanDescription.skeleton [i].scale != reference.humanDescription.skeleton [i].scale)
+                        if (target.humanDescription.skeleton[i].scale != reference.humanDescription.skeleton[i].scale)
                             return false;
                     }
                 }
@@ -247,14 +253,14 @@ namespace UnityEngine.AssetGraph
             if (target.importTangents != reference.importTangents)
                 return false;
 
-            #if UNITY_5_6 || UNITY_5_6_OR_NEWER
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
             if (target.keepQuads != reference.keepQuads)
                 return false;
             if (target.weldVertices != reference.weldVertices)
                 return false;
-            #endif
+#endif
 
-            #if UNITY_2017_1_OR_NEWER
+#if UNITY_2017_1_OR_NEWER
             if (target.importCameras != reference.importCameras)
                 return false;
             if (target.importLights != reference.importLights)
@@ -268,33 +274,36 @@ namespace UnityEngine.AssetGraph
 
             if (target.extraUserProperties.Length != reference.extraUserProperties.Length)
                 return false;
-            for (int i = 0; i < target.extraUserProperties.Length; ++i) {
-                if (target.extraUserProperties [i] != reference.extraUserProperties [i])
+            for (int i = 0; i < target.extraUserProperties.Length; ++i)
+            {
+                if (target.extraUserProperties[i] != reference.extraUserProperties[i])
                     return false;
             }
 
-            #else
+#else
             if (target.fileScale != reference.fileScale) return false;
-            #endif
+#endif
 
-            #if UNITY_2017_2_OR_NEWER
-            if (target.importAnimatedCustomProperties != reference.importAnimatedCustomProperties) {
+#if UNITY_2017_2_OR_NEWER
+            if (target.importAnimatedCustomProperties != reference.importAnimatedCustomProperties)
+            {
                 return false;
             }
-            #endif
+#endif
 
-            #if UNITY_2018_1_OR_NEWER
-            if (target.importConstraints != reference.importConstraints) {
+#if UNITY_2018_1_OR_NEWER
+            if (target.importConstraints != reference.importConstraints)
+            {
                 return false;
             }
-            #endif
+#endif
 
             return true;
         }
 
-        private void OverwriteImportSettings (ModelImporter target, ModelImporter reference)
+        private void OverwriteImportSettings(ModelImporter target, ModelImporter reference)
         {
-            target.importMaterials = reference.importMaterials;
+            target.materialImportMode = reference.materialImportMode;
             target.importAnimation = reference.importAnimation;
             target.meshCompression = reference.meshCompression;
             target.importNormals = reference.importNormals;
@@ -334,27 +343,27 @@ namespace UnityEngine.AssetGraph
 
             target.importTangents = reference.importTangents;
 
-            #if UNITY_5_6 || UNITY_5_6_OR_NEWER
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
             target.keepQuads = reference.keepQuads;
             target.weldVertices = reference.weldVertices;
-            #endif
+#endif
 
-            #if UNITY_2017_1_OR_NEWER
+#if UNITY_2017_1_OR_NEWER
             target.importCameras = reference.importCameras;
             target.importLights = reference.importLights;
             target.importVisibility = reference.importVisibility;
             target.normalCalculationMode = reference.normalCalculationMode;
             target.extraUserProperties = reference.extraUserProperties;
             target.useFileScale = reference.useFileScale;
-            #endif
+#endif
 
-            #if UNITY_2017_2_OR_NEWER
+#if UNITY_2017_2_OR_NEWER
             target.importAnimatedCustomProperties = reference.importAnimatedCustomProperties;
-            #endif
+#endif
 
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
             target.importConstraints = reference.importConstraints;
-            #endif
+#endif
 
             /* 
              read only properties.

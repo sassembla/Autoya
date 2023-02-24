@@ -180,7 +180,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             new BuildPlayerOption("Install In Build Folder", BuildOptions.InstallInBuildFolder),
             new BuildPlayerOption("Show Built Player", BuildOptions.ShowBuiltPlayer),
             new BuildPlayerOption("Strict Mode", BuildOptions.StrictMode),
-            new BuildPlayerOption("Symlink Libraries", BuildOptions.SymlinkLibraries),
+            new BuildPlayerOption("Symlink Libraries", BuildOptions.SymlinkSources),
             new BuildPlayerOption("Uncompressed AssetBundle", BuildOptions.UncompressedAssetBundle)
 		};
 
