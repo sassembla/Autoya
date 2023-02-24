@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using AutoyaFramework.Settings.Connection;
+using UnityEngine;
 using UnityEngine.Networking;
 
 /**
@@ -29,7 +29,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -49,26 +48,39 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        var result = Encoding.UTF8.GetString(bytes);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, result);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -93,7 +105,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -112,26 +123,39 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        var result = Encoding.UTF8.GetString(bytes);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, result);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -151,7 +175,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -171,26 +194,39 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        var result = Encoding.UTF8.GetString(bytes);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, result);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -209,7 +245,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -229,26 +264,39 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        var result = Encoding.UTF8.GetString(bytes);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, result);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -268,7 +316,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -288,26 +335,38 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = request.downloadHandler.data;
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, bytes);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(bytes), responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -327,7 +386,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -346,26 +404,38 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = request.downloadHandler.data;
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(result), responseHeaders);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, bytes);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(bytes), responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -385,7 +455,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -405,26 +474,38 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = request.downloadHandler.data;
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(result), responseHeaders);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, bytes);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(bytes), responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -443,7 +524,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -463,26 +543,38 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = request.downloadHandler.data;
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(result), responseHeaders);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, bytes);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(bytes), responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -508,7 +600,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -527,26 +618,38 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, request.downloadHandler.data);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, bytes);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + Encoding.UTF8.GetString(bytes), responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
@@ -566,7 +669,6 @@ namespace AutoyaFramework.Connections.HTTP
                         request.SetRequestHeader(kv.Key, kv.Value);
                     }
                 }
-                request.chunkedTransfer = ConnectionSettings.useChunkedTransfer;
 
                 var p = request.SendWebRequest();
 
@@ -586,26 +688,39 @@ namespace AutoyaFramework.Connections.HTTP
                 var responseCode = (int)request.responseCode;
                 var responseHeaders = request.GetResponseHeaders();
 
-                if (request.isNetworkError)
+                switch (request.result)
                 {
-                    if (responseCode == 200)
-                    {
-                        // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
-                        responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
-                    }
+                    case UnityWebRequest.Result.Success:
+                    case UnityWebRequest.Result.ProtocolError:
+                        Debug.Log("request:" + request);
+                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
+                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
 
-                    failed(connectionId, responseCode, request.error, responseHeaders);
-                    yield break;
-                }
+                        var bytes = request.downloadHandler.data;
+                        if (bytes == null)
+                        {
+                            bytes = new byte[0];
+                        }
 
-                var result = Encoding.UTF8.GetString(request.downloadHandler.data);
-                if (200 <= responseCode && responseCode <= 299)
-                {
-                    succeeded(connectionId, responseCode, responseHeaders, result);
-                }
-                else
-                {
-                    failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        var result = Encoding.UTF8.GetString(bytes);
+                        if (200 <= responseCode && responseCode <= 299)
+                        {
+                            succeeded(connectionId, responseCode, responseHeaders, result);
+                        }
+                        else
+                        {
+                            failed(connectionId, responseCode, BackyardSettings.HTTP_CODE_ERROR_SUFFIX + result, responseHeaders);
+                        }
+                        break;
+                    case UnityWebRequest.Result.ConnectionError:
+                        if (responseCode == 200)
+                        {
+                            // 後続のHttpResponseHandlingの処理でfailedが呼ばれるようにするため、isNetworkErrorかつ200のときにレスポンスコードを200以外にする
+                            responseCode = BackyardSettings.HTTP_NETWORK_ERROR_AND_STATUS_OK_CODE;
+                        }
+
+                        failed(connectionId, responseCode, request.error, responseHeaders);
+                        break;
                 }
             }
         }
