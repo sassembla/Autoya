@@ -52,10 +52,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -95,6 +91,8 @@ namespace AutoyaFramework.Connections.HTTP
                 var utf8EncodedData = Encoding.UTF8.GetBytes(data);
                 if (0 < utf8EncodedData.Length)
                 {
+                    // TODO: 2021.3.x workaround. 解消したら消す
+                    request.uploadHandler.Dispose();
                     request.uploadHandler = (UploadHandler)new UploadHandlerRaw(utf8EncodedData);
                 }
 
@@ -127,10 +125,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -167,6 +161,8 @@ namespace AutoyaFramework.Connections.HTTP
 
             using (var request = UnityWebRequest.Put(url, data))
             {
+                // TODO: 2021.3.x workaround. 解消したら消す
+                request.uploadHandler.Dispose();
                 request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
                 if (requestHeader != null)
                 {
@@ -198,10 +194,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -268,10 +260,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -339,10 +327,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -378,6 +362,8 @@ namespace AutoyaFramework.Connections.HTTP
 
             using (var request = UnityWebRequest.Post(url, data))
             {
+                // TODO: 2021.3.x workaround. 解消したら消す
+                request.uploadHandler.Dispose();
                 request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
                 if (requestHeader != null)
                 {
@@ -408,10 +394,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -447,6 +429,8 @@ namespace AutoyaFramework.Connections.HTTP
 
             using (var request = UnityWebRequest.Put(url, data))
             {
+                // TODO: 2021.3.x workaround. 解消したら消す
+                request.uploadHandler.Dispose();
                 request.uploadHandler = (UploadHandler)new UploadHandlerRaw(Encoding.UTF8.GetBytes(data));
                 if (requestHeader != null)
                 {
@@ -478,10 +462,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -547,10 +527,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -590,6 +566,9 @@ namespace AutoyaFramework.Connections.HTTP
                 // set data if not 0.
                 if (0 < data.Length)
                 {
+                    // TODO: ここには UnityWebRequest.Postでstring.Emptyを渡しているため、request.uploadHandlerにはnullが入っている。 そのため、request.uploadHandler.Dispose(); は不要。
+                    // というか UnityWebRequest.Post(url, byte[])) やUnityWebRequest.Post(url, UploadHandler))がほしい。
+                    // 今後のUnityのバグ解消があれば対応する。
                     request.uploadHandler = (UploadHandler)new UploadHandlerRaw(data);
                 }
 
@@ -622,10 +601,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {
@@ -661,6 +636,8 @@ namespace AutoyaFramework.Connections.HTTP
 
             using (var request = UnityWebRequest.Put(url, data))
             {
+                // TODO: 2021.3.x workaround. 解消したら消す
+                request.uploadHandler.Dispose();
                 request.uploadHandler = (UploadHandler)new UploadHandlerRaw(data);
                 if (requestHeader != null)
                 {
@@ -692,10 +669,6 @@ namespace AutoyaFramework.Connections.HTTP
                 {
                     case UnityWebRequest.Result.Success:
                     case UnityWebRequest.Result.ProtocolError:
-                        Debug.Log("request:" + request);
-                        Debug.Log("request.downloadHandler:" + request.downloadHandler);
-                        Debug.Log("request.downloadHandler.data:" + request.downloadHandler.data);
-
                         var bytes = request.downloadHandler.data;
                         if (bytes == null)
                         {

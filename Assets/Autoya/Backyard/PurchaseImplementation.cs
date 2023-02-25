@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoyaFramework.Purchase;
+using Unity.Services.Core;
 using UnityEngine;
 
 namespace AutoyaFramework
@@ -28,6 +31,16 @@ namespace AutoyaFramework
         private PurchaseFeatureState purchaseState;
 
         private static AutoyaStatus purchaseErrorStatus = new AutoyaStatus();
+
+        // fire when UGS initialize is required and developer use it. if you don't want to UGS and want to use IAP, consider using DISABLE_RUNTIME_IAP_ANALYTICS define symbol.
+        private IEnumerator InitializePurchasability(bool shouldRetry, Dictionary<string, object> option, Action<Exception> onException)
+        {
+            var ugsRouter = new Purchase.UnityGameService.UnityGameServiceRouter(shouldRetry, option, onException);
+            while (!ugsRouter.isReady)
+            {
+                yield return null;
+            }
+        }
 
         private void ReloadPurchasability()
         {
