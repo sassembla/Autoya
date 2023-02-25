@@ -69,3 +69,4 @@ Assets/Autoya/Manifest/ShouldGitIgnore/Resources/BuildManifest.json.meta
 Assembly-CSharp.sln
 Assembly-CSharp.userprefs
 Assets/MiyamasuTestRunner/Runtime/Generated/GeneratedTestEntryPoints.cs
+Logs/*

@@ -13,12 +13,56 @@ MonoBehaviour:
   m_Name: AssetReferenceDB
   m_EditorClassIdentifier: 
   m_assets:
+  - m_assetDatabaseId: 1ebbadce6891a432c825e2f9f89902e6
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Cache/TemporalSettingFiles/AssetReferenceDB.asset
+    m_exportTo: 
+    m_variantName: 
   - m_assetDatabaseId: 634bb7eba261343a9b17387d140093d7
     m_importFrom: Assets/Autoya/Manifest/ShouldGitIgnore/Resources/BuildManifest.json
     m_exportTo: 
     m_variantName: 
-  - m_assetDatabaseId: 1ebbadce6891a432c825e2f9f89902e6
-    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Cache/TemporalSettingFiles/AssetReferenceDB.asset
+  - m_assetDatabaseId: 756b0626c83fc40bdaca5f4c433b1939
+    m_importFrom: Assets/Autoya/Connections/HTTP.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a52f1f39a3ba3487aa172433cb08e5f7
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/AuthenticatedHTTPImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fab6efc27462e4c7998d23540c726709
+    m_importFrom: Assets/Autoya/Backyard/AutoyaConstructor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5a42b7637efb64b369dda7965632849e
+    m_importFrom: Assets/Autoya/Backyard/OverridePoints.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 93b11a885e8f43b5846c59ec13cbb2b7
+    m_importFrom: Packages/com.unity.services.analytics/Runtime/AnalyticsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 00000000000000004000000000000000
+    m_importFrom: ProjectSettings/ProjectSettings.asset
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d5447b14b23b5497293979026e4d6ca3
+    m_importFrom: Assets/Autoya/Backyard/PurchaseImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7031d2a1ce77549d2a0e76fd25ae4517
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/Resources/MiyamasuSettings.txt
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2043a41d67d8a491892fa9f6e8cbf489
+    m_importFrom: Assets/Autoya/Purchase/AntiUnityGameServiceSystem
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 998af77f7505f4c50939df6c1ebbb6cf
+    m_importFrom: Assets/Autoya/Purchase/AntiUnityGameServiceSystem/UnityGameServiceRunner.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d55d0cc652844420986558217ea4280d
+    m_importFrom: Assets/Autoya/Purchase/AntiUnityGameServiceSystem/UnityGameServiceRouter.cs
     m_exportTo: 
     m_variantName: 
   m_version: 2

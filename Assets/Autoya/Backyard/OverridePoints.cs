@@ -404,6 +404,18 @@ namespace AutoyaFramework
         }
 
         /**
+            fire between OnBeforeBootingPurchasingFeature and Unity IAP will be ready.
+            Unity IAP requires UGS Initialize by default, but you can avoid it tiwh DISABLE_RUNTIME_IAP_ANALYTICS define symbols.
+
+            then you return (false, null) with DISABLE_RUNTIME_IAP_ANALYTICS symbol, Autoya will avoid the initailization of UGS.
+            if you want to use UGS, return true and attach your UGS options.
+        */
+        private (bool use, bool shouldRetry, Dictionary<string, object> option, Action<Exception> onException) OnInitializeUnityGameService()
+        {
+            return (false, false, null, null);
+        }
+
+        /**
             fire when this app requests product information to the server.
             return PurchaseRouter.RequestProductInfosAs.String means get response as string.
             return PurchaseRouter.RequestProductInfosAs.Binary means get response as byte[].

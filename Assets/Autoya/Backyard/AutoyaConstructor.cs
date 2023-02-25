@@ -1,10 +1,6 @@
 using UnityEngine;
 using AutoyaFramework.Connections.HTTP;
 using AutoyaFramework.Persistence.Files;
-using AutoyaFramework.Settings.Auth;
-using AutoyaFramework.Purchase;
-using System;
-using AutoyaFramework.Settings.App;
 using AutoyaFramework.Notification;
 using System.Collections;
 
@@ -134,8 +130,17 @@ namespace AutoyaFramework
                                     if (isPlayer)
                                     {
                                         // wait the ready for booting purchase feature then start purchase feature.
-                                        IEnumerator firstReloadPurchasabilityCor() {
+                                        IEnumerator firstReloadPurchasabilityCor()
+                                        {
                                             yield return OnBeforeBootingPurchasingFeature();
+
+                                            // consider using DISABLE_RUNTIME_IAP_ANALYTICS if you want to use IAP but not want to use UnityGameService.
+                                            var useAndOptions = OnInitializeUnityGameService();
+                                            if (useAndOptions.use)
+                                            {
+                                                yield return InitializePurchasability(useAndOptions.shouldRetry, useAndOptions.option, useAndOptions.onException);
+                                            }
+
                                             ReloadPurchasability();
                                         }
 
