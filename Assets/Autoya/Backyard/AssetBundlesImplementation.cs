@@ -58,6 +58,7 @@ namespace AutoyaFramework
             // initialize AssetBundleListDownloader.
             AssetBundleListDownloader.HttpResponseHandlingDelegate httpResponseHandlingDel = (p1, p2, p3, p4, p5, p6, p7) =>
             {
+                // TODO: enable error handling.
                 httpResponseHandlingDelegate(p1, p2, p3, p4, p5, p6, p7);
             };
             AssetBundleListDownloader.AssetBundleListGetRequestHeaderDelegate assetBundleGetRequestHeaderDel = (p1, p2) =>

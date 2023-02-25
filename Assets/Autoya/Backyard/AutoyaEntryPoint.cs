@@ -12,6 +12,7 @@ namespace AutoyaFramework
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void EntryPoint()
         {
+            // TODO: persistentDataPath is not secure in Android,, oh,, enable to change this.
             autoya = new Autoya(Application.persistentDataPath);
         }
 
