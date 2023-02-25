@@ -6,7 +6,19 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 
 ## [Unreleased]
 
-## [0.9.19] - 2022/05/19
+
+## [0.9.21] - 2023/02/25
+
+### Added
+- UnityGameService support in OverridePoints.
+
+### Changed
+- Unity IAP is updated to 4.5.2.
+
+
+
+
+## [0.9.20] - 2022/05/19
 
 
 ### Fixed
@@ -363,8 +375,9 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - Something.
 
 
-[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.20...HEAD
-[0.9.20]: https://github.com/sassembla/autoya/compare/0.9.20...0.9.20
+[Unreleased]: https://github.com/sassembla/autoya/compare/0.9.21...HEAD
+[0.9.21]: https://github.com/sassembla/autoya/compare/0.9.20...0.9.21
+[0.9.20]: https://github.com/sassembla/autoya/compare/0.9.19...0.9.20
 [0.9.19]: https://github.com/sassembla/autoya/compare/0.9.18...0.9.19
 [0.9.18]: https://github.com/sassembla/autoya/compare/0.9.17...0.9.18
 [0.9.17]: https://github.com/sassembla/autoya/compare/0.9.16...0.9.17
