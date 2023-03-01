@@ -241,7 +241,7 @@ and this project adheres to [Romantic Versioning](http://blog.legacyteam.info/20
 - AssetBundle_FactoryReset feature is added. this method is pretty good for delete all cached AssetBundles and downloaded AssetBundleList. after this method, the state of the AssetBundle feature is set to "newly installed".
 
 ### Fix
-- fixed bug for Purchase_AttemptReadyPurcase.
+- fixed bug for Purchase_AttemptReadyPurchase.
 
 ## [0.8.40]	- 2018/03/22
 ### Changed

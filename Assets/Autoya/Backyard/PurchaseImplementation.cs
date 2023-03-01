@@ -165,7 +165,7 @@ namespace AutoyaFramework
             return autoya._purchaseRouter.ProductInfos();
         }
 
-        public static void Purchase_AttemptReadyPurcase()
+        public static void Purchase_AttemptReadyPurchase()
         {
             if (autoya.purchaseState == PurchaseFeatureState.ReadyFailed)
             {

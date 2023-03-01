@@ -213,7 +213,7 @@ public class PurchaseImplementationTests : MiyamasuTestRunner
 
         Autoya.forceFailHttp = false;
 
-        Autoya.Purchase_AttemptReadyPurcase();
+        Autoya.Purchase_AttemptReadyPurchase();
 
         yield return WaitUntil(
             () => Autoya.Purchase_IsReady(),
