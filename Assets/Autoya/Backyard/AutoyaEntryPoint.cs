@@ -12,7 +12,7 @@ namespace AutoyaFramework
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void EntryPoint()
         {
-            autoya = new Autoya(Application.persistentDataPath);
+            autoya = new Autoya(Autoya.OnPersistentPathRequired());
         }
 
 

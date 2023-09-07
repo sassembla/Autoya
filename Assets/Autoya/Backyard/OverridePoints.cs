@@ -14,9 +14,8 @@ using AutoyaFramework.EndPointSelect;
 using UnityEngine.Purchasing;
 using System.Text;
 
-// TODO: OnPersistentPathRequired 足す。
-// 初回起動時通信無効化ルートを足す。
-// ABのget失敗時レスポンスチェックを足す。
+
+// TODO: ABのget失敗時レスポンスチェックを足す。
 
 /**
     modify this class for your app's endpoint update, authentication, purchase, assetBundles, appManifest dataflow.
@@ -26,6 +25,18 @@ namespace AutoyaFramework
 
     public partial class Autoya
     {
+
+        /*
+            PersistentDataPath feature
+        */
+
+        // should return the path which quivalent for Unity's persistentDataPath.
+        // in most case Android shouldn't use Application.persistentDataPath for security reason.
+        private static string OnPersistentPathRequired()
+        {
+            return Application.persistentDataPath;
+        }
+
         /*
             EndPoint selector feature.
         */
