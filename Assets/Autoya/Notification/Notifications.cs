@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 
@@ -23,38 +22,14 @@ namespace AutoyaFramework.Notification
 
         private readonly Action<string, Action<string>> observerMethod;
 
+
         // コンストラクタ
         public Notifications(Action<string, Action<string>> observerMethod)
         {
             this.observerMethod = observerMethod;
         }
 
-#if UNITY_EDITOR
-        public static void ReadyReceiveURLScheme()
-        {
-            var dataPath = Application.persistentDataPath;
-            var targetFilePath = Path.Combine(dataPath, FilePath.URLSchemeFile.ToString());
 
-            IEnumerator<int> editorPlayerLoop()
-            {
-                while (true)
-                {
-                    yield return 0;
-
-                    if (File.Exists(targetFilePath))
-                    {
-                        Debug.Log("ファイルあった！ targetFilePath:" + targetFilePath);
-                    }
-                    else
-                    {
-                        Debug.Log("ファイルなかった！ targetFilePath:" + targetFilePath);
-                    }
-                }
-            }
-
-            Autoya.Mainthread_Commit(editorPlayerLoop());
-        }
-#endif
 
         public void SetURLSchemeReceiver(Action<Dictionary<string, string>> onURLScheme)
         {
@@ -88,6 +63,38 @@ namespace AutoyaFramework.Notification
 
                 onURLScheme(paramDict);
             }
+
+            // エディタで動作する時に実行すると、BetweenYuriからのインプットを受け取ってなんとかするやつ。
+#if UNITY_EDITOR
+            IEnumerator editorPlayerLoop()
+            {
+                while (true)
+                {
+                    yield return null;
+                    
+                    if (File.Exists(targetFilePath))
+                    {
+                        // ファイルが発見されたので、URLSchemeが来たとして扱う
+                        if (File.Exists(targetFilePath))
+                        {
+                            var url = File.ReadAllText(targetFilePath);
+                            File.Delete(targetFilePath);
+
+                            var paramDict = ReadURLScheme(url);
+
+                            onURLScheme(paramDict);
+                        }
+                    }
+                    else
+                    {
+                        yield return new WaitForSeconds(5.0f);
+                    }
+                }
+            }
+
+            Autoya.Mainthread_Commit(editorPlayerLoop());
+#endif
+
         }
 
         private Dictionary<string, string> ReadURLScheme(string url)
