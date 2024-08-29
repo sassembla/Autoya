@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
+
 namespace AutoyaFramework.Notification
 {
     public enum Notification
@@ -21,13 +22,43 @@ namespace AutoyaFramework.Notification
         }
 
         private readonly Action<string, Action<string>> observerMethod;
+
+        // コンストラクタ
         public Notifications(Action<string, Action<string>> observerMethod)
         {
             this.observerMethod = observerMethod;
         }
 
+#if UNITY_EDITOR
+        public static void ReadyReceiveURLScheme()
+        {
+            var dataPath = Application.persistentDataPath;
+            var targetFilePath = Path.Combine(dataPath, FilePath.URLSchemeFile.ToString());
+
+            IEnumerator<int> editorPlayerLoop()
+            {
+                while (true)
+                {
+                    yield return 0;
+
+                    if (File.Exists(targetFilePath))
+                    {
+                        Debug.Log("ファイルあった！ targetFilePath:" + targetFilePath);
+                    }
+                    else
+                    {
+                        Debug.Log("ファイルなかった！ targetFilePath:" + targetFilePath);
+                    }
+                }
+            }
+
+            Autoya.Mainthread_Commit(editorPlayerLoop());
+        }
+#endif
+
         public void SetURLSchemeReceiver(Action<Dictionary<string, string>> onURLScheme)
         {
+            // TODO: AndroidでpersistentDataPathはsecureではないので、上位から渡す形を考えよう。
             var dataPath = Application.persistentDataPath;
             var targetFilePath = Path.Combine(dataPath, FilePath.URLSchemeFile.ToString());
 
@@ -97,6 +128,7 @@ namespace AutoyaFramework.Notification
 
         public void Debug_WriteURLScheme(string rawParam)
         {
+            // TODO: AndroidでpersistentDataPathはsecureではないので、上位から渡す形を考えよう。
             var dataPath = Application.persistentDataPath;
             var targetFilePath = Path.Combine(dataPath, FilePath.URLSchemeFile.ToString());
             using (var a = File.CreateText(targetFilePath))
