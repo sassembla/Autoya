@@ -86,7 +86,7 @@ namespace AutoyaFramework.Connections.HTTP
             var currentDate = DateTime.UtcNow;
             var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-            using (var request = UnityWebRequest.Post(url, data))// UnityWebRequest post should contains body. this cannot be avoid.
+            using (var request = UnityWebRequest.PostWwwForm(url, data))// UnityWebRequest post should contains body. this cannot be avoid.
             {
                 var utf8EncodedData = Encoding.UTF8.GetBytes(data);
                 if (0 < utf8EncodedData.Length)
@@ -360,7 +360,7 @@ namespace AutoyaFramework.Connections.HTTP
             var currentDate = DateTime.UtcNow;
             var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-            using (var request = UnityWebRequest.Post(url, data))
+            using (var request = UnityWebRequest.PostWwwForm(url, data))
             {
                 // TODO: 2021.3.x workaround. 解消したら消す
                 request.uploadHandler.Dispose();
@@ -561,7 +561,7 @@ namespace AutoyaFramework.Connections.HTTP
             var currentDate = DateTime.UtcNow;
             var limitTick = (TimeSpan.FromTicks(currentDate.Ticks) + TimeSpan.FromSeconds(timeoutSec)).Ticks;
 
-            using (var request = UnityWebRequest.Post(url, string.Empty))
+            using (var request = UnityWebRequest.PostWwwForm(url, string.Empty))
             {
                 // set data if not 0.
                 if (0 < data.Length)

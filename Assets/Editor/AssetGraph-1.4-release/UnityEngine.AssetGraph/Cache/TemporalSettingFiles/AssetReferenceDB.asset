@@ -65,4 +65,3692 @@ MonoBehaviour:
     m_importFrom: Assets/Autoya/Purchase/AntiUnityGameServiceSystem/UnityGameServiceRouter.cs
     m_exportTo: 
     m_variantName: 
+  - m_assetDatabaseId: 408083dc9c2f74c62aabd45e865483d4
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Exporter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8641620a5178d455d892c853a3376a5b
+    m_importFrom: Assets/Autoya/Settings/EndPointSelectorSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e288a827b8a3f4dd9aa5e69dcbbfde55
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/MaintenanceTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 47ece996f50e448d08eba70af3411699
+    m_importFrom: Assets/AutoyaSample/2_AssetBundle/LoadAssetBundle.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d4aefe14dab21443684705695ffe0f61
+    m_importFrom: Assets/MiyamasuTestRunner/Editor/MiyamasuTestIgniter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 897304c51e5574301a0d5964822466dc
+    m_importFrom: Assets/Autoya/AssetBundle/AssetBundleListDownloader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4235bf1f6608b4e5dae5965f02fc21ee
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/PerformGraph.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 81b3d18ee905544b988d58249996f11f
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/AssetGenerators/DuplicateRefererenceAsset.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d9b376e058dcb4ba1a06fc3718529127
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Filters/FilterUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eff286acd7aad4f35b1fea37b6b61ee1
+    m_importFrom: Assets/Autoya/Persistence/CacheHit/CacheHit.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bcb0c45f124e843669cb245a2c43f67d
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Filters/IFilter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3d9db06067b4d4af5a0622f149725e5a
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/AssetGenerators/AssetGenerateInfo.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a41d2c466f24e42bc8aea8a0a0a45eb4
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Exception/AssetReferenceException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: da4f50d25854f40a284136aeb3f72c39
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/AssetGenerator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cc18ce94fc7d14453acb0b566b9cc6a9
+    m_importFrom: Assets/AutoyaTests/Tests/Purchase/PurchaseRouterTests_binary.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 05f92e4a2414cb144a92157752dfa324
+    m_importFrom: Packages/com.unity.test-framework/UnityEditor.TestRunner/Api/Filter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 32d588e7388ff4c5bb81d2941501e112
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/PurchaseImplementsTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 55796f9e6ac6b4b938413481d8242df5
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/AssetReference.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9987cc0d2d00044ef896c76b9b632686
+    m_importFrom: Assets/Autoya/Backyard/EndPointSelectorImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bc8052ecf70cd41838b777a314e3d020
+    m_importFrom: Assets/Autoya/Persistence/FilePersistence/FilePersistence.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7cc57ee31ef3a44389458141063b7b71
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/PlayerBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b5a4c34bce44d426087d093bcc2b6195
+    m_importFrom: Assets/Autoya/Information/Editor/Antimaterializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2396a89559dfd474e9f16d864bc7481a
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/PrefabBuilders/PrefabBuilderUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6d6cf7100d6f3475b8905f2f6383bbca
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V2/NodeDataImporter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9b74ea960fdf3432c9764eeb4f29c397
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/RecordUndoScope.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 523eb70c378aa40b68c2874d02d485ed
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/MirrorDirectory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7b36421f668d647d3a0f7a8be7f5e5aa
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/SerializableMultiTargetString.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ee4bc21567f434b598a3c96ba4946372
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/AssetReferenceDatabase.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2b4b92c4019054aee96cde27365b8394
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/GroupView/GroupAssetListTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c72e9896ca732448296aaec689e29fcf
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Modifiers/IModifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0d21ca7a30faf461381a8cc734ab6a8a
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V1/ConnectionPointData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6feae01c8e3174d61ad9f74d9bf1c5fc
+    m_importFrom: Assets/Autoya/ThirdPartyAuthentication/SignInWithApple/Editor/BuildPostprocess_SignInWIthApple.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: acdf0bddd860b4da4b1976aaed73ff9d
+    m_importFrom: Assets/Packager/AssetBundles/AssetBundlesLoadSample.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b9957afe4f6df4fba8f8e329a47b30cb
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/BuildTargetUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e7782a04b27074cf8ae484ec83a3a5b0
+    m_importFrom: Assets/Autoya/Connections/IP.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d3deeec8c250248af8440ee856bc3f31
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/MiyamasuTestRuntimeRunner.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ecebe0a6795bf4a00a89a1b2db87734d
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/AssetGenerators/CreateMaterialFromTexture.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2ee2c1edfacf54b2881227afb2908a6c
+    m_importFrom: Assets/Autoya/Manifest/AppManifestStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e4d338a31cc0c43d9b42979b09c5f058
+    m_importFrom: Assets/Autoya/Backyard/AuthenticationImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f65c1e91418f346c68a7fc29d1fc05ef
+    m_importFrom: Assets/AutoyaSample/7_Information/InformationEventReceiver.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 751fe9a5afba84189a2032fafb55d62b
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/AssetUpdateTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f9d22c34b09544790a895928c8472805
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/UserPreference.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1c7eb706cff9343ddb45ab11a673231f
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ProjectSettings/ProjectSettingsWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6918bc342c9534bc592f2d8241529881
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/Miyamasu2UnityTestConverter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 70e2789ac93794f32bc16d2c24e32736
+    m_importFrom: Assets/Autoya/Backyard/BackyardSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5e95c6380691441ec902f183f790521e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/SerializedComponent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f28a97eb9f6b84cc2b6879387333e1c7
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/ModelImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 459682b384b2b49bf9ab32341ad85637
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Modifiers/AttachComponent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9c2b3fdfe135548bea43e0bf058fb1e4
+    m_importFrom: Assets/AutoyaTests/Tests/Connection/IPTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 64cbe702f871f4305b1a1a939456d0ee
+    m_importFrom: Assets/AutoyaSample/1_Connections/HttpConnections.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 82f81cb4192dc4e1d9714dd03ea84ad1
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/JSONGraphUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eb70905fec4ff495e9ab036174bef78d
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/IPostprocess.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 20a8645037c9047e28b1e7fb4686387a
+    m_importFrom: Assets/Editor/Autoya.AssetGraphIntegration/AutoyaAssetBundleListGenerateProcess.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ec5ec1496f4ed40b9a67e5b76a534e22
+    m_importFrom: Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/nestedPrefab.prefab
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 064932aa325ac493095654e306f59d63
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/AuthenticationImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 65072170869d44a69a6dcc814a0cb197
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/TextureImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b589b1582520543cbbcc4b79c591d8dd
+    m_importFrom: Assets/AutoyaTests/Tests/TestMBRunner.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a544facd9f5f34d8d8dcba2116df8a40
+    m_importFrom: Assets/Autoya/Information/Editor/Reporter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9d7cfce4400474688aa803f13d8eb448
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/EditorRuntimeSupport/AssetBundleBuildMap.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: af5f907b21d7040c58f4dd93d3243d4f
+    m_importFrom: Assets/Autoya/Settings/AssetBundlesSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c832c0885edac4071887b78bfbb3b992
+    m_importFrom: Assets/Autoya/Connections/Udp.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ddde32d31de404cd8a791dc0b930a258
+    m_importFrom: Assets/Autoya/Backyard/InformationImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 207962df4115f4a73bc381985e110fd4
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ConnectionEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bc6351a653ea64ecb891e0f6eaa908fb
+    m_importFrom: Assets/Autoya/AssetBundle/AssetBundlePreloader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0ea78d3f6b8a548548d2d523146dc645
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/PersistImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f2e3edb2e315041c8981dea915573b24
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/AssetLog/AssetProcessEventLogWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4e9e9880c451546738ed613faeda6c89
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Modifiers/AddGameObject.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d1b3dc357d1344cc5801bb6d5cb46625
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetReferenceStreamManager.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6a1337df6f2e1467499697f89b4b7393
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Filters/FilterByNameAndType.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 672797698ae4a441abfef0263c6d3e6c
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetGraphController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a58aa8ea0dc1b47c3a51105ef2252237
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/AudioImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1e80978168993489ea03c2ffbccaf928
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/LoaderBySearch.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d5cdb6d930da14ef09e9a5ef6d168c49
+    m_importFrom: Assets/Autoya/Backyard/IUpdater.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f61fc7301b5344a87afb15ddd11472b4
+    m_importFrom: Assets/Autoya/Backyard/MaintenanceHandler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7894a5761247a462097d180e2cf09a54
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/GroupingBySize.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a33ebcb65ebf847f4bf68ddd49a6b5a5
+    m_importFrom: Assets/Editor/AutoyaEditorTool.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f5949382da0db40d7a19568718c0085f
+    m_importFrom: Assets/Autoya/Settings/MaintenanceSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b46f98df2a1e34f8180d8d343cc80b0a
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/AssetBundlesImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f91f33f0872f34401b74ee25d32c0801
+    m_importFrom: Assets/AutoyaTests/Tests/AssetBundles/AssetBundleListDownloaderTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e2d4c4c9753a345f98f96959e73f541c
+    m_importFrom: Assets/AutoyaSample/4_Persistence/URLCachingUsage.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 785a88dedbaea4eb5b50019325ee54b1
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Libs/MiniJSONForAssetGraph.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c13fae742fa24ea9beb76b5cdc2bf5b
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/GroupView/GroupViewController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 35b63dd2d8c5149979e69dd21178b6c8
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V1/Settings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6838d1c6be001444ab0dfe90e45b087e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/BatchBuildWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e7593765c5f3448889247c3e3f0e8ff5
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Loader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eec4882d68a9346b3b5f8ecf1e38a534
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V2/ConfigGraph.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 220bd545cb0f64493b48cad989fd4fae
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Exception/NodeException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f7957320f633f4c71bc0d6f744410738
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V1/ConnectionData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a6ef6ac015119486aaa93edb7e0fad26
+    m_importFrom: Assets/AutoyaSample/9_Notification/URLSchemeSample.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6061cd2dc44bc4639976b2ca7abe755d
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Filter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dae0a9da54c004bf2a3032d5ca273571
+    m_importFrom: Assets/Autoya/Settings/AppSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8ac5a4eb1d8da482694ba467cd1fc34f
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/ImportSetting.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 02e5822d3f4d04f41b5e9ffc9c85e280
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/SystemDataUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 23bfc8571d8a442f29c05e3094557ceb
+    m_importFrom: Assets/AutoyaTests/Tests/Persistence/CacheHitTests/CacheHitImplementationTest_UpdateCache.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1d873b2d973b24671abda2161871b5e0
+    m_importFrom: Assets/AutoyaSample/2_AssetBundle/PreloadAssetBundle2.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a1d667b6f747a4c25860e0c4a4e4d424
+    m_importFrom: Assets/MiyamasuTestRunner/Editor/FileController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 46e082cff6afc4be8815e6b86e62dc45
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Grouping.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 90c319597e27f4efc898a09d71c4aafb
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/GraphCollectionManageTab.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 90f369f416671475d86e05b86c9d8139
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/PrefabBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4828dd530e30e4fa6ad842215386a139
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/SaveScope.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3a56f2c5d8e9e483692db7e36b9419d6
+    m_importFrom: Assets/Autoya/ResourcesControl/ResouresController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c785fc6a27a6a413f9f996d01bdec948
+    m_importFrom: Assets/AutoyaSample/0_BasicUsage/BasicUsage.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: de9a56d4f36bd4db1be0ba96408e07ac
+    m_importFrom: Assets/Autoya/Representation/JWT.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9042c13098b924be5b5d051c5a67d5d7
+    m_importFrom: Assets/Autoya/Encrypt/AES256.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ae32c06838424447c9cfb208bc0b7aba
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/PrefabBuilders/IPrefabBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fdc9a4fb30f6f48c3b5f1f38a2ffb2b5
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/SerializableMultiTargetInstance.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dbb1d623746624f8d8dff0ed54148488
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/EndPointImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5789ddd9d72db4c1a9546ae1c263ecf4
+    m_importFrom: Assets/AutoyaTests/Tests/Encryption/EncryptTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 760c72a4f67264a65ae3f6b30c100895
+    m_importFrom: Assets/AutoyaTests/Tests/EndPoint/EndPointTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8b2418bff76c64f59bad72e278c0b02a
+    m_importFrom: Assets/Autoya/Backyard/NotificationCenter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 04e83e1d064b147fc97851b317d0a292
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/CUIUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dafe4c82ebed44b81bb48ef142b5386a
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V2/Settings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 26c29749552164416800e8912eeec334
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/MainThreadRunner.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f84444c7feae044458947cbaf437e55e
+    m_importFrom: Assets/AutoyaSample/11_Resources/LoadResourcesSample.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bfae756957ad44ed0909ff46f31add62
+    m_importFrom: Assets/Autoya/Settings/AutoyaRuntimeManifestObject.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cc9d051a7aa1d4dbbbe99c67526af874
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/AssetGenerators/IAssetGenerator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b62caaaf58ac442b1b95e70bfbcd441d
+    m_importFrom: Assets/Autoya/Backyard/AssetBundlesImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 413464e71470e48cea3073a1ea418f7e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/AssetGraphEditorWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bb6c03f5afc23481cb01e7c813d06e48
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/GraphBackground.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9aa44aa3a8eeb40ae9028cf7ac5e20b4
+    m_importFrom: Assets/Autoya/Settings/AuthSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c1821c1816c6fa44967b8ecb79ea7e4
+    m_importFrom: Packages/com.unity.timeline/Editor/Utilities/TypeUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5c074801ff7744bca91b39aa8cb30250
+    m_importFrom: Assets/Autoya/AssetBundle/AssetBundleLoader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 09bd7246e12c44caeb1c3e4dc76fbd68
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/NodeBuildContext.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 76fc1281e9e0349bfa3740ff8ffce865
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Modifiers/SetReference.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d976417860baa4c55b6f57d10733ef8e
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/AppUpdateTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2139b79456df44960b011ab42a6a4638
+    m_importFrom: Assets/Autoya/AutoyaDependencies.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 04cb0660197e64f278791d91a18431a0
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/SerializableGroups.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ad9b7be1ce5884bc292a5ba51184b915
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/BundleConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b59656e937e034d1fa0af1f755d7ddf1
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/PrefabBuilders/ReplaceWithIncomingGameObject.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: be72e827636b84babac7fe6b7fc282f6
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Filters/FilterTypeUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 327cf429aa28d4cd29d4b1ac70fc99e0
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/ExecuteResultTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6f8d4698d81ba4878b54b15cff6f852a
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ProjectSettings/ExecutionOrderSettingsTab.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d98578e11c3b84590a32d4b988609228
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/PrefabBuilders/ReplaceGameObjectByName.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d9a4cee567dcf46fc919420c7d668c2e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/AssetLog/AssetProcessEventListTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5314579a55b0540de9799b0fe62497f3
+    m_importFrom: Assets/Autoya/Editor/FileController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fbc295f9fd7874aef834ba4d3abd555b
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/NodeGUI.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1c13c0391f112441aac9c1b28ba45329
+    m_importFrom: Assets/Autoya/ThirdPartyAuthentication/SignInWithApple/SignInWithApple.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7ca9c88bbe37647da9e1c3fc62b7a9dc
+    m_importFrom: Assets/AutoyaTests/Tests/Notifications/NotificationTest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: be312e4110688470990b1596df3dfa61
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Error.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3b04b0e3e32a84a278e7b56f18813ac3
+    m_importFrom: Assets/AutoyaTests/Tests/Persistence/CacheHitTests/CacheHitImplementationTest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 11599b042eeda438193915d6d4b2e25e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V1/SaveData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 87c69f4f3f94e4e028e4ef8a83fdb295
+    m_importFrom: Assets/Autoya/Backyard/AuthenticatedHTTPImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c45cfaa91181a4ecbbf68de659c6e391
+    m_importFrom: Assets/AutoyaSample/1_Connections/UdpConnections.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a2445fd6934ad4e88a4dbd7c02db6940
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Imported.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 736b0a4506b3e4d9cafbaf59961d22a9
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V1/NodeData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5d0b03a948ad545f691a9d4213bfe810
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/AssetLog/AssetProcessEventLogViewController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1048885c160f442439f333d41df064e8
+    m_importFrom: Assets/AutoyaTests/Tests/AssetBundles/AssetBundlePreloaderTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1d8730a30170c42c1924ef148010adb5
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/ComponentMenuUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e22056847ad1c4bc39e69087388296b0
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/Test/ImporterTest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c2339ac96615942369f3281fb57c280a
+    m_importFrom: Assets/AutoyaTests/Tests/Manifest/ManifestTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2beb27d59eec84f3eaa90e2394236032
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/GroupView/GroupListTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4ff65a093e87f482b91a6ccf343a1f76
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V2/ConnectionData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a073337e5a6474ad2bc1d344d9ce8211
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ConnectionGUI.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7c03100996df84ff1a8e32ffca7213a4
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/GraphCollectionExecuteTab.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 78fbc0d2032a34a00b6dff9b8dc22c6e
+    m_importFrom: Assets/Autoya/EndPointSelector/EndPointSelector.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 186be03abcfd84b539b9b8cc418ae65d
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Modifiers/SetSpritesToAnimation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 92eb5dcde0e0343c2a063849d7a86b93
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ConfigGraphEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f006d9a9c7507460d9ab6f36cbdb7794
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetGraphPostprocessor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fe130004387bb42d5a2bec9ea693d59e
+    m_importFrom: Assets/Autoya/AssetBundle/AssetBundleList.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a9b2fb219b0a847f6a705de8223b87df
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/FileUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4188ec7e6ce3549bca02d5a372758f36
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/IAssetImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d4384419b2b8d455bb90f9928009fd79
+    m_importFrom: Assets/Autoya/Backyard/AutoyaMainthreadDispatcher.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 07689e8f3a2194ffeb25946bde9b4f46
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/ObjectReferenceBase.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0e179c9e7e4094b6cacb7dec874f7144
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/NodeEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fbf1bb8889d9649978dd5d2efe02cd48
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/TrueTypeFontImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a68de7e1271fb487c85fbb75941f9b17
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ConnectionGUIEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8314e513ee462429d97a54a9901489ac
+    m_importFrom: Assets/Autoya/Backyard/AutoyaEntryPoint.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a50575a181d034e50b6cbad0c798a66e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/PrefabBuilders/PrefabBuildInfo.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 11cd75004d5b84ef08d52cd8912277d3
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/BatchBuildConfig.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3344e7e4d268b4ba5a20841532437498
+    m_importFrom: Assets/AutoyaSample/3_Purchase/RemotePurchase.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6c6b3bac846ff402eadc1eb18359ddf3
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/AssetGenerators/TextureScaler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1970fb55c77154021a4cd5e4a72d89eb
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Label.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 346bda70af48240ecbace0e785adc937
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ConnectionGUIUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 68a8222d3f84e43fc99a00702bd91e8f
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/SerializedInstance.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4824831e124564254aea49f66a81cbad
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/AssetReferenceUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ac805200d63f94631b675a22f692c6eb
+    m_importFrom: Assets/AutoyaSample/12_ThirdPartyAuthentication/SignInWithAppleSample.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: db84663a7a97a4bff8617b2afa3a6478
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/AssetBundlesListUpdateTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b44a0354652784cde8510cb34f8785ad
+    m_importFrom: Assets/Autoya/Information/Editor/FileController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d64a5028c6646494d935254e9ba0d881
+    m_importFrom: Assets/Autoya/Notification/Notifications.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 65c22f76b77044875a46f653f516c019
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/NodeGUIUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b9ec805aabf2743abbcf32fd60cafec3
+    m_importFrom: Assets/Editor/Autoya.AssetGraphIntegration/Flatten.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 194b991ddcf6542ebb714ca7847e3314
+    m_importFrom: Assets/AutoyaTests/Tests/Backyard/EndPointImplementationRetryTest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a58617e7f893049179cb9ed32310dbfc
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/LogUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b1bc2d26162184521b3d75065fcd5667
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/GraphCollectionDetailTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 92eea56b5faca4df497ebe801de67f1f
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/EditorRuntimeSupport/AssetGraphBasePath.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 68e68a07b552648919feb0b0c63576a0
+    m_importFrom: Assets/Autoya/Representation/Base64.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4f4afbfedc128456c8531368b170d036
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Exception/AssetGraphException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d07be2f9bb82d4038b34ab503a159295
+    m_importFrom: Assets/AutoyaTests/Tests/Persistence/URLCachingImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b199839a9e8f347ada0d93a4bb32bea5
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/AssetGenerators/Duplicator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dafa50f058c614ce9804e30388d6aa17
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/Test/PathTest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9699bb034e3d543dea089ed1168ce619
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/SerializableMultiTargetInt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0303d12aca9843d3bd68adf722d9c9fd
+    m_importFrom: Packages/com.unity.timeline/Editor/Utilities/FileUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c0ef623add767445284d290e629624fe
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/Node.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 82a0f18c397f74c78afb86c98d2f8694
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/NodeGUIEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b929608ac59544de3a587ffc4080d2fd
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V2/ConnectionPointData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 852b2ae9db920489d94c2e9a085d84cb
+    m_importFrom: Assets/Autoya/Backyard/AppManifestImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 54e5ef0b0377c4b96b89e3440d2ff5f0
+    m_importFrom: Assets/Autoya/Purchase/PurchaseRouter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 526cdb84319594850bae31788e91464d
+    m_importFrom: Assets/Autoya/Persistence/URLCaching/URLCaching.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 04e668989dcf2499eb5662cb399f5f44
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/Modifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 459ae692c95b74186b8051b93db33cd7
+    m_importFrom: Assets/AutoyaSample/5_MaintenanceDetection/MaintenanceDetection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1725dd748a705450ea972f3fe0826119
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/GroupingByFile.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4d8bc36c262eb427a9e81517a38f09aa
+    m_importFrom: Assets/AutoyaTests/Tests/Purchase/PurchaseRouterTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 16b266cc62d244fceb9cc3255beb6405
+    m_importFrom: Assets/Editor/Autoya.AssetGraphIntegration/LinkXMLGenerator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7980a5e1d5eb74ac5a81962b3f0e50f7
+    m_importFrom: Assets/AutoyaTests/Tests/EndPoint/EndPointTestTarget.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7a61cdf230c0a4ddba68a0a707d58525
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/ExtractSharedAssets.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5c75fed7a116640d1b5c78c11883ff89
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/AssertUnwantedAssetsInBundle.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b45ce3caafd734a08b4ecc1f882ee67c
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/GraphCollectionTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1b5e16400f7804be58bd0f1ebea83a9f
+    m_importFrom: Assets/AutoyaTests/Tests/Connection/UdpTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4a0587ff48d994fd8b4f99d15f7a505d
+    m_importFrom: Assets/Autoya/Backyard/PersistImplementation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2e4c82d3e76e64c5f9c64cf0c38aaf42
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Modifiers/SetProperty.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 20cf686037c414db284267bfd46165ac
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/Generated/GeneratedTestEntryPoints.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4bf237538b9e2428994abdc33ec4a98b
+    m_importFrom: Assets/AutoyaSample/2_AssetBundle/PreloadAssetBundle.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 016491daae8c94df9b41bfb983d0c0d7
+    m_importFrom: Assets/Autoya/Encrypt/SHA_2.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 66d3b8d4863a54482ba6f9d908da0883
+    m_importFrom: Assets/AutoyaSample/10_AppManifest/AppManifest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dc3edc4496b6745b1a650261e54f33dd
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/AssetGraphUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8d9a5f17c54584a67b7fe58665965f15
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetProcessEventRecord.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7e73406419bf54a50a1b5faf24749c6c
+    m_importFrom: Assets/AutoyaTests/RuntimeData/AssetBundles/MainResources/PrefabHolder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5da08927eb8a84276b34742adde1b11f
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/ProjectSettings/AssetBundleSettingsTab.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 77bc3783d582147ff8ebdac11a7e8ec4
+    m_importFrom: Assets/AutoyaTests/Tests/Persistence/FilePersistImplementationTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5ddfceca50d66489dbc1b6285a804190
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/VideoClipImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ad1628dfe914e4bc2a016f4c89e8d0e5
+    m_importFrom: Assets/Autoya/Persistence/Editor/PersistenceSupport.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3cc36a7b9a2cc410080d519bcdbaea0a
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/GUI/BatchBuild/BuildTargetTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5f7b7c3b6382c41c180e2fd3a7d9d677
+    m_importFrom: Assets/MiyamasuTestRunner/Editor/SettingWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dffed11e808384975952c474251f07bd
+    m_importFrom: Assets/Autoya/Information/UUebViewComponent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5be8cd10c5c5547e68b77a46bd343a34
+    m_importFrom: Assets/MiyamasuTestRunner/Runtime/Settings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f7b60d790eda04adf9e89e92c59bfede
+    m_importFrom: Assets/AutoyaTests/Tests/Persistence/CacheHitTests/CacheImplementationTest_MassChache.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 20b1b37a2183e4f4eb443dc216e58e1e
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetProcessEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 64253c20cf541461ab2e8099d2025732
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Importers/ShaderImporterConfigurator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5a621b3eb315745c8b95a9e354708dd4
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/TypeUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f2ba48f0005dc45778cbd15a7e1b92f6
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetPostprocessorContext.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fac644f8d48b2425db6640dba11e339f
+    m_importFrom: Assets/Autoya/Settings/AutoyaBuildManifestObject.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fb22a8d3124e847209ffa0d4a45d3b75
+    m_importFrom: Assets/AutoyaTests/Tests/Representation/JWTTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 81ce5b7b5349a41aab3a8698b2813a60
+    m_importFrom: Assets/AutoyaTests/Tests/AssetBundles/AssetBundleLoaderTests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dab20ed5a5e3e40d8a69e2f6cee60fe2
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Utility/CustomScriptUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: efe62dc9ec1fc45f191659f0fdbc1a97
+    m_importFrom: Assets/AutoyaSample/8_MainthreadDispatcher/MainthreadDispatchSample.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e92b488a6e4e44b0ba8022885f55f087
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Model/V2/NodeData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5cdf64c4aea164689ad25bd2ff155e74
+    m_importFrom: Assets/Packager/AssetBundles/Editor/AssetBundlesPackager.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 25d40803100284113b1948da90494556
+    m_importFrom: Assets/Autoya/Settings/PurchaseSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 391178b0da267493d9ee22c8f353b40b
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Core/AssetBundleBuildReport.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7f876bd6f2c4343308d812b7ff184217
+    m_importFrom: Assets/Editor/AssetGraph-1.4-release/UnityEngine.AssetGraph/Editor/System/Node/Buitin/BundleBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 60475b9dd3f894bb1bb6dd9f04ad4efc
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/MethodNotFoundException.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bd3c8f2a7af9a094ead2ffa08f763ba4
+    m_importFrom: Packages/com.unity.purchasing/Editor/Common/Entity/IapMenuConsts.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 29467b82a05555942b9af2d8ccc6655e
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Authentication/IServerAccessToken.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 793911e69df141debfb65196c1a88c7e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/MetricizedAppleStoreImpl.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 27a0938d3191a4b429c4171802fc923a
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/DependencyTreeExceptions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 234f58cbe0c0452c9fdfe8644391aa5e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/CoreServices/Interfaces/IUnityServicesInitializationChecker.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cef9f727d368b89429bb517c040e0d8b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Telemetry/OperatePackageVersionConfigProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 95be7fd2e0ac0491880d9acaaaf24c30
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Services/GooglePlayStorePurchaseService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bb2c90e86b42468e815913090c486a0e
+    m_importFrom: Packages/com.unity.purchasing/Editor/AbstractIAPButtonEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: feb3b2230f4da446989543adb2287b0d
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/PurchasingSettingsProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f1c3cc01f2ba44ce88e2780dc98b31fd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityOrganizationV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 92620b818fb3f4bf795270bbc57e9f11
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/ExternalUserIdProperty.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 597e95edbcb55894cae900ca1f8ef097
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/PackageRegistry/IPackageRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9d0c9dbb210b40f3ae4a5a8988fc59b1
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentServiceRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7b4fb0ef619843fbb99367cd4b86d85f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/FileSystem/IFileSystem.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 63b177b347759a44592a524a22a1b36f
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/MemoryConfigurationLoader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 79f5e8ab40570a441903ba249e0ca18f
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Analytics/IAnalyticsStandardEventComponent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: beea7c1949f754239a1557afab367620
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/CrossPlatformValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b0fdb4a3754f2db459745c9f14ad938a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleCachedQueryProductDetailsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c3160ba3f628445298fde3a1dba61623
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedMember.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 98f2d242171354541a674914d838ef42
+    m_importFrom: Packages/com.unity.purchasing/Runtime/WinRTCore/IWinRT.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6b6d4104c62dc4ae3b7b14e88665cc74
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/AsyncOpRetry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: be1e85fd9ff0f4eeba1e913fb7df5682
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/iOS/UnityPurchasing.m
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: df539a4f6e29041558c3299a6f550aad
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/iOS/UnityPurchasing.h
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e8d68e3a4a4b14b788a8e0f6087641b3
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/QueryProductDetailsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b2f105680c384664b2421da07ed8bd1b
+    m_importFrom: Packages/com.unity.purchasing/Editor/UnityPurchasingEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2996bad1f88c4691aab8f33059bc86bc
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/IUnityServices.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bbe1d6885a3049bfb1c80f08903b6a82
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectBindRedirect/ProjectBindRedirectContentUI.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7ffb01788486e4be3916868f12316478
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/IDeserializable.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2551410ce2168804cb697138fe0062ec
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/UXML/GooglePlayConfiguration.uxml
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a3ccd9d21869c45f486163585c2ae2e9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/Scope.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ef6015bd730743e3b6fce3252c6d04fd
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/PurchasingManager.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: aa770a84df76495e887623cda450109f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/AppleCore/INativeAppleStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2034821ee24e4d1988eba8ea33a45094
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedField.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 560473f0707d8ad4d834ee0a8edd894e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/UIFakeStoreDropdown.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1c760120bcec444b49d3351b04d063c0
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Authentication/IPlayerId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1e61bff36430426bafb001a07413313f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/SettingsCommonHeaderUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 400f2260dd8d285419d1db99999109aa
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Apple/UnityEngine.Purchasing.Apple.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6668b7c6066364ea6a727b4b0bcb827f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/IServiceFlagRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 83e41efdede654a89b901da7b70ff0b2
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Configuration/IProjectConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 183f73ff793c4d94abf0d139a2826444
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/FakeUDPExtension.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0ffb4f23b42447ad9a00d7038005c5c4
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/TransactionHistory/FakeTransactionHistoryExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1037b56ad85b27b479513bc4cc3e4312
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/EventUINames.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2f481941f5248bb48813e8ee2a593582
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Authentication/IAccessTokenObserver.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c89b5e78c48f5044ca9729bc6a6b3ed7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/UDPReflectionUtil.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8b4b9e7544a864fa4b0dcfa340dd0b8c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Listeners/GooglePurchasesResponseListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 32a11a9cef8659a43be1c80c3aed7413
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/IInitializablePackageV2.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 29ec2b62f22d1f5469fd2a6f0ff2ad76
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/IPurchasingSettingsUIBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5fc219643ea6e4b09aaa84ce1cab03bd
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GoogleProductTypeEnum.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e208666bc79e4bcd89190010f650b684
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/AmazonAppStore/AmazonAppStoreStoreExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3cf81115b41b8cb41bcef178b6668927
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/GenericEditorClickCheckboxEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7765e1d06743540c5a42377cd9ede179
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1b5c40d0a29e24cd4a1f6212b126b976
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/ExponentialRetryPolicy.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d6e459b361058014faa3bb4fbf903b7a
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/IEditorAnalyticsEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: aaa3b29feeb38435eaf141d2e68d5b85
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/ServiceProvider.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eb92d6c4c6c34d95a4d860eb07ced031
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/TelemetryQueue.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5adbe00cd9902e44db40feba07d1f6a5
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Authentication/IServerEnvironmentId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 50dbc96a50204dbca8d64df6c1cf34c1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/AppleJsonProductDescriptionsDeserializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: db8d5542a97942dc9977eb3e088fe2aa
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/AmazonAppStore/IAmazonExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 13589ceca9ee462abb509a2f14379e3b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/AndroidJavaStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 723367a3f7573456184217d397ff6e64
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/Android/IAPResolver/IAPAndroidDependencies.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dbecf6d1d3b2c469ab1a5a173a48ae06
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/Initialization/UnityProjectNotLinkedException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8822bcc6c9f94378acf292c0f5e8bc99
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Interfaces/IAnalyticsAdapter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 08ff79656d7264d439fc2ddec581c7f6
+    m_importFrom: Packages/com.unity.purchasing/Editor/Obfuscation/Service/ObfuscationGenerator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 149bbcc38d7c74ee2bfea25aedb44629
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/GooglePlayValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9cd0370f944cc4b7d852118dde761cf3
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Listeners/BillingClientStateListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 36a5f511b0d8142cba0aeb92d0b264c9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Codeless/IAPButton.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 73286640c6294c9cbb2519d3ed3c0391
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/XmlLinkedModelsExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7b798cd2df6049ce80e73f3bfce6a4e6
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/LinkFileGenerator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5d7656ad1edbc49f9b3f548ae90f3fdb
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/CoreRegistration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: df12a2293fd242bfbc52457696a64820
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/UnityPurchasing.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 812ddb4d356f4cca8e6f7655ce815aae
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/UnityServicesInitializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9e05cadf15c14df99a1606c765c75b6c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/ValidationResult.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6548f396c66e0b35993874fbd4d464d8
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityPatchProjectV1Request.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 07c14def3cbf48069bc2ef1c10d936c5
+    m_importFrom: Packages/com.unity.services.core/Runtime/Scheduler/ScheduledInvocation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 771dd3cad10143af9ef50871cb12359e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/EmptyUnityAnalyticsAdapter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5326c7fb2eb17ce419ae9e925c9f26fd
+    m_importFrom: Packages/com.unity.collab-proxy/Editor/PlasticSCM/CollabMigration/CloudProjectId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 677134de48484d52b61f6fa75a593203
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Diagnostics/TelemetryDiagnosticNames.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 77bfdd3819e37584988ca09c0c57269e
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Helpers/GenericEditorDropdownSelectEventSenderHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3fefd9c9a0e33734aba3b2fc03b44585
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/Utils/StreamingAssetsUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 391cfe94f8c842c4882ead4d82fb2fa7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/IStoreController.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1f81a2af2f7944e48481ba9b3252415a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/WindowsStore/FakeMicrosoftExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 84db7b35cbfa34dc4b15828d29f33a74
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Clients/CloudEnvironmentConfigProvider.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ed548fe923e1b4ed2a25497af44016f5
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/EditorUtils/Sync.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: de65c849485d346e68c1186154a222ee
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/UnityServices.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 800f6452237243cc9b95b299244a2a85
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/FileReference.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7857ec81473799cc5ba714f45ba72d0f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityTransferProjectRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c80d0a42d5f7a42c1827c363108fade9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityEnvironmentV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9cdb86a3e3785004ea80f58ee530428c
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/UnityServicesBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c6603f554e19f4ef6ac932f67674ca3d
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/DynamicDependency/PreserveDependencyAttribute.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 64e44101cf7e45079761bc3538cb4441
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/SubscriptionManager.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: addd6e0c33c4c4a14bde70d9098537ae
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/Android/IAPResolver
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d0bf1e9f644394e1de13e6ae02458b07
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityStub/UnityEngine.Purchasing.SecurityStub.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fac66275348d245d490b160bcf2413c3
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/IAsyncOperation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2458d7ed2cd22964bb2de41ded78bca8
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/ProjectConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2435e8171140b76409f69db86db0af41
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/StyleSheets/ServicesProjectSettingsCommon.uss
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e6a900469855a4439a8cc405993bbe57
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Configuration/ICloudProjectId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8d4cfc84a4b414bb998fc192e3c3efff
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/CommonErrorCodes.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4cd0b1268265e3f41baa3aca9d5f2e65
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/ServiceRegistry/IServiceRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 818fd0c72018949c9911c0e5737bfa5f
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/IInitializablePackage.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a4fec9ab8c1a4ce0849b3562f5c19f80
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/ProjectStateRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 320e8a82ba9b470d9daf05ba21fc6c0a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Analytics/EnvironmentAnalyticsSender.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c1155bf223700644a94537d5d3361255
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/PurchasingSettingsKeywords.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1f1a7bc9bd9f2a54b8a2feefed2629f0
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/GenericEditorClickButtonEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ed095cc016bfe354b86dbc64b34667e6
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/Initialization/InitializationOptions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b9c8977b8074646a496438fbc3c13025
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Utils/ProductDetailsConverter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 75aa0e3c26c49effe9a22ae327c88e65
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityListOrganizationFavoriteProjects200Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3fc1d3bc5abf4373a2790806fb95828b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/SliderToggleUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 230ff0327fa25a64a84bbf9e7cf97c8b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Vivox/IVivoxTokenProviderInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0aed4750b33c743b7beae07fe0f6ff15
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GooglePlayStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8ab6db39cc89491bb901eb484cd94373
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/ServiceFlagRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b1fd57b3977a480d888a0daba7b102ac
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleProductCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7e91ddb9a38e46f2b0669180e053a695
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/DefaultCdnConfiguredEndpoint.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 551ea0e88707ef72e9c975e115290f84
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityCreateEnvironmentRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 781dae170fdb496ca6d777c6708c5a49
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Diagnostics/TelemetryDiagnosticsInstanceWrapper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7b79b5624d944058bd39aad2b90fb275
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Codeless/CodelessIAPButton.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f85c960a9b6443168132d6c958e9d9d9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/IUDPExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b47b5eb4f2d34f4c9989c5b7377763d4
+    m_importFrom: Packages/com.unity.purchasing/Editor/MenuItems/ItemCreationUtility.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e760c9eec49d4aa7b08cc920e45222d9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/EditorGameServiceSettingsProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eed7074da0854137b4affdacce5d20db
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/Analytics/EditorGameServiceAnalyticData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 75d8295a44fd4872bf43fc3c44d6bb97
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/ConfigurationBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 99e94b1472934112847ff9606a53fdda
+    m_importFrom: Packages/com.unity.purchasing/Editor/GooglePlayProductCatalogExporter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2579e429d2c9c43a1bd957ca08ba269a
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/CoreRegistryInitializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c9a5ab4d900f242cdb4af2e42bc5fe23
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/Common/AAR/ListExtension.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a97a88294a224bf9970a770cd8fa3aa7
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UserRoleManagement/IUserRoleHandler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8be12b9120a7468469fcb90eb32e9b7f
+    m_importFrom: Packages/com.unity.purchasing/Editor/Common/Entity/PurchasingIdentifierKey.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4ec562db73a1a9542b5e467840433378
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/AccessTokenErrorUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 68448537185dd4d6ba109ed748b184f4
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/HttpOptions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b4df5741705fa4d7a83a3ebab4d2f76b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/IRetryPolicy.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 472975f3563e410b9e580688252e8394
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/AnalyticsWarningServiveSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7d5a65fdf4a30428c849255b8efbc5ca
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityStub/CrossPlatformValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f0d49dd8a34484dc387198e1e2a3fe0c
+    m_importFrom: Packages/com.unity.services.core/Runtime/Environments/Internal/Environments.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0dc33952e916e49cd8d00f627d768b05
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/EditorUtils/EditorValueTracker.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4e7d1ae7d3c3d47ecacf3a6d2eaaea60
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/Services/IGooglePlayStoreRetrieveProductsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4797030ac1a4416a944aa07d854ffeb4
+    m_importFrom: Packages/com.unity.purchasing/package.json
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e863927ea89b040bdbb701975f15ee83
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/Services/IGoogleFetchPurchases.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e27a39eb523c4908b5465cb92e6e8483
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/FakeGooglePlayStoreConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5a367299638e0496c93ea5472d17e202
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Wire/ChannelToken.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c6dc86da62be4b67aa82568698b9a92
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/Collections/MergedObservableCollection.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8debfc8dc3d164b3e806c71a7cbdb39b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/GooglePlayReceipt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e4f05d69764dc4f34987c49a70ec8d46
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/IEnvironmentValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e84e5e1f59d14935b06f7201adff93d1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a6b7cd5474143421294936ce0035f352
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/UI/EnvironmentSelector.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b428f1f312a46d4448d355cafbaa13dc
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/CorePackageRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7787ce41e323ce241b489eb9341909e7
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Entity/GooglePlayRevenueTrackingKeyState.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9358f5ecbf4c7c243b03db1b22f7c166
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/Initialization/ServicesCreationException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 38c4bd3ea072237489c548c940115efc
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/GoogleCachedQuerySkuDetailsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 249ac81b0a95a25449448c6ac698e501
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/ComponentRegistry/ComponentRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2581df5464e204ea89cd09738c0d0eaa
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Presenter/PurchasingEnabledState.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0b321f1156cb24f0e8d4c8fa0d32f5c7
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/RequestFailedException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9e6ed7d51349b45518022aa545ab7e0b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Unity.Services.Core.Environments.Editor.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5d984a0a778f0450fbad65acc26af585
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Services/GooglePlayStoreFinishTransactionService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c6fc368a0615d447ca0a8e0732e28070
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleFinishTransactionService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2946cf1ab319d45a9af9d5720e7cc5f6
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Authentication/IAccessToken.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c98e909b661a94dfbacaa1f5717b8c64
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/EditorGameServiceDashboardHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6a8a9e9e477940b9920dcf44492d2d6b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Interfaces/Legacy/ILegacyUnityAnalytics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8a8d95c1910743acbbcf0d5376d3877f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Common/VersionCheck.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4f5fbcf1cf27a4a37ad615aee226465f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/SystemEnvironment/SystemEnvironmentPathUtils.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7615cb8d033d945ea9457f44440ec78a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/UnityWebRequestHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8a5b57a8b918d7242b3e2730a7d14b87
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/GoogleConfigService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e79be1821d7fcebc98ca23dbab17f130
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityGetUserGuestProjects200Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 52d920422bb75444f8fe17563ae0ccc4
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/EventSources.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d0d7f6572d6b64d4f802e930a1670ab5
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Metrics/MetricsFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7be8bf62aa4ad41f4888e0eda994a5bd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/ServiceFlagEndpoint.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2146f30d5f3823b41989711829e7947d
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/Networking/GetGoogleKeyWebRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c16ff3308472c114ca698fddbc1ebeca
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/PurchasingServiceAnalyticsSender.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3f0adb41640b403cb2531cc76ebca447
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/AppleProductMetadata.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e8ab3226dbe224149ba45b322ff6c45a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GooglePurchase.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 110b91e3d66b8144aa4cd4e136d55d68
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/Utils/IoUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8d16821a7b4d4f128acdfc9db6371001
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/IDetailedStoreListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1e619793c900c4c8ebd66f7c67c7cc04
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GoogleBillingStrings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0fda2e89476d45ee88061de782415ae8
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentsApi.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5c918066646404a9cb09f3f5b6b20f35
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Wire/IWire.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cea968401d6c428aa32bd7a4eee6bb7c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/TelemetryMetricsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: db9e13e6a104a4b3a943cdd2e3ef4851
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Wire/IChannel.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 352d9219ebd00854cbcd797e588b93b2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityCreateOrganizationRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e324192441e1b445ebca25a11b5de14e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityStub/Obfuscator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a36ac87c5ef664ba6aee599aa8de49ec
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/PlatformsAndStoresEnabledServiceSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d0b82cea4f17c2d4ca9d0cf90f65875e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/OrganizationHandler/IOrganizationHandler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 09c1cfc6428747bc82020d7e1f9d1292
+    m_importFrom: Packages/com.unity.purchasing/Editor/CodelessIAPButtonEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 94e1de2458b07d0bf1e9f13e6ae06443
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/UnityEngine.Purchasing.Security.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5d6b5b582538b37428e63b2b6c506ea7
+    m_importFrom: Packages/com.unity.services.core/Runtime/Scheduler/TimeProvider/ITimeProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f46ae31386794c47a083a210dc6c6bf9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/Utils/AssetUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 568341f8f466f439b94ba2a42f030174
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Scheduler/EngineStateHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c42f594391a244ffa1ae0fdbafbb42d
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePlayStoreService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9d56e732a6084e26ade8541c75cca4e1
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedMethod.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c6da497a894c04c6d9b6a738042ec6a0
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/IAsyncOperationAwaiter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 973ed18fe43543b9aa8aa43e5e88961d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/IProjectStateRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 49a4a072237349dca126301d477a0dd8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/IStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 98721dc24f071ff46a82a88a6a8fb2c6
+    m_importFrom: Packages/com.unity.purchasing/Editor/Obfuscation/Entity/TangleFileConsts.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c24795b0094cd46aa8966ca98c292b17
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/JsonHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a9e71566b79a4fb5a35a3c8752ef41bf
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/StoreListenerProxy.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 31b048bfb25a54a44b48b771287c90d0
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/ScriptingStoreCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3301919c80ee4ad080b02ee4ca75cdf8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/BaseStore/NativeStoreProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 23eff58b073764220a8805d336183792
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/GoogleFinishTransactionService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 25e7fffddb47fc74f91c516407c76ee1
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/GameServices/GameServicesEventActions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 18698da62101ed443ad4a1b4a09d561d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/ProjectConfigurationBuildInjectorWithPlayerProcessor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 729d559312e6e4c9a8fcf4ef80a668dd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentsApiInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0c22f27117af5a34fbcf6f83a382cf23
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/GenericEditorGameServiceEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9c93b1273771451c9198c1443511d4ad
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/IAndroidStoreSelection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fa0b7d4db277456ba214fe65699e040c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/AppleStub/iOSStoreBindings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 366654928a7595f4885a385a72293c23
+    m_importFrom: Packages/com.unity.purchasing/Runtime/WinRT/Factory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e21dc8645f0a30e4d9ef8b6e0da64993
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/Obfuscator/AbstractObfuscatorSection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e458f0c9e41704ab0b65539d4ea32d81
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/UI/Notifications.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: aad185483cb94a4dbcbe3bb8d57a4957
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/BaseStore/INativeStoreProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2ffc1f37c39224177a92dddd7836ebc0
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/ISkuDetailsQueryResponse.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1dc7579b84c6502409096a7cc9cab223
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/ServiceRegistry/ServiceRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 85397440c8b947aabfac8225f2d98312
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/FileSystem/FileSystem.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 60e997803e97a430f87444ca5eeab843
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Entity/Consts/SettingsUIConstants.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9dd00bde1e94f4558996c8641ca7ed94
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleBillingClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7676a1b0fd7e41d0bb940e056c1ee9c5
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/GetAppleProductMetadataExtension.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 193c12af383d4fb2b882ca3427a2a55f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/IInternalStoreListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 983957cb280949f2b53b1f04bdd8a9fd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/IEditorGameServiceIdentifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8f8f7940cf2ba42dc8242d5ed59653b4
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IProductDetailsResponseConsolidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 51f03e3b6d8394dd595f181250b943dc
+    m_importFrom: Packages/com.unity.purchasing/CHANGELOG.md
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 435a6508ce12f6b4a8b867163aba41ed
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/Networking/Models/GooglePlayKeyRequestResult.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3acf2a208165fee48a9a8604d2ab412a
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Metrics/DisabledMetrics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ac89e17024bc24b4dbbc6c7d233b333f
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/CloudProjectId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 10817f99f1eda9146b72fabec0834c8e
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/Obfuscator/AppleObfuscatorSection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d20e9c28bb2b4b8bbd16889654c4617c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/BaseStore/MetricizedJsonStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e16997d66a2b47cf8f424d5851d3ff0b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/IPurchasingModule.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6bf74eb657d04fc89b8c03cea78bfac2
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/AbstractStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e259a4b536c74a04ab57c0da544e5741
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/INativeUDPStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c807e50bfb9642b18cd692dd2df0e5f5
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/AnalyticsClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c736f93ef06a426e92c0e72ceb077f9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/ResponseHandler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: de9e8083c7ded62419890100100933a1
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/ConfigurationEntry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f276bc4a0ad2f1244bd1afd5838055ad
+    m_importFrom: Packages/com.unity.purchasing/Editor/WinRTPatcher.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d124fecd2cceae34bbe40bfa0232fba9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Utilites/UnifiedReceiptFormatter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 93a01b45768d4309ba8975cb3ce8dc56
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/IGatewayTokens.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ca838f4bb82c84e22b8e1946bc63cc5d
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/iOS/UnityEarlyTransactionObserver.h
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c71b52a802bf4ecbb3979252ef749a6a
+    m_importFrom: Packages/com.unity.purchasing/Editor/SwitchStoreEditorWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: aea1cdc9ca64c4848a1d0cc575df3400
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/IGooglePlayStoreExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d5d66638474e546b1b5402eca60d7066
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/IEditorGameService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 447b73644d5fc4ad7aa5f935271dcafa
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Listeners/GooglePurchaseUpdatedListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 37a33c61bf764894a8475d39ea843da1
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/LoggedOutUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b7882cf8f9eb408eacc3abdd8d867c03
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Utilites/Interfaces/IUtil.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2e3df40998024a189cc6bb7313d85a44
+    m_importFrom: Packages/com.unity.purchasing/Editor/AppleCapabilities.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9b05a4288ddb4624c9396d6bf53dc6fb
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/GenericEditorEditFieldEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 57e3220438bdf43bebec66c4476f6677
+    m_importFrom: Packages/com.unity.services.core/Runtime/Scheduler/ActionScheduler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: af860f39950cf4bcb871b7edd8c723d6
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/Android/IAPResolver/IAPResolver.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c52ed948a62464bb1b54df1b17039cb7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IProductDetailsConverter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cf9a4d6023f754449b735cc1f5b83568
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GoogleBillingResult.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 53cd002ce2a5d4c14b53ee9ebd9a5f24
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentServiceExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6748c66af9df6c549ad80053d28e2c86
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Analytics/EnvironmentChangedParameters.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5f0bfc2289e4ce94b8ade4e95db5ec92
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/LifecycleNotifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 611c457a7378a4b449440667e1fa48e2
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/Networking/GoogleConfigurationWebRequests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b680ba53a40e747f7beb812d4646c7b3
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Codeless/CodelessIAPStoreListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2dbae1a4e85854c5a9bbf5fbb99aa8c7
+    m_importFrom: Packages/com.unity.services.core/Runtime/Device/UserIdProviders/UnityAnalyticsIdentifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 78e9ceb1335b3475ead7e23814552490
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentsClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d2d553a40d80a4a0297e44d2006b6d74
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/ProductDetailsQueryResponse.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 33abb6adc06fe4b9cb19d7b94597ab7d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Apis/DefaultApiRequests.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f8592c5cb0e11974cb7545a8a68a55ef
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Telemetry/IDiagnostics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 30e535d05ac7fad4db50b8dfe6751c14
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Diagnotstics/DisabledDiagnosticsFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 84b711f26486f4eb1a670f170ad94638
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentInfo.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1cbc5682dea14c8b808c634ae1bb0f1c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectBindRedirect/ProjectBindRedirectPopupWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 101dbe26d0a947eab93ccc173d0e955e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Common/INativeStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 767067582a751431f87b20f33cad0c54
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GooglePurchaseStateEnum.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7b2d71598ace32a4a91c01c72a1bbede
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Utils/UnityWebRequestUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7347c24641591494d9d7de1c4bf052c9
+    m_importFrom: Packages/com.unity.services.core/Runtime/Registration/CorePackageInitializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 88035523492c438caeffc0cc452c5301
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/TransactionLog.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0958b116e385d7549a65117ca9ed24d5
+    m_importFrom: Packages/com.unity.services.core/Runtime/Networking/HttpServiceConfig.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2023e4a317a2f4de9a18cd9ae2cb183e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/EditorGameServiceRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d8a1f44ed7a1d478eb37c44f0ab4a186
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/Responses.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f72e29316ec52467d886cfc46a18a7dd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Settings/EnvironmentSettingsProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 91d1df321267c4670a2008b78b0e4bfe
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/ImageHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: af50c025240a3184ca1e1bf183b8a167
+    m_importFrom: Packages/com.unity.services.core/Runtime/Scheduler/TimeProvider/UtcTimeProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2bc7ece372a03404394756573e450dd0
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Metrics/DisabledMetricsFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d095637322d24a8c9ab779653bbe3350
+    m_importFrom: Packages/com.unity.purchasing/Editor/ProductCatalogEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f70e6ccc76af4a07a0dc95e6dfe3b966
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/WindowsStore/IMicrosoftConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ac3cb94abee9e4709a57fbf9c4ff10a9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityOrganizationWithAddressV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9dd254c4b94de4dc1b93d5f8feb61815
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/ProjectInfo.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 684b87680a3c4d34adb49982d899e9ed
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/SimpleCatalogProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4b1c5e0114dfa1b0990a8033d416cb63
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityGetEnvironments200Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b7909be5df0d42b5858fe576acdb19e4
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Save/EnvironmentSaveSystem.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: acefbd2d65035064682dc863487feb95
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/OrganizationHandler/OrganizationProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 59ac86b2b70cf4327a7890ee6cf7331e
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/IMGUIContainerPopupAdapter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a4c91e5513554fb01a0751299343057d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityCreateAddressRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f7fdd725538d4f34a1c741ad04892607
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2b52505d633b4e19b07a13b7f19ad79d
+    m_importFrom: Packages/com.unity.purchasing/Editor/AppStoreExtensionMethods.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 94946b167198e48cda522a0d7ca6f98c
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/PlatformsAndStoresDisabledServiceSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2708ee7c890e4d799083ce8771a5619a
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Telemetry/CoreMetrics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 03dddf3e71a4ac04c9afa4b7ebb8736b
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/GenericEditorClickMenuItemEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6173a818495d4a64db7903adb6be3a8f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Utils/GoogleReceiptEncoder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 214ea477768244a55b47fcbb0d16f0ea
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Networking/ProductionTokenExchangeUrls.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1950adf491c348aa9e84d45283c62684
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/TelemetryMetricParams.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9f6735934f1934f448e5884d3ca69780
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/HttpRequestExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dde6eba1a4c8149aa9a0182234ac7c0e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/Obfuscator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0bc8e9caca4bdda47b00919ec0a338cd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/PackageInfoNameComparer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c62db2b337bd81844be9284334848cd8
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Signatures/EditorAnalyticsDataSignature.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3d26a96a5e674c0e968de4b9421d78d7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GooglePlay.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 07b693c5dbec4ec49e6c7f72fbde0c0b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GooglePurchaseStateEnumProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 13642891e7fc49f08ec643aea22d93d7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/IStoreExtension.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4d4c8ad5da2c0d4418c231c798cdf274
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/CoreServices/Interfaces/Environment/ICoreServicesEnvironmentObserver.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7d83e6c7138841369509b906fa4d3706
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/IStoreConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8448702177529449c8258286db64a112
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/Networking/UnityWebRequestExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1c5bc148978304233b25a39029f96fe1
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/SimpleStateMachine.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7c35d1c1d5e24fde8799f049b1e07535
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/UnityServicesInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e9a8594d9558044eca579f6329a8a92b
+    m_importFrom: Packages/com.unity.purchasing/Editor/IAPButtonEditor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7245d8d5639d1834c99cdb052076bb17
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Utilites/ProductPurchaseUpdater.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b5b9acc8ae3746be8853dcf13eead8b3
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentsConstants.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 79cb6b9bf8fd38d47bf44caff139eb88
+    m_importFrom: Packages/com.unity.purchasing/Editor/Obfuscation/UI/ObfuscatorWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f58d0b9d8ad9649e595db69bc485e70d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Settings/EnvironmentIdentifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 31fcff17378634912895e85b91678ac3
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/ErrorMitigation/IRetryPolicy.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ac86a2bfd37d6486e831ba1e932a6f66
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Authentication/IEnvironmentId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3534ba07128f1a4419cd08aebd2c6ec2
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/ServiceRegistry/LockedServiceRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f6e07f0964914ba88813de74951f11f8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/PurchaseEventArgs.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 83f92647bc99413c98c5e8946f8d4c60
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/ServicesCore/IapCoreInitializeCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4e733f2b557046139361b785c27d8ba2
+    m_importFrom: Packages/com.unity.purchasing/README.md
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f7597a6102ca44b94aa8ce00cc1124a7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/Common/AAR/UnityActivity.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 17c935ca4d9d95048931d5aec5d99d97
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/SerializableProjectConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f999feb557b5489d983b6fc6989e3bf2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/ExceptionHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c3755af4fd119427481c46ab5946719c
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/AsyncOperationAwaiter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fa076e64208b8334a8a147efeebf66fc
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Diagnotstics/DiagnosticsFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0f2330dc55a8fbc409dc7b7c956a282d
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/Obfuscator/BaseObfuscatorSection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 47e1f82e75254cff9e8a5f710e966756
+    m_importFrom: Packages/com.unity.purchasing/Editor/RichEditorWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d3165b886c24cdf4aae413fa29476483
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/IConfigurationProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9a1aa442a69874c10a9b727262ca8181
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Analytics/IEnvironmentAnalytics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b4326c66a9f464640b9457cbd6237bf6
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/iOS/PrivacyInfo.xcprivacy
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3bad147ccfb44fcf8eb5d93b6911e709
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GooglePlayStoreExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4a4f12b5466c418ab0e66bd23e0a0af2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UserRoleManagement/IUserRoleRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: be89aa20cd2d048e7bd163954171b54d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/IEnvironmentService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6094c2d5f98eb48eeb06e79ec627d393
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityCore/IPurchaseReceipt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 26586e3f36dd4e44b49c68eb9d95ee0a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/UserRoleRequestUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c624f94dc9c742dfa8b20da2b240dd3a
+    m_importFrom: Packages/com.unity.purchasing/Editor/Importer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cb26382f8f2211742bfe61c6bff70352
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/IGooglePlayConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b8d43fe3607e4416bbbbf8585a3869ae
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/DeserializationSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a84a2636a2b84429b495cd03f0cc97cd
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Diagnostics/TelemetryDiagnostics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e29e778179e742d99a136adc003ad43a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UserRoleManagement/UserRoleRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d497d03046b84003b00f04dbf9bfdcc6
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Settings/EnvironmentSettings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: da5d2bfd2a2a4216b3f406aaddd38045
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/Interfaces/ITelemetryMetricsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9a6f87aeb32614f48b05ecea6b59446c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/IapTelemetryException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 60bfecf5cb232594891bc622f40d6bed
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/UnityEngine.Purchasing.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f79518f6fea114ee39c48fee07c637c2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/Factories.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eede71ed28bd9e272b3639a5b7b59f2a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityGetUserPermissions200Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 936a6ba0d359467693cebce7e793e6f3
+    m_importFrom: Packages/com.unity.purchasing/ValidationExceptions.json
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b559fc92bfa824d6186ca9c3c326f8ff
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/AppleValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 47a16e9708a24d2b9f6618b7ef22f991
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/AccessTokensSingleton.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8d96a48aaef9a41648b0adf1c2480afd
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Listeners/ProductDetailsResponseListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9099985430be4f9485b84a74449fed2f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedAssembly.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 65b45451ce46cfb41a28c3cbd3e60252
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/UDPReflectionConsts.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 00a179fb23a040c19feec629bacd84a2
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/ProductMetadata.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 942fd099ec3f4109a377024b070c8a53
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/TransactionHistory/ITransactionHistoryExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: da94c0872fce141eb907702b33c8d2f2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/IScopedServiceProvider.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0499a95597664d3fac32a48fcf995555
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/Analytics/IEditorGameServiceAnalyticsSender.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f0d35674701d28343a1506a16954354c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GetGoogleProductMetadataExtension.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b2e71ffb73fb43d0810e55e687b4bb84
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/UDP.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 74c11f3a05d74a6b9cd665300bd0de76
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Diagnostics/Interfaces/ITelemetryDiagnostics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 22efddbf3548b419e835532542845f36
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Entity/Consts/PurchasingUrls.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e6a7022b5e3dc42b5b29a830722baea0
+    m_importFrom: Packages/com.unity.services.core/Runtime/Device/UserIdProviders/NSUserDefaults.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d390f9cc6f1fc5c4db106de9ff14b0e9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/OrganizationHandler/OrganizationHandler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 147390da81124328b53e90817831160f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/AppleMacos/OSXStoreBindings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1ad116303c5f468aa7627a3792bab18d
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Serialization/NewtonsoftSerializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fc0937abe468495aaa8fa4bb6552711a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Legacy/LegacyAnalyticsAdapter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cb20682ba56fb47f285cd16dd1291270
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Wire/IChannelTokenProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 170ea167263d459683c879aad38ee142
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Config/EnvironmentConfigProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ec4ed8b6320c0c048a5f17abf240c856
+    m_importFrom: Packages/com.unity.purchasing/Runtime/WinRTStub/Factory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a375604976b5497f9ee938763f0dafc6
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/FakeAppleConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 37deac60579a4d08a80966bd8fa977a2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Analytics/IAnalyticsSender.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bc016d49dc4afda4ca7853bc97d69f93
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/EventSourceMenuItems.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5fe2ab0e885547a6baf44dd58fe17faf
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/Interfaces/ITelemetryMetricsInstanceWrapper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 98176d1f998b849368073bf3c64b0b0f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityProjectV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bfc4d54f33245f1bd8e1ad8e30e61ce0
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityCreateProjectRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c018624dabcf94cb7869e9ec09f27732
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/IEditorGameServiceRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 00427aa938bcc3948b24130ac02694bf
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Utils/DictionaryExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5f6f1affa6a7d42618f2bdc0c6a394e4
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/JsonObject.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cd86037972ea481699ef5ab2193ac0a1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/PurchasingFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 720ae44e2f11402e9343b0751a56a03a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedType.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f200be2b6d794e5fa9121e8716d0f199
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/WindowsStore/WinRTStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9894755a2d8da44738b487bfec688e76
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/HttpClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9403842d9ff894d0291ed527f0d0a4a1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/ProductDetailsResponseConsolidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 418f497ff2764085950acd83caecbf54
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Models/GoogleReceipt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6178d8db32afe8743aba3d79f9dc6d54
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Analytics/IAnalyticsUserId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a232b29fae442f345b7a6b4f9b9f44ae
+    m_importFrom: Packages/com.unity.services.core/Runtime/Threading/UnityThreadUtilsInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c1884ca6955b461983cca32032caeb24
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GooglePlayConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2627ee9222be9474c9370fbb8abef8d8
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/EditorUtils/ICopyable.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2ba0daf91a2b6a24181a10ad33450cb6
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/GooglePlayConfigurationSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 211ca0b6fc755654c879e0d70b200d72
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/FakeGooglePlayStoreExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c9f9c846b2d95994b92fbb514b8b004c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Scheduler/ActionSchedulerCleaner.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3524a8a1f3474e55b6fb404bb619253d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentNotFoundException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 49dd7f58c2a2d454b8ce67251befef56
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentsClientFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bd7889f983324abcbbf5195d90c68850
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/ProductDefinitionExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a6acbe80b298e4bc8861f9f4f1ad7ae3
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/PKCS7.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e19dce4e8a4c4ef58fe19536b828cc63
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/UXML/AnalyticsWarning.uxml
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 72f7787cfc7ca4ca087104bfb5a8b71c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/Analytics/EditorGameServiceAnalyticsSender.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6674632fa5e448248a41a42a29462f35
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleLastKnownProductService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 306cd4f428e54dd5b36a3b7067827487
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/WindowsStore/WindowsStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9c74e1c7e57b47d4be034ab3f8b9b041
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/FakeStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eca9be9a94ea43f6a1fa2a93e3436699
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/AmazonAppStore/AmazonApps.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 291b6e45f0c954c73b6598341521c6be
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/JsonObjectConverter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 82a8d755c4b96403ab2a7e285328b299
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/ErrorMitigation/RetryPolicyConfig.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: afc30112b30549bc9c07afa6a4f0f14f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/GatewayTokens.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 31701289561e54e629512bd110968d29
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/GooglePurchaseService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7fa69bed1c405d74a92b19e4bb96e551
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Legacy/LegacyAnalyticsWrapper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fe9fced372e4e4d9dbd0dadbcc127355
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityStub/AppleValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 49e4031d423aa47a5b2d8aa1c3cdccff
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/Services/IGooglePlayStorePurchaseService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 43209fe8897b17c47bf5eb38739274ad
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/PurchasingGameService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 20ce93e64c4a44dfb52e7689ec1c6027
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/ProjectStateHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3f0efbdb9330e441d8e3e9a78dd33609
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityStub/GooglePlayReceipt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 20028914c8cb44e759c4e9ff7f4bb570
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/BackendHelpers/UnityWebRequestHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9614fa8e6bf934d4da30961ad1e42782
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/JsonProductDescriptionsDeserializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ffba612eb895d42fd962c9e77d7925fb
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePurchaseService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c1d4ff6f05d1d44b6a316c6b0e32c24e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePurchaseCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4b0714a4bc17540af8e876e1b868db48
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/ErrorMitigation/StatusCodePolicyConfig.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a8a1c6611c774b60b5e1825e7aa9958e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/ServiceInstallationListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 786cf30712f4445386ccba873bb3a98f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/Interfaces/ITelemetryMetricEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 97c6a2ef665f4c99a6e0d8fac2cf901b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/AppleStoreImpl.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 15d04b6fd658a4eafaeac7ebdd6163bb
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IBillingClientStateListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: edb44e5fc8923b24faf35d403e4951ec
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/IapCatalogServiceSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d5a81fe76b2942889d0e5c682d77bf96
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/IAppleConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 11337c9a552424776b7278cbdaeaba7b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/Collections/CollectionExtensions.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 17dda52e19ce4bdca57c1479622727c3
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/TelemetryMetricDefinition.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c218729aa5dad49caa485d37679f0313
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/Collections/IReadOnlyObservable.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 69c7a87370c004b45859f1ef15e8c175
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/EventTools.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 61e91eb31a3934d3bbcb76e76abbe530
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/AbstractRuntimeServices.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9d4f5f2eb7a4d4b83a88d613c935af1f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePurchaseUpdatedListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6dcf3de5e4354047959bafa31889e83d
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/UDPBindings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 750fd93fb122946179a2528fd9214279
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/EnumerableExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1633d32bee23e184a9e197103cdfa176
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Helpers/GenericEditorFieldEditEventSenderHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 33ef59feb9289e8479c3a3935021f6af
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/Networking/Models
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: aefea58c4a982cc41b2f3aef6132055e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Analytics/EnvironmentAnalytics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ff13fc60e2c44923960deaf73512a9d0
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/ProductCollection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9fb175b9ce0f46e89880ba861805a2ff
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Telemetry/CoreDiagnostics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 872d11033da0d4ce8aa948384ccc3df0
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/Utils/UnityThreadUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dd9998d5d46eb4c048e4e0544f880bbc
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/IHttpClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8f7dd963c1a8b427b96975fa211478a1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Codeless/IAPListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6f48c843d2260425ab2a451843b22e04
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Build/ProjectUnlinkBuildWarning.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5db156bbd7dad0544bcc03b72725bedb
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/ProjectConfigurationBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2e0166bafa3674b43af8ca32673614e1
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/IO/PathUtils.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f9c4f3fd3d86b491ebdbdb5671bf0843
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/BaseApiClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cf288fdecb6dc4702a6cbf145af0a97c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/HttpClientResponse.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ce5fd6de47d0f4dbea22241a63695db9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/UI/EventBinding.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0cc3d186d74b4475d828ab6d749b72c1
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/ServiceCollection.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8c2efaaf56f24529a91061c1537d607d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityUploadIconV1201Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ae62c9097c2e3a527bccc7a06da55e81
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityListProjects200Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3239cc5ca90c4d4b9c0cc90368564d04
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Networking/StagingTokenExchangeUrls.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 94e7605481de41b882cadecbba3b3fc9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/MetricizedGooglePlayStoreExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 87a4c72e225a43745b0aa514ffa1fd0f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/GoogleLastKnownProductService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bd53524449ca040b9910cc0e70379457
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Configuration/IExternalUserId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: af6ccefad660d884d8cd4619efc8ccc4
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/DependencyTreeExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c32731f1d14224a4ba31b15e4befd2b4
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/PurchasingServiceEnabler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a82540fa9f3e4c69b136134dcd250ad6
+    m_importFrom: Packages/com.unity.purchasing/Editor/UdpSynchronizationApi.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c23475166c0634642a1feebc28f06c4d
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/ExternalUserId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 08f168bc4126b428f9394f07df550d9b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/IProjectInfo.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cbd58a01e7dd4fd1b899ea8b6bf852c7
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/EditorGameServiceFlagEnabler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d95707abf23004744b61bef25114496f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Codeless/IAPConfigurationHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d59ec175ee25449d92598bbb30db59f1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/AbstractPurchasingModule.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 386d16474b5e4b42b6800aa2c1d99924
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/ProjectState.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 360e792a2fac4d2dbf1793c1f98567a7
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Apple/iOSStoreBindings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1fb4cca4bf524381815e7df0e5a3887b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/BaseStore/IStoreInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f4eea6806fae644df829a32ac4939577
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityGetOrganizationMembers200Response.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6f78296b811964d7bbfd277fbeb2fc08
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleBillingResult.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8cdf4287f085438481434ba928041a04
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/MacAppStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: be5e351f9a40dd54d8fb1ec23b94a1e9
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Metrics/Metrics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2d4226bb1b35d4a73896b0f11814ba6f
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityAddressV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8e1a5986ed9d4d5483b3bf4c11ffc659
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/TelemetryMetricEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 142dc26b3b00c43c9b5fdfde8e313179
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Scheduler/ThreadHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 23a99b5dcc39b440c94ce284a00c7b16
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/IGooglePlayConfigurationInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fa669b6f637d143e2b20640ee7b3e777
+    m_importFrom: Packages/com.unity.purchasing/Editor/WebRequest/Interface/IWebRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: db4bccee820244986b6e717bc4eba02d
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/Singleton.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8403e32bfcb112444bcc3a7f9ea043d1
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/ConfigurationCollectionHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 10f03d45e52dd428b883e48e295c703c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/Certificate.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 97a4535b865f4c68a124b3a3bb8cd42b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/IProjectEditorDrawerFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cad53c020288c4aa5b499ccdbf6c3226
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityUserGuestProjectV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e13401069986e4070b7b19134fd9ea67
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/ResponseDeserializationException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d0bf1e9ef64430948b071de2413e6ae5
+    m_importFrom: Packages/com.unity.purchasing/Runtime/AppleStub/UnityEngine.Purchasing.AppleStub.asmdef
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3acf2aa337e346f289bc71ea2fb7d786
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectBindRedirect/ProjectBindRedirectProjectSettingsUi.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 01e7e065dd954fd695f04594c6d42959
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkerModel.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eaca1461750224243bbf46b2e8741f64
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/IService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4bf5535fd1c6d46de8893c106f2a4907
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/IEditorGameServiceEnabler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 182c5bcc97fc21747a9ca5e01da1ed3f
+    m_importFrom: Packages/com.unity.services.core/package.json
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7f4263595428d473aa1339589d583512
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Presenter/PurchasingDisabledState.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8633e275bcc4c4540929c62473526fce
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/CloudEnvironment/CloudEnvironmentConfigProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3bebba25b8084f07bcbd77702677dd6c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/PurchaseFailedEventArgs.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 81a589e8759574c28813550426224626
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Services/GoogleFetchPurchases.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a2feecaca5b994dd28088f6073ea7221
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/Services/IGooglePlayStoreFinishTransactionService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 57c3b7d88e2241d39318a95ace5b1400
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/PlatformSupportUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bcb39717dc044856ae68744f205c8c8e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/IAccessTokens.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0a3ff452df2c473385ad7987181bdf1a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/ProductDescription.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7145ff75f48d459ba47583c1301f05aa
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Serialization/IJsonSerializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c2029b6923ca0499092aac6a1422c9de
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Presenter/BasePurchasingState.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 597cf31a6b3125a469e7a01863653d8b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Models/GoogleProductMetadata.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 64d300c97ef0045988d44f511d9c8648
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/IServiceComponent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2b8912da42446194b95ba52db45cc9cf
+    m_importFrom: Packages/com.unity.purchasing/Editor/Obfuscation/Service/TangleObfuscator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d60d10f7c2b9479fa548dce8a80cab6e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/VisualElementHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0b7aa539ad045e84e87265a430f76b92
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/EventComponents.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e5cb09d6e3f0e49f8a2a23fa61447902
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Apis/DefaultApi.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6d1d2c4e75984c2c98618a7998ea430d
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/UnityUtil.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 62cb2395d95d4c3b918e83fc770dadb5
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedProperty.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 373ec6d78d05e42a0a824c0167210322
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/EnvironmentValidator.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 974d9fb338699444fa12c421db55a2bd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/DeserializationException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8f5978fe96104f82862fa680bdecb8c2
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/BaseStore/JSONStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f7fe7f16140d46d59df398b91c9e340c
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/PayoutDefinition.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2ce7a4ee920834a2eb1b48958047fbd4
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Device/IInstallationId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8d2aa84387bb4a82a112246221c3e06c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/BackendHelpers/JsonHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6305d1320b2644a46b430e4ccd6eeb6e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Utils/AccessTokens.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 73a7759b168f2422f976ca481279904f
+    m_importFrom: Packages/com.unity.services.core/Runtime/Analytics/AnalyticsOptionsExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c45b9c080a48f794e8be2a50efb06c38
+    m_importFrom: Packages/com.unity.purchasing/Runtime/WinRT/WinRTStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d7fdf806a32a4980b106407faac79e8a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/IPurchasingBinder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 029a83481f94f4626a4addeb4f496d02
+    m_importFrom: Packages/com.unity.services.core/Runtime/PrivacyInfo.xcprivacy
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 84bcb808ac1e4d8d81abbadf94c98f93
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Product.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 057c94c7ac2570648af77a5612daaf6b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/UIFakeStoreWindow.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 41716fe45d35db241b547113166d4c50
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/PackageKey/GameServicesAnalyticsPackageKeyHolder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 318df9a589f34bacbd78ba634263ed15
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePurchase.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 93935a767c9464c3b8a85b28b562429e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Utils/GooglePurchaseBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: db331124c2ee348219007881f953471b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/AsyncOperationBase.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 75eeeeadd65f0407db138d67605e095b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Environments/EnvironmentsOptionsExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 36fedfea4bfd44438fbc0364f8016ee9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/MetricizedGooglePlayStoreService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 26f7b42820554484877d9119515d37e5
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Linker/Models/XmlLinkedEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 47373099e56e4d79b7409536c97aed85
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Networking/QueryHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0919c741995146089691ae21d7032677
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/UnifiedReceipt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 56b4bdb99b98edc9588da08d3a61e6bb
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityUpdateOrganizationRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a3870aa69e6f14c5d9f854d85444519b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Clients/AdminApiHeaders.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 460c6bd3df0f3f943a1ba014c1818f4a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Networking/TokenExchange.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a4a252d22132442d4940009e16a99424
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Configuration/Configuration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3990cfa69d00d43f08e30cd7de6f728d
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IQueryProductDetailsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: de57eb3908af436d93fe995bf7a90523
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GooglePlayProductCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2f76a5a9cbdd04d43857aa085b8f3c12
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/GameServices/GameServicesEventComponents.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e5cd6461dccb4dd7ae9fcf7b8f72dc7d
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/ScriptingUnityCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c9cde6d90f70da14980805b30a31d839
+    m_importFrom: Packages/com.unity.purchasing/Editor/UdpInstaller.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cec35b4f221f4ae69973858262c86db2
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Qos/IQosResults.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7f4a2a50144743659f304b40e0ebce92
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/UDP/UDPImpl.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 81618529161b20c419bfb8afe43a3044
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/StoreCallbackExtensionMethods.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 249a2fdb5bd0534428138ffd827b1db5
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/ConfigurationUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a400ecd42f0faf642a015818f10428e0
+    m_importFrom: Packages/com.unity.purchasing/Editor/Obfuscation/Service/ObfuscationMigration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e4efedee56564ed8aab347dc52d629f2
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/WindowsStore/IMicrosoftExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 24124273374e421284456346db99f343
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Interfaces/IAnalyticsClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3b67b1e8b8e4b40a8a8c9013b40c7efd
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Telemetry/IDiagnosticsComponentProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a8f59d2af37fa2149a23d2b9f4d6b17e
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/PackageKey/IAnalyticsPackageKeyHolder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9fe1c696868604400b782d41f2146f8b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/GoogleQueryPurchasesService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 980c1a07355543ad97d20b61ef0a51ff
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/ICatalogProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b028b155f35b9d64481dfe3206deba36
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Entity/GoogleConfigurationData.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 56724d63b19250d45b2ded3dff5bf19c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/ConfigurationBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bd3488b91e5f84fb18390042c3ebc70b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/AsyncOperationExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e18ca1f2d22b4701b8985b0fbcaa9ceb
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/CoreServices/UnityServicesInitializationChecker.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eafba3bdb53b34d70a61f2cf40a497ec
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/ReadOnlyHttpRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0f64d807cc1f642829a405ac1e55d676
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/EditorUtils/ApplyRevertChangeTracker.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4436525e323b4824b8dc905144c38be0
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/IUnityCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 87afa49178de548ed83971e4819c36bd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/UI/CollectionBinding.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f4753c82e9efa4528a60bf86e36dddeb
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/IdentityIOneOf.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d9d20055a871be64386d2366d3b00a23
+    m_importFrom: Packages/com.unity.services.core/Runtime/Networking/UnityWebRequestClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6226434778f184f669acaa32c428c821
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/ErrorMitigation/RetryPolicy.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a9269b67d77344e74a3af1875b18dc55
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/GooglePlayStoreService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: da7a34333ec1d4d7ba3f4ca3cf03de84
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Listeners/GoogleConsumeResponseListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fdb112ee8c489415db037d127d932546
+    m_importFrom: Packages/com.unity.purchasing/Editor/BuildTargetGroupExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4f684f8be849544fb93b179579ac8eb2
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Services/GooglePlayStoreRetrieveProductsService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f370a18090ac4e558e6cf30636aabfe0
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Networking/JsonWebToken.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 569c8038fe84403bb694c620aee68233
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/IAppleExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 757df1bf595d4524a56504167404cbd1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/TelemetryMetricsInstanceWrapper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9c824148821cd482cacdbea9ea35b756
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/Common/AAR/AndroidJavaObjectExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a6f0e4e345a547d09ea93e0459ce3fa8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/ProductDefinition.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f199b66c52c9424086be0515dc89001f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/AmazonAppStore/FakeAmazon.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 166d2f7f22ef04096be86aadbd702c7c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/Analytics/IEditorAnalyticsEventRegistrant.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4d2b177ceba14d8c93d4a7f487980a82
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/CoreAnalyticsAdapter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e9f7c66d8773a4128baf4275163f81e5
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/Android/IAPResolver/AndroidDependencies.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7d41bc66ca544cfbbba5398c679b4684
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Telemetry
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d967d21222b514bc6b5020d2b063ad4e
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Entity/Consts/UIResourceUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 06af021de11772b48ab2c729e6da3dc6
+    m_importFrom: Packages/com.unity.services.core/CHANGELOG.md
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f2b35268b2344464da85f78796bf1a12
+    m_importFrom: Packages/com.unity.purchasing/Editor/MenuItems/IapListenerMenu.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 52b46e75988184d7faafd0a7bbf50476
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Listeners/GoogleAcknowledgePurchaseListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5f011bac388a5b446997c873c1640ed9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/WinRTCore/WinProductDescription.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 90ee04e64daf47d2ac9f878e9cd367bf
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Utilites/ILoggerExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5e0c6450057a2458583d25033ff1b83c
+    m_importFrom: Packages/com.unity.purchasing/Plugins/UnityPurchasing/iOS/UnityEarlyTransactionObserver.mm
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 50a279440a8e8d44abdd9b6cf9f6c531
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Events/GenericEditorSelectDropdownEvent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fa32f3f37a1c4b04dbe79fc9fc53e687
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Helpers/GenericEditorClickCheckboxEventSenderHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2bda8fcac8414d928725e8d75cd811ae
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/StandardPurchasingModule.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6348586e6343e6e4a824e3cd597f091e
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Threading/IUnityThreadUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fb6da325a94f62165b7349dcd8eeacc2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityUserOrganizationsV1OrganizationsInner.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f6fca075b93044fad84dfca5421e28e7
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/Threading/Sync.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 036c332b7e1444de6a8c2dbc19b99027
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/Collections/MappedObservableCollection.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 329750b2a7303a4469bcbd1fa0b517a2
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/IConfigurationLoader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d7d87d09afbc545618ef2a615d0ef7b6
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/IEnvironmentFetcher.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: eca1326d875b644328c91fb36f5aa9d4
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/ConstructorNotFoundException.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9a76d279054d4310a6dae6caef9c5682
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/IEnvironmentsApi.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7829c22a2e7f648629af71b9abb67494
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/TaskAsyncOperation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: dfc2b9b5d2fe14b188e5ac23c3580d9e
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/HttpRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1bbf334d5914b4e5fb71055db5347e94
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/Transient.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 15ce1c0ae24d491795cb39aa859e1e5b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Scheduler/ScheduledInvocationComparer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 03a13814984de4f0b88ec94c7f6f1b58
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/IHttpClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 672a2ea534048224eaea9b7c77c75a84
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/AppleConfigurationSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 47798b24b04cf44ec8d0f2aacd388c6d
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Presenter/SettingsUIUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5845494cae7434f98a56718a3f9eb802
+    m_importFrom: Packages/com.unity.services.core/Runtime/Device/UserIdProviders/UnityAdsIdentifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: db2078cc8cfe47f39a2190a0ff90214a
+    m_importFrom: Packages/com.unity.purchasing/Runtime/AppleMacosStub/OSXStoreBindings.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 849b8bf94f5870549848ce3003933151
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/Obfuscator/GoogleObfuscatorSection.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9c86c514ae5b03149a2732c3882cad70
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/PackageRegistry/PackageRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2d8899cb421775d4cbf47c0962ca2d34
+    m_importFrom: Packages/com.unity.purchasing/Editor/BuildPreprocessor.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d82f57a40dd480c4992d1d23dd773765
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Diagnotstics/Diagnostics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 17fa5bd019444d68b886cc0135f88732
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/JSONSerializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 772b48b58a2f4f85a7d52f4a744a9ccc
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/IStoreListener.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cb8fb32953c44359a54c5638cbeaf502
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/AmazonAppStore/IAmazonConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ce70fc6b35fcc4146aa97de3cb867b90
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Helpers/GenericEditorButtonClickEventSenderHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b44cf663591b40ad9f7c180c4fcb66c6
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/UIFakeStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ffcd50741e9c46845a5cbb0fc7b31137
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/ComponentRegistry/LockedComponentRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0a46529f8586545c6ac95c9adc50ab5a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/IEnvironmentProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b018afbc28ca1fb4ca8b6a78c40d5c95
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Helpers/GameServices/GameServicesEventSenderHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 763032f541f3454f911f13ee390be891
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/JavaBridge.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 530fa14dff7e947f088ddea9e12ec4d1
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/DependencyTreeInitializeOrderSorter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6007df151b27f45afa92d6caa4865da7
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/UI/ProgressBar.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2141614c07584271ab2cf1fcc8eaefee
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/StoreConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0d3c36eeb6c9d46459ddede8d8248f3d
+    m_importFrom: Packages/com.unity.services.core/Runtime/Scheduler/MinimumBinaryHeap.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c90f7b81ab65457180d827ab6150fbd
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityOrganizationMemberV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: afddcb22762842b38a46b656567e92a6
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Diagnostics/Interfaces/ITelemetryDiagnosticsInstanceWrapper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 2ec846fa958cc4b38b0eb633a872e4f9
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/HttpException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a9e37527ab3440f2a94ba18a3ee4b2aa
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Analytics/Legacy/LegacyUnityAnalytics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 57789d1bf989e4a6da9126326213f6ad
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/ReadOnlyHttpResponse.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 363f99239cb5428288571d45851dc72b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePurchaseStateEnumProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9077f672dce4c48b6ba1b81bc1037196
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/DependencyTree.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 71648f2c67f4c40cda4f186ea8e4e62c
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UserRoleManagement/UserRoleHandler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 604f0c1828ca42c18067cf6b154b6331
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Networking/InvalidJwtException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: aa7f09aec36042349f3b4f40cbcc15e8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Codeless/BaseIAPButton.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 49757d9e69f214a659a1e5221912d21c
+    m_importFrom: Packages/com.unity.services.core/Runtime/Device/UserIdProviders/IUserIdentifierProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 39eabcb7373424bb5a7fa1381e7f046b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGoogleQueryPurchasesService.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d30387cc0bff00b45b7e52fc7d794046
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Vivox/IVivox.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f5272aed2952245bb8b844e7247a4b0e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/ProductDescriptionQuery.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 469e48b7674cb4af8889906a716a34ca
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityCore/AppleReceipt.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1073c0628ca3461eb672657cff8b1955
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectStateManagement/IProjectStateHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: caf8ab45c7b7448192ee7883413a675d
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/PurchaseFailureDescription.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 74971550027403b4d97784cdb01c4f5a
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/UI/Views/PlatformsAndStoresServiceSettingsBlock.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3727b7b1239f8764c829b471caaee316
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Helpers/GenericEditorMenuItemClickEventSenderHelpers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a1ee07fd37bf943e898438344b687120
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Telemetry/IMetrics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: e8e7a267538ea43a19abb3a435a86e36
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Models/GoogleBillingClient.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5b748d17edc94270a890bb7cdf375c8b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/FakeAppleExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: b8f7d0d8648483146b39b46719854c62
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/HashExceptions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3ab92f62759743ba8976ad68c90774fd
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Extension/IStoreCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5deae79dc61e94367a9254f488f5b89a
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/MissingComponent.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 415a1d6c4f1019744813ba36809435ac
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/PurchasingServiceAnalyticsRegistrar.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 64d1febe16e70491e9b6b08c14aad487
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Logging/CoreLogger.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0a3af58da2b3546d7825988edd66fc9d
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/Service/Networking/NetworkingUtils.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d4c484718cfa4b7d9ae7ac7e00b6bee2
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Metrics/TelemetryMetricDefinitions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c033c459c084f42f58347ac73d1edd65
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Util/GoogleConnectionRetryPolicy.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d1aaa2c8d018a423bbcabba266db7cc4
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/IServiceFactory.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8037922e8fb8464890c56015c87f6bd2
+    m_importFrom: Packages/com.unity.purchasing/Editor/ApplePriceTiers.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3fd84e354773b4035abcdacdd2a8825b
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/GooglePlayPurchaseCallback.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 83c2cd7a09768492faf568b7c0c53fde
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/AAR/Interfaces/IGooglePurchaseBuilder.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d52fc50de5fd24b4e84566bc8a9c1b3b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/PackageRegistry/LockedPackageRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8aef1cb86f4a44a3999552f7b089ecf3
+    m_importFrom: Packages/com.unity.purchasing/Runtime/SecurityCore/IAPSecurityException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a763945428094ce495d361f416fd8780
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/AppleAppStore/AppleAppStore.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 06a13106669b4df283a9a95511170817
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectBindRedirect/ProjectBindRedirectUiConstants.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 88e6705fa3c311d49b11b5e993a79014
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Entity/EventActions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bf8f2b8e3bc44b35aab99205aabf641b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/EditorGameService/EditorGameServiceRemoteConfiguration.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bd40d4e7b0caa413181d77211ac8ba73
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Models/UnityUserOrganizationsV1.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 5c9c401096e54ba45bf829401b1cccc4
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/DialogRequest.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c1df5f08648744a8a1247b4f31570169
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Save/IEnvironmentSaveSystem.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 87f910d770ff4f15baac7ba77bd5b8e8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Common/MiniJSON.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c776c1ce831347742827243768f6ab6f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/CoreServices/Environment/CoreServicesEnvironmentSubject.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4675ab950b03435e991354a1c0215fd1
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/IExtensionProvider.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 0edab4879bac4c7b8de2a01221f8ff67
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Purchasing/Telemetry/Diagnostics/TelemetryDiagnosticParams.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f637fc8d11c022942833496d32ff8f9b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Telemetry/IMetricsFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: faf4a0a80610544208a483c5b11fad2b
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Networking/ITokenExchangeUrls.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: fc2ccbdfc9a3458198173d731b5271ec
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/PackageInitializationInfo.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7d6201bd8c7c44149b361b3df0426ba2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Telemetry/PackageConfig.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 7bd08cd6925a429f92642c0e73a7daf2
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/ProjectBindRedirect/ProjectBindRedirectPopupUI.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 30648dc766559254d8ef3209219478ab
+    m_importFrom: Packages/com.unity.services.core/Runtime/Telemetry/Diagnotstics/DisabledDiagnostics.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: cade936d013324ae781f1605449775d8
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Interfaces/IGooglePlayStoreExtensionsInternal.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6741755b0b34409ab6ce2c49d1cb59f2
+    m_importFrom: Packages/com.unity.purchasing/Third Party Notices.md
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ae7633dffe64d4dbd8d058a0e330bdad
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/CircularDependencyException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9ba8832336df045fca38ac55a6b587f0
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Environments/IEnvironments.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3eaf2948647a0473b97292a1213cb455
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/UI/EnvironmentView.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 03476828a39df494a93e9eb8c807484e
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/UnityServicesEditorInitializer.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 6c2c696bf719b804186de40ddc5c1050
+    m_importFrom: Packages/com.unity.purchasing/Editor/MenuItems/IapButtonMenu.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 8aebbb7ccff5845b18681b4819457d83
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core/Initialization/ServicesInitializationException.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4e5433ba423a14f4198372b88c9c89b9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/Android/GooglePlay/Models/GoogleBillingResponseCode.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1978478d5dedf4c0bbc8a8ac97566699
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/AsyncOperation/AsyncOperation.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 20244f31f40f9c112bccd177c8634b4e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Environments/Client/Http/IsolatedJsonConvert.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c3788e7e3e2e94c38a2deace1fee410e
+    m_importFrom: Packages/com.unity.services.core/Runtime/Device/InstallationId.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 15ee81abac09c42d9bef6148030cc0b1
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/DependencyNotFoundException.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: c9f4abaf08a6b44939f7cfe10db6fda6
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/UI/ModelBinding.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 4c80f8b0153d149c29db7dd83c7ecd9a
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/DependencyInversion/TypeAlreadyRegisteredException.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 39aaed770c8974f1094c0cfba7b3d277
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Scheduler/IActionScheduler.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 266ba3050de911f44b8ebd0b8b5fb574
+    m_importFrom: Packages/com.unity.purchasing/Editor/ServiceProjectSettings/PurchasingServiceIdentifier.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 9db1c1b008f772e4394fa51db93b1546
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/ComponentRegistry/IComponentRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f5d7186a4ae434942afddf441cccaa67
+    m_importFrom: Packages/com.unity.services.core/Runtime/Configuration/StreamingAssetsConfigurationLoader.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: bf48658e04699da4b94de7955ce6b943
+    m_importFrom: Packages/com.unity.purchasing/Editor/Analytics/Signatures/SignatureDefinitions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3b1bb76fde184b2eaec85b0c20e9a9dc
+    m_importFrom: Packages/com.unity.purchasing/Editor/AppleXMLProductCatalogExporter.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 42f9a77f3e0e459fb7fc63c636dba57e
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/UiHelpers/OfflineUiHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3bde09447ab54e0cb6dc4cccf451344e
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/FakeStore/IFakeExtensions.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: f062e98fc9ade4f4faa8759ddbf79a98
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Networking/HttpResponse.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: d9602aa730d84e4da63a54af276a9e7f
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Stores/ProductCatalog.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: ef7fcc1a349fcfd4eb60ca422145e7d2
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Components/Telemetry/IDiagnosticsFactory.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a54a67ed0cd9c4a00913d325490a466b
+    m_importFrom: Packages/com.unity.services.core/Runtime/Core.Internal/Registry/CoreRegistry.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 1431c9d01279f4808a07dda4a14eabb3
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Shared/Infrastructure/Collections/ReadOnlyObservableCollection.Gen.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: 3b15071fc9be4c9db9b310d366c34136
+    m_importFrom: Packages/com.unity.services.core/Editor/Core/Configuration/ProjectConfigurationBuilderHelper.cs
+    m_exportTo: 
+    m_variantName: 
+  - m_assetDatabaseId: a146339e507934bb28b12562ba9852d9
+    m_importFrom: Packages/com.unity.purchasing/Runtime/Security/RSAPubKey.cs
+    m_exportTo: 
+    m_variantName: 
   m_version: 2

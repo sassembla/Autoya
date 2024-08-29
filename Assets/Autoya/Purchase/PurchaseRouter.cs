@@ -45,7 +45,7 @@ namespace AutoyaFramework.Purchase
 
 
 
-    public class PurchaseRouter : IStoreListener
+    public class PurchaseRouter //: IStoreListener
     {
 
         /*
